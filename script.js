@@ -129,7 +129,7 @@ function updateCountdown() {
     // Corrected target date to April 10, 2026 based on next major event
     const targetDate = new Date('April 10, 2026 00:00:00').getTime();
     
-    const timer = setInterval(() => {
+    function update() {
         const now = new Date().getTime();
         const distance = targetDate - now;
         
@@ -137,8 +137,7 @@ function updateCountdown() {
             if (document.getElementById('countdown')) {
                 document.getElementById('countdown').innerHTML = "<div class='glow-text' style='font-size: 2rem;'>RACE WEEKEND</div>";
             }
-            clearInterval(timer);
-            return;
+            return true; // Stop timer
         }
         
         const days = Math.floor(distance / (1000 * 60 * 60 * 24));
@@ -155,7 +154,15 @@ function updateCountdown() {
         if (hoursEl) hoursEl.innerText = hours.toString().padStart(2, '0');
         if (minutesEl) minutesEl.innerText = minutes.toString().padStart(2, '0');
         if (secondsEl) secondsEl.innerText = seconds.toString().padStart(2, '0');
-    }, 1000);
+        return false;
+    }
+
+    // Initial call to avoid '00' flicker
+    if (!update()) {
+        const timer = setInterval(() => {
+            if (update()) clearInterval(timer);
+        }, 1000);
+    }
 }
 
 // Click and Drag Carousel Logic
