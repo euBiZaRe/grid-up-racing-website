@@ -126,7 +126,8 @@ if (toggleBtn && pastSection) {
 
 // Countdown Timer Logic
 function updateCountdown() {
-    const targetDate = new Date('June 19, 2026 00:00:00').getTime();
+    // Corrected target date to April 10, 2026 based on next major event
+    const targetDate = new Date('April 10, 2026 00:00:00').getTime();
     
     const timer = setInterval(() => {
         const now = new Date().getTime();
@@ -134,7 +135,7 @@ function updateCountdown() {
         
         if (distance < 0) {
             if (document.getElementById('countdown')) {
-                document.getElementById('countdown').innerHTML = "RACE DAY";
+                document.getElementById('countdown').innerHTML = "<div class='glow-text' style='font-size: 2rem;'>RACE WEEKEND</div>";
             }
             clearInterval(timer);
             return;
@@ -155,6 +156,39 @@ function updateCountdown() {
         if (minutesEl) minutesEl.innerText = minutes.toString().padStart(2, '0');
         if (secondsEl) secondsEl.innerText = seconds.toString().padStart(2, '0');
     }, 1000);
+}
+
+// Click and Drag Carousel Logic
+const track = document.querySelector('.carousel-track');
+if (track) {
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+
+    track.addEventListener('mousedown', (e) => {
+        isDown = true;
+        track.classList.add('active');
+        startX = e.pageX - track.offsetLeft;
+        scrollLeft = track.parentElement.scrollLeft;
+    });
+
+    track.addEventListener('mouseleave', () => {
+        isDown = false;
+        track.classList.remove('active');
+    });
+
+    track.addEventListener('mouseup', () => {
+        isDown = false;
+        track.classList.remove('active');
+    });
+
+    track.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - track.offsetLeft;
+        const walk = (x - startX) * 2; // scroll-fast factor
+        track.parentElement.scrollLeft = scrollLeft - walk;
+    });
 }
 
 // Initialize Countdown

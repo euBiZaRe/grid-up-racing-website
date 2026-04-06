@@ -11,7 +11,8 @@
     --text-muted: #a0a0a0;
     --glass-border: rgba(255, 255, 255, 0.1);
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    
+}
+
 /* Medal Colors */
 .metallic-text {
   position: relative;
@@ -211,10 +212,10 @@ nav.scrolled {
     left: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    opacity: 0.4;
-    transform: scale(1.1);
-    animation: zoomOut 10s forwards;
+    object-fit: contain;
+    opacity: 0.25;
+    padding: 10%;
+    transition: var(--transition);
 }
 
 @keyframes zoomOut {
@@ -644,69 +645,71 @@ footer {
     margin-top: 0.5rem;
 }
 
-/* Homepage Upcoming Races */
-.horizontal-scroll {
-    display: flex;
-    overflow-x: auto;
-    gap: 2rem;
-    padding: 1rem 0 2rem 0;
-    scrollbar-width: thin;
-    scrollbar-color: var(--primary) transparent;
-}
 
-.horizontal-scroll::-webkit-scrollbar {
-    height: 6px;
-}
-
-.horizontal-scroll::-webkit-scrollbar-thumb {
-    background: var(--primary);
-    border-radius: 10px;
-}
-
-.event-card-compact {
-    flex: 0 0 350px;
-    padding: 0;
+/* Interactive Race Carousel */
+.upcoming-races-container {
+    padding: 2rem 0;
     overflow: hidden;
-    background: var(--bg-card);
+    position: relative;
+}
+
+.carousel-track {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1rem;
+    cursor: grab;
+    user-select: none;
+    transition: transform 0.1s ease-out;
+}
+
+.carousel-track:active {
+    cursor: grabbing;
+}
+
+.race-tile {
+    flex: 0 0 320px;
+    background: rgba(20, 20, 22, 0.8);
     backdrop-filter: blur(10px);
     border: 1px solid var(--glass-border);
-    border-radius: 15px;
+    border-radius: 12px;
+    padding: 2rem;
+    text-decoration: none;
     transition: var(--transition);
+    border-left: 4px solid var(--accent-color, var(--primary));
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
-.event-card-compact:hover {
-    transform: translateY(-10px);
-    border-color: var(--primary);
+.race-tile:hover {
+    transform: translateY(-5px) scale(1.02);
+    border-color: var(--accent-color, var(--primary));
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 15px var(--accent-color, var(--primary-glow));
 }
 
-.event-card-compact .card-img {
-    height: 180px;
-    width: 100%;
-    object-fit: cover;
-    opacity: 0.6;
-    transition: opacity 0.3s ease;
+.race-tile h3 {
+    color: #fff;
+    font-size: 1.4rem;
+    margin-bottom: 0.5rem;
+    letter-spacing: 1px;
 }
 
-.event-card-compact:hover .card-img {
-    opacity: 0.9;
+.race-tile .race-meta {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 400;
 }
 
-.event-card-compact .card-body {
-    padding: 1.5rem;
-}
+/* Accent Colors for Tiles */
+.tile-blue { --accent-color: #00d2ff; --accent-glow: rgba(0, 210, 255, 0.3); }
+.tile-pink { --accent-color: #ff0055; --accent-glow: rgba(255, 0, 85, 0.3); }
+.tile-green { --accent-color: #00ff88; --accent-glow: rgba(0, 255, 136, 0.3); }
 
-@media (max-width: 768px) {
-    .countdown-container {
-        gap: 0.8rem;
-    }
-    .countdown-box {
-        padding: 1rem;
-        min-width: 70px;
-    }
-    .countdown-number {
-        font-size: 1.8rem;
-    }
-    .event-card-compact {
-        flex: 0 0 280px;
-    }
+/* Hide Scrollbar */
+.upcoming-races-container::-webkit-scrollbar {
+    display: none;
+}
+.upcoming-races-container {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
