@@ -288,34 +288,61 @@ footer {
     transform: translateY(-5px);
 }
 
-/* Marquee Styles */
-.marquee-container {
-    overflow: hidden;
-    padding: 2rem 0;
+/* Carousel Styles */
+.carousel-window {
     position: relative;
-    width: 100%;
+    padding: 0 4rem;
 }
 
-.marquee-content {
+.carousel-container {
+    overflow-x: auto;
     display: flex;
     gap: 2rem;
-    width: max-content;
-    animation: scroll 40s linear infinite;
+    padding: 2rem 0;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none; /* Hide scrollbar Firefox */
+    -ms-overflow-style: none; /* Hide scrollbar IE/Edge */
+    scroll-behavior: smooth;
+    position: relative;
 }
 
-.marquee-container:hover .marquee-content {
-    animation-play-state: paused;
+.carousel-container::-webkit-scrollbar {
+    display: none; /* Hide scrollbar Chrome/Safari */
 }
 
-@keyframes scroll {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-}
-
-.marquee-content .card {
+.carousel-container .card {
     min-width: 350px;
     flex-shrink: 0;
+    scroll-snap-align: start;
 }
+
+.carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--bg-card);
+    color: var(--primary);
+    border: 1px solid var(--glass-border);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    transition: var(--transition);
+    backdrop-filter: blur(5px);
+}
+
+.carousel-btn:hover {
+    background: var(--primary);
+    color: #000;
+    box-shadow: 0 0 15px var(--primary-glow);
+}
+
+.carousel-btn.prev { left: 1rem; }
+.carousel-btn.next { right: 1rem; }
 
 @media (max-width: 768px) {
     .nav-links {
@@ -326,7 +353,11 @@ footer {
         padding: 4rem 0;
     }
 
-    .marquee-content {
-        animation-duration: 25s;
+    .carousel-window {
+        padding: 0 1rem;
+    }
+
+    .carousel-btn {
+        display: none;
     }
 }
