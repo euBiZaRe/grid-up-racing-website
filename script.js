@@ -63,8 +63,36 @@ const startAutoScroll = () => {
 };
 
 carousel.addEventListener('mouseenter', () => isPaused = true);
-carousel.addEventListener('mouseleave', () => isPaused = false);
-carousel.addEventListener('mousedown', () => isPaused = true);
+carousel.addEventListener('mouseleave', () => {
+    isPaused = false;
+    isDown = false;
+});
+
+// Drag to scroll logic
+let isDown = false;
+let startX;
+let scrollLeft;
+
+carousel.addEventListener('mousedown', (e) => {
+    isDown = true;
+    isPaused = true;
+    carousel.classList.add('active');
+    startX = e.pageX - carousel.offsetLeft;
+    scrollLeft = carousel.scrollLeft;
+});
+
+carousel.addEventListener('mouseup', () => {
+    isDown = false;
+    carousel.classList.remove('active');
+});
+
+carousel.addEventListener('mousemove', (e) => {
+    if (!isDown) return;
+    e.preventDefault();
+    const x = e.pageX - carousel.offsetLeft;
+    const walk = (x - startX) * 2; // scroll-fast factor
+    carousel.scrollLeft = scrollLeft - walk;
+});
 
 prevBtn.addEventListener('click', () => {
     const cardWidth = carousel.querySelector('.card').offsetWidth + 32;

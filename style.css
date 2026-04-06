@@ -304,6 +304,13 @@ footer {
     -ms-overflow-style: none; /* Hide scrollbar IE/Edge */
     scroll-behavior: smooth;
     position: relative;
+    cursor: grab;
+    user-select: none;
+}
+
+.carousel-container:active {
+    cursor: grabbing;
+    scroll-behavior: auto;
 }
 
 .carousel-container::-webkit-scrollbar {
