@@ -165,40 +165,66 @@ function updateCountdown() {
     }
 }
 
-// Click and Drag Carousel Logic
-const track = document.querySelector('.carousel-track');
-if (track) {
-    let isDown = false;
-    let startX;
-    let scrollLeft;
+// Click and Drag Carousel Logic with Navigation Support
+function initCarousel() {
+    const containers = document.querySelectorAll('.upcoming-races-container');
+    
+    containers.forEach(container => {
+        const track = container.querySelector('.carousel-track');
+        const prevBtn = container.parentElement.querySelector('.prev-btn');
+        const nextBtn = container.parentElement.querySelector('.next-btn');
+        
+        if (!track) return;
 
-    track.addEventListener('mousedown', (e) => {
-        isDown = true;
-        track.classList.add('active');
-        startX = e.pageX - track.offsetLeft;
-        scrollLeft = track.parentElement.scrollLeft;
-    });
+        let isDown = false;
+        let startX;
+        let scrollLeft;
 
-    track.addEventListener('mouseleave', () => {
-        isDown = false;
-        track.classList.remove('active');
-    });
+        // Mouse Drag Support
+        track.addEventListener('mousedown', (e) => {
+            isDown = true;
+            track.style.cursor = 'grabbing';
+            startX = e.pageX - container.offsetLeft;
+            scrollLeft = container.scrollLeft;
+        });
 
-    track.addEventListener('mouseup', () => {
-        isDown = false;
-        track.classList.remove('active');
-    });
+        track.addEventListener('mouseleave', () => {
+            isDown = false;
+            track.style.cursor = 'grab';
+        });
 
-    track.addEventListener('mousemove', (e) => {
-        if (!isDown) return;
-        e.preventDefault();
-        const x = e.pageX - track.offsetLeft;
-        const walk = (x - startX) * 2; // scroll-fast factor
-        track.parentElement.scrollLeft = scrollLeft - walk;
+        track.addEventListener('mouseup', () => {
+            isDown = false;
+            track.style.cursor = 'grab';
+        });
+
+        track.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - container.offsetLeft;
+            const walk = (x - startX) * 2; // scroll-fast factor
+            container.scrollLeft = scrollLeft - walk;
+        });
+
+        // Button Navigation
+        if (prevBtn && nextBtn) {
+            const scrollAmount = 350; // Approximates one card + gap
+            
+            prevBtn.addEventListener('click', () => {
+                container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+            });
+            
+            nextBtn.addEventListener('click', () => {
+                container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+            });
+        }
     });
 }
 
-// Initialize Countdown
-if (document.getElementById('countdown')) {
-    updateCountdown();
-}
+// Global initialization
+document.addEventListener('DOMContentLoaded', () => {
+    initCarousel();
+    if (document.getElementById('countdown')) {
+        updateCountdown();
+    }
+});
