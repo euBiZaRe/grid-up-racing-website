@@ -20,6 +20,7 @@
   letter-spacing: 0.5px;
   background-size: 200% auto;
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: shine 4s linear infinite;
 }
@@ -35,13 +36,31 @@
 }
 
 .silver-text {
-  background-image: linear-gradient(120deg, #3a3a3a 0%, #7a7a7a 20%, #c0c0c0 40%, #e0e0e0 50%, #c0c0c0 60%, #7a7a7a 80%, #3a3a3a 100%);
-  text-shadow: 0 0 6px rgba(192, 192, 192, 0.2);
+  background-image: linear-gradient(
+    120deg,
+    #2b2b2b 0%,
+    #6b6b6b 25%,
+    #b0b0b0 45%,
+    #d6d6d6 50%,
+    #b0b0b0 55%,
+    #6b6b6b 75%,
+    #2b2b2b 100%
+  );
+  text-shadow: 0 0 4px rgba(200, 200, 200, 0.15);
 }
 
 .bronze-text {
-  background-image: linear-gradient(120deg, #4a2c14 0%, #8c6239 20%, #cd7f32 40%, #e6a15c 50%, #cd7f32 60%, #8c6239 80%, #4a2c14 100%);
-  text-shadow: 0 0 6px rgba(205, 127, 50, 0.25);
+  background-image: linear-gradient(
+    120deg,
+    #3a1f0f 0%,
+    #7a4a2a 25%,
+    #b87333 45%,
+    #e0a96d 50%,
+    #b87333 55%,
+    #7a4a2a 75%,
+    #3a1f0f 100%
+  );
+  text-shadow: 0 0 5px rgba(184, 115, 51, 0.25);
 }
 
 .metallic-text:hover {
