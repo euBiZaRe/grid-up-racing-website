@@ -12,15 +12,42 @@
     --glass-border: rgba(255, 255, 255, 0.1);
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     
-    /* Podium Colors */
-    --gold: #ffd700;
-    --silver: #e0e0e0;
-    --bronze: #cd7f32;
+/* Medal Colors */
+.metallic-text {
+  position: relative;
+  display: inline-block;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shine 4s linear infinite;
 }
 
-.finish-p1 { color: var(--gold) !important; font-weight: 800; }
-.finish-p2 { color: var(--silver) !important; font-weight: 800; }
-.finish-p3 { color: var(--bronze) !important; font-weight: 800; }
+@keyframes shine {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.gold-text {
+  background-image: linear-gradient(120deg, #5c3d00 0%, #b8960b 20%, #ffd700 40%, #fff2a8 50%, #ffd700 60%, #b8960b 80%, #5c3d00 100%);
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.25);
+}
+
+.silver-text {
+  background-image: linear-gradient(120deg, #3a3a3a 0%, #7a7a7a 20%, #c0c0c0 40%, #e0e0e0 50%, #c0c0c0 60%, #7a7a7a 80%, #3a3a3a 100%);
+  text-shadow: 0 0 6px rgba(192, 192, 192, 0.2);
+}
+
+.bronze-text {
+  background-image: linear-gradient(120deg, #4a2c14 0%, #8c6239 20%, #cd7f32 40%, #e6a15c 50%, #cd7f32 60%, #8c6239 80%, #4a2c14 100%);
+  text-shadow: 0 0 6px rgba(205, 127, 50, 0.25);
+}
+
+.metallic-text:hover {
+  animation-duration: 2s;
+  filter: brightness(1.2);
+}
 
 * {
     margin: 0;
