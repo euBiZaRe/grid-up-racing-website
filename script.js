@@ -111,3 +111,15 @@ if (carousel && prevBtn && nextBtn) {
 
     startAutoScroll();
 }
+
+// Past Events Toggle
+const toggleBtn = document.getElementById('togglePastEvents');
+const pastSection = document.getElementById('pastEventsSection');
+
+if (toggleBtn && pastSection) {
+    toggleBtn.addEventListener('click', () => {
+        const isHidden = pastSection.style.display === 'none';
+        pastSection.style.display = isHidden ? 'flex' : 'none';
+        toggleBtn.textContent = isHidden ? 'Hide Past Events' : 'Show Past Events';
+    });
+}
