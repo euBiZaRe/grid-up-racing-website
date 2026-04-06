@@ -11,7 +11,16 @@
     --text-muted: #a0a0a0;
     --glass-border: rgba(255, 255, 255, 0.1);
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Podium Colors */
+    --gold: #ffd700;
+    --silver: #e0e0e0;
+    --bronze: #cd7f32;
 }
+
+.finish-p1 { color: var(--gold) !important; font-weight: 800; }
+.finish-p2 { color: var(--silver) !important; font-weight: 800; }
+.finish-p3 { color: var(--bronze) !important; font-weight: 800; }
 
 * {
     margin: 0;
