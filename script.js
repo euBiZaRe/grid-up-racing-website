@@ -40,3 +40,40 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         }
     });
 });
+
+// Carousel Logic
+const carousel = document.getElementById('carousel');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+
+let isPaused = false;
+let scrollInterval;
+
+const startAutoScroll = () => {
+    scrollInterval = setInterval(() => {
+        if (!isPaused) {
+            const cardWidth = carousel.querySelector('.card').offsetWidth + 32; // width + gap
+            if (carousel.scrollLeft + carousel.offsetWidth >= carousel.scrollWidth - 10) {
+                carousel.scrollTo({ left: 0, behavior: 'smooth' });
+            } else {
+                carousel.scrollBy({ left: cardWidth, behavior: 'smooth' });
+            }
+        }
+    }, 3000);
+};
+
+carousel.addEventListener('mouseenter', () => isPaused = true);
+carousel.addEventListener('mouseleave', () => isPaused = false);
+carousel.addEventListener('mousedown', () => isPaused = true);
+
+prevBtn.addEventListener('click', () => {
+    const cardWidth = carousel.querySelector('.card').offsetWidth + 32;
+    carousel.scrollBy({ left: -cardWidth, behavior: 'smooth' });
+});
+
+nextBtn.addEventListener('click', () => {
+    const cardWidth = carousel.querySelector('.card').offsetWidth + 32;
+    carousel.scrollBy({ left: cardWidth, behavior: 'smooth' });
+});
+
+startAutoScroll();
