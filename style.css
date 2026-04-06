@@ -287,6 +287,35 @@ footer {
     transform: translateY(-5px);
 }
 
+/* Marquee Styles */
+.marquee-container {
+    overflow: hidden;
+    padding: 2rem 0;
+    position: relative;
+    width: 100%;
+}
+
+.marquee-content {
+    display: flex;
+    gap: 2rem;
+    width: max-content;
+    animation: scroll 40s linear infinite;
+}
+
+.marquee-container:hover .marquee-content {
+    animation-play-state: paused;
+}
+
+@keyframes scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+.marquee-content .card {
+    min-width: 350px;
+    flex-shrink: 0;
+}
+
 @media (max-width: 768px) {
     .nav-links {
         display: none;
@@ -294,5 +323,9 @@ footer {
     
     .section {
         padding: 4rem 0;
+    }
+
+    .marquee-content {
+        animation-duration: 25s;
     }
 }
