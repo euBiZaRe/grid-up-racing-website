@@ -610,4 +610,103 @@ footer {
     .event-horizontal-card .btn {
         width: 100%;
     }
+
+/* Countdown Styles */
+.countdown-container {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.countdown-box {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    padding: 1.5rem;
+    border-radius: 12px;
+    min-width: 100px;
+}
+
+.countdown-number {
+    display: block;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--primary);
+}
+
+.countdown-label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 0.5rem;
+}
+
+/* Homepage Upcoming Races */
+.horizontal-scroll {
+    display: flex;
+    overflow-x: auto;
+    gap: 2rem;
+    padding: 1rem 0 2rem 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) transparent;
+}
+
+.horizontal-scroll::-webkit-scrollbar {
+    height: 6px;
+}
+
+.horizontal-scroll::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 10px;
+}
+
+.event-card-compact {
+    flex: 0 0 350px;
+    padding: 0;
+    overflow: hidden;
+    background: var(--bg-card);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    transition: var(--transition);
+}
+
+.event-card-compact:hover {
+    transform: translateY(-10px);
+    border-color: var(--primary);
+}
+
+.event-card-compact .card-img {
+    height: 180px;
+    width: 100%;
+    object-fit: cover;
+    opacity: 0.6;
+    transition: opacity 0.3s ease;
+}
+
+.event-card-compact:hover .card-img {
+    opacity: 0.9;
+}
+
+.event-card-compact .card-body {
+    padding: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .countdown-container {
+        gap: 0.8rem;
+    }
+    .countdown-box {
+        padding: 1rem;
+        min-width: 70px;
+    }
+    .countdown-number {
+        font-size: 1.8rem;
+    }
+    .event-card-compact {
+        flex: 0 0 280px;
+    }
 }

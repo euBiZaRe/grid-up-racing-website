@@ -27,7 +27,31 @@
         <div class="hero-content container">
             <h1 class="glow-text">GRID UP</h1>
             <p style="font-size: 1.2rem; color: var(--text-muted); margin-bottom: 2rem; letter-spacing: 4px;">SIM RACING ENDURANCE</p>
-            <div style="display: flex; gap: 1rem; justify-content: center;">
+            
+            <!-- Countdown Section -->
+            <div id="countdown" class="reveal active">
+                <p style="color: var(--primary); font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; letter-spacing: 2px;">Next Major Race: IMSA Classic 500</p>
+                <div class="countdown-container">
+                    <div class="countdown-box">
+                        <span id="days" class="countdown-number">00</span>
+                        <span class="countdown-label">Days</span>
+                    </div>
+                    <div class="countdown-box">
+                        <span id="hours" class="countdown-number">00</span>
+                        <span class="countdown-label">Hours</span>
+                    </div>
+                    <div class="countdown-box">
+                        <span id="minutes" class="countdown-number">00</span>
+                        <span class="countdown-label">Mins</span>
+                    </div>
+                    <div class="countdown-box">
+                        <span id="seconds" class="countdown-number">00</span>
+                        <span class="countdown-label">Secs</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 3rem;">
                 <a href="#about" class="btn">Learn More</a>
                 <a href="#contact" class="btn btn-outline">Join Us</a>
             </div>
@@ -40,6 +64,40 @@
             <div class="glass card" style="max-width: 800px; margin: 0 auto;">
                 <p>Grid Up Sim Racing is a premier competitive racing team dedicated to technical excellence and unwavering sportsmanship. Founded on the principles of precision and passion, we compete at the highest levels of digital endurance racing.</p>
                 <p style="margin-top: 1rem;">Whether it's the 24 Hours of Le Mans or high-intensity GT3 sprints, our drivers push the limits of every pixel to bring home the podium.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="upcoming" class="section reveal">
+        <div class="container">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem;">
+                <div>
+                    <h2 style="color: var(--primary); margin-bottom: 0.5rem;">Upcoming Challenges</h2>
+                    <p style="color: var(--text-muted);">The 2026 iRacing Special Event Season</p>
+                </div>
+                <a href="events.html" class="btn btn-outline" style="padding: 0.6rem 1.2rem; font-size: 0.9rem;">View All Events</a>
+            </div>
+
+            <div class="horizontal-scroll">
+                <div class="event-card-compact">
+                    <img src="assets/bg-banner.png" alt="IMSA Classic 500" class="card-img">
+                    <div class="card-body">
+                        <div style="color: var(--primary); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-bottom: 0.5rem;">June 19-21, 2026</div>
+                        <h3 style="margin-bottom: 1rem;">IMSA Classic 500</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem; line-height: 1.5;">6 hours of multi-class endurance testing on the historic Watkins Glen circuit.</p>
+                        <a href="events/imsa-classic-500.html" class="btn" style="width: 100%; padding: 0.8rem;">Learn More</a>
+                    </div>
+                </div>
+
+                <div class="event-card-compact">
+                    <img src="assets/bg-banner.png" alt="Thruxton 4H" class="card-img">
+                    <div class="card-body">
+                        <div style="color: var(--primary); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-bottom: 0.5rem;">August 14-16, 2026</div>
+                        <h3 style="margin-bottom: 1rem;">Thruxton 4H</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem; line-height: 1.5;">Four hours of intense TCR battle at the fastest circuit in the United Kingdom.</p>
+                        <a href="events/thruxton-4h.html" class="btn" style="width: 100%; padding: 0.8rem;">Learn More</a>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
