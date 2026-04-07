@@ -1,0 +1,33 @@
+name: Update Driver Profiles
+
+on:
+  schedule:
+    - cron: '0 0 * * 0' # Weekly on Sunday at midnight
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  update-stats:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-code: '3.10'
+
+      - name: Install Dependencies
+        run: |
+          pip install playwright
+          playwright install --with-deps chromium
+
+      - name: Run Update Script
+        run: python scripts/update_drivers.py
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
+          git add drivers/*.html
+          git diff --quiet && git diff --staged --quiet || (git commit -m "auto: update driver profiles from Garage 61" && git push)
