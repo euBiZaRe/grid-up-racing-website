@@ -24,26 +24,27 @@ function initAuth() {
 
         // Listen for Auth State changes
         auth.onAuthStateChanged((user) => {
+            console.log("Auth State Changed. User:", user ? user.uid : "None");
             if (user) {
-                console.log("Logged in as:", user.displayName);
                 updateAuthUI(user);
             } else {
-                console.log("No user logged in.");
                 updateAuthUI(null);
             }
         });
+    } else {
+        console.error("Firebase SDK not detected!");
     }
 }
 
 // Discord Login Flow
 function loginWithDiscord() {
-    // Discord is configured as an OIDC provider in the Firebase Console
+    console.log("Starting Discord Login...");
     const provider = new firebase.auth.OAuthProvider('oidc.discord');
     auth.signInWithPopup(provider).then((result) => {
-        // Successful login
+        console.log("Login Success:", result.user.displayName);
         window.location.href = "index.html";
     }).catch((error) => {
-        console.error("Login Error:", error);
+        console.error("Login Error:", error.code, error.message);
         alert("Authentication failed: " + error.message);
     });
 }
@@ -54,9 +55,14 @@ function updateAuthUI(user) {
     const claimSection = document.getElementById('claim-section');
 
     if (user) {
+        console.log("Updating UI for logged-in user:", user.displayName || "Unknown Driver");
         if (loginBtn) {
-            loginBtn.innerHTML = `<span style="display:flex; align-items:center; gap:8px;"><img src="${user.photoURL}" style="width: 20px; border-radius: 50%;"> ${user.displayName.split(' ')[0]} (Logout)</span>`;
-            loginBtn.onclick = () => {
+            const name = user.displayName ? user.displayName.split(' ')[0] : "Driver";
+            const avatar = user.photoURL || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
+            
+            loginBtn.innerHTML = `<span style="display:flex; align-items:center; gap:10px;"><img src="${avatar}" style="width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--primary);"> ${name} (Logout)</span>`;
+            loginBtn.onclick = (e) => {
+                e.preventDefault();
                 if(confirm("Logout?")) auth.signOut();
             };
             loginBtn.removeAttribute('href');
