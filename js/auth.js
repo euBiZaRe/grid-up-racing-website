@@ -90,13 +90,26 @@ async function updateAuthUI(user) {
 // Check if a profile is already claimed/pending
 async function checkClaimStatus(driverName, user) {
     const claimSection = document.getElementById('claim-section');
-    if (!claimSection || !db) return;
+    if (!claimSection) return;
+    
+    console.log("Checking claim status for:", driverName);
+
+    // Ensure db is initialized (it should be, but let's be safe)
+    if (!db) {
+        console.warn("Firestore not ready, retrying in 500ms...");
+        setTimeout(() => checkClaimStatus(driverName, user), 500);
+        return;
+    }
 
     try {
-        const docPromise = await db.collection("claims").doc(driverName).get();
-        if (docPromise.exists) {
-            const data = docPromise.data();
-            claimSection.style.display = 'block';
+        const docSnapshot = await db.collection("claims").doc(driverName).get();
+        console.log("Claim Doc Exists:", docSnapshot.exists);
+        
+        claimSection.style.display = 'block';
+        
+        if (docSnapshot.exists) {
+            const data = docSnapshot.data();
+            console.log("Claim Status:", data.status);
             
             if (data.status === "verified") {
                 claimSection.innerHTML = `<div class="badge-verified" style="background: rgba(0, 207, 255, 0.1); color: var(--primary); padding: 0.75rem 1.5rem; border: 1px solid var(--primary); border-radius: 4px; display: inline-block; font-weight: 700;">✓ VERIFIED TEAM MEMBER</div>`;
@@ -105,11 +118,14 @@ async function checkClaimStatus(driverName, user) {
             }
         } else {
             // No claim exists, show the button
-            claimSection.style.display = 'block';
+            console.log("Showing claim button for:", driverName);
             claimSection.innerHTML = `<button class="btn btn-outline claim-btn" onclick="openClaimModal()" style="font-size: 0.75rem; padding: 0.6rem 1.5rem;">Claim This Driver Profile</button>`;
         }
     } catch (error) {
         console.error("Error checking claim status:", error);
+        // Fallback to showing the button if error
+        claimSection.style.display = 'block';
+        claimSection.innerHTML = `<button class="btn btn-outline claim-btn" onclick="openClaimModal()" style="font-size: 0.75rem; padding: 0.6rem 1.5rem;">Claim This Driver Profile</button>`;
     }
 }
 
