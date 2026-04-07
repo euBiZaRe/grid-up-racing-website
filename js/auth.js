@@ -55,9 +55,10 @@ function updateAuthUI(user) {
     const claimSection = document.getElementById('claim-section');
 
     if (user) {
-        console.log("Updating UI for logged-in user:", user.displayName || "Unknown Driver");
+        console.log("Updating UI for logged-in user:", user.uid);
         if (loginBtn) {
-            const name = user.displayName ? user.displayName.split(' ')[0] : "Driver";
+            const displayName = user.displayName || "";
+            const name = displayName ? displayName.split(' ')[0] : "Driver";
             const avatar = user.photoURL || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
             
             loginBtn.innerHTML = `<span style="display:flex; align-items:center; gap:10px;"><img src="${avatar}" style="width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--primary);"> ${name} (Logout)</span>`;
