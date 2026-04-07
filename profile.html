@@ -85,6 +85,11 @@
                     <h2 class="section-title" style="font-size: 1.5rem;">Driver Details</h2>
                     
                     <div class="form-group">
+                        <label>Driver Name</label>
+                        <input type="text" id="input-name" class="form-input" placeholder="Your Full Name (as it appears in iRacing)">
+                    </div>
+
+                    <div class="form-group">
                         <label>iRacing ID</label>
                         <input type="text" id="input-iracing-id" class="form-input" placeholder="Enter your iRacing ID (e.g. 123456)">
                     </div>
@@ -145,9 +150,15 @@
                 const doc = await db.collection("users").doc(user.uid).get();
                 if (doc.exists) {
                     const data = doc.data();
+                    document.getElementById('input-name').value = data.driverName || "";
                     document.getElementById('input-iracing-id').value = data.iracingId || "";
                     document.getElementById('input-g61-url').value = data.g61Url || "";
                     document.getElementById('input-class').value = data.driverClass || "GT3";
+                    
+                    // Update header if driver name exists
+                    if (data.driverName) {
+                        name.textContent = data.driverName;
+                    }
                 }
                 
                 // Check if they are a verified team member
@@ -180,8 +191,9 @@
 
             try {
                 await db.collection("users").doc(user.uid).set({
-                    displayName: user.displayName,
+                    discordName: user.displayName, // Preserve Discord name
                     email: user.email,
+                    driverName: document.getElementById('input-name').value,
                     iracingId: document.getElementById('input-iracing-id').value,
                     g61Url: document.getElementById('input-g61-url').value,
                     driverClass: document.getElementById('input-class').value,
