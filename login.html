@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Grid Up Sim Racing</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .login-wrapper {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at 50% 50%, rgba(0, 207, 255, 0.05) 0%, transparent 70%);
+        }
+        .login-card {
+            width: 100%;
+            max-width: 450px;
+            padding: 4rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+        }
+        .discord-btn {
+            background: #5865F2;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(88, 101, 242, 0.3);
+        }
+        .discord-btn:hover {
+            transform: translateY(-2px);
+            background: #4752c4;
+            box-shadow: 0 8px 25px rgba(88, 101, 242, 0.5);
+        }
+        .login-footer {
+            margin-top: 1rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <nav class="scrolled">
+        <div class="container nav-content">
+            <a href="index.html" class="logo">GRID UP</a>
+        </div>
+    </nav>
+
+    <main class="login-wrapper">
+        <div class="glass login-card">
+            <div>
+                <h1 class="glow-text" style="font-size: 2.5rem; margin-bottom: 0.5rem;">Access Hub</h1>
+                <p style="color: var(--text-muted); text-transform: uppercase; letter-spacing: 3px; font-size: 0.75rem;">Identity Management</p>
+            </div>
+
+            <div style="margin: 1rem 0;">
+                <button id="discord-login-btn" class="discord-btn">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.5013 0-.1635-.3847-.4038-.8742-.6184-1.2495a.077.077 0 00-.0785-.0371 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1889.3705-.2851a.0748.0748 0 01.0783-.0106c3.9214 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1188.0962.2447.1908.3705.2851a.077.077 0 01-.0077.1277 12.2986 12.2986 0 01-1.872.8923.0766.0766 0 00-.0416.1057c.353.699.7644 1.3638 1.226 1.9942a.0775.0775 0 00.0842.0276c1.9516-.6066 3.9401-1.5218 5.9929-3.0294a.0772.0772 0 00.0313-.0561c.5004-5.177-.8382-9.6739-3.5485-13.6604a.0683.0683 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189z"/>
+                    </svg>
+                    <span>Login with Discord</span>
+                </button>
+            </div>
+
+            <div class="login-footer">
+                Please authorize your account to link it with your official iRacing profile. Identity verification is required for team portal access.
+            </div>
+        </div>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="script.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        document.getElementById('discord-login-btn').addEventListener('click', loginWithDiscord);
+    </script>
+</body>
+</html>

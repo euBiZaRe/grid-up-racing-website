@@ -97,6 +97,7 @@
                 <a href="../roster.html">Roster</a>
                 <a href="../events.html">Events</a>
                 <a href="../index.html#contact">Contact</a>
+                <a href="../login.html" id="login-link" class="btn btn-outline" style="padding: 0.5rem 1.25rem; font-size: 0.8rem; margin-left: 1rem;">Login</a>
             </div>
         </div>
     </nav>
@@ -106,6 +107,11 @@
             <span class="profile-nickname"></span>
             <h1 class="glow-text" style="font-size: 3.5rem;">Alex Cortez</h1>
             <p style="color: var(--text-muted); margin-top: 1rem;">Official Grid Up Driver | Member since N/A</p>
+            
+            <!-- Claim Section (Hidden by default, shown by auth.js) -->
+            <div id="claim-section" style="margin-top: 2rem; display: none;">
+                <button class="btn btn-outline claim-btn" onclick="openClaimModal()" style="font-size: 0.75rem; padding: 0.6rem 1.5rem;">Claim This Driver Profile</button>
+            </div>
         </div>
     </header>
 
@@ -120,7 +126,7 @@
                         <span>Sports Car <span class="license-badge license-r">R 2.50</span></span>
                         <span>---</span>
                     </div>
-                    <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 0%"></div></div>
+                    <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 0%;"></div></div>
                 </div>
 
                 <div class="rating-group">
@@ -128,7 +134,7 @@
                         <span>Formula <span class="license-badge license-r">R 2.50</span></span>
                         <span>---</span>
                     </div>
-                    <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 0%"></div></div>
+                    <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 0%;"></div></div>
                 </div>
 
                 <div class="rating-group">
@@ -136,7 +142,7 @@
                         <span>Oval <span class="license-badge license-r">R 2.50</span></span>
                         <span>---</span>
                     </div>
-                    <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 0%"></div></div>
+                    <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 0%;"></div></div>
                 </div>
 
                 <div class="rating-group">
@@ -144,7 +150,7 @@
                         <span>Dirt <span class="license-badge license-r">R 2.50</span></span>
                         <span>---</span>
                     </div>
-                    <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 0%"></div></div>
+                    <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 0%;"></div></div>
                 </div>
             </div>
 
@@ -185,6 +191,18 @@
         </div>
     </footer>
 
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
     <script src="../script.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        function openClaimModal() {
+            const iracingId = prompt("Please enter your iRacing ID to verify ownership:");
+            if (iracingId) {
+                claimProfile("Alex Cortez", iracingId);
+            }
+        }
+    </script>
 </body>
 </html>
