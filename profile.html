@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile | Grid Up Sim Racing</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .profile-container {
+            margin-top: 5rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .profile-header-alt {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--glass-border);
+            margin-bottom: 3rem;
+        }
+        .user-avatar-large {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 3px solid var(--primary);
+            margin-bottom: 1.5rem;
+            box-shadow: 0 0 20px rgba(0, 207, 255, 0.3);
+        }
+        .profile-form {
+            display: grid;
+            gap: 1.5rem;
+            padding: 2rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--primary);
+        }
+        .form-input {
+            width: 100%;
+            padding: 0.8rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            color: #fff;
+            border-radius: 4px;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(0, 207, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="member-profile-page">
+    <nav id="navbar" class="scrolled">
+        <div class="container nav-content">
+            <a href="index.html" class="logo">GRID UP</a>
+            <div class="nav-links">
+                <a href="index.html#home">Home</a>
+                <a href="roster.html">Roster</a>
+                <a href="events.html">Events</a>
+                <a href="login.html" id="login-link" class="btn btn-outline" style="padding: 0.5rem 1.25rem; font-size: 0.8rem; margin-left: 1rem;">Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container profile-container">
+        <div id="loading-profile" style="text-align: center; padding: 10rem 0;">
+            <p class="glow-text">Loading your profile...</p>
+        </div>
+
+        <div id="profile-content" style="display: none;">
+            <div class="profile-header-alt glass">
+                <img id="user-avatar" src="" class="user-avatar-large">
+                <h1 id="user-name" class="glow-text">Driver Name</h1>
+                <p id="user-status" style="color: var(--text-muted); margin-top: 0.5rem;">Grid Up Community Member</p>
+            </div>
+
+            <div class="glass">
+                <div class="profile-form">
+                    <h2 class="section-title" style="font-size: 1.5rem;">Driver Details</h2>
+                    
+                    <div class="form-group">
+                        <label>iRacing ID</label>
+                        <input type="text" id="input-iracing-id" class="form-input" placeholder="Enter your iRacing ID (e.g. 123456)">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Garage 61 URL</label>
+                        <input type="text" id="input-g61-url" class="form-input" placeholder="https://garage61.net/app/drivers/your-name">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Preferred Class</label>
+                        <select id="input-class" class="form-input" style="background: #111;">
+                            <option value="GT3">GT3</option>
+                            <option value="Formula">Formula</option>
+                            <option value="Prototypes">Prototypes</option>
+                            <option value="Oval">Oval</option>
+                            <option value="Endurance">Endurance</option>
+                        </select>
+                    </div>
+
+                    <button onclick="saveProfile()" class="btn btn-primary" style="margin-top: 1rem; width: 100%;">Save Profile Changes</button>
+                    
+                    <div id="save-status" style="text-align: center; color: var(--primary); font-size: 0.8rem; height: 1rem;"></div>
+                </div>
+            </div>
+
+            <div id="claim-verification-status" class="glass" style="margin-top: 2rem; padding: 2rem; text-align: center; display: none;">
+                <!-- Filled via JS if they have a pending claim -->
+            </div>
+        </div>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        // Profile Management Logic
+        async function loadUserProfile(user) {
+            const content = document.getElementById('profile-content');
+            const loading = document.getElementById('loading-profile');
+            const avatar = document.getElementById('user-avatar');
+            const name = document.getElementById('user-name');
+            
+            avatar.src = user.photoURL || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
+            name.textContent = user.displayName;
+
+            // Fetch extra data from Firestore
+            try {
+                const doc = await db.collection("users").doc(user.uid).get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    document.getElementById('input-iracing-id').value = data.iracingId || "";
+                    document.getElementById('input-g61-url').value = data.g61Url || "";
+                    document.getElementById('input-class').value = data.driverClass || "GT3";
+                }
+                
+                // Check if they are a verified team member (via claims collection)
+                // This is a bit inefficient, but works for the demo
+                const claims = await db.collection("claims").where("discordId", "==", user.uid).get();
+                const claimStatusDiv = document.getElementById('claim-verification-status');
+                if (!claims.empty) {
+                    const claimData = claims.docs[0].data();
+                    claimStatusDiv.style.display = 'block';
+                    if (claimData.status === 'verified') {
+                        claimStatusDiv.innerHTML = `<h3 style="color: var(--primary);">✓ YOU ARE A VERIFIED TEAM DRIVER</h3><p style="color: var(--text-muted); font-size: 0.8rem; margin-top:0.5rem;">Linked to: ${claims.docs[0].id}</p>`;
+                    } else {
+                        claimStatusDiv.innerHTML = `<h3 style="color: #fff;">CLAIM PENDING VERIFICATION</h3><p style="color: var(--text-muted); font-size: 0.8rem; margin-top:0.5rem;">Request for: ${claims.docs[0].id}</p>`;
+                    }
+                }
+            } catch (error) {
+                console.error("Error loading user data:", error);
+            }
+
+            loading.style.display = 'none';
+            content.style.display = 'block';
+        }
+
+        async function saveProfile() {
+            const user = firebase.auth().currentUser;
+            if (!user) return;
+
+            const status = document.getElementById('save-status');
+            status.textContent = "Saving...";
+
+            try {
+                await db.collection("users").doc(user.uid).set({
+                    displayName: user.displayName,
+                    email: user.email,
+                    iracingId: document.getElementById('input-iracing-id').value,
+                    g61Url: document.getElementById('input-g61-url').value,
+                    driverClass: document.getElementById('input-class').value,
+                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                
+                status.textContent = "Profile updated successfully!";
+                setTimeout(() => { status.textContent = ""; }, 3000);
+            } catch (error) {
+                console.error("Error saving profile:", error);
+                status.textContent = "Error saving changes.";
+                status.style.color = "#ff0099";
+            }
+        }
+
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                loadUserProfile(user);
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+    </script>
+</body>
+</html>

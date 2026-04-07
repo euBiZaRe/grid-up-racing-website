@@ -65,9 +65,14 @@ async function updateAuthUI(user) {
             // Check for Admin
             const ADMIN_UIDS = ['B0t4f4nqqpZIQKpT8Ed97xka5gM2'];
             const isAdmin = ADMIN_UIDS.includes(user.uid);
-            const adminLink = isAdmin ? `<a href="${window.location.pathname.includes('/drivers/') ? '../' : ''}admin.html" style="color: var(--primary); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; margin-right: 15px; font-weight: 700;">Admin Console</a>` : '';
+            
+            const isSubdir = window.location.pathname.includes('/drivers/') || window.location.pathname.includes('/events/');
+            const basePath = isSubdir ? "../" : "";
+            
+            const profileLink = `<a href="${basePath}profile.html" style="color: #fff; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; margin-right: 15px; font-weight: 500; opacity: 0.8; text-decoration: none;">My Profile</a>`;
+            const adminLink = isAdmin ? `<a href="${basePath}admin.html" style="color: var(--primary); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; margin-right: 15px; font-weight: 700; text-decoration: none;">Admin Console</a>` : '';
 
-            loginBtn.innerHTML = `<span style="display:flex; align-items:center; gap:10px;">${adminLink}<img src="${avatar}" style="width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--primary);"> ${name} (Logout)</span>`;
+            loginBtn.innerHTML = `<span style="display:flex; align-items:center; gap:10px;">${adminLink}${profileLink}<img src="${avatar}" style="width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--primary);"> ${name} (Logout)</span>`;
             loginBtn.onclick = (e) => {
                 e.preventDefault();
                 if(confirm("Logout?")) auth.signOut();
