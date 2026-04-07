@@ -13,27 +13,31 @@ const firebaseConfig = {
   measurementId: "G-956CFQ680Q"
 };
 
-// Initialize Firebase (will be loaded via CDN in HTML)
-let app, auth, db;
-
-function initAuth() {
+// Initialize Firebase (Immediately)
+console.log("Grid Up Auth: Initializing Firebase...");
+try {
     if (typeof firebase !== 'undefined') {
         firebase.initializeApp(firebaseConfig);
-        auth = firebase.auth();
-        db = firebase.firestore();
-
-        // Listen for Auth State changes
-        auth.onAuthStateChanged((user) => {
-            console.log("Auth State Changed. User:", user ? user.uid : "None");
-            if (user) {
-                updateAuthUI(user);
-            } else {
-                updateAuthUI(null);
-            }
-        });
+        var auth = firebase.auth();
+        var db = firebase.firestore();
+        console.log("Grid Up Auth: Firebase initialized successfully.");
     } else {
-        console.error("Firebase SDK not detected!");
+        console.error("Grid Up Auth: Firebase SDK NOT FOUND!");
     }
+} catch (e) {
+    console.error("Grid Up Auth: Initialization Error", e);
+}
+
+function initAuth() {
+    // Listen for Auth State changes
+    auth.onAuthStateChanged((user) => {
+        console.log("Auth State Changed. User:", user ? user.uid : "None");
+        if (user) {
+            updateAuthUI(user);
+        } else {
+            updateAuthUI(null);
+        }
+    });
 }
 
 // Discord Login Flow
@@ -166,4 +170,4 @@ async function claimProfile(driverName, iracingId) {
 }
 
 // Initialize on page load
-document.addEventListener('DOMContentLoaded', initAuth);
+initAuth();

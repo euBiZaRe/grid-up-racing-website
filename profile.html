@@ -124,6 +124,7 @@
     <script>
         // Profile Management Logic
         async function loadUserProfile(user) {
+            console.log("Profile: Loading data for", user.uid);
             const content = document.getElementById('profile-content');
             const loading = document.getElementById('loading-profile');
             const avatar = document.getElementById('user-avatar');
@@ -132,8 +133,15 @@
             avatar.src = user.photoURL || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
             name.textContent = user.displayName;
 
+            if (!db) {
+                console.error("Profile: Firestore 'db' is NOT INITIALIZED!");
+                loading.innerHTML = '<p style="color: #ff0099;">Error: Database connection failed. Please refresh.</p>';
+                return;
+            }
+
             // Fetch extra data from Firestore
             try {
+                console.log("Profile: Fetching Firestore doc...");
                 const doc = await db.collection("users").doc(user.uid).get();
                 if (doc.exists) {
                     const data = doc.data();
@@ -142,8 +150,7 @@
                     document.getElementById('input-class').value = data.driverClass || "GT3";
                 }
                 
-                // Check if they are a verified team member (via claims collection)
-                // This is a bit inefficient, but works for the demo
+                // Check if they are a verified team member
                 const claims = await db.collection("claims").where("discordId", "==", user.uid).get();
                 const claimStatusDiv = document.getElementById('claim-verification-status');
                 if (!claims.empty) {
@@ -155,8 +162,9 @@
                         claimStatusDiv.innerHTML = `<h3 style="color: #fff;">CLAIM PENDING VERIFICATION</h3><p style="color: var(--text-muted); font-size: 0.8rem; margin-top:0.5rem;">Request for: ${claims.docs[0].id}</p>`;
                     }
                 }
+                console.log("Profile: Data loaded successfully.");
             } catch (error) {
-                console.error("Error loading user data:", error);
+                console.error("Profile: Error loading user data:", error);
             }
 
             loading.style.display = 'none';

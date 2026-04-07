@@ -117,11 +117,19 @@
     <script>
         // Additional Admin Logic
         async function loadClaims() {
+            console.log("Admin: Loading claims...");
             const list = document.getElementById('claims-list');
-            if (!db || !list) return;
+            if (!list) return;
+
+            if (!db) {
+                console.error("Admin: Firestore 'db' is NOT INITIALIZED!");
+                list.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #ff0099;">Error: Database connection failed. Please refresh.</td></tr>';
+                return;
+            }
 
             try {
                 const snapshot = await db.collection("claims").orderBy("timestamp", "desc").get();
+                console.log("Admin: Firestore snapshot received, size:", snapshot.size);
                 if (snapshot.empty) {
                     list.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No claim requests found.</td></tr>';
                     return;
