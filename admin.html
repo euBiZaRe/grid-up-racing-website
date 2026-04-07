@@ -142,6 +142,7 @@
                     
                     // Safety Fallbacks
                     const discordName = data.discordName || "Unknown Driver";
+                    const profileName = data.driverIdentity || discordName;
                     const avatar = data.avatar || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
                     
                     const row = document.createElement('tr');
@@ -151,7 +152,7 @@
                         <td>
                             <div style="display:flex; align-items:center; gap:10px;">
                                 <img src="${avatar}" style="width: 24px; height: 24px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1);">
-                                ${discordName}
+                                ${profileName}
                             </div>
                         </td>
                         <td style="font-family: monospace; color: var(--primary);">${data.iracingId}</td>

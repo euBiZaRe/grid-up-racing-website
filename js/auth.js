@@ -153,12 +153,18 @@ async function claimProfile(driverName, iracingId) {
     if (!user) return alert("Please login first.");
 
     try {
+        // Fetch current profile data to get the custom driverName
+        const userDoc = await db.collection("users").doc(user.uid).get();
+        const userData = userDoc.exists ? userDoc.data() : {};
+        
         const discordName = user.displayName || "Unknown Driver";
         const avatar = user.photoURL || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
+        const driverIdentity = userData.driverName || discordName;
         
         await db.collection("claims").doc(driverName).set({
             discordId: user.uid,
             discordName: discordName,
+            driverIdentity: driverIdentity, // Store the custom name if set
             avatar: avatar,
             iracingId: iracingId,
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
