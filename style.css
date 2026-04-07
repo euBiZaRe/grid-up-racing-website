@@ -1,15 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
 
 :root {
-    --bg-dark: #0a0a0b;
-    --bg-card: rgba(20, 20, 22, 0.7);
-    --primary: #00d2ff;
-    --primary-glow: rgba(0, 210, 255, 0.5);
-    --secondary: #ff0055;
-    --secondary-glow: rgba(255, 0, 85, 0.5);
-    --text-main: #f0f0f0;
-    --text-muted: #a0a0a0;
-    --glass-border: rgba(255, 255, 255, 0.1);
+    --bg-dark: #0d1117; /* High-end dark grey/navy */
+    --bg-card: rgba(22, 27, 34, 0.4);
+    --primary: #00CFFF; /* Electric Cyan */
+    --primary-glow: rgba(0, 207, 255, 0.15);
+    --secondary: #4DA3FF; /* Softer Blue */
+    --text-main: #E6EDF3;
+    --text-muted: #8B949E;
+    --glass-border: rgba(255, 255, 255, 0.08);
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -22,26 +21,31 @@
 }
 
 .driver-card {
-  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 1.75rem;
   text-decoration: none;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
 }
 
 .driver-card:hover {
-  transform: translateY(-5px);
-  background: rgba(255, 255, 255, 0.08);
-  border-color: var(--primary);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  transform: translateY(-4px);
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(0, 207, 255, 0.4);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3), 0 0 15px var(--primary-glow);
 }
 
 .driver-card h3 {
   margin: 0;
-  font-size: 1.2rem;
-  color: var(--text);
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: var(--text-main);
   transition: color 0.3s ease;
 }
 
@@ -50,12 +54,17 @@
 }
 
 .driver-info .role {
-  font-size: 0.85rem;
-  color: var(--primary);
-  font-weight: 600;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 400;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-top: 0.5rem;
+  letter-spacing: 2px;
+  margin-top: 0.4rem;
+}
+
+.driver-card:hover .role {
+    color: var(--primary);
+    opacity: 0.8;
 }
 
 /* Medal Colors */
@@ -122,13 +131,10 @@
 
 body {
     background-color: var(--bg-dark);
-    /* Carbon fiber texture */
     background-image: 
-        radial-gradient(circle at 50% 50%, rgba(255,255,255,0.02) 0%, transparent 100%),
-        linear-gradient(45deg, #111 25%, transparent 25%, transparent 75%, #111 75%, #111), 
-        linear-gradient(45deg, #111 25%, transparent 25%, transparent 75%, #111 75%, #111);
-    background-size: 100% 100%, 10px 10px, 10px 10px;
-    background-position: 0 0, 0 0, 5px 5px;
+        radial-gradient(circle at 50% 0%, rgba(77, 163, 255, 0.05) 0%, transparent 60%),
+        radial-gradient(circle at 100% 100%, rgba(0, 207, 255, 0.03) 0%, transparent 50%);
+    background-attachment: fixed;
     color: var(--text-main);
     font-family: 'Outfit', sans-serif;
     line-height: 1.6;
@@ -165,8 +171,28 @@ body {
 /* Typography */
 h1, h2, h3 {
     text-transform: uppercase;
-    letter-spacing: 2px;
-    font-weight: 800;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+}
+
+.section-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--primary);
+    margin-bottom: 2.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.section-title::after {
+    content: '';
+    height: 1px;
+    flex: 1;
+    background: linear-gradient(90deg, var(--primary), transparent);
+    opacity: 0.2;
 }
 
 .glow-text {
@@ -176,10 +202,10 @@ h1, h2, h3 {
 /* Components */
 .glass {
     background: var(--bg-card);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--glass-border);
-    border-radius: 16px;
+    border-radius: 14px;
 }
 
 /* Navbar */
@@ -341,14 +367,18 @@ nav.scrolled {
 }
 
 .btn-outline {
-    background: transparent;
-    border: 2px solid var(--primary);
-    color: var(--primary);
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--glass-border);
+    color: var(--text-main);
+    transition: var(--transition);
 }
 
 .btn-outline:hover {
-    background: var(--primary);
-    color: #000;
+    background: rgba(0, 207, 255, 0.1);
+    border-color: var(--primary);
+    color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px var(--primary-glow);
 }
 
 /* Animations */

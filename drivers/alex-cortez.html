@@ -8,79 +8,83 @@
     <style>
         .profile-header {
             text-align: center;
-            padding: 4rem 0 2rem;
-            background: linear-gradient(180deg, rgba(0,242,255,0.05) 0%, rgba(0,0,0,0) 100%);
+            padding: 5rem 0 3rem;
+            background: radial-gradient(circle at 50% 100%, rgba(0,207,255,0.05) 0%, transparent 70%);
         }
         .profile-nickname {
-            color: var(--primary);
-            font-weight: 700;
+            color: var(--text-muted);
+            font-weight: 500;
             text-transform: uppercase;
-            letter-spacing: 4px;
-            font-size: 0.9rem;
-            margin-bottom: 0.5rem;
+            letter-spacing: 5px;
+            font-size: 0.8rem;
+            margin-bottom: 0.75rem;
             display: block;
         }
         .stats-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2.5rem;
+            margin-top: 3rem;
         }
         .stat-card {
-            padding: 2rem;
+            padding: 2.5rem;
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: 1.25rem;
+            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.015);
         }
         .rating-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.75rem;
         }
         .rating-label {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 0.5rem;
-            font-size: 0.85rem;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            font-size: 0.8rem;
             color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
         }
         .rating-bar-bg {
-            height: 6px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 3px;
+            height: 4px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 2px;
             overflow: hidden;
         }
         .rating-bar-fill {
             height: 100%;
-            background: var(--primary);
-            box-shadow: 0 0 10px var(--primary);
+            background: linear-gradient(90deg, var(--secondary), var(--primary));
+            box-shadow: 0 0 12px rgba(0, 207, 255, 0.2);
         }
         .license-badge {
             display: inline-block;
-            padding: 0.2rem 0.6rem;
+            padding: 0.25rem 0.75rem;
             border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 800;
-            margin-left: 0.5rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-left: 0.75rem;
+            letter-spacing: 0.5px;
         }
-        .license-a { background: #0042d1; color: white; }
-        .license-b { background: #008f1f; color: white; }
-        .license-c { background: #f7d117; color: black; }
-        .license-d { background: #fc6a03; color: white; }
-        .license-r { background: #bcbcbc; color: black; }
+        .license-a { background: rgba(0, 66, 209, 0.2); color: #4DA3FF; border: 1px solid rgba(0, 66, 209, 0.4); }
+        .license-b { background: rgba(0, 143, 31, 0.2); color: #4ade80; border: 1px solid rgba(0, 143, 31, 0.4); }
+        .license-c { background: rgba(247, 209, 23, 0.2); color: #facc15; border: 1px solid rgba(247, 209, 23, 0.4); }
+        .license-d { background: rgba(252, 106, 3, 0.2); color: #fb923c; border: 1px solid rgba(252, 106, 3, 0.4); }
+        .license-r { background: rgba(188, 188, 188, 0.1); color: #9ca3af; border: 1px solid rgba(188, 188, 188, 0.2); }
 
         .big-stat {
-            font-size: 2.5rem;
-            font-weight: 800;
-            color: var(--text);
+            font-size: 2.75rem;
+            font-weight: 700;
+            color: var(--text-main);
             line-height: 1;
         }
         .big-stat-label {
-            color: var(--primary);
-            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 2px;
-            margin-top: 0.5rem;
+            margin-top: 0.75rem;
         }
     </style>
 </head>
@@ -99,9 +103,9 @@
 
     <header class="profile-header">
         <div class="container">
-            <span class="profile-nickname">Fingerpop</span>
+            <span class="profile-nickname"></span>
             <h1 class="glow-text" style="font-size: 3.5rem;">Alex Cortez</h1>
-            <p style="color: var(--text-muted); margin-top: 1rem;">Official Grid Up Driver | Member since 20 Nov 2024</p>
+            <p style="color: var(--text-muted); margin-top: 1rem;">Official Grid Up Driver | Member since N/A</p>
         </div>
     </header>
 
@@ -109,56 +113,56 @@
         <div class="stats-container">
             <!-- iRatings Section -->
             <div class="glass stat-card">
-                <h3 style="color: var(--primary); margin-bottom: 2rem;">iRacing Ratings</h3>
+            <h3 class="section-title" style="margin-bottom: 2.5rem;">iRacing Ratings</h3>
                 
                 <div class="rating-group">
                     <div class="rating-label">
-                        <span>Sports Car <span class="license-badge license-a">A 4.99</span></span>
-                        <span>3863</span>
+                        <span>Sports Car <span class="license-badge license-r">R 2.50</span></span>
+                        <span>---</span>
                     </div>
-                    <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 64.38%"></div></div>
+                    <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 0%"></div></div>
                 </div>
 
                 <div class="rating-group">
                     <div class="rating-label">
-                        <span>Formula <span class="license-badge license-b">B 2.35</span></span>
-                        <span>3055</span>
+                        <span>Formula <span class="license-badge license-r">R 2.50</span></span>
+                        <span>---</span>
                     </div>
-                    <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 50.92%"></div></div>
+                    <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 0%"></div></div>
                 </div>
 
                 <div class="rating-group">
                     <div class="rating-label">
-                        <span>Oval <span class="license-badge license-c">C 2.70</span></span>
-                        <span>1839</span>
+                        <span>Oval <span class="license-badge license-r">R 2.50</span></span>
+                        <span>---</span>
                     </div>
-                    <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 30.65%"></div></div>
+                    <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 0%"></div></div>
                 </div>
 
                 <div class="rating-group">
                     <div class="rating-label">
                         <span>Dirt <span class="license-badge license-r">R 2.50</span></span>
-                        <span>1350</span>
+                        <span>---</span>
                     </div>
-                    <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 22.5%"></div></div>
+                    <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 0%"></div></div>
                 </div>
             </div>
 
             <!-- Career Stats Section -->
             <div class="glass stat-card" style="display: flex; flex-direction: column; justify-content: space-between;">
                 <div>
-                    <h3 style="color: var(--primary); margin-bottom: 2rem;">Career Activity</h3>
+                    <h3 class="section-title" style="margin-bottom: 2.5rem;">Career Activity</h3>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
                         <div>
-                            <div class="big-stat">7,301</div>
+                            <div class="big-stat">0</div>
                             <div class="big-stat-label">Laps Driven</div>
                         </div>
                         <div>
-                            <div class="big-stat">76%</div>
+                            <div class="big-stat">0%</div>
                             <div class="big-stat-label">Clean Laps</div>
                         </div>
                         <div style="grid-column: span 2;">
-                            <div class="big-stat">348h 14m</div>
+                            <div class="big-stat">N/A</div>
                             <div class="big-stat-label">Total Time on Track</div>
                         </div>
                     </div>
@@ -170,8 +174,8 @@
             </div>
         </div>
 
-        <div style="text-align: center; margin-top: 4rem;">
-            <a href="../roster.html" class="btn btn-outline" style="padding: 0.8rem 2rem;">← Back to Roster</a>
+        <div style="text-align: center; margin-top: 8rem;">
+            <a href="../roster.html" class="btn btn-outline" style="padding: 1rem 3rem;">← Back to Roster</a>
         </div>
     </main>
 
