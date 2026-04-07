@@ -79,7 +79,8 @@ async function updateAuthUI(user) {
     } else {
         if (loginBtn) {
             loginBtn.textContent = "Login";
-            loginBtn.href = "login.html";
+            const isSubdir = window.location.pathname.includes('/drivers/') || window.location.pathname.includes('/events/');
+            loginBtn.href = isSubdir ? "../login.html" : "login.html";
             loginBtn.onclick = null;
         }
         if (claimSection) claimSection.style.display = 'none';
