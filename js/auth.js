@@ -50,9 +50,10 @@ function loginWithDiscord() {
 }
 
 // Update UI based on Login State
-function updateAuthUI(user) {
+async function updateAuthUI(user) {
     const loginBtn = document.getElementById('login-link');
     const claimSection = document.getElementById('claim-section');
+    const driverTitle = document.querySelector('h1.glow-text');
 
     if (user) {
         console.log("Updating UI for logged-in user:", user.uid);
@@ -69,16 +70,45 @@ function updateAuthUI(user) {
             loginBtn.removeAttribute('href');
             loginBtn.style.cursor = 'pointer';
         }
-        // Show claim section if authenticated
-        if (claimSection) claimSection.style.display = 'block';
+        
+        // Handle Driver Profile Page logic
+        if (claimSection && driverTitle) {
+            const driverName = driverTitle.textContent.trim();
+            checkClaimStatus(driverName, user);
+        }
     } else {
         if (loginBtn) {
             loginBtn.textContent = "Login";
             loginBtn.href = "login.html";
             loginBtn.onclick = null;
         }
-        // Hide claim section if not authenticated
         if (claimSection) claimSection.style.display = 'none';
+    }
+}
+
+// Check if a profile is already claimed/pending
+async function checkClaimStatus(driverName, user) {
+    const claimSection = document.getElementById('claim-section');
+    if (!claimSection || !db) return;
+
+    try {
+        const docPromise = await db.collection("claims").doc(driverName).get();
+        if (docPromise.exists) {
+            const data = docPromise.data();
+            claimSection.style.display = 'block';
+            
+            if (data.status === "verified") {
+                claimSection.innerHTML = `<div class="badge-verified" style="background: rgba(0, 207, 255, 0.1); color: var(--primary); padding: 0.75rem 1.5rem; border: 1px solid var(--primary); border-radius: 4px; display: inline-block; font-weight: 700;">✓ VERIFIED TEAM MEMBER</div>`;
+            } else {
+                claimSection.innerHTML = `<div class="badge-pending" style="background: rgba(255, 255, 255, 0.05); color: var(--text-muted); padding: 0.75rem 1.5rem; border: 1px solid var(--glass-border); border-radius: 4px; display: inline-block;">CLAIM PENDING VERIFICATION</div>`;
+            }
+        } else {
+            // No claim exists, show the button
+            claimSection.style.display = 'block';
+            claimSection.innerHTML = `<button class="btn btn-outline claim-btn" onclick="openClaimModal()" style="font-size: 0.75rem; padding: 0.6rem 1.5rem;">Claim This Driver Profile</button>`;
+        }
+    } catch (error) {
+        console.error("Error checking claim status:", error);
     }
 }
 
@@ -97,8 +127,11 @@ async function claimProfile(driverName, iracingId) {
             status: "pending"
         });
         alert("Claim request sent! An admin will verify your identity shortly.");
+        // Refresh UI state
+        updateAuthUI(user);
     } catch (error) {
         console.error("Error claiming profile:", error);
+        alert("Error sending claim: " + error.message);
     }
 }
 
