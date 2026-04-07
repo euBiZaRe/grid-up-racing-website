@@ -139,14 +139,19 @@
                 snapshot.forEach(doc => {
                     const data = doc.data();
                     const id = doc.id;
+                    
+                    // Safety Fallbacks
+                    const discordName = data.discordName || "Unknown Driver";
+                    const avatar = data.avatar || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
+                    
                     const row = document.createElement('tr');
                     
                     row.innerHTML = `
                         <td><strong style="color: var(--text-main);">${id}</strong></td>
                         <td>
                             <div style="display:flex; align-items:center; gap:10px;">
-                                <img src="${data.avatar}" style="width: 24px; height: 24px; border-radius: 50%;">
-                                ${data.discordName}
+                                <img src="${avatar}" style="width: 24px; height: 24px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1);">
+                                ${discordName}
                             </div>
                         </td>
                         <td style="font-family: monospace; color: var(--primary);">${data.iracingId}</td>

@@ -129,6 +129,7 @@ async function checkClaimStatus(driverName, user) {
             console.log("Claim Status:", data.status);
             
             if (data.status === "verified") {
+                const displayName = data.discordName || "Verified Driver";
                 claimSection.innerHTML = `<div class="badge-verified" style="background: rgba(0, 207, 255, 0.1); color: var(--primary); padding: 0.75rem 1.5rem; border: 1px solid var(--primary); border-radius: 4px; display: inline-block; font-weight: 700;">✓ VERIFIED TEAM MEMBER</div>`;
             } else {
                 claimSection.innerHTML = `<div class="badge-pending" style="background: rgba(255, 255, 255, 0.05); color: var(--text-muted); padding: 0.75rem 1.5rem; border: 1px solid var(--glass-border); border-radius: 4px; display: inline-block;">CLAIM PENDING VERIFICATION</div>`;
@@ -152,10 +153,13 @@ async function claimProfile(driverName, iracingId) {
     if (!user) return alert("Please login first.");
 
     try {
+        const discordName = user.displayName || "Unknown Driver";
+        const avatar = user.photoURL || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
+        
         await db.collection("claims").doc(driverName).set({
             discordId: user.uid,
-            discordName: user.displayName,
-            avatar: user.photoURL,
+            discordName: discordName,
+            avatar: avatar,
             iracingId: iracingId,
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
             status: "pending"
