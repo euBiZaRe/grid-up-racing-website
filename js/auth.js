@@ -69,16 +69,21 @@ async function updateAuthUI(user) {
             const isSubdir = window.location.pathname.includes('/drivers/') || window.location.pathname.includes('/events/');
             const basePath = isSubdir ? "../" : "";
             
-            const profileLink = `<a href="${basePath}profile.html" style="color: #fff; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; margin-right: 15px; font-weight: 500; opacity: 0.8; text-decoration: none;">My Profile</a>`;
-            const adminLink = isAdmin ? `<a href="${basePath}admin.html" style="color: var(--primary); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; margin-right: 15px; font-weight: 700; text-decoration: none;">Admin Console</a>` : '';
+            // Clean the main link classes when logged in
+            loginBtn.className = ""; 
+            loginBtn.style.padding = "0";
+            loginBtn.style.marginLeft = "1rem";
+            loginBtn.style.display = "flex";
+            loginBtn.style.alignItems = "center";
+            loginBtn.style.gap = "10px";
 
-            loginBtn.innerHTML = `<span style="display:flex; align-items:center; gap:10px;">${adminLink}${profileLink}<img src="${avatar}" style="width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--primary);"> ${name} (Logout)</span>`;
-            loginBtn.onclick = (e) => {
-                e.preventDefault();
-                if(confirm("Logout?")) auth.signOut();
-            };
+            const adminLink = isAdmin ? `<a href="${basePath}admin.html" class="btn btn-primary" style="padding: 0.4rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none;">Admin</a>` : '';
+            const profileLink = `<a href="${basePath}profile.html" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none;">Profile</a>`;
+            const logoutBtn = `<a href="#" onclick="if(confirm('Logout?')) firebase.auth().signOut()" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border-color: rgba(255,255,255,0.2);"><img src="${avatar}" style="width: 16px; height: 16px; border-radius: 50%; vertical-align: middle; margin-right: 5px;"> Logout</a>`;
+
+            loginBtn.innerHTML = `${adminLink}${profileLink}${logoutBtn}`;
+            loginBtn.onclick = (e) => e.preventDefault(); // Disable the main link click
             loginBtn.removeAttribute('href');
-            loginBtn.style.cursor = 'pointer';
         }
         
         // Handle Driver Profile Page logic
