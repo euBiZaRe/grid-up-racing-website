@@ -77,6 +77,7 @@
             <div class="profile-header-alt glass">
                 <img id="user-avatar" src="" class="user-avatar-large">
                 <h1 id="user-name" class="glow-text">Driver Name</h1>
+                <p id="discord-username" style="color: var(--primary); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; margin-top: 0.5rem; opacity: 0.8;"></p>
                 <p id="user-status" style="color: var(--text-muted); margin-top: 0.5rem;">Grid Up Community Member</p>
             </div>
 
@@ -133,10 +134,12 @@
             const content = document.getElementById('profile-content');
             const loading = document.getElementById('loading-profile');
             const avatar = document.getElementById('user-avatar');
-            const name = document.getElementById('user-name');
+            const nameElt = document.getElementById('user-name');
+            const discordElt = document.getElementById('discord-username');
             
             avatar.src = user.photoURL || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
-            name.textContent = user.displayName;
+            nameElt.textContent = user.displayName;
+            discordElt.textContent = `@${user.displayName}`;
 
             if (!db) {
                 console.error("Profile: Firestore 'db' is NOT INITIALIZED!");
@@ -155,9 +158,9 @@
                     document.getElementById('input-g61-url').value = data.g61Url || "";
                     document.getElementById('input-class').value = data.driverClass || "GT3";
                     
-                    // Update header if driver name exists
+                    // Update header if custom driver name exists
                     if (data.driverName) {
-                        name.textContent = data.driverName;
+                        nameElt.textContent = data.driverName;
                     }
                 }
                 
