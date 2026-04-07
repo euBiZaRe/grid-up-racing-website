@@ -32,19 +32,22 @@ def scrape_driver_data(page, url):
         data["nickname"] = ""
         
     try:
-        data["memberSince"] = page.locator("dt:has-text('Member since') + dd").text_content(timeout=5000).strip()
+        # Wait for the statistics section to appear
+        page.wait_for_selector(".statistics", timeout=10000)
+        
+        # Member Since - Description list structure
+        data["memberSince"] = page.locator("dt:has-text('Member since') + dd").text_content(timeout=5000).strip().split('(')[0].strip()
     except:
         data["memberSince"] = "N/A"
         
-    # iRacing Stats
-    # We find the table rows that contain the discipline names
+    # iRacing Stats - Table structure
     data["iRatings"] = {}
     data["licenseLevels"] = {}
     data["iRatingPercentages"] = {}
     
     disciplines = {
         "Sports Car": "SPORTS",
-        "Formula": "FORMULA",
+        "Formula Car": "FORMULA",
         "Oval": "OVAL",
         "Dirt Oval": "DIRT"
     }
@@ -55,10 +58,12 @@ def scrape_driver_data(page, url):
     for disp_name, internal_key in disciplines.items():
         try:
             # Find the row in the connected accounts table
-            row = page.locator(f"tr:has-text('{disp_name}')")
+            row = page.locator(f"tr:has-text('{disp_name}')").first
             if row.count() > 0:
-                ir_text = row.locator("td").nth(1).text_content().strip()
-                lic_text = row.locator("td").nth(2).locator(".badge").text_content().strip()
+                # iRating is the 2nd cell, License is the 3rd cell (badge)
+                cells = row.locator("td")
+                ir_text = cells.nth(1).text_content().strip()
+                lic_text = cells.nth(2).locator(".badge").text_content().strip()
                 
                 # Cleanup irating (remove comma)
                 ir_val = int(ir_text.replace(",", "")) if ir_text.replace(",", "").isdigit() else 0
@@ -75,17 +80,16 @@ def scrape_driver_data(page, url):
             data["licenseLevels"][internal_key] = "R 2.50"
             data["iRatingPercentages"][internal_key] = 0
 
-    # Career Stats
+    # Career Stats - Description list structure
     try:
         laps_text = page.locator("dt:has-text('Laps driven') + dd").text_content().strip()
         # Extract number and percentage
-        # Format: "7,301 (76% clean)"
         match = re.search(r"([\d,]+)\s*\((\d+)% clean\)", laps_text)
         if match:
             data["totalLaps"] = match.group(1)
             data["cleanPercentage"] = match.group(2)
         else:
-            data["totalLaps"] = laps_text
+            data["totalLaps"] = laps_text.split('(')[0].strip()
             data["cleanPercentage"] = "0"
     except:
         data["totalLaps"] = "0"
