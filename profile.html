@@ -138,8 +138,9 @@
             const discordElt = document.getElementById('discord-username');
             
             avatar.src = user.photoURL || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
-            nameElt.textContent = user.displayName;
-            discordElt.textContent = `@${user.displayName}`;
+            nameElt.textContent = user.displayName || "Grid Up Driver";
+            discordElt.textContent = user.displayName ? `@${user.displayName}` : "";
+            discordElt.style.display = user.displayName ? 'block' : 'none';
 
             if (!db) {
                 console.error("Profile: Firestore 'db' is NOT INITIALIZED!");
