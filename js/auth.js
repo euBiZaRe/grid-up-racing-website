@@ -59,7 +59,6 @@ async function updateAuthUI(user) {
         console.log("Updating UI for logged-in user:", user.uid);
         if (loginBtn) {
             const displayName = user.displayName || "";
-            const name = displayName ? displayName.split(' ')[0] : "Driver";
             const avatar = user.photoURL || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
             
             // Check for Admin
@@ -69,21 +68,20 @@ async function updateAuthUI(user) {
             const isSubdir = window.location.pathname.includes('/drivers/') || window.location.pathname.includes('/events/');
             const basePath = isSubdir ? "../" : "";
             
-            // Clean the main link classes when logged in
-            loginBtn.className = ""; 
-            loginBtn.style.padding = "0";
-            loginBtn.style.marginLeft = "1rem";
-            loginBtn.style.display = "flex";
-            loginBtn.style.alignItems = "center";
-            loginBtn.style.gap = "10px";
+            // Replace the anchor with a div to avoid nested anchor issues
+            const container = document.createElement('div');
+            container.id = "login-link";
+            container.style.marginLeft = "1.5rem";
+            container.style.display = "flex";
+            container.style.alignItems = "center";
+            container.style.gap = "8px";
 
-            const adminLink = isAdmin ? `<a href="${basePath}admin.html" class="btn btn-primary" style="padding: 0.4rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none;">Admin</a>` : '';
-            const profileLink = `<a href="${basePath}profile.html" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none;">Profile</a>`;
-            const logoutBtn = `<a href="#" onclick="if(confirm('Logout?')) firebase.auth().signOut()" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border-color: rgba(255,255,255,0.2);"><img src="${avatar}" style="width: 16px; height: 16px; border-radius: 50%; vertical-align: middle; margin-right: 5px;"> Logout</a>`;
+            const adminLink = isAdmin ? `<a href="${basePath}admin.html" class="btn btn-primary" style="padding: 0.4rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border-radius: 4px;">Admin</a>` : '';
+            const profileLink = `<a href="${basePath}profile.html" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border-radius: 4px;">Profile</a>`;
+            const logoutBtn = `<a href="#" onclick="if(confirm('Logout?')) firebase.auth().signOut()" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border-color: rgba(255,255,255,0.15); border-radius: 4px;"><img src="${avatar}" style="width: 16px; height: 16px; border-radius: 50%; vertical-align: middle; margin-right: 5px;"> Logout</a>`;
 
-            loginBtn.innerHTML = `${adminLink}${profileLink}${logoutBtn}`;
-            loginBtn.onclick = (e) => e.preventDefault(); // Disable the main link click
-            loginBtn.removeAttribute('href');
+            container.innerHTML = `${adminLink}${profileLink}${logoutBtn}`;
+            loginBtn.replaceWith(container);
         }
         
         // Handle Driver Profile Page logic
