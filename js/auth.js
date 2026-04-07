@@ -62,7 +62,12 @@ async function updateAuthUI(user) {
             const name = displayName ? displayName.split(' ')[0] : "Driver";
             const avatar = user.photoURL || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
             
-            loginBtn.innerHTML = `<span style="display:flex; align-items:center; gap:10px;"><img src="${avatar}" style="width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--primary);"> ${name} (Logout)</span>`;
+            // Check for Admin
+            const ADMIN_UIDS = ['B0t4f4nqqpZIQKpT8Ed97xka5gM2'];
+            const isAdmin = ADMIN_UIDS.includes(user.uid);
+            const adminLink = isAdmin ? `<a href="${window.location.pathname.includes('/drivers/') ? '../' : ''}admin.html" style="color: var(--primary); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; margin-right: 15px; font-weight: 700;">Admin Console</a>` : '';
+
+            loginBtn.innerHTML = `<span style="display:flex; align-items:center; gap:10px;">${adminLink}<img src="${avatar}" style="width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--primary);"> ${name} (Logout)</span>`;
             loginBtn.onclick = (e) => {
                 e.preventDefault();
                 if(confirm("Logout?")) auth.signOut();

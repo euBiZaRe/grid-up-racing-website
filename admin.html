@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Grid Up Sim Racing</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-container {
+            margin-top: 5rem;
+            padding: 2rem;
+        }
+        .claims-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 2rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--glass-border);
+        }
+        .claims-table th, .claims-table td {
+            padding: 1.25rem;
+            text-align: left;
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .claims-table th {
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            color: var(--primary);
+        }
+        .claims-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .status-pending { background: rgba(255,255,255,0.1); color: #fff; }
+        .status-verified { background: rgba(0, 207, 255, 0.2); color: var(--primary); }
+        .status-denied { background: rgba(255, 0, 153, 0.2); color: var(--secondary); }
+        
+        .action-btns {
+            display: flex;
+            gap: 10px;
+        }
+        .admin-access-denied {
+            text-align: center;
+            padding: 10rem 2rem;
+            display: none;
+        }
+        .admin-content {
+            display: none;
+        }
+    </style>
+</head>
+<body class="admin-page">
+    <nav id="navbar" class="scrolled">
+        <div class="container nav-content">
+            <a href="index.html" class="logo">GRID UP</a>
+            <div class="nav-links">
+                <a href="index.html#home">Home</a>
+                <a href="roster.html">Roster</a>
+                <a href="events.html">Events</a>
+                <a href="login.html" id="login-link" class="btn btn-outline" style="padding: 0.5rem 1.25rem; font-size: 0.8rem; margin-left: 1rem;">Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container admin-container">
+        <!-- Access Denied -->
+        <div id="access-denied" class="admin-access-denied">
+            <h1 class="glow-text">ACCESS DENIED</h1>
+            <p style="color: var(--text-muted); margin-top: 1rem;">You do not have administrative privileges to access this area.</p>
+            <a href="index.html" class="btn btn-primary" style="margin-top: 2rem;">Return Home</a>
+        </div>
+
+        <!-- Admin Content -->
+        <div id="admin-hub" class="admin-content">
+            <header style="margin-bottom: 4rem; display: flex; justify-content: space-between; align-items: flex-end;">
+                <div>
+                    <p style="color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 3px; font-size: 0.8rem; margin-bottom: 0.5rem;">Management Console</p>
+                    <h1 class="glow-text" style="font-size: 3rem;">Driver Claims</h1>
+                </div>
+                <div style="text-align: right;">
+                    <span id="admin-user-info" style="color: var(--text-muted); font-size: 0.8rem;">Logged in as: ...</span>
+                </div>
+            </header>
+
+            <div class="glass" style="padding: 0; overflow-x: auto;">
+                <table class="claims-table">
+                    <thead>
+                        <tr>
+                            <th>Driver Name</th>
+                            <th>Discord Identity</th>
+                            <th>iRacing ID</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="claims-list">
+                        <!-- Loaded dynamically -->
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: var(--text-muted);">Loading claim requests...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        // Additional Admin Logic
+        async function loadClaims() {
+            const list = document.getElementById('claims-list');
+            if (!db || !list) return;
+
+            try {
+                const snapshot = await db.collection("claims").orderBy("timestamp", "desc").get();
+                if (snapshot.empty) {
+                    list.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No claim requests found.</td></tr>';
+                    return;
+                }
+
+                list.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const id = doc.id;
+                    const row = document.createElement('tr');
+                    
+                    row.innerHTML = `
+                        <td><strong style="color: var(--text-main);">${id}</strong></td>
+                        <td>
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <img src="${data.avatar}" style="width: 24px; height: 24px; border-radius: 50%;">
+                                ${data.discordName}
+                            </div>
+                        </td>
+                        <td style="font-family: monospace; color: var(--primary);">${data.iracingId}</td>
+                        <td><span class="status-badge status-${data.status}">${data.status.toUpperCase()}</span></td>
+                        <td>
+                            <div class="action-btns">
+                                ${data.status !== 'verified' ? `<button onclick="updateClaim('${id}', 'verified')" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.7rem;">Approve</button>` : ''}
+                                ${data.status !== 'denied' ? `<button onclick="updateClaim('${id}', 'denied')" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; border-color: #ff0099; color: #ff0099;">Deny</button>` : ''}
+                            </div>
+                        </td>
+                    `;
+                    list.appendChild(row);
+                });
+            } catch (error) {
+                console.error("Error loading claims:", error);
+                list.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #ff0099;">Error loading data. Check permissions.</td></tr>';
+            }
+        }
+
+        async function updateClaim(driverName, newStatus) {
+            if (!confirm(`Are you sure you want to set ${driverName} to ${newStatus}?`)) return;
+            
+            try {
+                await db.collection("claims").doc(driverName).update({
+                    status: newStatus
+                });
+                alert("Status updated successfully!");
+                loadClaims();
+            } catch (error) {
+                console.error("Error updating claim:", error);
+                alert("Failed to update: " + error.message);
+            }
+        }
+
+        // Check for admin privileges on load
+        const ADMIN_UIDS = ['B0t4f4nqqpZIQKpT8Ed97xka5gM2']; // The user's UID from the screenshot
+
+        firebase.auth().onAuthStateChanged((user) => {
+            const adminHub = document.getElementById('admin-hub');
+            const accessDenied = document.getElementById('access-denied');
+            const userInfo = document.getElementById('admin-user-info');
+
+            if (user && ADMIN_UIDS.includes(user.uid)) {
+                adminHub.style.display = 'block';
+                accessDenied.style.display = 'none';
+                userInfo.textContent = `Logged in as Admin: ${user.displayName}`;
+                loadClaims();
+            } else {
+                adminHub.style.display = 'none';
+                accessDenied.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
