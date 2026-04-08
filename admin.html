@@ -185,10 +185,17 @@
 
             <!-- Availability Section -->
             <div id="section-availability" style="display: none;">
+                <div class="glass" style="padding: 2rem; margin-bottom: 2rem;">
+                    <h3 style="margin-bottom: 1.5rem; color: var(--primary);">View Mode</h3>
+                    <select id="availability-event-selector" class="btn btn-outline" style="width: 100%; text-align: left; padding: 1rem; background: rgba(0,0,0,0.3);" onchange="loadAvailability()">
+                        <option value="matrix">-- Full Matrix View --</option>
+                    </select>
+                </div>
+
                 <div class="glass" style="padding: 2rem; margin-bottom: 2rem; overflow-x: auto;">
-                    <h3 style="margin-bottom: 1.5rem; color: var(--primary);">Driver Availability Matrix</h3>
+                    <h3 id="availability-subtitle" style="margin-bottom: 1.5rem; color: var(--primary);">Driver Availability Matrix</h3>
                     <div id="availability-matrix-container">
-                        <p style="text-align: center; color: var(--text-muted);">Loading availability data...</p>
+                        <p style="text-align: center; color: var(--text-muted);">Loading visibility data...</p>
                     </div>
                 </div>
             </div>
@@ -317,70 +324,129 @@
 
         async function loadAvailability() {
             const container = document.getElementById('availability-matrix-container');
+            const subtitle = document.getElementById('availability-subtitle');
+            const selector = document.getElementById('availability-event-selector');
+            const selectedEventId = selector ? selector.value : 'matrix';
+
             if (!container) return;
-            container.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Loading visibility data...</p>';
+            container.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Loading availability data...</p>';
+
+            // Populate selector once
+            if (selector && selector.options.length <= 1) {
+                UPCOMING_EVENTS.forEach(e => {
+                    const opt = document.createElement('option');
+                    opt.value = e.id;
+                    opt.textContent = e.name;
+                    selector.appendChild(opt);
+                });
+            }
 
             try {
-                // Fetch all drivers and responses
-                const allDrivers = {}; // uid -> name
-                const allResponses = {}; // eventId -> { uid -> { status, slot } }
+                if (selectedEventId === 'matrix') {
+                    subtitle.textContent = "Driver Availability Matrix";
+                    // Matrix Logic
+                    const allDrivers = {}; // uid -> name
+                    const allResponses = {}; // eventId -> { uid -> { status, slot } }
 
-                for (const event of UPCOMING_EVENTS) {
-                    const snap = await db.collection("event_availability").doc(event.id).collection("responses").get();
-                    allResponses[event.id] = {};
+                    for (const event of UPCOMING_EVENTS) {
+                        const snap = await db.collection("event_availability").doc(event.id).collection("responses").get();
+                        allResponses[event.id] = {};
+                        snap.forEach(doc => {
+                            const data = doc.data();
+                            allDrivers[doc.id] = data.driverName;
+                            allResponses[event.id][doc.id] = {
+                                status: data.status,
+                                slot: data.preferredSlot
+                            };
+                        });
+                    }
+
+                    const driverUids = Object.keys(allDrivers).sort((a,b) => allDrivers[a].localeCompare(allDrivers[b]));
+
+                    if (driverUids.length === 0) {
+                        container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">No responses received yet.</p>';
+                        return;
+                    }
+
+                    let html = `
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.75rem; text-align: left;">
+                            <thead>
+                                <tr style="border-bottom: 1px solid var(--glass-border);">
+                                    <th style="padding: 1rem; position: sticky; left: 0; background: var(--bg-card); z-index: 2;">Driver</th>
+                                    ${UPCOMING_EVENTS.map(e => `<th style="padding: 1rem; white-space: nowrap; text-align: center;">${e.name.split(' ').slice(0,2).join(' ')}</th>`).join('')}
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+
+                    driverUids.forEach(uid => {
+                        html += `<tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                            <td style="padding: 0.8rem; font-weight: 700; color: var(--primary); position: sticky; left: 0; background: var(--bg-card); z-index: 1;">${allDrivers[uid]}</td>
+                        `;
+                        UPCOMING_EVENTS.forEach(event => {
+                            const resp = allResponses[event.id] ? allResponses[event.id][uid] : null;
+                            let statusHtml = "–";
+                            if (resp) {
+                                if (resp.status === 'signed_up') {
+                                    statusHtml = `<div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
+                                        <span style="color: #00ff88; font-weight: 900;">YES</span>
+                                        ${resp.slot ? `<span style="font-size: 0.6rem; color: var(--text-muted); white-space: nowrap;">${resp.slot.split(':').slice(0,2).join('').trim()}</span>` : ''}
+                                    </div>`;
+                                }
+                                if (resp.status === 'not_interested') statusHtml = `<span style="color: #666;">N/I</span>`;
+                                if (resp.status === 'unavailable') statusHtml = `<span style="color: #ff0055;">N/A</span>`;
+                            }
+                            html += `<td style="padding: 0.8rem; text-align: center;">${statusHtml}</td>`;
+                        });
+                        html += `</tr>`;
+                    });
+
+                    html += `</tbody></table>`;
+                    container.innerHTML = html;
+
+                } else {
+                    // Single Event Detailed View
+                    const event = UPCOMING_EVENTS.find(e => e.id === selectedEventId);
+                    subtitle.textContent = `Detailed Responses: ${event.name}`;
+
+                    const snap = await db.collection("event_availability").doc(selectedEventId).collection("responses").get();
+                    
+                    if (snap.empty) {
+                        container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 5rem 0;">No driver responses found for this event yet.</p>';
+                        return;
+                    }
+
+                    let html = `
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem; text-align: left;">
+                            <thead>
+                                <tr style="border-bottom: 1px solid var(--glass-border);">
+                                    <th style="padding: 1.25rem;">Driver</th>
+                                    <th style="padding: 1.25rem;">Status</th>
+                                    <th style="padding: 1.25rem;">Preferred Timeslot</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+
                     snap.forEach(doc => {
                         const data = doc.data();
-                        allDrivers[doc.id] = data.driverName;
-                        allResponses[event.id][doc.id] = {
-                            status: data.status,
-                            slot: data.preferredSlot
-                        };
-                    });
-                }
+                        let statusColor = "#888";
+                        let statusText = data.status.replace('_', ' ').toUpperCase();
+                        if (data.status === 'signed_up') statusColor = "#00ff88";
+                        if (data.status === 'unavailable') statusColor = "#ff0055";
 
-                const driverUids = Object.keys(allDrivers).sort((a,b) => allDrivers[a].localeCompare(allDrivers[b]));
-
-                if (driverUids.length === 0) {
-                    container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">No responses received yet.</p>';
-                    return;
-                }
-
-                let html = `
-                    <table style="width: 100%; border-collapse: collapse; font-size: 0.75rem; text-align: left;">
-                        <thead>
-                            <tr style="border-bottom: 1px solid var(--glass-border);">
-                                <th style="padding: 1rem; position: sticky; left: 0; background: var(--bg-card); z-index: 2;">Driver</th>
-                                ${UPCOMING_EVENTS.map(e => `<th style="padding: 1rem; white-space: nowrap; text-align: center;">${e.name.split(' ').slice(0,2).join(' ')}</th>`).join('')}
+                        html += `
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                                <td style="padding: 1.25rem; font-weight: 700; color: var(--primary);">${data.driverName}</td>
+                                <td style="padding: 1.25rem;"><span class="status-badge" style="background: ${statusColor}22; color: ${statusColor};">${statusText}</span></td>
+                                <td style="padding: 1.25rem; color: #fff;">${data.preferredSlot || '<span style="color:rgba(255,255,255,0.2);">No Preference Set</span>'}</td>
                             </tr>
-                        </thead>
-                        <tbody>
-                `;
-
-                driverUids.forEach(uid => {
-                    html += `<tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
-                        <td style="padding: 0.8rem; font-weight: 700; color: var(--primary); position: sticky; left: 0; background: var(--bg-card); z-index: 1;">${allDrivers[uid]}</td>
-                    `;
-                    UPCOMING_EVENTS.forEach(event => {
-                        const resp = allResponses[event.id] ? allResponses[event.id][uid] : null;
-                        let statusHtml = "–";
-                        if (resp) {
-                            if (resp.status === 'signed_up') {
-                                statusHtml = `<div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
-                                    <span style="color: #00ff88; font-weight: 900;">YES</span>
-                                    ${resp.slot ? `<span style="font-size: 0.6rem; color: var(--text-muted); white-space: nowrap;">${resp.slot.split(':').slice(0,2).join('').trim()}</span>` : ''}
-                                </div>`;
-                            }
-                            if (resp.status === 'not_interested') statusHtml = `<span style="color: #666;">N/I</span>`;
-                            if (resp.status === 'unavailable') statusHtml = `<span style="color: #ff0055;">N/A</span>`;
-                        }
-                        html += `<td style="padding: 0.8rem; text-align: center;">${statusHtml}</td>`;
+                        `;
                     });
-                    html += `</tr>`;
-                });
 
-                html += `</tbody></table>`;
-                container.innerHTML = html;
-
+                    html += `</tbody></table>`;
+                    container.innerHTML = html;
+                }
             } catch (error) {
                 console.error("Error loading availability:", error);
                 container.innerHTML = `<p style="color: #ff0055; text-align: center;">Error loading data: ${error.message}</p>`;
