@@ -213,14 +213,12 @@
                     <div id="lap-sync-area" class="glass" style="display: none; margin-top: 2rem; padding: 2rem; border: 1px dashed var(--primary);">
                         <h4 style="color: var(--primary); margin-bottom: 0.5rem;">Sync Fastest Laps from Garage 61</h4>
                         <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.4;">
-                            <strong>How to get the data:</strong><br>
-                            1. Open the Garage 61 <a href="https://garage61.net/app/tracks" target="_blank" style="color:var(--primary);">Tracks page</a>.<br>
-                            2. Highlight the <strong>Rank, Driver, Car, Lap Time, and Season</strong> columns in the table.<br>
-                            3. Press <strong>Ctrl + C</strong> (Copy).<br>
-                            4. Paste below (Ctrl + V) and click Process.<br>
-                            <em style="font-size: 0.65rem;">(Note: Pasting the URL directly won't work due to security blocks)</em>
+                            <strong>Option 1: Paste Link</strong> (Recommended)<br>
+                            Paste the <strong>iRacingData.com</strong> URL for a series/chart.<br><br>
+                            <strong>Option 2: Paste Garage 61 Data</strong><br>
+                            Highlight table rows on G61, Copy (Ctrl+C), and Paste below.<br>
                         </div>
-                        <textarea id="lap-paste-data" class="btn btn-outline" style="width: 100%; height: 120px; text-align: left; font-family: monospace; font-size: 0.7rem; margin-bottom: 1rem;" placeholder="Paste copied table rows here..."></textarea>
+                        <textarea id="lap-paste-data" class="btn btn-outline" style="width: 100%; height: 120px; text-align: left; font-family: monospace; font-size: 0.7rem; margin-bottom: 1rem;" placeholder="Paste Link or Table Rows here..."></textarea>
                         <div style="display: flex; gap: 1rem;">
                             <button onclick="processLapData()" class="btn btn-primary" style="flex: 2;">Process & Sync</button>
                             <button onclick="toggleLapSync()" class="btn btn-outline" style="flex: 1;">Cancel</button>
@@ -853,8 +851,25 @@
             const pasteData = document.getElementById('lap-paste-data').value.trim();
             const resultsDiv = document.getElementById('sync-results');
             
-            if (!pasteData) return alert("Please paste some data first.");
+            if (!pasteData) return alert("Please paste some data or a link first.");
             if (!eventId) return alert("Please select an event first!");
+
+            // CHECK IF IT'S A LINK
+            if (pasteData.includes("iracingdata.com")) {
+                let seriesName = "";
+                try {
+                    const urlParts = pasteData.split('/');
+                    seriesName = decodeURIComponent(urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2]);
+                    if (seriesName.includes("?")) seriesName = seriesName.split("?")[0];
+                    if (!seriesName || seriesName === "SeriesLapTimeChart") throw new Error("Could not extract series name from link.");
+                    
+                    document.getElementById('iracing-series-name').value = seriesName;
+                    return fetchIRacingData();
+                } catch (e) {
+                    return alert("Invalid iRacingData link format. Please paste the full chart URL.");
+                }
+            }
+
             resultsDiv.innerHTML = '<span style="color: var(--primary);">Processing...</span>';
 
             const rawLines = pasteData.split('\n').map(l => l.trim()).filter(l => l);
