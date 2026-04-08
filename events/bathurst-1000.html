@@ -39,6 +39,8 @@
                 </div>
                 <div class="event-info-card glass">
                     <h3>Driver Lineup</h3>
+                    <div id="confirmed-lineup">
+                        <!-- LINEUP_START -->
                     <div class="lineup-entry">
                         <span class="team-badge badge-blue">GRiD UP Sim Racing</span>
                         <p><strong>Car:</strong> Chevrolet Camaro ZL1 / Ford Mustang Gen3</p>
@@ -50,7 +52,9 @@
                 </div>
             </div>
         </div>
-    </section>
+                            <!-- LINEUP_END -->
+                    </div>
+                </section>
 
     <section id="upcoming" class="section reveal">
         <div class="container">
@@ -160,5 +164,16 @@
     </footer>
 
     <script src="../script.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        window.addEventListener('load', () => {
+            if (typeof loadRaceLineup === 'function') {
+                loadRaceLineup('bathurst-1000');
+            }
+        });
+    </script>
 </body>
 </html>

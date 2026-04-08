@@ -192,5 +192,16 @@
     </footer>
 
     <script src="../../script.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="../../js/auth.js"></script>
+    <script>
+        window.addEventListener('load', () => {
+            if (typeof loadRaceLineup === 'function') {
+                loadRaceLineup('daytona-500');
+            }
+        });
+    </script>
 </body>
 </html>
