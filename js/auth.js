@@ -221,22 +221,50 @@ async function loadRaceLineup(slug) {
                 const tempDiv = document.createElement('div');
                 
                 if (teams.length === 0) {
-                    tempDiv.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">No confirmed entries yet.</p>';
-                } else {
+                    // Show placeholders for the 5 standard teams
+                    const standardTeams = ["GRiD UP Sim Racing", "GRiD UP Black", "GRiD UP White", "GRiD UP Blue", "GRiD UP Red"];
                     let html = "";
-                    teams.forEach(team => {
+                    standardTeams.forEach(name => {
                         html += `
                             <div class="lineup-item" style="margin-top: 1rem;">
-                                <span style="color: var(--primary); font-weight: 600;">${team.name}</span><br>
-                                <span style="font-size: 0.9rem; color: var(--text-muted);">${team.car_class}</span>
+                                <span style="color: var(--primary); font-weight: 600;">${name}</span>
                             </div>
-                            <ul style="list-style: none; margin-top: 0.5rem; padding-left: 1rem; border-left: 2px solid var(--primary);">
                         `;
-                        if (team.captain) html += `<li>${team.captain} (C)</li>`;
-                        team.drivers.forEach(driver => {
-                            if (driver !== team.captain) html += `<li>${driver}</li>`;
-                        });
-                        html += `</ul>`;
+                    });
+                    tempDiv.innerHTML = html;
+                } else {
+                    const standardTeams = ["GRiD UP Sim Racing", "GRiD UP Black", "GRiD UP White", "GRiD UP Blue", "GRiD UP Red"];
+                    let html = "";
+                    
+                    // Create a map of existing teams
+                    const teamMap = {};
+                    teams.forEach(t => teamMap[t.name] = t);
+                    
+                    standardTeams.forEach(name => {
+                        const team = teamMap[name];
+                        if (team) {
+                            html += `
+                                <div class="lineup-item" style="margin-top: 1rem;">
+                                    <span style="color: var(--primary); font-weight: 600;">${team.name}</span><br>
+                                    <span style="font-size: 0.9rem; color: var(--text-muted);">${team.car_class || ""}</span>
+                                </div>
+                                <ul style="list-style: none; margin-top: 0.5rem; padding-left: 1rem; border-left: 2px solid var(--primary);">
+                            `;
+                            if (team.captain) html += `<li>${team.captain} (C)</li>`;
+                            if (team.drivers) {
+                                team.drivers.forEach(driver => {
+                                    if (driver !== team.captain) html += `<li>${driver}</li>`;
+                                });
+                            }
+                            html += `</ul>`;
+                        } else {
+                            // Empty placeholder
+                            html += `
+                                <div class="lineup-item" style="margin-top: 1rem;">
+                                    <span style="color: var(--primary); font-weight: 600;">${name}</span>
+                                </div>
+                            `;
+                        }
                     });
                     tempDiv.innerHTML = html;
                 }
