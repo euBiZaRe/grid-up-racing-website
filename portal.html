@@ -120,26 +120,28 @@
         let unsubMessages = null;
         let isAdminUser = false;
 
+        const IMSA_SLOTS = [
+            '#1: Friday 22:00 GMT (6:00PM EDT)', 
+            '#2: Saturday 7:00 GMT (3:00AM EDT)', 
+            '#3: Saturday 12:00 GMT (8:00AM EDT)', 
+            '#4: Saturday 16:00 GMT (12:00PM EDT)'
+        ];
+
         const UPCOMING_EVENTS = [
-            { id: 'imsa-classic-500', name: 'IMSA Classic 500', date: 'April 10-11', startDate: '2026-04-10T22:00:00Z', slots: [
-                '#1: Friday 22:00 GMT (6:00PM EDT)', 
-                '#2: Saturday 7:00 GMT (3:00AM EDT)', 
-                '#3: Saturday 12:00 GMT (8:00AM EDT)', 
-                '#4: Saturday 16:00 GMT (12:00PM EDT)'
-            ] },
-            { id: 'nurburgring-24h', name: 'Nürburgring 24h', date: 'May 1-3', startDate: '2026-05-01T22:00:00Z' },
-            { id: 'indy-500', name: 'INDY 500', date: 'May 5-18', startDate: '2026-05-05T18:00:00Z' },
-            { id: 'world-600', name: 'World 600', date: 'May 20-25', startDate: '2026-05-20T22:00:00Z' },
-            { id: 'thruxton-4h', name: '4 Hours at Thruxton', date: 'May 29-31', startDate: '2026-05-29T22:00:00Z' },
-            { id: 'watkins-glen-6h', name: 'Watkins Glen 6 Hour', date: 'June 19-21', startDate: '2026-06-19T22:00:00Z' },
-            { id: 'firecracker-400', name: 'Firecracker 400', date: 'June 30 - July 6', startDate: '2026-06-30T22:00:00Z' },
-            { id: 'spa-24hr', name: 'Spa 24hr', date: 'July 10-12', startDate: '2026-07-10T22:00:00Z' },
-            { id: 'brickyard-400', name: 'Brickyard 400', date: 'July 22-27', startDate: '2026-07-22T22:00:00Z' },
-            { id: 'road-america-6h', name: 'Road America 6h', date: 'July 24-26', startDate: '2026-07-24T22:00:00Z' },
-            { id: 'suzuka-1000km', name: 'Suzuka 1000km', date: 'Sept 10-15', startDate: '2026-09-10T22:00:00Z' },
-            { id: 'petit-le-mans', name: 'Petit Le Mans', date: 'Sept 25-27', startDate: '2026-09-25T22:00:00Z' },
-            { id: 'bathurst-1000', name: 'Bathurst 1000', date: 'Oct 2-4', startDate: '2026-10-02T22:00:00Z' },
-            { id: 'indy-8h', name: 'Indy 8h', date: 'Oct 16-18', startDate: '2026-10-16T22:00:00Z' }
+            { id: 'imsa-classic-500', name: 'IMSA Classic 500', date: 'April 10-11', startDate: '2026-04-10T22:00:00Z', slots: IMSA_SLOTS },
+            { id: 'nurburgring-24h', name: 'Nürburgring 24h', date: 'May 1-3', startDate: '2026-05-01T22:00:00Z', slots: IMSA_SLOTS },
+            { id: 'indy-500', name: 'INDY 500', date: 'May 5-18', startDate: '2026-05-05T18:00:00Z', slots: IMSA_SLOTS },
+            { id: 'world-600', name: 'World 600', date: 'May 20-25', startDate: '2026-05-20T22:00:00Z', slots: IMSA_SLOTS },
+            { id: 'thruxton-4h', name: '4 Hours at Thruxton', date: 'May 29-31', startDate: '2026-05-29T22:00:00Z', slots: IMSA_SLOTS },
+            { id: 'watkins-glen-6h', name: 'Watkins Glen 6 Hour', date: 'June 19-21', startDate: '2026-06-19T22:00:00Z', slots: IMSA_SLOTS },
+            { id: 'firecracker-400', name: 'Firecracker 400', date: 'June 30 - July 6', startDate: '2026-06-30T22:00:00Z', slots: IMSA_SLOTS },
+            { id: 'spa-24hr', name: 'Spa 24hr', date: 'July 10-12', startDate: '2026-07-10T22:00:00Z', slots: IMSA_SLOTS },
+            { id: 'brickyard-400', name: 'Brickyard 400', date: 'July 22-27', startDate: '2026-07-22T22:00:00Z', slots: IMSA_SLOTS },
+            { id: 'road-america-6h', name: 'Road America 6h', date: 'July 24-26', startDate: '2026-07-24T22:00:00Z', slots: IMSA_SLOTS },
+            { id: 'suzuka-1000km', name: 'Suzuka 1000km', date: 'Sept 10-15', startDate: '2026-09-10T22:00:00Z', slots: IMSA_SLOTS },
+            { id: 'petit-le-mans', name: 'Petit Le Mans', date: 'Sept 25-27', startDate: '2026-09-25T22:00:00Z', slots: IMSA_SLOTS },
+            { id: 'bathurst-1000', name: 'Bathurst 1000', date: 'Oct 2-4', startDate: '2026-10-02T22:00:00Z', slots: IMSA_SLOTS },
+            { id: 'indy-8h', name: 'Indy 8h', date: 'Oct 16-18', startDate: '2026-10-16T22:00:00Z', slots: IMSA_SLOTS }
         ];
 
         async function initPortal(user) {
