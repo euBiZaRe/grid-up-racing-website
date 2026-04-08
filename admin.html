@@ -211,11 +211,16 @@
 
                     <!-- Lap Sync Modal Area -->
                     <div id="lap-sync-area" class="glass" style="display: none; margin-top: 2rem; padding: 2rem; border: 1px dashed var(--primary);">
-                        <h4 style="color: var(--primary); margin-bottom: 1rem;">Sync Fastest Laps from Garage 61</h4>
-                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.5rem;">
-                            Go to Garage 61 track records, highlight the table rows, copy (Ctrl+C), and paste below.
-                        </p>
-                        <textarea id="lap-paste-data" class="btn btn-outline" style="width: 100%; height: 150px; text-align: left; font-family: monospace; font-size: 0.7rem; margin-bottom: 1rem;" placeholder="Paste table data here..."></textarea>
+                        <h4 style="color: var(--primary); margin-bottom: 0.5rem;">Sync Fastest Laps from Garage 61</h4>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.4;">
+                            <strong>How to get the data:</strong><br>
+                            1. Open the Garage 61 <a href="https://garage61.net/app/tracks" target="_blank" style="color:var(--primary);">Tracks page</a>.<br>
+                            2. Highlight the <strong>Rank, Driver, Car, Lap Time, and Season</strong> columns in the table.<br>
+                            3. Press <strong>Ctrl + C</strong> (Copy).<br>
+                            4. Paste below (Ctrl + V) and click Process.<br>
+                            <em style="font-size: 0.65rem;">(Note: Pasting the URL directly won't work due to security blocks)</em>
+                        </div>
+                        <textarea id="lap-paste-data" class="btn btn-outline" style="width: 100%; height: 120px; text-align: left; font-family: monospace; font-size: 0.7rem; margin-bottom: 1rem;" placeholder="Paste copied table rows here..."></textarea>
                         <div style="display: flex; gap: 1rem;">
                             <button onclick="processLapData()" class="btn btn-primary" style="flex: 2;">Process & Sync</button>
                             <button onclick="toggleLapSync()" class="btn btn-outline" style="flex: 1;">Cancel</button>
