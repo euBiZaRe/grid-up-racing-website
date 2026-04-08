@@ -85,6 +85,11 @@
                                     <label style="font-size: 0.7rem; color: var(--primary); text-transform: uppercase; font-weight: 700;">Your iRating</label>
                                     <input type="range" id="irating-slider" min="0" max="10000" step="100" value="2000" style="width: 120px; accent-color: var(--primary);" oninput="updateIRating(this.value)">
                                     <input type="number" id="irating-input" value="2000" min="0" max="10000" step="100" class="btn btn-outline" style="width: 70px; font-size: 0.8rem; padding: 0.2rem 0.5rem; text-align: center;" onchange="updateIRating(this.value)">
+                                    
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.7rem; color: var(--text-muted); cursor: pointer; margin-left: 0.5rem; border-left: 1px solid rgba(255,255,255,0.1); padding-left: 1rem;">
+                                        <input type="checkbox" id="show-all-ir" onchange="toggleShowAll(this.checked)" style="accent-color: var(--primary);">
+                                        Show All iR
+                                    </label>
                                 </div>
 
                                 <select id="class-filter" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.4rem 1rem;" onchange="loadTelemetry()">
@@ -325,10 +330,17 @@
         }
 
         let currentIRating = 2000;
+        let showAllIRBench = false;
+
         function updateIRating(val) {
             currentIRating = parseInt(val);
             document.getElementById('irating-slider').value = currentIRating;
             document.getElementById('irating-input').value = currentIRating;
+            loadTelemetry();
+        }
+
+        function toggleShowAll(checked) {
+            showAllIRBench = checked;
             loadTelemetry();
         }
 
@@ -372,24 +384,28 @@
                 const filteredIRDLaps = [];
                 const cars = [...new Set(irdLaps.map(l => l.car))];
                 
-                cars.forEach(car => {
-                    const carOptions = irdLaps.filter(l => l.car === car);
-                    let closest = null;
-                    let minDiff = Infinity;
-                    
-                    carOptions.forEach(l => {
-                        const match = l.driverName.match(/\d+/);
-                        if (match) {
-                            const bucketIR = parseInt(match[0]);
-                            const diff = Math.abs(bucketIR - currentIRating);
-                            if (diff < minDiff) {
-                                minDiff = diff;
-                                closest = l;
+                if (showAllIRBench) {
+                    filteredIRDLaps.push(...irdLaps);
+                } else {
+                    cars.forEach(car => {
+                        const carOptions = irdLaps.filter(l => l.car === car);
+                        let closest = null;
+                        let minDiff = Infinity;
+                        
+                        carOptions.forEach(l => {
+                            const match = l.driverName.match(/\d+/);
+                            if (match) {
+                                const bucketIR = parseInt(match[0]);
+                                const diff = Math.abs(bucketIR - currentIRating);
+                                if (diff < minDiff) {
+                                    minDiff = diff;
+                                    closest = l;
+                                }
                             }
-                        }
+                        });
+                        if (closest) filteredIRDLaps.push(closest);
                     });
-                    if (closest) filteredIRDLaps.push(closest);
-                });
+                }
 
                 const finalLaps = [...g61Laps, ...filteredIRDLaps].sort((a,b) => a.lapTime.localeCompare(b.lapTime));
 
