@@ -592,12 +592,25 @@
             const captain = data ? data.captain : '';
             const drivers = data ? data.drivers.join('\n') : '';
             
+            const TEAM_OPTIONS = [
+                "GRiD UP Sim Racing",
+                "GRiD UP Black",
+                "GRiD UP White",
+                "GRiD UP Blue",
+                "GRiD UP Red"
+            ];
+
+            const teamOptionsHtml = TEAM_OPTIONS.map(opt => `<option value="${opt}" ${teamName === opt ? 'selected' : ''}>${opt}</option>`).join('');
+            
             teamDiv.innerHTML = `
                 <button onclick="this.parentElement.remove()" style="position:absolute; top:1rem; right:1rem; background:none; border:none; color:#ff0099; cursor:pointer;">×</button>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                     <div>
                         <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">TEAM NAME</label>
-                        <input type="text" class="team-name btn btn-outline" style="width:100%; text-align:left;" value="${teamName}" placeholder="e.g. GRiD UP Black">
+                        <select class="team-name btn btn-outline" style="width:100%; text-align:left;">
+                            <option value="">-- Select Team --</option>
+                            ${teamOptionsHtml}
+                        </select>
                     </div>
                     <div>
                         <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">CAR & CLASS</label>
