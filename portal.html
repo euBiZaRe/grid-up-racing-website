@@ -66,8 +66,8 @@
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                             <h2 style="font-size: 1.2rem;">Setup Repository</h2>
                             <label class="btn btn-outline" style="font-size: 0.8rem; cursor: pointer;">
-                                Upload Setup (.sto)
-                                <input type="file" id="setup-upload" style="display: none;" onchange="uploadSetup(this)">
+                                Upload Setup (.sto or .zip)
+                                <input type="file" id="setup-upload" style="display: none;" accept=".sto,.zip" onchange="uploadSetup(this)">
                             </label>
                         </div>
                         <div id="setup-list" class="setup-list">
@@ -75,14 +75,15 @@
                         </div>
                     </div>
 
-                    <!-- Telemetry Tab -->
                     <div id="tab-telemetry" class="tab-content glass" style="display: none; padding: 2rem;">
-                        <h2 style="font-size: 1.2rem; margin-bottom: 1.5rem;">Team Lap Data</h2>
-                        <div id="g61-member-list" class="g61-list">
-                            <!-- Member G61 links go here -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                            <h2 style="font-size: 1.2rem;">Event Fastest Laps</h2>
+                            <select id="class-filter" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.4rem 1rem;" onchange="loadTelemetry()">
+                                <option value="ALL">All Classes</option>
+                            </select>
                         </div>
-                        <div id="g61-team-link" style="margin-top: 2rem; padding: 1.5rem; background: rgba(0,207,255,0.05); border-radius: 8px; border: 1px dashed var(--primary); text-align: center;">
-                            <!-- Event G61 link if available -->
+                        <div id="telemetry-leaderboard" style="overflow-x: auto;">
+                            <!-- Table goes here -->
                         </div>
                     </div>
 
@@ -128,20 +129,20 @@
         ];
 
         const UPCOMING_EVENTS = [
-            { id: 'imsa-classic-500', name: 'IMSA Classic 500', date: 'April 10-11', startDate: '2026-04-10T22:00:00Z', slots: IMSA_SLOTS },
-            { id: 'nurburgring-24h', name: 'Nürburgring 24h', date: 'May 1-3', startDate: '2026-05-01T22:00:00Z', slots: IMSA_SLOTS },
-            { id: 'indy-500', name: 'INDY 500', date: 'May 5-18', startDate: '2026-05-05T18:00:00Z', slots: IMSA_SLOTS },
-            { id: 'world-600', name: 'World 600', date: 'May 20-25', startDate: '2026-05-20T22:00:00Z', slots: IMSA_SLOTS },
-            { id: 'thruxton-4h', name: '4 Hours at Thruxton', date: 'May 29-31', startDate: '2026-05-29T22:00:00Z', slots: IMSA_SLOTS },
-            { id: 'watkins-glen-6h', name: 'Watkins Glen 6 Hour', date: 'June 19-21', startDate: '2026-06-19T22:00:00Z', slots: IMSA_SLOTS },
-            { id: 'firecracker-400', name: 'Firecracker 400', date: 'June 30 - July 6', startDate: '2026-06-30T22:00:00Z', slots: IMSA_SLOTS },
-            { id: 'spa-24hr', name: 'Spa 24hr', date: 'July 10-12', startDate: '2026-07-10T22:00:00Z', slots: IMSA_SLOTS },
-            { id: 'brickyard-400', name: 'Brickyard 400', date: 'July 22-27', startDate: '2026-07-22T22:00:00Z', slots: IMSA_SLOTS },
-            { id: 'road-america-6h', name: 'Road America 6h', date: 'July 24-26', startDate: '2026-07-24T22:00:00Z', slots: IMSA_SLOTS },
-            { id: 'suzuka-1000km', name: 'Suzuka 1000km', date: 'Sept 10-15', startDate: '2026-09-10T22:00:00Z', slots: IMSA_SLOTS },
-            { id: 'petit-le-mans', name: 'Petit Le Mans', date: 'Sept 25-27', startDate: '2026-09-25T22:00:00Z', slots: IMSA_SLOTS },
-            { id: 'bathurst-1000', name: 'Bathurst 1000', date: 'Oct 2-4', startDate: '2026-10-02T22:00:00Z', slots: IMSA_SLOTS },
-            { id: 'indy-8h', name: 'Indy 8h', date: 'Oct 16-18', startDate: '2026-10-16T22:00:00Z', slots: IMSA_SLOTS }
+            { id: 'imsa-classic-500', name: 'IMSA Classic 500', date: 'April 10-11', startDate: '2026-04-10T22:00:00Z', slots: IMSA_SLOTS, classes: ['GTP', 'LMP2', 'GT3'] },
+            { id: 'nurburgring-24h', name: 'Nürburgring 24h', date: 'May 1-3', startDate: '2026-05-01T22:00:00Z', slots: IMSA_SLOTS, classes: ['GT3', 'GT4', 'TCR', 'PC'] },
+            { id: 'indy-500', name: 'INDY 500', date: 'May 5-18', startDate: '2026-05-05T18:00:00Z', slots: IMSA_SLOTS, classes: ['IndyCar'] },
+            { id: 'world-600', name: 'World 600', date: 'May 20-25', startDate: '2026-05-20T22:00:00Z', slots: IMSA_SLOTS, classes: ['NASCAR Next Gen'] },
+            { id: 'thruxton-4h', name: '4 Hours at Thruxton', date: 'May 29-31', startDate: '2026-05-29T22:00:00Z', slots: IMSA_SLOTS, classes: ['GT3', 'LMP3'] },
+            { id: 'watkins-glen-6h', name: 'Watkins Glen 6 Hour', date: 'June 19-21', startDate: '2026-06-19T22:00:00Z', slots: IMSA_SLOTS, classes: ['GTP', 'LMP2', 'GT3'] },
+            { id: 'firecracker-400', name: 'Firecracker 400', date: 'June 30 - July 6', startDate: '2026-06-30T22:00:00Z', slots: IMSA_SLOTS, classes: ['NASCAR Next Gen'] },
+            { id: 'spa-24hr', name: 'Spa 24hr', date: 'July 10-12', startDate: '2026-07-10T22:00:00Z', slots: IMSA_SLOTS, classes: ['GT3'] },
+            { id: 'brickyard-400', name: 'Brickyard 400', date: 'July 22-27', startDate: '2026-07-22T22:00:00Z', slots: IMSA_SLOTS, classes: ['NASCAR Next Gen'] },
+            { id: 'road-america-6h', name: 'Road America 6h', date: 'July 24-26', startDate: '2026-07-24T22:00:00Z', slots: IMSA_SLOTS, classes: ['GTP', 'LMP2', 'GT3'] },
+            { id: 'suzuka-1000km', name: 'Suzuka 1000km', date: 'Sept 10-15', startDate: '2026-09-10T22:00:00Z', slots: IMSA_SLOTS, classes: ['GT3'] },
+            { id: 'petit-le-mans', name: 'Petit Le Mans', date: 'Sept 25-27', startDate: '2026-09-25T22:00:00Z', slots: IMSA_SLOTS, classes: ['GTP', 'LMP2', 'GT3'] },
+            { id: 'bathurst-1000', name: 'Bathurst 1000', date: 'Oct 2-4', startDate: '2026-10-02T22:00:00Z', slots: IMSA_SLOTS, classes: ['V8 Supercar'] },
+            { id: 'indy-8h', name: 'Indy 8h', date: 'Oct 16-18', startDate: '2026-10-16T22:00:00Z', slots: IMSA_SLOTS, classes: ['GT3'] }
         ];
 
         function switchTab(tabId) {
@@ -155,6 +156,7 @@
             if (tabBtn) tabBtn.classList.add('active');
 
             if (tabId === 'setups') loadSetups();
+            if (tabId === 'telemetry') loadTelemetry();
         }
 
         async function loadTeamPortal(team) {
@@ -285,8 +287,8 @@
             const file = input.files[0];
             if (!file || !currentEvent || !currentTeam) return;
             
-            if (!file.name.endsWith('.sto')) {
-                alert("Please upload an iRacing .sto setup file.");
+            if (!file.name.endsWith('.sto') && !file.name.endsWith('.zip')) {
+                alert("Please upload an iRacing .sto setup or a .zip archive.");
                 return;
             }
 
@@ -312,9 +314,94 @@
             }
         }
 
+        async function loadTelemetry() {
+            const container = document.getElementById('telemetry-leaderboard');
+            const classFilter = document.getElementById('class-filter');
+            const event = UPCOMING_EVENTS.find(e => e.id === currentEvent);
+            
+            if (!event) return;
+
+            // Populate class filter if empty
+            if (classFilter.options.length === 1 && event.classes) {
+                event.classes.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c;
+                    opt.textContent = c;
+                    classFilter.appendChild(opt);
+                });
+            }
+
+            container.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Loading lap data...</p>';
+            
+            try {
+                let query = db.collection("race_laps").doc(currentEvent).collection("laps").orderBy("lapTime", "asc");
+                const selectedClass = classFilter.value;
+                if (selectedClass !== 'ALL') {
+                    query = query.where("carClass", "==", selectedClass);
+                }
+
+                const snap = await query.get();
+                if (snap.empty) {
+                    container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">No data recorded yet for this event.</p>';
+                    return;
+                }
+
+                let html = `
+                    <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--primary);">
+                                <th style="padding: 1rem 0.5rem;">#</th>
+                                <th style="padding: 1rem 0.5rem;">Driver</th>
+                                <th style="padding: 1rem 0.5rem;">Car</th>
+                                <th style="padding: 1rem 0.5rem;">Lap Time</th>
+                                <th style="padding: 1rem 0.5rem;">Season</th>
+                                <th style="padding: 1rem 0.5rem; text-align: right;">Set</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                let rank = 1;
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    const ago = d.timestamp ? formatTimeAgo(d.timestamp.toDate()) : '...';
+                    html += `
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                            <td style="padding: 1rem 0.5rem; color: var(--text-muted);">${rank++}</td>
+                            <td style="padding: 1rem 0.5rem; font-weight: 700;">${d.driverName}</td>
+                            <td style="padding: 1rem 0.5rem; font-size: 0.75rem;">${d.car} <span style="color:var(--primary); font-size:0.6rem;">[${d.carClass}]</span></td>
+                            <td style="padding: 1rem 0.5rem; font-family: monospace; color: var(--primary); font-weight: 700;">${d.lapTime}</td>
+                            <td style="padding: 1rem 0.5rem; font-size: 0.75rem; color: var(--text-muted);">${d.season || 'N/A'}</td>
+                            <td style="padding: 1rem 0.5rem; text-align: right; font-size: 0.75rem; color: var(--text-muted);">${ago}</td>
+                        </tr>
+                    `;
+                });
+
+                html += `</tbody></table>`;
+                container.innerHTML = html;
+            } catch (error) {
+                console.error("Telemetry error:", error);
+                container.innerHTML = '<p style="color: #ff0055;">Error loading lap data.</p>';
+            }
+        }
+
+        function formatTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            let interval = seconds / 31536000;
+            if (interval > 1) return Math.floor(interval) + "y ago";
+            interval = seconds / 2592000;
+            if (interval > 1) return Math.floor(interval) + "mo ago";
+            interval = seconds / 86400;
+            if (interval > 1) return Math.floor(interval) + "d ago";
+            interval = seconds / 3600;
+            if (interval > 1) return Math.floor(interval) + "h ago";
+            interval = seconds / 60;
+            if (interval > 1) return Math.floor(interval) + "m ago";
+            return Math.floor(seconds) + "s ago";
+        }
+
         async function initPortal(user) {
             const loading = document.getElementById('loading-portal');
-            const selection = document.getElementById('selection-view');
             const portal = document.getElementById('portal-view');
             const denied = document.getElementById('denied-view');
             const deniedReason = document.getElementById('denied-reason');
