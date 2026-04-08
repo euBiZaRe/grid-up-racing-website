@@ -100,6 +100,7 @@
                     <div style="display: flex; gap: 1rem;">
                         <button onclick="switchTab('claims')" class="btn btn-outline" id="tab-claims">Claims</button>
                         <button onclick="switchTab('races')" class="btn btn-outline" id="tab-races">Races</button>
+                        <button onclick="switchTab('availability')" class="btn btn-outline" id="tab-availability">Availability</button>
                         <button onclick="switchTab('admins')" class="btn btn-outline" id="tab-admins">Admins</button>
                     </div>
                     <span id="admin-user-info" style="color: var(--text-muted); font-size: 0.8rem;">Logged in as: ...</span>
@@ -181,6 +182,16 @@
                     </table>
                 </div>
             </div>
+
+            <!-- Availability Section -->
+            <div id="section-availability" style="display: none;">
+                <div class="glass" style="padding: 2rem; margin-bottom: 2rem; overflow-x: auto;">
+                    <h3 style="margin-bottom: 1.5rem; color: var(--primary);">Driver Availability Matrix</h3>
+                    <div id="availability-matrix-container">
+                        <p style="text-align: center; color: var(--text-muted);">Loading availability data...</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -254,13 +265,18 @@
                 alert("Failed to update: " + error.message);
             }
         }
-
         function switchTab(tab) {
             document.getElementById('section-claims').style.display = tab === 'claims' ? 'block' : 'none';
             document.getElementById('section-races').style.display = tab === 'races' ? 'block' : 'none';
             document.getElementById('section-admins').style.display = tab === 'admins' ? 'block' : 'none';
+            document.getElementById('section-availability').style.display = tab === 'availability' ? 'block' : 'none';
             
-            const titleMap = { 'claims': 'Driver Claims', 'races': 'Race Management', 'admins': 'Admin Management' };
+            const titleMap = { 
+                'claims': 'Driver Claims', 
+                'races': 'Race Management', 
+                'admins': 'Admin Management',
+                'availability': 'Driver Availability'
+            };
             document.getElementById('admin-title').textContent = titleMap[tab];
             
             document.getElementById('tab-claims').classList.toggle('btn-primary', tab === 'claims');
@@ -269,9 +285,92 @@
             document.getElementById('tab-races').classList.toggle('btn-outline', tab !== 'races');
             document.getElementById('tab-admins').classList.toggle('btn-primary', tab === 'admins');
             document.getElementById('tab-admins').classList.toggle('btn-outline', tab !== 'admins');
+            document.getElementById('tab-availability').classList.toggle('btn-primary', tab === 'availability');
+            document.getElementById('tab-availability').classList.toggle('btn-outline', tab !== 'availability');
 
             if (tab === 'admins') loadAdmins();
+            if (tab === 'availability') loadAvailability();
         }
+
+        const UPCOMING_EVENTS = [
+            { id: 'imsa-classic-500', name: 'IMSA Classic 500', date: 'April 10-11' },
+            { id: 'nurburgring-24h', name: 'Nürburgring 24h', date: 'May 1-3' },
+            { id: 'indy-500', name: 'INDY 500', date: 'May 5-18' },
+            { id: 'world-600', name: 'World 600', date: 'May 20-25' },
+            { id: 'thruxton-4h', name: '4 Hours at Thruxton', date: 'May 29-31' },
+            { id: 'watkins-glen-6h', name: 'Watkins Glen 6 Hour', date: 'June 19-21' },
+            { id: 'firecracker-400', name: 'Firecracker 400', date: 'June 30 - July 6' },
+            { id: 'spa-24hr', name: 'Spa 24hr', date: 'July 10-12' },
+            { id: 'brickyard-400', name: 'Brickyard 400', date: 'July 22-27' },
+            { id: 'road-america-6h', name: 'Road America 6h', date: 'July 24-26' },
+            { id: 'suzuka-1000km', name: 'Suzuka 1000km', date: 'Sept 10-15' },
+            { id: 'petit-le-mans', name: 'Petit Le Mans', date: 'Sept 25-27' },
+            { id: 'bathurst-1000', name: 'Bathurst 1000', date: 'Oct 2-4' },
+            { id: 'indy-8h', name: 'Indy 8h', date: 'Oct 16-18' }
+        ];
+
+        async function loadAvailability() {
+            const container = document.getElementById('availability-matrix-container');
+            if (!container) return;
+            container.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Loading visibility data...</p>';
+
+            try {
+                // Fetch all drivers and responses
+                const allDrivers = {}; // uid -> name
+                const allResponses = {}; // eventId -> { uid -> status }
+
+                for (const event of UPCOMING_EVENTS) {
+                    const snap = await db.collection("event_availability").doc(event.id).collection("responses").get();
+                    allResponses[event.id] = {};
+                    snap.forEach(doc => {
+                        const data = doc.data();
+                        allDrivers[doc.id] = data.driverName;
+                        allResponses[event.id][doc.id] = data.status;
+                    });
+                }
+
+                const driverUids = Object.keys(allDrivers).sort((a,b) => allDrivers[a].localeCompare(allDrivers[b]));
+
+                if (driverUids.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">No responses received yet.</p>';
+                    return;
+                }
+
+                let html = `
+                    <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem; text-align: left;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid var(--glass-border);">
+                                <th style="padding: 1rem; position: sticky; left: 0; background: var(--bg-card); z-index: 2;">Driver</th>
+                                ${UPCOMING_EVENTS.map(e => `<th style="padding: 1rem; white-space: nowrap; text-align: center;">${e.name.split(' ').slice(0,2).join(' ')}</th>`).join('')}
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                driverUids.forEach(uid => {
+                    html += `<tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                        <td style="padding: 0.8rem; font-weight: 700; color: var(--primary); position: sticky; left: 0; background: var(--bg-card); z-index: 1;">${allDrivers[uid]}</td>
+                    `;
+                    UPCOMING_EVENTS.forEach(event => {
+                        const status = allResponses[event.id][uid];
+                        let statusHtml = "–";
+                        if (status === 'signed_up') statusHtml = `<span style="color: #00ff88; font-weight: 900;">YES</span>`;
+                        if (status === 'not_interested') statusHtml = `<span style="color: #666;">N/I</span>`;
+                        if (status === 'unavailable') statusHtml = `<span style="color: #ff0055;">N/A</span>`;
+                        html += `<td style="padding: 0.8rem; text-align: center;">${statusHtml}</td>`;
+                    });
+                    html += `</tr>`;
+                });
+
+                html += `</tbody></table>`;
+                container.innerHTML = html;
+
+            } catch (error) {
+                console.error("Error loading availability:", error);
+                container.innerHTML = `<p style="color: #ff0055; text-align: center;">Error loading data: ${error.message}</p>`;
+            }
+        }
+
 
         async function loadAdmins() {
             const list = document.getElementById('admins-list');
