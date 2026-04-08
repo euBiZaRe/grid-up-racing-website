@@ -291,8 +291,10 @@
             if (tab === 'admins') loadAdmins();
             if (tab === 'availability') loadAvailability();
         }
-
         const UPCOMING_EVENTS = [
+            { id: 'daytona-24', name: 'Daytona 24', date: 'January 16-18' },
+            { id: 'bathurst-12', name: 'Bathurst 12', date: 'February 20-22' },
+            { id: 'sebring-12h', name: 'Sebring 12HR', date: 'March 27-29' },
             { id: 'imsa-classic-500', name: 'IMSA Classic 500', date: 'April 10-11' },
             { id: 'nurburgring-24h', name: 'Nürburgring 24h', date: 'May 1-3' },
             { id: 'indy-500', name: 'INDY 500', date: 'May 5-18' },
@@ -317,7 +319,7 @@
             try {
                 // Fetch all drivers and responses
                 const allDrivers = {}; // uid -> name
-                const allResponses = {}; // eventId -> { uid -> status }
+                const allResponses = {}; // eventId -> { uid -> { status, slot } }
 
                 for (const event of UPCOMING_EVENTS) {
                     const snap = await db.collection("event_availability").doc(event.id).collection("responses").get();
@@ -325,7 +327,10 @@
                     snap.forEach(doc => {
                         const data = doc.data();
                         allDrivers[doc.id] = data.driverName;
-                        allResponses[event.id][doc.id] = data.status;
+                        allResponses[event.id][doc.id] = {
+                            status: data.status,
+                            slot: data.preferredSlot
+                        };
                     });
                 }
 
@@ -337,7 +342,7 @@
                 }
 
                 let html = `
-                    <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem; text-align: left;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 0.75rem; text-align: left;">
                         <thead>
                             <tr style="border-bottom: 1px solid var(--glass-border);">
                                 <th style="padding: 1rem; position: sticky; left: 0; background: var(--bg-card); z-index: 2;">Driver</th>
@@ -352,11 +357,18 @@
                         <td style="padding: 0.8rem; font-weight: 700; color: var(--primary); position: sticky; left: 0; background: var(--bg-card); z-index: 1;">${allDrivers[uid]}</td>
                     `;
                     UPCOMING_EVENTS.forEach(event => {
-                        const status = allResponses[event.id][uid];
+                        const resp = allResponses[event.id] ? allResponses[event.id][uid] : null;
                         let statusHtml = "–";
-                        if (status === 'signed_up') statusHtml = `<span style="color: #00ff88; font-weight: 900;">YES</span>`;
-                        if (status === 'not_interested') statusHtml = `<span style="color: #666;">N/I</span>`;
-                        if (status === 'unavailable') statusHtml = `<span style="color: #ff0055;">N/A</span>`;
+                        if (resp) {
+                            if (resp.status === 'signed_up') {
+                                statusHtml = `<div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
+                                    <span style="color: #00ff88; font-weight: 900;">YES</span>
+                                    ${resp.slot ? `<span style="font-size: 0.6rem; color: var(--text-muted); white-space: nowrap;">${resp.slot.split(':').slice(0,2).join('').trim()}</span>` : ''}
+                                </div>`;
+                            }
+                            if (resp.status === 'not_interested') statusHtml = `<span style="color: #666;">N/I</span>`;
+                            if (resp.status === 'unavailable') statusHtml = `<span style="color: #ff0055;">N/A</span>`;
+                        }
                         html += `<td style="padding: 0.8rem; text-align: center;">${statusHtml}</td>`;
                     });
                     html += `</tr>`;
@@ -370,7 +382,6 @@
                 container.innerHTML = `<p style="color: #ff0055; text-align: center;">Error loading data: ${error.message}</p>`;
             }
         }
-
 
         async function loadAdmins() {
             const list = document.getElementById('admins-list');
