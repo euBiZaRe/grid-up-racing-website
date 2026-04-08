@@ -183,13 +183,17 @@
                 </div>
             </div>
 
-            <!-- Availability Section -->
-            <div id="section-availability" style="display: none;">
-                <div class="glass" style="padding: 2rem; margin-bottom: 2rem;">
-                    <h3 style="margin-bottom: 1.5rem; color: var(--primary);">View Mode</h3>
-                    <select id="availability-event-selector" class="btn btn-outline" style="width: 100%; text-align: left; padding: 1rem; background: rgba(0,0,0,0.3);" onchange="loadAvailability()">
-                        <option value="matrix">-- Full Matrix View --</option>
-                    </select>
+                <div class="glass" style="padding: 2rem; margin-bottom: 2rem; display: flex; align-items: flex-end; gap: 2rem;">
+                    <div style="flex: 1;">
+                        <h3 style="margin-bottom: 1.5rem; color: var(--primary);">View Mode</h3>
+                        <select id="availability-event-selector" class="btn btn-outline" style="width: 100%; text-align: left; padding: 1rem; background: rgba(0,0,0,0.3);" onchange="loadAvailability()">
+                            <option value="matrix">-- Full Matrix View --</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1; display: flex; align-items: center; gap: 10px; margin-bottom: 1rem;">
+                        <input type="checkbox" id="filter-available-only" onchange="loadAvailability()" style="width: 20px; height: 20px; cursor: pointer;">
+                        <label for="filter-available-only" style="font-size: 0.8rem; color: var(--text-muted); cursor: pointer; user-select: none;">Show Only Available Drivers</label>
+                    </div>
                 </div>
 
                 <div class="glass" style="padding: 2rem; margin-bottom: 2rem; overflow-x: auto;">
@@ -326,7 +330,9 @@
             const container = document.getElementById('availability-matrix-container');
             const subtitle = document.getElementById('availability-subtitle');
             const selector = document.getElementById('availability-event-selector');
+            const filterAvailable = document.getElementById('filter-available-only');
             const selectedEventId = selector ? selector.value : 'matrix';
+            const availableOnly = filterAvailable ? filterAvailable.checked : false;
 
             if (!container) return;
             container.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Loading availability data...</p>';
@@ -361,7 +367,13 @@
                         });
                     }
 
-                    const driverUids = Object.keys(allDrivers).sort((a,b) => allDrivers[a].localeCompare(allDrivers[b]));
+                    let driverUids = Object.keys(allDrivers).sort((a,b) => allDrivers[a].localeCompare(allDrivers[b]));
+
+                    if (availableOnly) {
+                        driverUids = driverUids.filter(uid => {
+                            return Object.values(allResponses).some(resp => resp[uid] && resp[uid].status === 'signed_up');
+                        });
+                    }
 
                     if (driverUids.length === 0) {
                         container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">No responses received yet.</p>';
@@ -407,12 +419,18 @@
                 } else {
                     // Single Event Detailed View
                     const event = UPCOMING_EVENTS.find(e => e.id === selectedEventId);
-                    subtitle.textContent = `Detailed Responses: ${event.name}`;
+                    subtitle.textContent = `Detailed Responses: ${event.name}${availableOnly ? ' (Available Only)' : ''}`;
 
                     const snap = await db.collection("event_availability").doc(selectedEventId).collection("responses").get();
+                    let docs = [];
+                    snap.forEach(doc => docs.push(doc.data()));
+
+                    if (availableOnly) {
+                        docs = docs.filter(d => d.status === 'signed_up');
+                    }
                     
-                    if (snap.empty) {
-                        container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 5rem 0;">No driver responses found for this event yet.</p>';
+                    if (docs.length === 0) {
+                        container.innerHTML = `<p style="text-align: center; color: var(--text-muted); padding: 5rem 0;">No ${availableOnly ? 'available ' : ''}driver responses found for this event yet.</p>`;
                         return;
                     }
 
@@ -428,8 +446,7 @@
                             <tbody>
                     `;
 
-                    snap.forEach(doc => {
-                        const data = doc.data();
+                    docs.forEach(data => {
                         let statusColor = "#888";
                         let statusText = data.status.replace('_', ' ').toUpperCase();
                         if (data.status === 'signed_up') statusColor = "#00ff88";
