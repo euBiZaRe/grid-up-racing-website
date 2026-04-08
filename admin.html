@@ -112,7 +112,6 @@
                     <thead>
                         <tr>
                             <th>Driver Name</th>
-                            <th>Name of Profile</th>
                             <th>iRacing ID</th>
                             <th>Status</th>
                             <th>Actions</th>
@@ -121,7 +120,7 @@
                     <tbody id="claims-list">
                         <!-- Loaded dynamically -->
                         <tr>
-                            <td colspan="5" style="text-align: center; color: var(--text-muted);">Loading claim requests...</td>
+                            <td colspan="4" style="text-align: center; color: var(--text-muted);">Loading claim requests...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -179,7 +178,7 @@
                 const snapshot = await db.collection("claims").orderBy("timestamp", "desc").get();
                 console.log("Admin: Firestore snapshot received, size:", snapshot.size);
                 if (snapshot.empty) {
-                    list.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No claim requests found.</td></tr>';
+                    list.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No claim requests found.</td></tr>';
                     return;
                 }
 
@@ -197,12 +196,6 @@
                     
                     row.innerHTML = `
                         <td><strong style="color: var(--text-main);">${id}</strong></td>
-                        <td>
-                            <div style="display:flex; align-items:center; gap:10px;">
-                                <img src="${avatar}" style="width: 24px; height: 24px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1);">
-                                ${profileName}
-                            </div>
-                        </td>
                         <td style="font-family: monospace; color: var(--primary);">${data.iracingId}</td>
                         <td><span class="status-badge status-${data.status}">${data.status.toUpperCase()}</span></td>
                         <td>
@@ -216,7 +209,7 @@
                 });
             } catch (error) {
                 console.error("Error loading claims:", error);
-                list.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #ff0099;">Error loading data. Check permissions.</td></tr>';
+                list.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #ff0099;">Error loading data. Check permissions.</td></tr>';
             }
         }
 
