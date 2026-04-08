@@ -1,9 +1,72 @@
-<!DOCTYPE html>
+import os
+import re
+
+ROOT_DIR = r"f:\Grid Up\Website"
+EVENTS_DIR = os.path.join(ROOT_DIR, "events")
+
+# Files to convert
+TARGETS = [
+    "firecracker-400.html",
+    "spa-24hr.html",
+    "brickyard-400.html",
+    "road-america-6h.html",
+    "suzuka-1000km.html",
+    "petit-le-mans.html",
+    "bathurst-1000.html",
+    "indy-8h.html"
+]
+
+def extract_stat(content, label):
+    pattern = rf"<li><strong>{label}:?</strong>\s*(.*?)</li>"
+    match = re.search(pattern, content, re.IGNORECASE)
+    return match.group(1).strip() if match else "TBD"
+
+def convert_page(filename):
+    filepath = os.path.join(EVENTS_DIR, filename)
+    if not os.path.exists(filepath):
+        print(f"File not found: {filename}")
+        return
+    
+    with open(filepath, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    # Skip if already converted
+    if 'class="event-grid"' in content:
+        print(f"Skipping {filename} (already converted)")
+        return
+
+    # Extract info
+    title_match = re.search(r"<title>(.*?) \| Grid Up Sim Racing</title>", content)
+    title = title_match.group(1) if title_match else filename.replace(".html", "").replace("-", " ").title()
+    
+    date_match = re.search(r'<p class="reveal">(.*?) \| (.*?)</p>', content)
+    track = date_match.group(1).strip() if date_match else "iRacing"
+    date_str = date_match.group(2).strip() if date_match else "2026"
+    
+    classes = extract_stat(content, "Car Class")
+    if classes == "TBD":
+         classes = extract_stat(content, "Car Classes")
+         
+    duration = extract_stat(content, "Duration")
+    
+    # Overview (try to find a paragraph that isn't stats)
+    overview = f"Join Grid Up Sim Racing for the {title} at {track}. High-stakes competition on the iRacing platform."
+    
+    # Extract existing lineup content
+    lineup_match = re.search(r'<!-- LINEUP_START -->(.*?)<!-- LINEUP_END -->', content, re.DOTALL)
+    lineup_content = lineup_match.group(1).strip() if lineup_match else """
+                        <div class="lineup-item">
+                            <span style="color: var(--primary); font-weight: 600;">GRiD UP Sim Racing</span><br>
+                            <span style="font-size: 0.9rem; color: var(--text-muted);">TBD</span>
+                        </div>"""
+
+    # New structure
+    new_template = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brickyard 400 | Grid Up Sim Racing</title>
+    <title>{title} | Grid Up Sim Racing</title>
     <link rel="stylesheet" href="../style.css">
 </head>
 <body class="event-detail-page">
@@ -21,11 +84,11 @@
     </nav>
 
     <header class="hero hero-small">
-        <img src="../assets/hero.png" alt="Brickyard 400" class="hero-img" style="opacity: 0.3;">
+        <img src="../assets/hero.png" alt="{title}" class="hero-img" style="opacity: 0.3;">
         <div class="hero-overlay"></div>
         <div class="hero-content">
-            <h1 class="glow-text">Brickyard 400</h1>
-            <p style="color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 2px;">July 22-27, 2026</p>
+            <h1 class="glow-text">{title}</h1>
+            <p style="color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 2px;">{date_str}</p>
         </div>
     </header>
 
@@ -36,14 +99,14 @@
             <div class="event-main">
                 <section class="event-section">
                     <h2>Event Overview</h2>
-                    <p>Join Grid Up Sim Racing for the Brickyard 400 at Indianapolis Motor Speedway. High-stakes competition on the iRacing platform.</p>
+                    <p>{overview}</p>
                 </section>
 
                 <section class="event-section">
                     <h2>Track Information</h2>
                     <div class="glass sidebar-card">
-                        <h3>Indianapolis Motor Speedway</h3>
-                        <p>Experience the thrill of racing at one of iRacing's premier venues. Precision, consistency, and strategy are key to success at Indianapolis Motor Speedway.</p>
+                        <h3>{track}</h3>
+                        <p>Experience the thrill of racing at one of iRacing's premier venues. Precision, consistency, and strategy are key to success at {track}.</p>
                     </div>
                 </section>
             </div>
@@ -53,8 +116,8 @@
                     <h3>Race Format</h3>
                     <ul style="list-style: none; margin-top: 1rem;">
                         <li style="margin-bottom: 0.5rem;"><strong style="color: var(--primary);">Type:</strong> Team Event</li>
-                        <li style="margin-bottom: 0.5rem;"><strong style="color: var(--primary);">Distance:</strong> 160 Laps (400 Miles)</li>
-                        <li style="margin-bottom: 0.5rem;"><strong style="color: var(--primary);">Classes:</strong> Next Gen NASCAR Cup</li>
+                        <li style="margin-bottom: 0.5rem;"><strong style="color: var(--primary);">Distance:</strong> {duration}</li>
+                        <li style="margin-bottom: 0.5rem;"><strong style="color: var(--primary);">Classes:</strong> {classes}</li>
                     </ul>
                 </div>
 
@@ -62,17 +125,7 @@
                     <h3>Confirmed Lineup</h3>
                     <div id="confirmed-lineup">
                         <!-- LINEUP_START -->
-                        <div class="lineup-entry">
-                        <span class="team-badge badge-blue">GRiD UP Sim Racing</span>
-                        <p><strong>Car:</strong> Toyota Camry / Chevrolet Camaro Next Gen</p>
-                        <ul class="stats-list">
-                            <li>Andrew Fabian (C)</li>
-                            <li>TBD</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
+                        {lineup_content}
                         <!-- LINEUP_END -->
                     </div>
                 </div>
@@ -173,11 +226,19 @@
     <script src="../script.js"></script>
     <script src="../js/auth.js"></script>
     <script>
-        window.addEventListener('load', () => {
-            if (typeof loadRaceLineup === 'function') {
-                loadRaceLineup('brickyard-400');
-            }
-        });
+        window.addEventListener('load', () => {{
+            if (typeof loadRaceLineup === 'function') {{
+                loadRaceLineup('{filename.replace(".html", "")}');
+            }}
+        }});
     </script>
 </body>
-</html>
+</html>"""
+
+    with open(filepath, "w", encoding="utf-8") as f:
+        f.write(new_template)
+    print(f"Standardized {filename}")
+
+if __name__ == "__main__":
+    for t in TARGETS:
+        convert_page(t)

@@ -5,43 +5,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Firecracker 400 | Grid Up Sim Racing</title>
     <link rel="stylesheet" href="../style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
 </head>
-<body>
-    <nav>
-        <div class="logo">GRID UP</div>
-        <ul class="nav-links">
-            <li><a href="../index.html">Home</a></li>
-            <li><a href="../roster.html">Roster</a></li>
-            <li><a href="../events.html">Events</a></li>
-            <li><a href="#contact">Contact</a></li>
-        </ul>
+<body class="event-detail-page">
+    <nav id="navbar" class="scrolled">
+        <div class="container nav-content">
+            <a href="../index.html" class="logo">GRID UP</a>
+            <div class="nav-links">
+                <a href="../index.html#home">Home</a>
+                <a href="../index.html#about">About</a>
+                <a href="../roster.html">Roster</a>
+                <a href="../events.html">Events</a>
+                <a href="../index.html#contact">Contact</a>
+            </div>
+        </div>
     </nav>
 
-    <header class="event-hero" style="background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1541899481282-d53bffe3c15d?auto=format&fit=crop&q=80');">
-        <div class="container">
-            <h1 class="reveal">Firecracker 400</h1>
-            <p class="reveal">Daytona International Speedway | June 30 - July 6, 2026</p>
+    <header class="hero hero-small">
+        <img src="../assets/hero.png" alt="Firecracker 400" class="hero-img" style="opacity: 0.3;">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1 class="glow-text">Firecracker 400</h1>
+            <p style="color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 2px;">June 30 - July 6, 2026</p>
         </div>
     </header>
 
-    <section class="section reveal">
-        <div class="container">
-            <div class="event-details-grid">
-                <div class="event-info-card glass">
-                    <h3>Race Information</h3>
-                    <ul class="stats-list">
-                        <li><strong>Track:</strong> Daytona International Speedway</li>
-                        <li><strong>Car Class:</strong> 1987 NASCAR Cup Cars</li>
-                        <li><strong>Duration:</strong> 160 Laps (400 Miles)</li>
-                        <li><strong>Status:</strong> Upcoming</li>
+    <main class="container event-details">
+        <a href="../index.html" class="back-btn">← Back to Home</a>
+        
+        <div class="event-grid">
+            <div class="event-main">
+                <section class="event-section">
+                    <h2>Event Overview</h2>
+                    <p>Join Grid Up Sim Racing for the Firecracker 400 at Daytona International Speedway. High-stakes competition on the iRacing platform.</p>
+                </section>
+
+                <section class="event-section">
+                    <h2>Track Information</h2>
+                    <div class="glass sidebar-card">
+                        <h3>Daytona International Speedway</h3>
+                        <p>Experience the thrill of racing at one of iRacing's premier venues. Precision, consistency, and strategy are key to success at Daytona International Speedway.</p>
+                    </div>
+                </section>
+            </div>
+
+            <aside class="event-sidebar">
+                <div class="glass sidebar-card">
+                    <h3>Race Format</h3>
+                    <ul style="list-style: none; margin-top: 1rem;">
+                        <li style="margin-bottom: 0.5rem;"><strong style="color: var(--primary);">Type:</strong> Team Event</li>
+                        <li style="margin-bottom: 0.5rem;"><strong style="color: var(--primary);">Distance:</strong> 160 Laps (400 Miles)</li>
+                        <li style="margin-bottom: 0.5rem;"><strong style="color: var(--primary);">Classes:</strong> 1987 NASCAR Cup Cars</li>
                     </ul>
                 </div>
-                <div class="event-info-card glass">
-                    <h3>Driver Lineup</h3>
+
+                <div class="glass sidebar-card">
+                    <h3>Confirmed Lineup</h3>
                     <div id="confirmed-lineup">
                         <!-- LINEUP_START -->
-                    <div class="lineup-entry">
+                        <div class="lineup-entry">
                         <span class="team-badge badge-blue">GRiD UP Sim Racing</span>
                         <p><strong>Car:</strong> Chevrolet Monte Carlo / Ford Thunderbird (1987)</p>
                         <ul class="stats-list">
@@ -52,9 +73,18 @@
                 </div>
             </div>
         </div>
-                            <!-- LINEUP_END -->
+                        <!-- LINEUP_END -->
                     </div>
-                </section>
+                </div>
+
+                <div class="glass sidebar-card" style="border-color: var(--secondary);">
+                    <h3>Join the Team</h3>
+                    <p style="margin-bottom: 1.5rem;">Interested in racing this event with Grid Up? Join our Discord to register.</p>
+                    <a href="https://discord.gg/gridup" class="btn" style="width: 100%; text-align: center;">Join Discord</a>
+                </div>
+            </aside>
+        </div>
+    </main>
 
     <section id="upcoming" class="section reveal">
         <div class="container">
@@ -133,40 +163,14 @@
         </div>
     </section>
 
-    <footer id="contact">
-        <div class="container footer-grid">
-            <div class="footer-brand">
-                <h2>GRID UP</h2>
-                <p>Pushing the limits of digital endurance since 2026.</p>
-            </div>
-            <div class="footer-links">
-                <h3>Navigation</h3>
-                <ul>
-                    <li><a href="../index.html">Home</a></li>
-                    <li><a href="../roster.html">Roster</a></li>
-                    <li><a href="../events.html">Events</a></li>
-                    <li><a href="#contact">Contact</a></li>
-                </ul>
-            </div>
-            <div class="footer-social">
-                <h3>Follow Us</h3>
-                <div class="social-icons">
-                    <span>TW</span>
-                    <span>IG</span>
-                    <span>YT</span>
-                    <a href="https://discord.gg/gridup" style="color: inherit; text-decoration: none;">DC</a>
-                </div>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2026 GRiD UP Sim Racing. Built for Performance.</p>
-        </div>
+    <footer>
+        <p>&copy; 2026 Grid Up Sim Racing. Not affiliated with iRacing.com</p>
     </footer>
 
-    <script src="../script.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="../script.js"></script>
     <script src="../js/auth.js"></script>
     <script>
         window.addEventListener('load', () => {
