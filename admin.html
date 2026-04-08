@@ -92,6 +92,7 @@
         <!-- Admin Content -->
         <div id="admin-hub" class="admin-content">
             <header style="margin-bottom: 4rem; display: flex; justify-content: space-between; align-items: flex-end;">
+                <div>
                     <p style="color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 3px; font-size: 0.8rem; margin-bottom: 0.5rem;">Management Console</p>
                     <h1 class="glow-text" style="font-size: 3rem;" id="admin-title">Driver Claims</h1>
                 </div>
@@ -124,6 +125,7 @@
                         </tr>
                     </tbody>
                 </table>
+                </div>
             </div>
 
             <!-- Race Management Section -->
@@ -357,7 +359,8 @@
             if (user && ADMIN_UIDS.includes(user.uid)) {
                 adminHub.style.display = 'block';
                 accessDenied.style.display = 'none';
-                userInfo.textContent = `Logged in as Admin: ${user.displayName}`;
+                const adminName = user.displayName || user.email || user.uid;
+                userInfo.textContent = `Logged in as Admin: ${adminName}`;
                 switchTab('claims');
                 loadClaims();
             } else {
