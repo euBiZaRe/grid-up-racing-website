@@ -100,6 +100,7 @@
                     <div style="display: flex; gap: 1rem;">
                         <button onclick="switchTab('claims')" class="btn btn-outline" id="tab-claims">Claims</button>
                         <button onclick="switchTab('races')" class="btn btn-outline" id="tab-races">Races</button>
+                        <button onclick="switchTab('admins')" class="btn btn-outline" id="tab-admins">Admins</button>
                     </div>
                     <span id="admin-user-info" style="color: var(--text-muted); font-size: 0.8rem;">Logged in as: ...</span>
                 </div>
@@ -152,6 +153,32 @@
                     <div style="margin-top: 3rem; display: flex; gap: 1rem;">
                         <button onclick="saveRaceData()" class="btn btn-primary" style="flex: 1;">Save All Changes</button>
                     </div>
+                </div>
+            </div>
+
+            <!-- Admins Management Section -->
+            <div id="section-admins" style="display: none;">
+                <div class="glass" style="padding: 2rem; margin-bottom: 2rem;">
+                    <h3 style="margin-bottom: 1.5rem; color: var(--primary);">Manage Administrators</h3>
+                    
+                    <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+                        <input type="text" id="new-admin-uid" class="btn btn-outline" style="flex: 1; text-align: left;" placeholder="Enter Discord User UID to make Admin">
+                        <button onclick="addAdmin()" class="btn btn-primary" style="padding: 0 2rem;">Add Admin</button>
+                    </div>
+
+                    <table class="claims-table">
+                        <thead>
+                            <tr>
+                                <th>Admin UID</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admins-list">
+                            <tr>
+                                <td colspan="2" style="text-align: center; color: var(--text-muted);">Loading admins...</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -228,18 +255,101 @@
             }
         }
 
-        // Check for admin privileges on load
-        const ADMIN_UIDS = ['B0t4f4nqqpZIQKpT8Ed97xka5gM2'];
-
         function switchTab(tab) {
             document.getElementById('section-claims').style.display = tab === 'claims' ? 'block' : 'none';
             document.getElementById('section-races').style.display = tab === 'races' ? 'block' : 'none';
-            document.getElementById('admin-title').textContent = tab === 'claims' ? 'Driver Claims' : 'Race Management';
+            document.getElementById('section-admins').style.display = tab === 'admins' ? 'block' : 'none';
+            
+            const titleMap = { 'claims': 'Driver Claims', 'races': 'Race Management', 'admins': 'Admin Management' };
+            document.getElementById('admin-title').textContent = titleMap[tab];
             
             document.getElementById('tab-claims').classList.toggle('btn-primary', tab === 'claims');
             document.getElementById('tab-claims').classList.toggle('btn-outline', tab !== 'claims');
             document.getElementById('tab-races').classList.toggle('btn-primary', tab === 'races');
             document.getElementById('tab-races').classList.toggle('btn-outline', tab !== 'races');
+            document.getElementById('tab-admins').classList.toggle('btn-primary', tab === 'admins');
+            document.getElementById('tab-admins').classList.toggle('btn-outline', tab !== 'admins');
+
+            if (tab === 'admins') loadAdmins();
+        }
+
+        async function loadAdmins() {
+            const list = document.getElementById('admins-list');
+            list.innerHTML = '<tr><td colspan="2" style="text-align: center; color: var(--text-muted);">Loading admins...</td></tr>';
+            
+            try {
+                const doc = await db.collection("settings").doc("admins").get();
+                const uids = doc.exists ? (doc.data().uids || []) : [];
+                
+                list.innerHTML = '';
+                
+                list.innerHTML += `
+                    <tr>
+                        <td style="font-family: monospace; color: var(--primary);">B0t4f4nqqpZIQKpT8Ed97xka5gM2 <span style="font-size:0.7rem; color:var(--text-muted); margin-left: 10px;">(Master Admin)</span></td>
+                        <td><span style="font-size:0.8rem; color:var(--text-muted);">Cannot be removed</span></td>
+                    </tr>
+                `;
+                
+                uids.forEach(uid => {
+                    if (uid !== 'B0t4f4nqqpZIQKpT8Ed97xka5gM2') {
+                        list.innerHTML += `
+                            <tr>
+                                <td style="font-family: monospace;">${uid}</td>
+                                <td>
+                                    <button onclick="removeAdmin('${uid}')" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; border-color: #ff0099; color: #ff0099;">Remove</button>
+                                </td>
+                            </tr>
+                        `;
+                    }
+                });
+            } catch (e) {
+                console.error("Error loading admins:", e);
+                list.innerHTML = '<tr><td colspan="2" style="text-align: center; color: #ff0099;">Error loading admin list.</td></tr>';
+            }
+        }
+
+        async function addAdmin() {
+            const newUid = document.getElementById('new-admin-uid').value.trim();
+            if (!newUid) return alert("Please enter a UID.");
+            if (newUid === 'B0t4f4nqqpZIQKpT8Ed97xka5gM2') return alert("Master Admin is already an admin.");
+            
+            try {
+                const docRef = db.collection("settings").doc("admins");
+                const doc = await docRef.get();
+                let uids = doc.exists ? (doc.data().uids || []) : [];
+                
+                if (!uids.includes(newUid)) {
+                    uids.push(newUid);
+                    await docRef.set({ uids: uids }, { merge: true });
+                    document.getElementById('new-admin-uid').value = '';
+                    alert("Admin added successfully!");
+                    loadAdmins();
+                } else {
+                    alert("User is already an admin.");
+                }
+            } catch (e) {
+                console.error("Error adding admin:", e);
+                alert("Failed to add admin: " + e.message);
+            }
+        }
+
+        async function removeAdmin(uid) {
+            if (!confirm('Are you sure you want to remove admin privileges for ' + uid + '?')) return;
+            
+            try {
+                const docRef = db.collection("settings").doc("admins");
+                const doc = await docRef.get();
+                if (doc.exists) {
+                    let uids = doc.data().uids || [];
+                    uids = uids.filter(u => u !== uid);
+                    await docRef.set({ uids: uids }, { merge: true });
+                    alert("Admin removed.");
+                    loadAdmins();
+                }
+            } catch (e) {
+                console.error("Error removing admin:", e);
+                alert("Failed to remove admin: " + e.message);
+            }
         }
 
         async function loadRaceData() {
@@ -344,18 +454,38 @@
             }
         }
 
-        firebase.auth().onAuthStateChanged((user) => {
+        firebase.auth().onAuthStateChanged(async (user) => {
             const adminHub = document.getElementById('admin-hub');
             const accessDenied = document.getElementById('access-denied');
             const userInfo = document.getElementById('admin-user-info');
 
-            if (user && ADMIN_UIDS.includes(user.uid)) {
-                adminHub.style.display = 'block';
-                accessDenied.style.display = 'none';
-                const adminName = user.displayName || user.email || user.uid;
-                userInfo.textContent = `Logged in as Admin: ${adminName}`;
-                switchTab('claims');
-                loadClaims();
+            if (user) {
+                const MASTER_ADMIN = 'B0t4f4nqqpZIQKpT8Ed97xka5gM2';
+                let isAdmin = (user.uid === MASTER_ADMIN);
+                
+                if (!isAdmin && db) {
+                    try {
+                        const adminDoc = await db.collection("settings").doc("admins").get();
+                        if (adminDoc.exists) {
+                            const adminList = adminDoc.data().uids || [];
+                            isAdmin = adminList.includes(user.uid);
+                        }
+                    } catch (e) {
+                        console.error("Error reading admin list:", e);
+                    }
+                }
+
+                if (isAdmin) {
+                    adminHub.style.display = 'block';
+                    accessDenied.style.display = 'none';
+                    const adminName = user.displayName || user.email || user.uid;
+                    userInfo.textContent = `Logged in as Admin: ${adminName}`;
+                    switchTab('claims');
+                    loadClaims();
+                } else {
+                    adminHub.style.display = 'none';
+                    accessDenied.style.display = 'block';
+                }
             } else {
                 adminHub.style.display = 'none';
                 accessDenied.style.display = 'block';

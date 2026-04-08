@@ -65,9 +65,21 @@ async function updateAuthUI(user) {
             const displayName = user.displayName || "";
             const avatar = user.photoURL || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
             
-            // Check for Admin
-            const ADMIN_UIDS = ['B0t4f4nqqpZIQKpT8Ed97xka5gM2'];
-            const isAdmin = ADMIN_UIDS.includes(user.uid);
+            // Check for Admin (Master Admin + Firestore Settings)
+            const MASTER_ADMIN = 'B0t4f4nqqpZIQKpT8Ed97xka5gM2';
+            let isAdmin = (user.uid === MASTER_ADMIN);
+            
+            if (!isAdmin && db) {
+                try {
+                    const adminDoc = await db.collection("settings").doc("admins").get();
+                    if (adminDoc.exists) {
+                        const adminList = adminDoc.data().uids || [];
+                        isAdmin = adminList.includes(user.uid);
+                    }
+                } catch (e) {
+                    console.error("Error reading admin settings:", e);
+                }
+            }
             
             const isSubdir = window.location.pathname.includes('/drivers/') || window.location.pathname.includes('/events/');
             const basePath = isSubdir ? "../" : "";
