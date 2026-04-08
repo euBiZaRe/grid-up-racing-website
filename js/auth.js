@@ -179,5 +179,78 @@ async function claimProfile(driverName, iracingId) {
     }
 }
 
+// Race Lineup Dynamic Loading
+async function loadRaceLineup(slug) {
+    const container = document.querySelector('<!-- LINEUP_START -->').parentElement; // This is a bit hacky, better to use a specific ID if possible
+    // Actually, I'll use a better approach: search for the markers in the DOM
+    
+    console.log("Loading race lineup for:", slug);
+    if (!db) {
+        setTimeout(() => loadRaceLineup(slug), 500);
+        return;
+    }
+
+    try {
+        const doc = await db.collection("race_lineups").doc(slug).get();
+        if (doc.exists && doc.data().teams) {
+            const teams = doc.data().teams;
+            console.log("Firestore override found for:", slug);
+            
+            // Find the LINEUP_START and LINEUP_END markers to replace content
+            // However, in the DOM, these are comment nodes.
+            const iterator = document.createNodeIterator(document.body, NodeFilter.SHOW_COMMENT);
+            let startNode, endNode;
+            let node = iterator.nextNode();
+            while (node) {
+                if (node.textContent.trim() === "LINEUP_START") startNode = node;
+                if (node.textContent.trim() === "LINEUP_END") endNode = node;
+                node = iterator.nextNode();
+            }
+
+            if (startNode && endNode) {
+                // Clear content between markers
+                let current = startNode.nextSibling;
+                while (current && current !== endNode) {
+                    let next = current.nextSibling;
+                    current.remove();
+                    current = next;
+                }
+
+                // Insert new HTML
+                const fragment = document.createDocumentFragment();
+                const tempDiv = document.createElement('div');
+                
+                if (teams.length === 0) {
+                    tempDiv.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">No confirmed entries yet.</p>';
+                } else {
+                    let html = "";
+                    teams.forEach(team => {
+                        html += `
+                            <div class="lineup-item" style="margin-top: 1rem;">
+                                <span style="color: var(--primary); font-weight: 600;">${team.name}</span><br>
+                                <span style="font-size: 0.9rem; color: var(--text-muted);">${team.car_class}</span>
+                            </div>
+                            <ul style="list-style: none; margin-top: 0.5rem; padding-left: 1rem; border-left: 2px solid var(--primary);">
+                        `;
+                        if (team.captain) html += `<li>${team.captain} (C)</li>`;
+                        team.drivers.forEach(driver => {
+                            if (driver !== team.captain) html += `<li>${driver}</li>`;
+                        });
+                        html += `</ul>`;
+                    });
+                    tempDiv.innerHTML = html;
+                }
+
+                while (tempDiv.firstChild) {
+                    fragment.appendChild(tempDiv.firstChild);
+                }
+                startNode.parentNode.insertBefore(fragment, endNode);
+            }
+        }
+    } catch (error) {
+        console.error("Error loading lineup from Firestore:", error);
+    }
+}
+
 // Initialize on page load
 initAuth();

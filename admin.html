@@ -79,16 +79,21 @@
         <!-- Admin Content -->
         <div id="admin-hub" class="admin-content">
             <header style="margin-bottom: 4rem; display: flex; justify-content: space-between; align-items: flex-end;">
-                <div>
                     <p style="color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 3px; font-size: 0.8rem; margin-bottom: 0.5rem;">Management Console</p>
-                    <h1 class="glow-text" style="font-size: 3rem;">Driver Claims</h1>
+                    <h1 class="glow-text" style="font-size: 3rem;" id="admin-title">Driver Claims</h1>
                 </div>
-                <div style="text-align: right;">
+                <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 1rem;">
+                    <div style="display: flex; gap: 1rem;">
+                        <button onclick="switchTab('claims')" class="btn btn-outline" id="tab-claims">Claims</button>
+                        <button onclick="switchTab('races')" class="btn btn-outline" id="tab-races">Races</button>
+                    </div>
                     <span id="admin-user-info" style="color: var(--text-muted); font-size: 0.8rem;">Logged in as: ...</span>
                 </div>
             </header>
 
-            <div class="glass" style="padding: 0; overflow-x: auto;">
+            <!-- Claims Section -->
+            <div id="section-claims">
+                <div class="glass" style="padding: 0; overflow-x: auto;">
                 <table class="claims-table">
                     <thead>
                         <tr>
@@ -106,6 +111,34 @@
                         </tr>
                     </tbody>
                 </table>
+            </div>
+
+            <!-- Race Management Section -->
+            <div id="section-races" style="display: none;">
+                <div class="glass" style="padding: 2rem; margin-bottom: 2rem;">
+                    <h3 style="margin-bottom: 1.5rem; color: var(--primary);">Select Event</h3>
+                    <select id="event-selector" class="btn btn-outline" style="width: 100%; text-align: left; padding: 1rem; background: rgba(0,0,0,0.3);" onchange="loadRaceData()">
+                        <option value="">-- Choose an Event --</option>
+                        <option value="imsa-classic-500">IMSA Classic 500</option>
+                        <option value="nurburgring-24h">Nürburgring 24h</option>
+                        <option value="thruxton-4h">4 Hours at Thruxton</option>
+                        <option value="indy-500">Indy 500</option>
+                        <option value="world-600">World 600</option>
+                        <option value="watkins-glen-6h">Watkins Glen 6 Hour</option>
+                    </select>
+                </div>
+
+                <div id="race-editor" style="display: none;">
+                    <div id="teams-container">
+                        <!-- Teams populate here -->
+                    </div>
+                    
+                    <button onclick="addTeam()" class="btn btn-outline" style="width: 100%; margin-top: 1rem; border-style: dashed;">+ Add Team</button>
+                    
+                    <div style="margin-top: 3rem; display: flex; gap: 1rem;">
+                        <button onclick="saveRaceData()" class="btn btn-primary" style="flex: 1;">Save All Changes</button>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
@@ -188,7 +221,120 @@
         }
 
         // Check for admin privileges on load
-        const ADMIN_UIDS = ['B0t4f4nqqpZIQKpT8Ed97xka5gM2']; // The user's UID from the screenshot
+        const ADMIN_UIDS = ['B0t4f4nqqpZIQKpT8Ed97xka5gM2'];
+
+        function switchTab(tab) {
+            document.getElementById('section-claims').style.display = tab === 'claims' ? 'block' : 'none';
+            document.getElementById('section-races').style.display = tab === 'races' ? 'block' : 'none';
+            document.getElementById('admin-title').textContent = tab === 'claims' ? 'Driver Claims' : 'Race Management';
+            
+            document.getElementById('tab-claims').classList.toggle('btn-primary', tab === 'claims');
+            document.getElementById('tab-claims').classList.toggle('btn-outline', tab !== 'claims');
+            document.getElementById('tab-races').classList.toggle('btn-primary', tab === 'races');
+            document.getElementById('tab-races').classList.toggle('btn-outline', tab !== 'races');
+        }
+
+        async function loadRaceData() {
+            const slug = document.getElementById('event-selector').value;
+            const editor = document.getElementById('race-editor');
+            const container = document.getElementById('teams-container');
+            
+            if (!slug) {
+                editor.style.display = 'none';
+                return;
+            }
+            
+            editor.style.display = 'block';
+            container.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Loading race data...</p>';
+            
+            try {
+                const doc = await db.collection("race_lineups").doc(slug).get();
+                container.innerHTML = '';
+                
+                if (doc.exists && doc.data().teams) {
+                    doc.data().teams.forEach((team, idx) => addTeamUI(team));
+                } else {
+                    addTeamUI(); // Add one empty team by default
+                }
+            } catch (error) {
+                console.error("Error loading race data:", error);
+                container.innerHTML = '<p style="color: #ff0099;">Error loading data.</p>';
+            }
+        }
+
+        function addTeamUI(data = null) {
+            const container = document.getElementById('teams-container');
+            const teamDiv = document.createElement('div');
+            teamDiv.className = 'glass team-card';
+            teamDiv.style.padding = '2rem';
+            teamDiv.style.marginBottom = '1.5rem';
+            teamDiv.style.position = 'relative';
+            
+            const teamName = data ? data.name : '';
+            const carClass = data ? data.car_class : '';
+            const captain = data ? data.captain : '';
+            const drivers = data ? data.drivers.join('\n') : '';
+            
+            teamDiv.innerHTML = `
+                <button onclick="this.parentElement.remove()" style="position:absolute; top:1rem; right:1rem; background:none; border:none; color:#ff0099; cursor:pointer;">×</button>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div>
+                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">TEAM NAME</label>
+                        <input type="text" class="team-name btn btn-outline" style="width:100%; text-align:left;" value="${teamName}" placeholder="e.g. GRiD UP Black">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">CAR & CLASS</label>
+                        <input type="text" class="team-car btn btn-outline" style="width:100%; text-align:left;" value="${carClass}" placeholder="e.g. Porsche 911 GT3 R">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">TEAM CAPTAIN</label>
+                        <input type="text" class="team-captain btn btn-outline" style="width:100%; text-align:left;" value="${captain}" placeholder="Driver Name">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">DRIVER ROSTER (One per line)</label>
+                        <textarea class="team-drivers btn btn-outline" style="width:100%; text-align:left; height: 100px; resize: vertical;" placeholder="Driver 1\nDriver 2...">${drivers}</textarea>
+                    </div>
+                </div>
+            `;
+            container.appendChild(teamDiv);
+        }
+
+        function addTeam() {
+            addTeamUI();
+        }
+
+        async function saveRaceData() {
+            const slug = document.getElementById('event-selector').value;
+            const teamCards = document.querySelectorAll('.team-card');
+            const teams = [];
+            
+            teamCards.forEach(card => {
+                const name = card.querySelector('.team-name').value.trim();
+                const car = card.querySelector('.team-car').value.trim();
+                const captain = card.querySelector('.team-captain').value.trim();
+                const driversText = card.querySelector('.team-drivers').value.trim();
+                
+                if (name) {
+                    teams.push({
+                        name: name,
+                        car_class: car,
+                        captain: captain,
+                        drivers: driversText.split('\n').filter(d => d.trim())
+                    });
+                }
+            });
+            
+            try {
+                await db.collection("race_lineups").doc(slug).set({
+                    teams: teams,
+                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                alert("Race lineup saved successfully!");
+            } catch (error) {
+                console.error("Error saving race data:", error);
+                alert("Error saving: " + error.message);
+            }
+        }
 
         firebase.auth().onAuthStateChanged((user) => {
             const adminHub = document.getElementById('admin-hub');
