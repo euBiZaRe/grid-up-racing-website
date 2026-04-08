@@ -144,6 +144,174 @@
             { id: 'indy-8h', name: 'Indy 8h', date: 'Oct 16-18', startDate: '2026-10-16T22:00:00Z', slots: IMSA_SLOTS }
         ];
 
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+            document.querySelectorAll('.portal-tab').forEach(t => t.classList.remove('active'));
+            
+            const content = document.getElementById(`tab-${tabId}`);
+            if (content) content.style.display = tabId === 'wall' ? 'flex' : 'block';
+            
+            const tabBtn = document.querySelector(`.portal-tab[onclick*="${tabId}"]`);
+            if (tabBtn) tabBtn.classList.add('active');
+
+            if (tabId === 'setups') loadSetups();
+        }
+
+        async function loadTeamPortal(team) {
+            currentEvent = team.eventSlug;
+            currentTeam = team.teamName;
+            
+            document.getElementById('selection-view').style.display = 'none';
+            document.getElementById('portal-view').style.display = 'block';
+            
+            document.getElementById('event-title').textContent = team.eventName;
+            document.getElementById('team-title').textContent = team.teamName;
+            
+            loadLineup(team.teamData);
+            loadMessages();
+            switchTab('wall');
+        }
+
+        function loadLineup(data) {
+            const list = document.getElementById('lineup-list');
+            if (!list || !data) return;
+            
+            let html = `
+                <div style="margin-bottom: 1rem;">
+                    <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Car</div>
+                    <div style="font-weight: 700;">${data.car_class || 'Not Set'}</div>
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Captain</div>
+                    <div style="font-weight: 700; color: var(--primary);">${data.captain || 'None'}</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">Drivers</div>
+                    ${data.drivers ? data.drivers.map(d => `<div style="padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">${d}</div>`).join('') : '<div style="color: var(--text-muted);">No drivers assigned</div>'}
+                </div>
+            `;
+            list.innerHTML = html;
+        }
+
+        async function loadMessages() {
+            if (unsubMessages) unsubMessages();
+            
+            const container = document.getElementById('chat-messages');
+            unsubMessages = db.collection("race_lineups").doc(currentEvent)
+                .collection("teams").doc(currentTeam)
+                .collection("messages")
+                .orderBy("timestamp", "asc")
+                .onSnapshot(snap => {
+                    container.innerHTML = '';
+                    snap.forEach(doc => {
+                        const m = doc.data();
+                        const time = m.timestamp ? m.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...';
+                        container.innerHTML += `
+                            <div class="message ${m.uid === auth.currentUser.uid ? 'sent' : 'received'}">
+                                <div class="msg-author">${m.author}</div>
+                                <div class="msg-text">${m.text}</div>
+                                <div class="msg-time">${time}</div>
+                            </div>
+                        `;
+                    });
+                    container.scrollTop = container.scrollHeight;
+                });
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text || !currentEvent || !currentTeam) return;
+            
+            input.value = '';
+            try {
+                await db.collection("race_lineups").doc(currentEvent)
+                    .collection("teams").doc(currentTeam)
+                    .collection("messages").add({
+                        author: userProfile.driverName || auth.currentUser.displayName,
+                        uid: auth.currentUser.uid,
+                        text: text,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+            } catch (error) {
+                console.error("Error sending message:", error);
+                alert("Could not send message.");
+            }
+        }
+
+        async function loadSetups() {
+            const list = document.getElementById('setup-list');
+            list.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Loading setups...</p>';
+            
+            try {
+                const snap = await db.collection("race_lineups").doc(currentEvent)
+                    .collection("teams").doc(currentTeam)
+                    .collection("setups").get();
+                
+                list.innerHTML = '';
+                if (snap.empty) {
+                    list.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">No setups uploaded yet.</p>';
+                    return;
+                }
+                
+                snap.forEach(doc => {
+                    const s = doc.data();
+                    list.innerHTML += `
+                        <div class="setup-item" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            <div>
+                                <div style="font-weight: 700;">${s.name}</div>
+                                <div style="font-size: 0.7rem; color: var(--text-muted);">Uploaded by ${s.author}</div>
+                            </div>
+                            <button onclick="downloadSetup('${s.url}', '${s.name}')" class="btn btn-primary" style="padding: 0.3rem 1rem; font-size: 0.7rem;">Download</button>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                console.error("Error loading setups:", error);
+            }
+        }
+
+        function downloadSetup(url, name) {
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = name;
+            link.target = "_blank";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        async function uploadSetup(input) {
+            const file = input.files[0];
+            if (!file || !currentEvent || !currentTeam) return;
+            
+            if (!file.name.endsWith('.sto')) {
+                alert("Please upload an iRacing .sto setup file.");
+                return;
+            }
+
+            const storageRef = firebase.storage().ref(`setups/${currentEvent}/${currentTeam}/${file.name}`);
+            try {
+                const snapshot = await storageRef.put(file);
+                const url = await snapshot.ref.getDownloadURL();
+                
+                await db.collection("race_lineups").doc(currentEvent)
+                    .collection("teams").doc(currentTeam)
+                    .collection("setups").add({
+                        name: file.name,
+                        url: url,
+                        author: userProfile.driverName || auth.currentUser.displayName,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                
+                alert("Setup uploaded successfully!");
+                loadSetups();
+            } catch (error) {
+                console.error("Upload error:", error);
+                alert("Upload failed: " + error.message);
+            }
+        }
+
         async function initPortal(user) {
             const loading = document.getElementById('loading-portal');
             const selection = document.getElementById('selection-view');

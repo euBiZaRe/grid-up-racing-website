@@ -78,6 +78,29 @@
             color: var(--primary);
             transform: translateY(-2px);
         }
+        #autocomplete-overlay {
+            position: absolute;
+            background: #0a0a0c;
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 15px rgba(0, 207, 255, 0.2);
+            z-index: 9999;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+            min-width: 200px;
+        }
+        .autocomplete-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+        .autocomplete-item:hover, .autocomplete-item.active {
+            background: rgba(0, 207, 255, 0.1);
+            color: var(--primary);
+        }
         input, textarea {
             color: white !important;
         }
@@ -597,16 +620,13 @@
             try {
                 // Fetch signed up drivers for suggestions
                 const signedUpSnap = await db.collection("event_availability").doc(eventId).collection("responses").where("status", "==", "signed_up").get();
-                const signedUpDrivers = [];
-                signedUpSnap.forEach(doc => signedUpDrivers.push(doc.data().driverName));
-                
-                const datalist = document.getElementById('signed-up-drivers-list');
-                datalist.innerHTML = signedUpDrivers.map(name => `<option value="${name}">`).join('');
+                availableDrivers = [];
+                signedUpSnap.forEach(doc => availableDrivers.push(doc.data().driverName));
                 
                 const refBox = document.getElementById('signed-up-reference');
                 const nameList = document.getElementById('signed-up-names-list');
-                if (signedUpDrivers.length > 0) {
-                    nameList.innerHTML = signedUpDrivers.map(name => `<span class="suggestion-tag" onclick="addDriverToFocused('${name}')">${name}</span>`).join('');
+                if (availableDrivers.length > 0) {
+                    nameList.innerHTML = availableDrivers.map(name => `<span class="suggestion-tag" onclick="addDriverToFocused('${name}')">${name}</span>`).join('');
                     refBox.style.display = 'block';
                 } else {
                     refBox.style.display = 'none';
@@ -665,11 +685,11 @@
                     </div>
                     <div>
                         <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">CAPTAIN</label>
-                        <input type="text" class="captain btn btn-outline" style="width:100%; text-align:left;" value="${captain}" placeholder="e.g. Matty" list="signed-up-drivers-list" onfocus="window.lastFocusedInput = this">
+                        <input type="text" class="captain btn btn-outline" style="width:100%; text-align:left;" value="${captain}" placeholder="e.g. Matty" onfocus="window.lastFocusedInput = this" oninput="handleAutocomplete(this, event)">
                     </div>
                     <div>
                         <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">DRIVER ROSTER (One per line)</label>
-                        <textarea class="team-drivers btn btn-outline" style="width:100%; text-align:left; height: 100px; resize: vertical;" placeholder="Driver 1\nDriver 2..." onfocus="window.lastFocusedInput = this">${drivers}</textarea>
+                        <textarea class="team-drivers btn btn-outline" style="width:100%; text-align:left; height: 100px; resize: vertical;" placeholder="Driver 1\nDriver 2..." onfocus="window.lastFocusedInput = this" oninput="handleAutocomplete(this, event)">${drivers}</textarea>
                     </div>
                 </div>
             `;
@@ -678,6 +698,61 @@
 
         function addTeam() {
             addTeamUI();
+        }
+
+        let availableDrivers = [];
+        let activeSuggestionIndex = -1;
+
+        function handleAutocomplete(el, event) {
+            const overlay = document.getElementById('autocomplete-overlay');
+            const val = el.value;
+            let query = '';
+
+            if (el.tagName === 'TEXTAREA') {
+                const lines = val.split('\n');
+                query = lines[lines.length - 1].trim();
+            } else {
+                query = val.trim();
+            }
+
+            if (query.length < 1 || availableDrivers.length === 0) {
+                overlay.style.display = 'none';
+                return;
+            }
+
+            const matches = availableDrivers.filter(d => d.toLowerCase().includes(query.toLowerCase()));
+            if (matches.length === 0) {
+                overlay.style.display = 'none';
+                return;
+            }
+
+            // Position overlay
+            const rect = el.getBoundingClientRect();
+            overlay.style.left = `${rect.left + window.scrollX}px`;
+            overlay.style.top = `${rect.bottom + window.scrollY + 5}px`;
+            overlay.style.width = `${rect.width}px`;
+
+            overlay.innerHTML = matches.map((m, i) => `
+                <div class="autocomplete-item ${i === activeSuggestionIndex ? 'active' : ''}" onclick="selectSuggestion('${m}')">${m}</div>
+            `).join('');
+            overlay.style.display = 'block';
+        }
+
+        function selectSuggestion(name) {
+            const el = window.lastFocusedInput;
+            if (!el) return;
+
+            if (el.tagName === 'TEXTAREA') {
+                const lines = el.value.split('\n');
+                lines[lines.length - 1] = name;
+                el.value = lines.join('\n');
+            } else {
+                el.value = name;
+            }
+            
+            document.getElementById('autocomplete-overlay').style.display = 'none';
+            el.focus();
+            el.dispatchEvent(new Event('input'));
         }
 
         function addDriverToFocused(name) {
@@ -768,6 +843,15 @@
             }
         });
     </script>
+    <div id="autocomplete-overlay"></div>
     <datalist id="signed-up-drivers-list"></datalist>
 </body>
+<script>
+    // Global click listener to hide overlay
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('#autocomplete-overlay') && !e.target.closest('input') && !e.target.closest('textarea')) {
+            document.getElementById('autocomplete-overlay').style.display = 'none';
+        }
+    });
+</script>
 </html>
