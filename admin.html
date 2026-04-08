@@ -53,6 +53,19 @@
         .admin-content {
             display: none;
         }
+        .team-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        .team-card:hover {
+            border-color: var(--primary);
+            background: rgba(0, 207, 255, 0.03);
+        }
+        input, textarea, select {
+            color: white !important;
+        }
     </style>
 </head>
 <body class="admin-page">
@@ -345,6 +358,7 @@
                 adminHub.style.display = 'block';
                 accessDenied.style.display = 'none';
                 userInfo.textContent = `Logged in as Admin: ${user.displayName}`;
+                switchTab('claims');
                 loadClaims();
             } else {
                 adminHub.style.display = 'none';
