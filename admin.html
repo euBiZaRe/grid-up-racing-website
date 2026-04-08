@@ -838,9 +838,10 @@
             const resultsDiv = document.getElementById('sync-results');
             
             if (!pasteData) return alert("Please paste some data first.");
+            if (!eventId) return alert("Please select an event first!");
             resultsDiv.innerHTML = '<span style="color: var(--primary);">Processing...</span>';
 
-            const lines = pasteData.split('\n');
+            const rawLines = pasteData.split('\n').map(l => l.trim()).filter(l => l);
             const laps = [];
 
             // Simple Car to Class Mapper
@@ -861,36 +862,66 @@
                 return 'Other';
             };
 
-            lines.forEach(line => {
+            // TRY TAB FORMAT FIRST (Desktop Copy)
+            rawLines.forEach(line => {
                 const cols = line.split('\t');
-                if (cols.length >= 5) {
-                    let rank, driver, car, time, season;
-                    if (cols[0].match(/^\d+$/)) {
-                        rank = cols[0];
-                        driver = cols[1];
-                        if (cols[2].includes(' ') && !cols[2].match(/\d:/)) { 
-                            car = cols[2];
-                            time = cols[3];
-                            season = cols[4];
-                        } else {
-                            car = cols[3];
-                            time = cols[4];
-                            season = cols[5];
-                        }
+                if (cols.length >= 5 && cols[0].match(/^\d+$/)) {
+                    let driver, car, time, season;
+                    driver = cols[1];
+                    if (cols[2].includes(' ') && !cols[2].match(/\d:/)) { 
+                        car = cols[2]; time = cols[3]; season = cols[4];
+                    } else {
+                        car = cols[3]; time = cols[4]; season = cols[5];
+                    }
+                    if (time && time.includes(':')) {
+                        laps.push({
+                            driverName: driver, car: car, carClass: getCarClass(car),
+                            lapTime: time, season: season || 'N/A',
+                            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    }
+                }
+            });
 
-                        if (time && time.includes(':')) {
+            // IF TAB FORMAT FAILED, TRY MULTI-LINE FORMAT (The one in the screenshot)
+            if (laps.length === 0) {
+                let currentSeason = 'N/A';
+                for (let i = 0; i < rawLines.length; i++) {
+                    const line = rawLines[i];
+                    
+                    // Pattern 1: Season (e.g. 2025S1)
+                    if (line.match(/^\d{4}S\d$/)) {
+                        currentSeason = line;
+                        continue;
+                    }
+
+                    // Pattern 2: Lap Time (e.g. 01:43.971)
+                    if (line.match(/^\d+:\d{2}\.\d{3}$/)) {
+                        const time = line;
+                        // Look backwards for Car/Driver info (usually the line right before)
+                        const infoLine = rawLines[i-1];
+                        if (infoLine && infoLine.includes("RANKING")) {
+                            const cleanInfo = infoLine.replace("RANKING", "").trim();
+                            // Split by large gaps if they exist, otherwise try to guess
+                            const parts = cleanInfo.split(/\s{2,}/);
+                            let car = "Unknown Car", driver = "Unknown Driver";
+                            if (parts.length >= 2) {
+                                car = parts[0];
+                                driver = parts[1];
+                            } else {
+                                // Fallback: everything before the last word is car? No.
+                                driver = cleanInfo;
+                            }
+
                             laps.push({
-                                driverName: driver,
-                                car: car,
-                                carClass: getCarClass(car),
-                                lapTime: time,
-                                season: season || 'N/A',
+                                driverName: driver, car: car, carClass: getCarClass(car),
+                                lapTime: time, season: currentSeason,
                                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
                             });
                         }
                     }
                 }
-            });
+            }
 
             if (laps.length === 0) {
                 resultsDiv.innerHTML = '<span style="color: #ff0055;">Could not parse any laps. Make sure you copied the table correctly.</span>';
@@ -900,7 +931,6 @@
             try {
                 const batch = db.batch();
                 const lapsCol = db.collection("race_laps").doc(eventId).collection("laps");
-
                 resultsDiv.innerHTML = `<span style="color: var(--primary);">Syncing ${laps.length} laps to Firestore...</span>`;
 
                 for (const lap of laps) {
@@ -909,7 +939,7 @@
                 }
 
                 await batch.commit();
-                resultsDiv.innerHTML = `<span style="color: #00ff88;">Successfully synced ${laps.length} laps!</span>`;
+                resultsDiv.innerHTML = `<span style="color: #00ff88;">Successfully synced ${laps.length} laps from ${laps.length === 1 ? '1 row' : 'multiple rows'}!</span>`;
                 setTimeout(toggleLapSync, 2000);
             } catch (e) {
                 console.error("Sync error:", e);
