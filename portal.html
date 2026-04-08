@@ -237,9 +237,10 @@
             if (teams.length === 0) {
                 html += `<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center; padding: 2rem;">No active team assignments found.</p>`;
             } else {
-                teams.forEach(t => {
+                window._assignedTeams = teams;
+                teams.forEach((t, idx) => {
                     html += `
-                        <div class="card glass" onclick='loadTeamPortal(${JSON.stringify(t)})' style="cursor: pointer;">
+                        <div class="card glass" onclick="loadTeamPortal(window._assignedTeams[${idx}])" style="cursor: pointer;">
                             <div class="event-meta">${t.teamName}</div>
                             <h3>${t.eventName}</h3>
                             <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 1rem;">Click to Enter Portal</p>

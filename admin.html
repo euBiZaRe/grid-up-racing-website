@@ -141,7 +141,22 @@
                         <option value="indy-500">Indy 500</option>
                         <option value="world-600">World 600</option>
                         <option value="watkins-glen-6h">Watkins Glen 6 Hour</option>
+                        <option value="firecracker-400">Firecracker 400</option>
+                        <option value="spa-24hr">Spa 24hr</option>
+                        <option value="brickyard-400">Brickyard 400</option>
+                        <option value="road-america-6h">Road America 6h</option>
+                        <option value="suzuka-1000km">Suzuka 1000km</option>
+                        <option value="petit-le-mans">Petit Le Mans</option>
+                        <option value="bathurst-1000">Bathurst 1000</option>
+                        <option value="indy-8h">Indy 8h</option>
                     </select>
+                </div>
+
+                <div id="signed-up-reference" class="glass" style="padding: 1.5rem; margin-bottom: 2rem; display: none;">
+                    <h4 style="color: var(--primary); font-size: 0.8rem; margin-bottom: 1rem; text-transform: uppercase;">Drivers Signed Up for this Event</h4>
+                    <div id="signed-up-names-list" style="display: flex; flex-wrap: wrap; gap: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">
+                        <!-- Populated by JS -->
+                    </div>
                 </div>
 
                 <div id="race-editor" style="display: none;">
@@ -552,11 +567,11 @@
         }
 
         async function loadRaceData() {
-            const slug = document.getElementById('event-selector').value;
+            const eventId = document.getElementById('event-selector').value;
             const editor = document.getElementById('race-editor');
             const container = document.getElementById('teams-container');
             
-            if (!slug) {
+            if (!eventId) {
                 editor.style.display = 'none';
                 return;
             }
@@ -565,7 +580,24 @@
             container.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Loading race data...</p>';
             
             try {
-                const doc = await db.collection("race_lineups").doc(slug).get();
+                // Fetch signed up drivers for suggestions
+                const signedUpSnap = await db.collection("event_availability").doc(eventId).collection("responses").where("status", "==", "signed_up").get();
+                const signedUpDrivers = [];
+                signedUpSnap.forEach(doc => signedUpDrivers.push(doc.data().driverName));
+                
+                const datalist = document.getElementById('signed-up-drivers-list');
+                datalist.innerHTML = signedUpDrivers.map(name => `<option value="${name}">`).join('');
+                
+                const refBox = document.getElementById('signed-up-reference');
+                const nameList = document.getElementById('signed-up-names-list');
+                if (signedUpDrivers.length > 0) {
+                    nameList.innerHTML = signedUpDrivers.map(name => `<span style="background: rgba(0,207,255,0.1); padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(0,207,255,0.2);">${name}</span>`).join('');
+                    refBox.style.display = 'block';
+                } else {
+                    refBox.style.display = 'none';
+                }
+
+                const doc = await db.collection("race_lineups").doc(eventId).get();
                 container.innerHTML = '';
                 
                 if (doc.exists && doc.data().teams) {
@@ -617,8 +649,8 @@
                         <input type="text" class="team-car btn btn-outline" style="width:100%; text-align:left;" value="${carClass}" placeholder="e.g. Porsche 911 GT3 R">
                     </div>
                     <div>
-                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">TEAM CAPTAIN</label>
-                        <input type="text" class="team-captain btn btn-outline" style="width:100%; text-align:left;" value="${captain}" placeholder="Driver Name">
+                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">CAPTAIN</label>
+                        <input type="text" class="captain btn btn-outline" style="width:100%; text-align:left;" value="${captain}" placeholder="e.g. Matty" list="signed-up-drivers-list">
                     </div>
                     <div>
                         <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">DRIVER ROSTER (One per line)</label>
@@ -641,7 +673,7 @@
             teamCards.forEach(card => {
                 const name = card.querySelector('.team-name').value.trim();
                 const car = card.querySelector('.team-car').value.trim();
-                const captain = card.querySelector('.team-captain').value.trim();
+                const captain = card.querySelector('.captain').value.trim();
                 const driversText = card.querySelector('.team-drivers').value.trim();
                 
                 if (name) {
@@ -704,5 +736,6 @@
             }
         });
     </script>
+    <datalist id="signed-up-drivers-list"></datalist>
 </body>
 </html>
