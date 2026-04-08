@@ -81,6 +81,17 @@ async function updateAuthUI(user) {
                 }
             }
             
+            // Check for Verification (to show Team Portal link)
+            let isVerified = false;
+            try {
+                const claimSnapshot = await db.collection("claims").where("discordId", "==", user.uid).get();
+                if (!claimSnapshot.empty && claimSnapshot.docs[0].data().status === 'verified') {
+                    isVerified = true;
+                }
+            } catch (e) {
+                console.error("Error checking verification for UI:", e);
+            }
+            
             const isSubdir = window.location.pathname.includes('/drivers/') || window.location.pathname.includes('/events/');
             const basePath = isSubdir ? "../" : "";
             
@@ -93,10 +104,11 @@ async function updateAuthUI(user) {
             container.style.gap = "8px";
 
             const adminLink = isAdmin ? `<a href="${basePath}admin.html" class="btn btn-primary" style="padding: 0.4rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border-radius: 4px;">Admin</a>` : '';
+            const portalLink = isVerified ? `<a href="${basePath}portal.html" class="btn btn-primary" style="background: var(--secondary); padding: 0.4rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border-radius: 4px;">Portal</a>` : '';
             const profileLink = `<a href="${basePath}profile.html" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border-radius: 4px;">Profile</a>`;
             const logoutBtn = `<a href="#" onclick="if(confirm('Logout?')) firebase.auth().signOut()" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border-color: rgba(255,255,255,0.15); border-radius: 4px;"><img src="${avatar}" style="width: 16px; height: 16px; border-radius: 50%; vertical-align: middle; margin-right: 5px;"> Logout</a>`;
 
-            container.innerHTML = `${adminLink}${profileLink}${logoutBtn}`;
+            container.innerHTML = `${adminLink}${portalLink}${profileLink}${logoutBtn}`;
             loginBtn.replaceWith(container);
         }
         

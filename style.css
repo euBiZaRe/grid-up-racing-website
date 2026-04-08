@@ -854,3 +854,191 @@ footer {
 .tile-blue { --accent-color: #00d2ff; --accent-glow: rgba(0, 210, 255, 0.3); }
 .tile-pink { --accent-color: #ff0055; --accent-glow: rgba(255, 0, 85, 0.3); }
 .tile-green { --accent-color: #00ff88; --accent-glow: rgba(0, 255, 136, 0.3); }
+/* Portal Specific Styles */
+.portal-container {
+    margin-top: 5rem;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 2rem;
+}
+
+.portal-grid {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 2rem;
+}
+
+.portal-welcome {
+    text-align: left;
+    margin-bottom: 2rem;
+}
+
+.portal-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--glass-border);
+    padding-bottom: 1rem;
+}
+
+.portal-tab {
+    cursor: pointer;
+    padding: 0.5rem 1.5rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    transition: var(--transition);
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+}
+
+.portal-tab.active {
+    color: var(--primary);
+    border-bottom: 2px solid var(--primary);
+}
+
+/* Chat Wall */
+.chat-wall {
+    height: 500px;
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.message-item {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 3px solid var(--glass-border);
+}
+
+.message-item.own {
+    border-left-color: var(--primary);
+    background: rgba(0, 207, 255, 0.02);
+}
+
+.message-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.message-author {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+.message-time {
+    color: var(--text-muted);
+}
+
+.chat-input-area {
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 1rem;
+}
+
+.chat-input {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--glass-border);
+    border-radius: 4px;
+    padding: 0.8rem;
+    color: #fff;
+    font-family: inherit;
+}
+
+/* Setups List */
+.setup-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.setup-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    transition: var(--transition);
+}
+
+.setup-item:hover {
+    border-color: var(--primary);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.setup-info-main {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.setup-icon {
+    font-size: 1.5rem;
+    color: var(--primary);
+}
+
+.setup-name {
+    font-weight: 600;
+    display: block;
+}
+
+.setup-meta {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* Garage 61 List */
+.g61-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.g61-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+}
+
+.g61-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+}
+
+.g61-name {
+    flex: 1;
+    font-size: 0.9rem;
+}
+
+.g61-link {
+    color: var(--primary);
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+@media (max-width: 968px) {
+    .portal-grid {
+        grid-template-columns: 1fr;
+    }
+}

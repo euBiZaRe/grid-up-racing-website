@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Portal | Grid Up Sim Racing</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="member-portal-page">
+    <nav id="navbar" class="scrolled">
+        <div class="container nav-content">
+            <a href="index.html" class="logo">GRID UP</a>
+            <div class="nav-links">
+                <a href="index.html#home">Home</a>
+                <a href="roster.html">Roster</a>
+                <a href="events.html">Events</a>
+                <div id="login-link"></div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container portal-container">
+        <div id="loading-portal" style="text-align: center; padding: 10rem 0;">
+            <p class="glow-text">Accessing Team Portal...</p>
+        </div>
+
+        <!-- Selection View -->
+        <div id="selection-view" style="display: none;">
+            <h1 class="glow-text" style="margin-bottom: 2rem;">Select Your Event</h1>
+            <div id="event-selection-grid" class="grid">
+                <!-- Populated via JS -->
+            </div>
+        </div>
+
+        <!-- Portal View -->
+        <div id="portal-view" style="display: none;">
+            <div class="portal-welcome">
+                <a href="portal.html" class="back-btn" style="margin-bottom: 1rem;">← Switch Event</a>
+                <h1 id="event-title" class="glow-text">Event Name</h1>
+                <p id="team-title" style="color: var(--primary); font-size: 1.2rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px;">Team Name</p>
+            </div>
+
+            <div class="portal-tabs">
+                <div class="portal-tab active" onclick="switchTab('wall')">Communications</div>
+                <div class="portal-tab" onclick="switchTab('setups')">Setups</div>
+                <div class="portal-tab" onclick="switchTab('telemetry')">Garage 61</div>
+            </div>
+
+            <div class="portal-grid">
+                <!-- Main Content -->
+                <div class="portal-main-content">
+                    
+                    <!-- Wall Tab -->
+                    <div id="tab-wall" class="tab-content glass chat-wall">
+                        <div id="chat-messages" class="chat-messages">
+                            <!-- Messages go here -->
+                        </div>
+                        <div class="chat-input-area">
+                            <input type="text" id="chat-input" class="chat-input" placeholder="Type a message for the team...">
+                            <button onclick="sendMessage()" class="btn btn-primary">Send</button>
+                        </div>
+                    </div>
+
+                    <!-- Setups Tab -->
+                    <div id="tab-setups" class="tab-content glass" style="display: none; padding: 2rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                            <h2 style="font-size: 1.2rem;">Setup Repository</h2>
+                            <label class="btn btn-outline" style="font-size: 0.8rem; cursor: pointer;">
+                                Upload Setup (.sto)
+                                <input type="file" id="setup-upload" style="display: none;" onchange="uploadSetup(this)">
+                            </label>
+                        </div>
+                        <div id="setup-list" class="setup-list">
+                            <!-- Setups go here -->
+                        </div>
+                    </div>
+
+                    <!-- Telemetry Tab -->
+                    <div id="tab-telemetry" class="tab-content glass" style="display: none; padding: 2rem;">
+                        <h2 style="font-size: 1.2rem; margin-bottom: 1.5rem;">Team Lap Data</h2>
+                        <div id="g61-member-list" class="g61-list">
+                            <!-- Member G61 links go here -->
+                        </div>
+                        <div id="g61-team-link" style="margin-top: 2rem; padding: 1.5rem; background: rgba(0,207,255,0.05); border-radius: 8px; border: 1px dashed var(--primary); text-align: center;">
+                            <!-- Event G61 link if available -->
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Sidebar -->
+                <div class="portal-sidebar">
+                    <div class="glass" style="padding: 1.5rem;">
+                        <h3 style="font-size: 0.9rem; margin-bottom: 1rem; color: var(--primary);">Confirmed Lineup</h3>
+                        <div id="lineup-list" style="font-size: 0.9rem;">
+                            <!-- Sidebar lineup -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Access Denied View -->
+        <div id="denied-view" style="display: none; text-align: center; padding: 5rem 0;">
+            <h1 style="color: #ff0055;">Access Denied</h1>
+            <p id="denied-reason" style="margin: 1.5rem 0; color: var(--text-muted);"></p>
+            <a href="index.html" class="btn btn-outline">Return Home</a>
+        </div>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        let currentEvent = null;
+        let currentTeam = null;
+        let userProfile = null;
+        let unsubMessages = null;
+
+        async function initPortal(user) {
+            const loading = document.getElementById('loading-portal');
+            const selection = document.getElementById('selection-view');
+            const portal = document.getElementById('portal-view');
+            const denied = document.getElementById('denied-view');
+            const deniedReason = document.getElementById('denied-reason');
+
+            try {
+                // 1. Check Verification
+                const claimDoc = await db.collection("claims").where("discordId", "==", user.uid).get();
+                if (claimDoc.empty || claimDoc.docs[0].data().status !== 'verified') {
+                    loading.style.display = 'none';
+                    denied.style.display = 'block';
+                    deniedReason.textContent = "You must be a verified team member to access the portal. Please claim your profile on the Roster page.";
+                    return;
+                }
+
+                // 2. Load User Profile
+                const userDoc = await db.collection("users").doc(user.uid).get();
+                userProfile = userDoc.exists ? userDoc.data() : { driverName: user.displayName };
+                const myName = userProfile.driverName || user.displayName;
+
+                // 3. Find Teams
+                const lineups = await db.collection("race_lineups").get();
+                const myTeams = [];
+                lineups.forEach(doc => {
+                    const data = doc.data();
+                    const slug = doc.id;
+                    if (data.teams) {
+                        data.teams.forEach(team => {
+                            const isCaptain = team.captain === myName;
+                            const isDriver = team.drivers && team.drivers.includes(myName);
+                            if (isCaptain || isDriver) {
+                                myTeams.push({
+                                    eventSlug: slug,
+                                    eventName: data.eventName || slug.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' '),
+                                    teamName: team.name,
+                                    teamData: team
+                                });
+                            }
+                        });
+                    }
+                });
+
+                loading.style.display = 'none';
+
+                if (myTeams.length === 0) {
+                    denied.style.display = 'block';
+                    deniedReason.textContent = "You are not currently assigned to any team lineups for upcoming events.";
+                } else if (myTeams.length === 1 && !window.location.hash) {
+                    loadTeamPortal(myTeams[0]);
+                } else {
+                    showSelection(myTeams);
+                }
+
+            } catch (error) {
+                console.error("Portal Init Error:", error);
+                loading.innerHTML = `<p style="color: #ff0055;">Error: ${error.message}</p>`;
+            }
+        }
+
+        function showSelection(teams) {
+            const grid = document.getElementById('event-selection-grid');
+            grid.innerHTML = "";
+            teams.forEach(t => {
+                const card = document.createElement('div');
+                card.className = "card glass";
+                card.style.cursor = "pointer";
+                card.onclick = () => loadTeamPortal(t);
+                card.innerHTML = `
+                    <div class="event-meta">${t.teamName}</div>
+                    <h3>${t.eventName}</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 1rem;">Click to Enter Portal</p>
+                `;
+                grid.appendChild(card);
+            });
+            document.getElementById('selection-view').style.display = 'block';
+        }
+
+        function loadTeamPortal(assignment) {
+            currentEvent = assignment.eventSlug;
+            currentTeam = assignment.teamName;
+
+            document.getElementById('selection-view').style.display = 'none';
+            document.getElementById('portal-view').style.display = 'block';
+            document.getElementById('event-title').textContent = assignment.eventName;
+            document.getElementById('team-title').textContent = assignment.teamName;
+
+            // Load Lineup Sidebar
+            const lineupList = document.getElementById('lineup-list');
+            let lineupHtml = `<ul style="list-style: none; margin-top: 0.5rem;">`;
+            if (assignment.teamData.captain) lineupHtml += `<li><strong>${assignment.teamData.captain} (C)</strong></li>`;
+            if (assignment.teamData.drivers) {
+                assignment.teamData.drivers.forEach(d => {
+                    if (d !== assignment.teamData.captain) lineupHtml += `<li>${d}</li>`;
+                });
+            }
+            lineupHtml += `</ul>`;
+            lineupList.innerHTML = lineupHtml;
+
+            // Load Messages
+            listenForMessages();
+            
+            // Load Setups
+            loadSetups();
+
+            // Load G61 Links
+            loadG61Links(assignment.teamData);
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+            document.querySelectorAll('.portal-tab').forEach(t => t.classList.remove('active'));
+            
+            document.getElementById('tab-' + tabId).style.display = tabId === 'wall' ? 'flex' : 'block';
+            event.target.classList.add('active');
+        }
+
+        // --- Communication Logic ---
+        function listenForMessages() {
+            if (unsubMessages) unsubMessages();
+            
+            const portalId = `${currentEvent}_${currentTeam}`.replace(/\s+/g, '_');
+            const messagesContainer = document.getElementById('chat-messages');
+
+            unsubMessages = db.collection("team_portals").doc(portalId).collection("messages")
+                .orderBy("timestamp", "asc")
+                .limitToLast(50)
+                .onSnapshot(snapshot => {
+                    snapshot.docChanges().forEach(change => {
+                        if (change.type === "added") {
+                            const data = change.doc.data();
+                            const msgDiv = document.createElement('div');
+                            const isOwn = data.userId === auth.currentUser.uid;
+                            msgDiv.className = `message-item ${isOwn ? 'own' : ''}`;
+                            
+                            const time = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '...';
+                            
+                            msgDiv.innerHTML = `
+                                <div class="message-header">
+                                    <span class="message-author">${data.author}</span>
+                                    <span class="message-time">${time}</span>
+                                </div>
+                                <div class="message-body">${data.text}</div>
+                            `;
+                            messagesContainer.appendChild(msgDiv);
+                        }
+                    });
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                });
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const portalId = `${currentEvent}_${currentTeam}`.replace(/\s+/g, '_');
+            try {
+                await db.collection("team_portals").doc(portalId).collection("messages").add({
+                    text: text,
+                    author: userProfile.driverName || auth.currentUser.displayName,
+                    userId: auth.currentUser.uid,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                input.value = "";
+            } catch (error) {
+                console.error("Error sending message:", error);
+            }
+        }
+
+        // --- Setup Repository Logic ---
+        async function loadSetups() {
+            const portalId = `${currentEvent}_${currentTeam}`.replace(/\s+/g, '_');
+            const setupList = document.getElementById('setup-list');
+            setupList.innerHTML = "<p>Loading setups...</p>";
+
+            try {
+                const snapshot = await db.collection("team_portals").doc(portalId).collection("setups")
+                    .orderBy("timestamp", "desc").get();
+                
+                if (snapshot.empty) {
+                    setupList.innerHTML = "<p style='color: var(--text-muted); font-size: 0.9rem;'>No setups uploaded yet.</p>";
+                    return;
+                }
+
+                setupList.innerHTML = "";
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const item = document.createElement('div');
+                    item.className = "setup-item";
+                    item.innerHTML = `
+                        <div class="setup-info-main">
+                            <div class="setup-icon">📄</div>
+                            <div>
+                                <span class="setup-name">${data.fileName}</span>
+                                <span class="setup-meta">Uploaded by ${data.uploader}</span>
+                            </div>
+                        </div>
+                        <a href="${data.downloadUrl}" target="_blank" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.7rem;">Download</a>
+                    `;
+                    setupList.appendChild(item);
+                });
+            } catch (error) {
+                console.error("Error loading setups:", error);
+            }
+        }
+
+        async function uploadSetup(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            if (!file.name.endsWith('.sto')) {
+                alert("Only .sto files are supported.");
+                return;
+            }
+
+            const portalId = `${currentEvent}_${currentTeam}`.replace(/\s+/g, '_');
+            const storageRef = firebase.storage().ref(`setups/${portalId}/${file.name}`);
+            
+            try {
+                const btn = input.parentElement;
+                const originalText = btn.textContent;
+                btn.textContent = "Uploading...";
+                btn.style.opacity = "0.5";
+
+                const snapshot = await storageRef.put(file);
+                const url = await snapshot.ref.getDownloadURL();
+
+                await db.collection("team_portals").doc(portalId).collection("setups").add({
+                    fileName: file.name,
+                    downloadUrl: url,
+                    uploader: userProfile.driverName || auth.currentUser.displayName,
+                    uploaderId: auth.currentUser.uid,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                btn.textContent = originalText;
+                btn.style.opacity = "1";
+                loadSetups();
+            } catch (error) {
+                console.error("Upload error:", error);
+                alert("Upload failed: " + error.message);
+            }
+        }
+
+        // --- G61 & Telemetry Logic ---
+        async function loadG61Links(teamData) {
+            const list = document.getElementById('g61-member-list');
+            list.innerHTML = "";
+            
+            const drivers = [teamData.captain, ...(teamData.drivers || [])].filter((v, i, a) => a.indexOf(v) === i && v);
+
+            for (const dName of drivers) {
+                // Try to find user profile for this driver name
+                const userQuery = await db.collection("users").where("driverName", "==", dName).get();
+                let g61Url = null;
+                if (!userQuery.empty) {
+                    g61Url = userQuery.docs[0].data().g61Url;
+                }
+
+                const item = document.createElement('div');
+                item.className = "g61-item";
+                item.innerHTML = `
+                    <div class="g61-name">${dName}</div>
+                    ${g61Url ? `<a href="${g61Url}" target="_blank" class="g61-link">Garage 61 Profile →</a>` : `<span style="color: var(--text-muted); font-size: 0.7rem;">No G61 Linked</span>`}
+                `;
+                list.appendChild(item);
+            }
+        }
+
+        // Auth Listener
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                initPortal(user);
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+
+        // Enter key for chat
+        document.getElementById('chat-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+    </script>
+</body>
+</html>
