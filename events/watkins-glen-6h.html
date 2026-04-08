@@ -57,7 +57,6 @@
                 </section>
             </div>
 
-            <aside class="event-sidebar">
                 <div class="glass sidebar-card">
                     <h3>Race Format</h3>
                     <ul style="list-style: none; margin-top: 1rem;">
@@ -65,6 +64,18 @@
                         <li style="margin-bottom: 0.5rem;"><strong style="color: var(--primary);">Duration:</strong> 6 Hours</li>
                         <li style="margin-bottom: 0.5rem;"><strong style="color: var(--primary);">License:</strong> Class C and above</li>
                     </ul>
+                </div>
+
+                <div class="glass sidebar-card">
+                    <h3>Confirmed Lineup</h3>
+                    <div id="confirmed-lineup">
+                        <!-- LINEUP_START -->
+                        <div class="lineup-item">
+                            <span style="color: var(--primary); font-weight: 600;">GRiD UP Sim Racing</span><br>
+                            <span style="font-size: 0.9rem; color: var(--text-muted);">GTP / LMP2 / GT3</span>
+                        </div>
+                        <!-- LINEUP_END -->
+                    </div>
                 </div>
 
                 <div class="glass sidebar-card" style="border-color: var(--secondary);">
@@ -157,6 +168,17 @@
         <p>&copy; 2026 Grid Up Sim Racing. Not affiliated with iRacing.com</p>
     </footer>
 
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
     <script src="../script.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        window.addEventListener('load', () => {
+            if (typeof loadRaceLineup === 'function') {
+                loadRaceLineup('watkins-glen-6h');
+            }
+        });
+    </script>
 </body>
 </html>
