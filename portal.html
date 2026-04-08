@@ -318,7 +318,7 @@
                     slotsHtml = `
                         <div style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
                             <label style="font-size: 0.6rem; color: var(--primary); display:block; margin-bottom: 0.5rem; text-transform: uppercase;">Timeslot Preference</label>
-                            <select onchange="updatePreference('${event.id}', this.value)" class="btn btn-outline" style="width: 100%; font-size: 0.7rem; padding: 0.4rem; background: rgba(0,0,0,0.3);">
+                            <select onchange="updatePreference('${event.id}', this.value)" class="btn btn-outline" style="width: 100%; font-size: 0.7rem; padding: 0.4rem;">
                                 <option value="">-- Select Preference --</option>
                                 ${event.slots.map(s => `<option value="${s}" ${preferredSlot === s ? 'selected' : ''}>${s}</option>`).join('')}
                             </select>

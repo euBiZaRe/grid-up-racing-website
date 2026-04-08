@@ -63,7 +63,7 @@
             border-color: var(--primary);
             background: rgba(0, 207, 255, 0.03);
         }
-        input, textarea, select {
+        input, textarea {
             color: white !important;
         }
     </style>
@@ -133,7 +133,7 @@
             <div id="section-races" style="display: none;">
                 <div class="glass" style="padding: 2rem; margin-bottom: 2rem;">
                     <h3 style="margin-bottom: 1.5rem; color: var(--primary);">Select Event</h3>
-                    <select id="event-selector" class="btn btn-outline" style="width: 100%; text-align: left; padding: 1rem; background: rgba(0,0,0,0.3);" onchange="loadRaceData()">
+                    <select id="event-selector" class="btn btn-outline" style="width: 100%; text-align: left; padding: 1rem;" onchange="loadRaceData()">
                         <option value="">-- Choose an Event --</option>
                         <option value="imsa-classic-500">IMSA Classic 500</option>
                         <option value="nurburgring-24h">Nürburgring 24h</option>
@@ -188,7 +188,7 @@
                 <div class="glass" style="padding: 2rem; margin-bottom: 2rem; display: flex; align-items: flex-end; gap: 2rem;">
                     <div style="flex: 1;">
                         <h3 style="margin-bottom: 1.5rem; color: var(--primary);">View Mode</h3>
-                        <select id="availability-event-selector" class="btn btn-outline" style="width: 100%; text-align: left; padding: 1rem; background: rgba(0,0,0,0.3);" onchange="loadAvailability()">
+                        <select id="availability-event-selector" class="btn btn-outline" style="width: 100%; text-align: left; padding: 1rem;" onchange="loadAvailability()">
                             <option value="matrix">-- Full Matrix View --</option>
                         </select>
                     </div>
