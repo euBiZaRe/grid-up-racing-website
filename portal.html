@@ -309,19 +309,28 @@
         }
 
         async function setAvailability(eventId, status) {
-            const myName = userProfile.driverName || auth.currentUser.displayName;
             try {
-                await db.collection("event_availability").doc(eventId).collection("responses").doc(auth.currentUser.uid).set({
-                    status: status,
-                    driverName: myName,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                });
+                const docRef = db.collection("event_availability").doc(eventId).collection("responses").doc(auth.currentUser.uid);
+                const currentDoc = await docRef.get();
+                const currentStatus = currentDoc.exists ? currentDoc.data().status : null;
+
+                if (currentStatus === status) {
+                    await docRef.delete();
+                } else {
+                    const myName = userProfile.driverName || auth.currentUser.displayName;
+                    await docRef.set({
+                        status: status,
+                        driverName: myName,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }
+
                 // Refresh selection view
                 populateAvailability();
                 if (isAdminUser) loadAdminAvailability();
             } catch (error) {
-                console.error("Error setting availability:", error);
-                alert("Error saving response: " + error.message);
+                console.error("Error updating availability:", error);
+                alert("Error: " + error.message);
             }
         }
 
