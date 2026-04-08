@@ -206,6 +206,21 @@
                     
                     <div style="margin-top: 3rem; display: flex; gap: 1rem;">
                         <button onclick="saveRaceData()" class="btn btn-primary" style="flex: 1;">Save All Changes</button>
+                        <button onclick="toggleLapSync()" class="btn btn-outline" style="flex: 1; border-color: var(--primary); color: var(--primary);">Sync Fastest Laps</button>
+                    </div>
+
+                    <!-- Lap Sync Modal Area -->
+                    <div id="lap-sync-area" class="glass" style="display: none; margin-top: 2rem; padding: 2rem; border: 1px dashed var(--primary);">
+                        <h4 style="color: var(--primary); margin-bottom: 1rem;">Sync Fastest Laps from Garage 61</h4>
+                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+                            Go to Garage 61 track records, highlight the table rows, copy (Ctrl+C), and paste below.
+                        </p>
+                        <textarea id="lap-paste-data" class="btn btn-outline" style="width: 100%; height: 150px; text-align: left; font-family: monospace; font-size: 0.7rem; margin-bottom: 1rem;" placeholder="Paste table data here..."></textarea>
+                        <div style="display: flex; gap: 1rem;">
+                            <button onclick="processLapData()" class="btn btn-primary" style="flex: 2;">Process & Sync</button>
+                            <button onclick="toggleLapSync()" class="btn btn-outline" style="flex: 1;">Cancel</button>
+                        </div>
+                        <div id="sync-results" style="margin-top: 1rem; font-size: 0.75rem;"></div>
                     </div>
                 </div>
             </div>
@@ -802,6 +817,98 @@
             } catch (error) {
                 console.error("Error saving race data:", error);
                 alert("Error saving: " + error.message);
+            }
+        }
+
+        function toggleLapSync() {
+            const area = document.getElementById('lap-sync-area');
+            area.style.display = area.style.display === 'none' ? 'block' : 'none';
+            document.getElementById('sync-results').innerHTML = '';
+            document.getElementById('lap-paste-data').value = '';
+        }
+
+        async function processLapData() {
+            const eventId = document.getElementById('event-selector').value;
+            const pasteData = document.getElementById('lap-paste-data').value.trim();
+            const resultsDiv = document.getElementById('sync-results');
+            
+            if (!pasteData) return alert("Please paste some data first.");
+            resultsDiv.innerHTML = '<span style="color: var(--primary);">Processing...</span>';
+
+            const lines = pasteData.split('\n');
+            const laps = [];
+
+            // Simple Car to Class Mapper
+            const CLASS_MAP = {
+                'porsche 911 gt3 r': 'GT3', 'ferrari 296 gt3': 'GT3', 'lamborghini huracán gt3': 'GT3', 
+                'bmw m4 gt3': 'GT3', 'mercedes-amg gt3': 'GT3', 'audi r8 lms gt3': 'GT3', 'mclaren 720s gt3': 'GT3',
+                'cadillac v-series.r': 'GTP', 'acura arx-06': 'GTP', 'bmw m hybrid v8': 'GTP', 'porsche 963': 'GTP',
+                'dallara p217': 'LMP2',
+                'dallara f3': 'F3', 'dallara ir-18': 'IndyCar',
+                'nascar cup': 'NASCAR Next Gen', 'next gen': 'NASCAR Next Gen'
+            };
+
+            const getCarClass = (carName) => {
+                const lower = carName.toLowerCase();
+                for (const [key, val] of Object.entries(CLASS_MAP)) {
+                    if (lower.includes(key)) return val;
+                }
+                return 'Other';
+            };
+
+            lines.forEach(line => {
+                const cols = line.split('\t');
+                if (cols.length >= 5) {
+                    let rank, driver, car, time, season;
+                    if (cols[0].match(/^\d+$/)) {
+                        rank = cols[0];
+                        driver = cols[1];
+                        if (cols[2].includes(' ') && !cols[2].match(/\d:/)) { 
+                            car = cols[2];
+                            time = cols[3];
+                            season = cols[4];
+                        } else {
+                            car = cols[3];
+                            time = cols[4];
+                            season = cols[5];
+                        }
+
+                        if (time && time.includes(':')) {
+                            laps.push({
+                                driverName: driver,
+                                car: car,
+                                carClass: getCarClass(car),
+                                lapTime: time,
+                                season: season || 'N/A',
+                                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                        }
+                    }
+                }
+            });
+
+            if (laps.length === 0) {
+                resultsDiv.innerHTML = '<span style="color: #ff0055;">Could not parse any laps. Make sure you copied the table correctly.</span>';
+                return;
+            }
+
+            try {
+                const batch = db.batch();
+                const lapsCol = db.collection("race_laps").doc(eventId).collection("laps");
+
+                resultsDiv.innerHTML = `<span style="color: var(--primary);">Syncing ${laps.length} laps to Firestore...</span>`;
+
+                for (const lap of laps) {
+                    const newDoc = lapsCol.doc(); 
+                    batch.set(newDoc, lap);
+                }
+
+                await batch.commit();
+                resultsDiv.innerHTML = `<span style="color: #00ff88;">Successfully synced ${laps.length} laps!</span>`;
+                setTimeout(toggleLapSync, 2000);
+            } catch (e) {
+                console.error("Sync error:", e);
+                resultsDiv.innerHTML = `<span style="color: #ff0055;">Sync failed: ${e.message}</span>`;
             }
         }
 

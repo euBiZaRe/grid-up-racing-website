@@ -381,7 +381,13 @@
                 container.innerHTML = html;
             } catch (error) {
                 console.error("Telemetry error:", error);
-                container.innerHTML = '<p style="color: #ff0055;">Error loading lap data.</p>';
+                let errorMsg = "Error loading lap data.";
+                if (error.message.includes("index")) {
+                    errorMsg = `Firestore missing index. <a href="${error.message.split(' ').find(word => word.startsWith('https://'))}" target="_blank" style="color: var(--primary); text-decoration: underline;">Click here to create the required index</a>.`;
+                } else {
+                    errorMsg += " " + error.message;
+                }
+                container.innerHTML = `<p style="color: #ff0055; font-size: 0.8rem; padding: 1rem;">${errorMsg}</p>`;
             }
         }
 
