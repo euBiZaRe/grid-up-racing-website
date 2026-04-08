@@ -63,6 +63,21 @@
             border-color: var(--primary);
             background: rgba(0, 207, 255, 0.03);
         }
+        .suggestion-tag {
+            background: rgba(0, 207, 255, 0.1);
+            padding: 4px 10px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 207, 255, 0.2);
+            cursor: pointer;
+            transition: var(--transition);
+            user-select: none;
+        }
+        .suggestion-tag:hover {
+            background: rgba(0, 207, 255, 0.2);
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
         input, textarea {
             color: white !important;
         }
@@ -591,7 +606,7 @@
                 const refBox = document.getElementById('signed-up-reference');
                 const nameList = document.getElementById('signed-up-names-list');
                 if (signedUpDrivers.length > 0) {
-                    nameList.innerHTML = signedUpDrivers.map(name => `<span style="background: rgba(0,207,255,0.1); padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(0,207,255,0.2);">${name}</span>`).join('');
+                    nameList.innerHTML = signedUpDrivers.map(name => `<span class="suggestion-tag" onclick="addDriverToFocused('${name}')">${name}</span>`).join('');
                     refBox.style.display = 'block';
                 } else {
                     refBox.style.display = 'none';
@@ -650,11 +665,11 @@
                     </div>
                     <div>
                         <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">CAPTAIN</label>
-                        <input type="text" class="captain btn btn-outline" style="width:100%; text-align:left;" value="${captain}" placeholder="e.g. Matty" list="signed-up-drivers-list">
+                        <input type="text" class="captain btn btn-outline" style="width:100%; text-align:left;" value="${captain}" placeholder="e.g. Matty" list="signed-up-drivers-list" onfocus="window.lastFocusedInput = this">
                     </div>
                     <div>
                         <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">DRIVER ROSTER (One per line)</label>
-                        <textarea class="team-drivers btn btn-outline" style="width:100%; text-align:left; height: 100px; resize: vertical;" placeholder="Driver 1\nDriver 2...">${drivers}</textarea>
+                        <textarea class="team-drivers btn btn-outline" style="width:100%; text-align:left; height: 100px; resize: vertical;" placeholder="Driver 1\nDriver 2..." onfocus="window.lastFocusedInput = this">${drivers}</textarea>
                     </div>
                 </div>
             `;
@@ -663,6 +678,23 @@
 
         function addTeam() {
             addTeamUI();
+        }
+
+        function addDriverToFocused(name) {
+            if (!window.lastFocusedInput) {
+                alert("Please click on a Captain or Driver Roster field first!");
+                return;
+            }
+            const el = window.lastFocusedInput;
+            if (el.tagName === 'TEXTAREA') {
+                const lines = el.value.split('\n').map(l => l.trim()).filter(l => l);
+                if (!lines.includes(name)) {
+                    el.value = lines.length ? el.value.trim() + '\n' + name : name;
+                }
+            } else {
+                el.value = name;
+            }
+            el.dispatchEvent(new Event('input'));
         }
 
         async function saveRaceData() {
