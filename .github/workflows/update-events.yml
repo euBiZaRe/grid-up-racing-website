@@ -1,0 +1,32 @@
+name: Update Event Lineups
+
+on:
+  schedule:
+    - cron: '0 */4 * * *' # Every 4 hours
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  update-lineups:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: |
+          pip install requests
+
+      - name: Run Sync Script
+        run: python scripts/sync_sheets.py
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
+          git add events/*.html events/past/*.html
+          git diff --quiet && git diff --staged --quiet || (git commit -m "auto: update event lineups from Google Sheets" && git push)
