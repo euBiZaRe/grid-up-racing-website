@@ -226,6 +226,22 @@
                             <button onclick="toggleLapSync()" class="btn btn-outline" style="flex: 1;">Cancel</button>
                         </div>
                         <div id="sync-results" style="margin-top: 1rem; font-size: 0.75rem;"></div>
+
+                        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.05); margin: 2rem 0;">
+
+                        <h4 style="color: var(--primary); margin-bottom: 0.5rem;">Auto-Fetch from iRacingData.com (New)</h4>
+                        <p style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+                            Instead of pasting, you can pull community-wide average best lap times directly from iRacingData.com.
+                        </p>
+                        <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                            <input id="iracing-series-name" class="btn btn-outline" style="flex: 2; text-align: left;" list="common-series" placeholder="Enter Series Name (e.g. IMSA iRacing Series - 2026 Season 2)">
+                            <datalist id="common-series">
+                                <option value="IMSA iRacing Series - 2026 Season 2">
+                                <option value="iRacing Nürburgring 24h - 2026">
+                                <option value="Indy 500 - 2026">
+                            </datalist>
+                            <button onclick="fetchIRacingData()" class="btn btn-primary" style="flex: 1;">Fetch & Sync</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -944,6 +960,87 @@
             } catch (e) {
                 console.error("Sync error:", e);
                 resultsDiv.innerHTML = `<span style="color: #ff0055;">Sync failed: ${e.message}</span>`;
+            }
+        }
+
+        async function fetchIRacingData() {
+            const eventId = document.getElementById('event-selector').value;
+            const seriesName = document.getElementById('iracing-series-name').value.trim();
+            const resultsDiv = document.getElementById('sync-results');
+
+            if (!seriesName) return alert("Please enter a series name.");
+            if (!eventId) return alert("Please select an event first!");
+            resultsDiv.innerHTML = '<span style="color: var(--primary);">Fetching from iRacingData API...</span>';
+
+            const url = `https://iracing6-backend.herokuapp.com/api/series-avg-lap-times/average-lap-time/${encodeURIComponent(seriesName)}`;
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error("API responded with " + response.status);
+                const data = await response.json();
+
+                if (!Array.isArray(data) || data.length === 0) {
+                    throw new Error("No data found for this series.");
+                }
+
+                // Process: Group by car and take the best average (usually highest iRating bucket)
+                // Actually, let's just take all data points and let the portal filter by Car if needed. 
+                // However, the portal expects unique driver/car pairs or just fastest. 
+                // We'll treat "Average (9k iRating)" as a 'Driver' for now to show community speed.
+                
+                const CLASS_MAP = {
+                    'porsche 911 gt3 r': 'GT3', 'ferrari 296 gt3': 'GT3', 'lamborghini huracán gt3': 'GT3', 
+                    'bmw m4 gt3': 'GT3', 'mercedes-amg gt3': 'GT3', 'audi r8 lms gt3': 'GT3', 'mclaren 720s gt3': 'GT3',
+                    'cadillac v-series.r': 'GTP', 'acura arx-06': 'GTP', 'bmw m hybrid v8': 'GTP', 'porsche 963': 'GTP',
+                    'dallara p217': 'LMP2',
+                    'dallara f3': 'F3', 'dallara ir-18': 'IndyCar',
+                    'nascar cup': 'NASCAR Next Gen', 'next gen': 'NASCAR Next Gen'
+                };
+
+                const getCarClass = (carName) => {
+                    const lower = carName.toLowerCase();
+                    for (const [key, val] of Object.entries(CLASS_MAP)) {
+                        if (lower.includes(key)) return val;
+                    }
+                    return 'Other';
+                };
+
+                const formattedLaps = data.map(record => {
+                    const seconds = record.best_lap_time_avg / 10000;
+                    const min = Math.floor(seconds / 60);
+                    const sec = (seconds % 60).toFixed(3).padStart(6, '0');
+                    const timeStr = `${min}:${sec}`;
+
+                    return {
+                        driverName: `Average (${record.compositeKey.iRatingBucket} iR)`,
+                        car: record.compositeKey.carClassName,
+                        carClass: getCarClass(record.compositeKey.carClassName),
+                        lapTime: timeStr,
+                        season: record.season_name.split(' - ').pop(),
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                        source: 'iRacingData'
+                    };
+                });
+
+                // Dedup or limit? Let's take the Top 5 iRating buckets per car to avoid cluttering.
+                const filtered = formattedLaps.sort((a,b) => a.lapTime.localeCompare(b.lapTime)).slice(0, 50);
+
+                const batch = db.batch();
+                const lapsCol = db.collection("race_laps").doc(eventId).collection("laps");
+                resultsDiv.innerHTML = `<span style="color: var(--primary);">Syncing ${filtered.length} records to Firestore...</span>`;
+
+                for (const lap of filtered) {
+                    const newDoc = lapsCol.doc(); 
+                    batch.set(newDoc, lap);
+                }
+
+                await batch.commit();
+                resultsDiv.innerHTML = `<span style="color: #00ff88;">Successfully synced ${filtered.length} records!</span>`;
+                setTimeout(toggleLapSync, 2000);
+
+            } catch (e) {
+                console.error("iRacingData error:", e);
+                resultsDiv.innerHTML = `<span style="color: #ff0055;">Fetch failed: ${e.message}. Try checking the series name.</span>`;
             }
         }
 
