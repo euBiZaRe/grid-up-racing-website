@@ -118,6 +118,24 @@
         let currentTeam = null;
         let userProfile = null;
         let unsubMessages = null;
+        let isAdminUser = false;
+
+        const UPCOMING_EVENTS = [
+            { id: 'imsa-classic-500', name: 'IMSA Classic 500', date: 'April 10-11' },
+            { id: 'nurburgring-24h', name: 'Nürburgring 24h', date: 'May 1-3' },
+            { id: 'indy-500', name: 'INDY 500', date: 'May 5-18' },
+            { id: 'world-600', name: 'World 600', date: 'May 20-25' },
+            { id: 'thruxton-4h', name: '4 Hours at Thruxton', date: 'May 29-31' },
+            { id: 'watkins-glen-6h', name: 'Watkins Glen 6 Hour', date: 'June 19-21' },
+            { id: 'firecracker-400', name: 'Firecracker 400', date: 'June 30 - July 6' },
+            { id: 'spa-24hr', name: 'Spa 24hr', date: 'July 10-12' },
+            { id: 'brickyard-400', name: 'Brickyard 400', date: 'July 22-27' },
+            { id: 'road-america-6h', name: 'Road America 6h', date: 'July 24-26' },
+            { id: 'suzuka-1000km', name: 'Suzuka 1000km', date: 'Sept 10-15' },
+            { id: 'petit-le-mans', name: 'Petit Le Mans', date: 'Sept 25-27' },
+            { id: 'bathurst-1000', name: 'Bathurst 1000', date: 'Oct 2-4' },
+            { id: 'indy-8h', name: 'Indy 8h', date: 'Oct 16-18' }
+        ];
 
         async function initPortal(user) {
             const loading = document.getElementById('loading-portal');
@@ -127,37 +145,56 @@
             const deniedReason = document.getElementById('denied-reason');
 
             try {
-                // 1. Check Verification
-                const claimDoc = await db.collection("claims").where("discordId", "==", user.uid).get();
-                if (claimDoc.empty || claimDoc.docs[0].data().status !== 'verified') {
-                    loading.style.display = 'none';
-                    denied.style.display = 'block';
-                    deniedReason.textContent = "You must be a verified team member to access the portal. Please claim your profile on the Roster page.";
-                    return;
+                // 1. Check Admin Status
+                const MASTER_ADMIN = 'B0t4f4nqqpZIQKpT8Ed97xka5gM2';
+                isAdminUser = (user.uid === MASTER_ADMIN);
+                
+                if (!isAdminUser) {
+                    const adminDoc = await db.collection("settings").doc("admins").get();
+                    if (adminDoc.exists) {
+                        const adminList = adminDoc.data().uids || [];
+                        isAdminUser = adminList.includes(user.uid);
+                    }
                 }
 
-                // 2. Load User Profile
+                // 2. Check Verification (Skip for Admins)
+                if (!isAdminUser) {
+                    const claimDoc = await db.collection("claims").where("discordId", "==", user.uid).get();
+                    if (claimDoc.empty || claimDoc.docs[0].data().status !== 'verified') {
+                        loading.style.display = 'none';
+                        denied.style.display = 'block';
+                        deniedReason.textContent = "You must be a verified team member to access the portal. Please claim your profile on the Roster page.";
+                        return;
+                    }
+                }
+
+                // 3. Load User Profile
                 const userDoc = await db.collection("users").doc(user.uid).get();
                 userProfile = userDoc.exists ? userDoc.data() : { driverName: user.displayName };
                 const myName = userProfile.driverName || user.displayName;
 
-                // 3. Find Teams
+                // 4. Find Teams
                 const lineups = await db.collection("race_lineups").get();
                 const myTeams = [];
+                const allTeamAssignments = [];
+
                 lineups.forEach(doc => {
                     const data = doc.data();
                     const slug = doc.id;
                     if (data.teams) {
                         data.teams.forEach(team => {
+                            const teamObj = {
+                                eventSlug: slug,
+                                eventName: data.eventName || slug.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' '),
+                                teamName: team.name,
+                                teamData: team
+                            };
+                            allTeamAssignments.push(teamObj);
+                            
                             const isCaptain = team.captain === myName;
                             const isDriver = team.drivers && team.drivers.includes(myName);
                             if (isCaptain || isDriver) {
-                                myTeams.push({
-                                    eventSlug: slug,
-                                    eventName: data.eventName || slug.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' '),
-                                    teamName: team.name,
-                                    teamData: team
-                                });
+                                myTeams.push(teamObj);
                             }
                         });
                     }
@@ -165,13 +202,14 @@
 
                 loading.style.display = 'none';
 
-                if (myTeams.length === 0) {
-                    denied.style.display = 'block';
-                    deniedReason.textContent = "You are not currently assigned to any team lineups for upcoming events.";
+                if (isAdminUser) {
+                    showSelection(allTeamAssignments, true);
+                } else if (myTeams.length === 0) {
+                    showSelection([], false); // Still show sign-ups
                 } else if (myTeams.length === 1 && !window.location.hash) {
                     loadTeamPortal(myTeams[0]);
                 } else {
-                    showSelection(myTeams);
+                    showSelection(myTeams, false);
                 }
 
             } catch (error) {
@@ -180,213 +218,170 @@
             }
         }
 
-        function showSelection(teams) {
+        async function showSelection(teams, isAdmin) {
+            const container = document.getElementById('selection-view');
             const grid = document.getElementById('event-selection-grid');
-            grid.innerHTML = "";
-            teams.forEach(t => {
+            
+            let html = `
+                <div style="margin-bottom: 4rem;">
+                    <h2 class="section-title">${isAdminUser ? 'Admin: All Event Lineups' : 'Your Assigned Events'}</h2>
+                    <div class="grid">`;
+            
+            if (teams.length === 0) {
+                html += `<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center; padding: 2rem;">No active team assignments found.</p>`;
+            } else {
+                teams.forEach(t => {
+                    html += `
+                        <div class="card glass" onclick='loadTeamPortal(${JSON.stringify(t)})' style="cursor: pointer;">
+                            <div class="event-meta">${t.teamName}</div>
+                            <h3>${t.eventName}</h3>
+                            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 1rem;">Click to Enter Portal</p>
+                        </div>
+                    `;
+                });
+            }
+
+            html += `</div></div>`;
+
+            // Availability Section
+            html += `
+                <div style="margin-bottom: 4rem;">
+                    <h2 class="section-title">Upcoming Event Sign-ups</h2>
+                    <div id="availability-grid" class="grid">
+                        <p>Loading availability...</p>
+                    </div>
+                </div>
+            `;
+
+            // Admin Results Section
+            if (isAdminUser) {
+                html += `
+                    <div style="margin-bottom: 4rem;">
+                        <h2 class="section-title">Admin Dashboard: Driver Accessibility</h2>
+                        <div id="admin-availability-results" class="glass" style="padding: 2rem; overflow-x: auto;">
+                            <p>Loading summary...</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = `<h1 class="glow-text" style="margin-bottom: 3rem;">Team Portal Dashboard</h1>` + html;
+            container.style.display = 'block';
+
+            // Populate Availability Buttons
+            populateAvailability();
+
+            if (isAdminUser) {
+                loadAdminAvailability();
+            }
+        }
+
+        async function populateAvailability() {
+            const availGrid = document.getElementById('availability-grid');
+            if (!availGrid) return;
+            availGrid.innerHTML = "";
+            
+            for (const event of UPCOMING_EVENTS) {
                 const card = document.createElement('div');
                 card.className = "card glass";
-                card.style.cursor = "pointer";
-                card.onclick = () => loadTeamPortal(t);
-                card.innerHTML = `
-                    <div class="event-meta">${t.teamName}</div>
-                    <h3>${t.eventName}</h3>
-                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 1rem;">Click to Enter Portal</p>
-                `;
-                grid.appendChild(card);
-            });
-            document.getElementById('selection-view').style.display = 'block';
-        }
-
-        function loadTeamPortal(assignment) {
-            currentEvent = assignment.eventSlug;
-            currentTeam = assignment.teamName;
-
-            document.getElementById('selection-view').style.display = 'none';
-            document.getElementById('portal-view').style.display = 'block';
-            document.getElementById('event-title').textContent = assignment.eventName;
-            document.getElementById('team-title').textContent = assignment.teamName;
-
-            // Load Lineup Sidebar
-            const lineupList = document.getElementById('lineup-list');
-            let lineupHtml = `<ul style="list-style: none; margin-top: 0.5rem;">`;
-            if (assignment.teamData.captain) lineupHtml += `<li><strong>${assignment.teamData.captain} (C)</strong></li>`;
-            if (assignment.teamData.drivers) {
-                assignment.teamData.drivers.forEach(d => {
-                    if (d !== assignment.teamData.captain) lineupHtml += `<li>${d}</li>`;
-                });
-            }
-            lineupHtml += `</ul>`;
-            lineupList.innerHTML = lineupHtml;
-
-            // Load Messages
-            listenForMessages();
-            
-            // Load Setups
-            loadSetups();
-
-            // Load G61 Links
-            loadG61Links(assignment.teamData);
-        }
-
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
-            document.querySelectorAll('.portal-tab').forEach(t => t.classList.remove('active'));
-            
-            document.getElementById('tab-' + tabId).style.display = tabId === 'wall' ? 'flex' : 'block';
-            event.target.classList.add('active');
-        }
-
-        // --- Communication Logic ---
-        function listenForMessages() {
-            if (unsubMessages) unsubMessages();
-            
-            const portalId = `${currentEvent}_${currentTeam}`.replace(/\s+/g, '_');
-            const messagesContainer = document.getElementById('chat-messages');
-
-            unsubMessages = db.collection("team_portals").doc(portalId).collection("messages")
-                .orderBy("timestamp", "asc")
-                .limitToLast(50)
-                .onSnapshot(snapshot => {
-                    snapshot.docChanges().forEach(change => {
-                        if (change.type === "added") {
-                            const data = change.doc.data();
-                            const msgDiv = document.createElement('div');
-                            const isOwn = data.userId === auth.currentUser.uid;
-                            msgDiv.className = `message-item ${isOwn ? 'own' : ''}`;
-                            
-                            const time = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '...';
-                            
-                            msgDiv.innerHTML = `
-                                <div class="message-header">
-                                    <span class="message-author">${data.author}</span>
-                                    <span class="message-time">${time}</span>
-                                </div>
-                                <div class="message-body">${data.text}</div>
-                            `;
-                            messagesContainer.appendChild(msgDiv);
-                        }
-                    });
-                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                });
-        }
-
-        async function sendMessage() {
-            const input = document.getElementById('chat-input');
-            const text = input.value.trim();
-            if (!text) return;
-
-            const portalId = `${currentEvent}_${currentTeam}`.replace(/\s+/g, '_');
-            try {
-                await db.collection("team_portals").doc(portalId).collection("messages").add({
-                    text: text,
-                    author: userProfile.driverName || auth.currentUser.displayName,
-                    userId: auth.currentUser.uid,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                input.value = "";
-            } catch (error) {
-                console.error("Error sending message:", error);
-            }
-        }
-
-        // --- Setup Repository Logic ---
-        async function loadSetups() {
-            const portalId = `${currentEvent}_${currentTeam}`.replace(/\s+/g, '_');
-            const setupList = document.getElementById('setup-list');
-            setupList.innerHTML = "<p>Loading setups...</p>";
-
-            try {
-                const snapshot = await db.collection("team_portals").doc(portalId).collection("setups")
-                    .orderBy("timestamp", "desc").get();
+                card.style.padding = "1.5rem";
                 
-                if (snapshot.empty) {
-                    setupList.innerHTML = "<p style='color: var(--text-muted); font-size: 0.9rem;'>No setups uploaded yet.</p>";
-                    return;
+                // Get current status
+                let currentStatus = null;
+                try {
+                    const statusDoc = await db.collection("event_availability").doc(event.id).collection("responses").doc(auth.currentUser.uid).get();
+                    currentStatus = statusDoc.exists ? statusDoc.data().status : null;
+                } catch (e) {
+                    console.warn("Could not fetch status for", event.id);
                 }
 
-                setupList.innerHTML = "";
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    const item = document.createElement('div');
-                    item.className = "setup-item";
-                    item.innerHTML = `
-                        <div class="setup-info-main">
-                            <div class="setup-icon">📄</div>
-                            <div>
-                                <span class="setup-name">${data.fileName}</span>
-                                <span class="setup-meta">Uploaded by ${data.uploader}</span>
-                            </div>
-                        </div>
-                        <a href="${data.downloadUrl}" target="_blank" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.7rem;">Download</a>
-                    `;
-                    setupList.appendChild(item);
-                });
-            } catch (error) {
-                console.error("Error loading setups:", error);
+                card.innerHTML = `
+                    <div class="event-meta">${event.date}</div>
+                    <h3 style="font-size: 1rem;">${event.name}</h3>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1.5rem;">
+                        <button onclick="setAvailability('${event.id}', 'signed_up')" class="btn ${currentStatus === 'signed_up' ? 'btn-primary' : 'btn-outline'}" style="padding: 0.5rem; font-size: 0.7rem;">Sign Up</button>
+                        <button onclick="setAvailability('${event.id}', 'not_interested')" class="btn ${currentStatus === 'not_interested' ? 'btn-primary' : 'btn-outline'}" style="padding: 0.5rem; font-size: 0.7rem; background: ${currentStatus === 'not_interested' ? '#444' : ''};">Not Interested</button>
+                        <button onclick="setAvailability('${event.id}', 'unavailable')" class="btn ${currentStatus === 'unavailable' ? 'btn-primary' : 'btn-outline'}" style="padding: 0.5rem; font-size: 0.7rem; background: ${currentStatus === 'unavailable' ? '#600' : ''};">Not Available</button>
+                    </div>
+                `;
+                availGrid.appendChild(card);
             }
         }
 
-        async function uploadSetup(input) {
-            const file = input.files[0];
-            if (!file) return;
-
-            if (!file.name.endsWith('.sto')) {
-                alert("Only .sto files are supported.");
-                return;
-            }
-
-            const portalId = `${currentEvent}_${currentTeam}`.replace(/\s+/g, '_');
-            const storageRef = firebase.storage().ref(`setups/${portalId}/${file.name}`);
-            
+        async function setAvailability(eventId, status) {
+            const myName = userProfile.driverName || auth.currentUser.displayName;
             try {
-                const btn = input.parentElement;
-                const originalText = btn.textContent;
-                btn.textContent = "Uploading...";
-                btn.style.opacity = "0.5";
-
-                const snapshot = await storageRef.put(file);
-                const url = await snapshot.ref.getDownloadURL();
-
-                await db.collection("team_portals").doc(portalId).collection("setups").add({
-                    fileName: file.name,
-                    downloadUrl: url,
-                    uploader: userProfile.driverName || auth.currentUser.displayName,
-                    uploaderId: auth.currentUser.uid,
+                await db.collection("event_availability").doc(eventId).collection("responses").doc(auth.currentUser.uid).set({
+                    status: status,
+                    driverName: myName,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
-
-                btn.textContent = originalText;
-                btn.style.opacity = "1";
-                loadSetups();
+                // Refresh selection view
+                populateAvailability();
+                if (isAdminUser) loadAdminAvailability();
             } catch (error) {
-                console.error("Upload error:", error);
-                alert("Upload failed: " + error.message);
+                console.error("Error setting availability:", error);
+                alert("Error saving response: " + error.message);
             }
         }
 
-        // --- G61 & Telemetry Logic ---
-        async function loadG61Links(teamData) {
-            const list = document.getElementById('g61-member-list');
-            list.innerHTML = "";
-            
-            const drivers = [teamData.captain, ...(teamData.drivers || [])].filter((v, i, a) => a.indexOf(v) === i && v);
+        async function loadAdminAvailability() {
+            const resultsDiv = document.getElementById('admin-availability-results');
+            if (!resultsDiv) return;
 
-            for (const dName of drivers) {
-                // Try to find user profile for this driver name
-                const userQuery = await db.collection("users").where("driverName", "==", dName).get();
-                let g61Url = null;
-                if (!userQuery.empty) {
-                    g61Url = userQuery.docs[0].data().g61Url;
+            try {
+                let html = `
+                    <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem; text-align: left;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid var(--glass-border);">
+                                <th style="padding: 1rem;">Driver</th>
+                                ${UPCOMING_EVENTS.map(e => `<th style="padding: 1rem; white-space: nowrap;">${e.name.split(' ').slice(0,2).join(' ')}</th>`).join('')}
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                // Fetch all unique drivers who have responded
+                const allDrivers = {}; // uid -> name
+                const allResponses = {}; // eventId -> { uid -> status }
+
+                for (const event of UPCOMING_EVENTS) {
+                    const snap = await db.collection("event_availability").doc(event.id).collection("responses").get();
+                    allResponses[event.id] = {};
+                    snap.forEach(doc => {
+                        const data = doc.data();
+                        allDrivers[doc.id] = data.driverName;
+                        allResponses[event.id][doc.id] = data.status;
+                    });
                 }
 
-                const item = document.createElement('div');
-                item.className = "g61-item";
-                item.innerHTML = `
-                    <div class="g61-name">${dName}</div>
-                    ${g61Url ? `<a href="${g61Url}" target="_blank" class="g61-link">Garage 61 Profile →</a>` : `<span style="color: var(--text-muted); font-size: 0.7rem;">No G61 Linked</span>`}
-                `;
-                list.appendChild(item);
+                const driverUids = Object.keys(allDrivers).sort((a,b) => allDrivers[a].localeCompare(allDrivers[b]));
+
+                if (driverUids.length === 0) {
+                    html += `<tr><td colspan="${UPCOMING_EVENTS.length + 1}" style="padding: 2rem; text-align: center; color: var(--text-muted);">No responses received yet.</td></tr>`;
+                } else {
+                    driverUids.forEach(uid => {
+                        html += `<tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                            <td style="padding: 0.8rem; font-weight: 700; color: var(--primary);">${allDrivers[uid]}</td>
+                        `;
+                        UPCOMING_EVENTS.forEach(event => {
+                            const status = allResponses[event.id][uid];
+                            let statusHtml = "–";
+                            if (status === 'signed_up') statusHtml = `<span style="color: #00ff88;">YES</span>`;
+                            if (status === 'not_interested') statusHtml = `<span style="color: #888;">N/I</span>`;
+                            if (status === 'unavailable') statusHtml = `<span style="color: #ff0055;">N/A</span>`;
+                            html += `<td style="padding: 0.8rem; text-align: center;">${statusHtml}</td>`;
+                        });
+                        html += `</tr>`;
+                    });
+                }
+
+                html += `</tbody></table>`;
+                resultsDiv.innerHTML = html;
+
+            } catch (error) {
+                console.error("Error loading admin availability:", error);
+                resultsDiv.innerHTML = `<p style="color: #ff0055;">Error loading results.</p>`;
             }
         }
 
