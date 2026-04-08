@@ -31,8 +31,7 @@
     </header>
 
     <main class="container section">
-        <div class="event-details-grid">
-            <div class="event-main">
+        <div style="max-width: 1000px; margin: 0 auto;">
                 <section class="glass card" style="margin-bottom: 2rem;">
                     <h2 style="color: var(--primary); margin-bottom: 1.5rem;">Event Summary</h2>
                     <p style="color: var(--text-muted); line-height: 1.8;">A brutal 12-hour endurance test on Mount Panorama. This event serves as the opening round to the Intercontinental GT Challenge Series, where GT3 cars battle through the narrow walls and high-speeds of Bathurst.</p>
@@ -98,47 +97,6 @@
                     </div>
                 </section>
             </div>
-
-                        <aside class="event-sidebar">
-                <div class="glass sidebar-card">
-                    <h3>Race Format</h3>
-                    <ul style="list-style: none; margin-top: 1rem;">
-                        <li style="margin-bottom: 0.5rem;"><strong style="color: var(--primary);">Type:</strong> TBD</li>
-                        <li style="margin-bottom: 0.5rem;"><strong style="color: var(--primary);">Distance:</strong> TBD</li>
-                        <li style="margin-bottom: 0.5rem;"><strong style="color: var(--primary);">Classes:</strong> TBD</li>
-                    </ul>
-                </div>
-
-                <div class="glass sidebar-card">
-                    <h3>Confirmed Lineup</h3>
-                    <div id="confirmed-lineup">
-                        <!-- LINEUP_START -->
-                        <div class="lineup-item">
-                            <span style="color: var(--primary); font-weight: 600;">GRiD UP Sim Racing</span>
-                        </div>
-                        <div class="lineup-item">
-                            <span style="color: var(--primary); font-weight: 600;">GRiD UP Black</span>
-                        </div>
-                        <div class="lineup-item">
-                            <span style="color: var(--primary); font-weight: 600;">GRiD UP White</span>
-                        </div>
-                        <div class="lineup-item">
-                            <span style="color: var(--primary); font-weight: 600;">GRiD UP Blue</span>
-                        </div>
-                        <div class="lineup-item">
-                            <span style="color: var(--primary); font-weight: 600;">GRiD UP Red</span>
-                        </div>
-                        <!-- LINEUP_END -->
-                    </div>
-                </div>
-
-                <div class="glass sidebar-card" style="border-color: var(--secondary);">
-                    <h3>Join the Team</h3>
-                    <p style="margin-bottom: 1.5rem;">Interested in racing this event with Grid Up? Join our Discord to register.</p>
-                    <a href="https://discord.gg/gridup" class="btn" style="width: 100%; text-align: center;">Join Discord</a>
-                </div>
-            </aside>
-        </div>
 
         <div style="text-align: center; margin-top: 4rem;">
             <a href="../../events.html" class="btn btn-outline">Back to Events</a>
@@ -214,9 +172,8 @@
                         </a>
                     </div>
                 </div>
-            </div>
 
-            <div style="text-align: center; margin-top: 2rem;">
+        <div style="text-align: center; margin-top: 2rem;">
                 <a href="../../events.html" class="btn btn-outline" style="padding: 0.6rem 1.2rem; font-size: 0.9rem;">View All Events</a>
             </div>
         </div>
@@ -240,12 +197,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
     <script src="../../js/auth.js"></script>
-    <script>
-        window.addEventListener('load', () => {
-            if (typeof loadRaceLineup === 'function') {
-                loadRaceLineup('bathurst-12');
-            }
-        });
-    </script>
+    
 </body>
 </html>
