@@ -313,6 +313,7 @@ async function loadDynamicContent() {
         'ff1600-festival':      `${BASE}/2026/01/iRSE-2026-iRacing-Conspit-FF1600-Festival.png`,
         'homestead-championship': `${BASE}/2025/12/iRSE-2026-Homestead-Championship.png`,
         'sfl-mountain-showdown': `${BASE}/2025/12/iRSE-2026-SFL-Mountain-Challenge.png`,
+        'scca-runoffs':         `${BASE}/2024/12/iRSE-2025-Scca-Runoffs.png`,
         '992-endurance-cup':    `${BASE}/2026/04/iRSE-2026-Creventic-992-Endurance-Cup.png`,
         'winter-derby':         `${BASE}/2025/12/iRSE-2026-Winter-Derby.png`,
         'chili-bowl':           `${BASE}/2025/12/iRSE-2026-Chili-Bowl.png`,
