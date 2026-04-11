@@ -275,7 +275,10 @@ async function loadDynamicContent() {
         'imsa-classic-500', 'nurburgring-24h', 'indy-500', 'world-600',
         'thruxton-4h', 'watkins-glen-6h', 'spa-24hr', 'firecracker-400',
         'road-america-6h', 'brickyard-400', 'suzuka-1000km', 'petit-le-mans',
-        'bathurst-1000', 'indy-8h',
+        'bathurst-1000', 'indy-8h', 'knoxville-nationals', 'portimao-1000',
+        'crandon-championship', 'southern-500', 'britcar-24hr', 'ff1600-festival',
+        'homestead-championship', 'sfl-mountain-showdown', 'scca-runoffs',
+        '992-endurance-cup', 'winter-derby', 'chili-bowl', 'production-car-challenge',
         // Completed events with static pages
         'iracing-roar', 'daytona-24', 'daytona-500', 'bathurst-12', 'sebring-12hr'
     ];
