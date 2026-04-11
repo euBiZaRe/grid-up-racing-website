@@ -825,8 +825,8 @@
             document.getElementById('card-drivers').dataset.uids = JSON.stringify(resolvedUids);
         }
 
-        async function generateRaceCard() {
-            const btn = event.target;
+        async function generateRaceCard(e) {
+            const btn = e ? e.target : document.querySelector('.btn-primary');
             const originalText = btn.textContent;
             
             const file = document.getElementById('card-photo').files[0];
@@ -835,59 +835,75 @@
             const carNum = document.getElementById('card-number').value.trim();
             const driversStr = document.getElementById('card-drivers').value.trim();
             
-            // Try to get UIDs from dataset, otherwise empty array for manual entry
-            let uids = [];
-            try {
-                const uidsStr = document.getElementById('card-drivers').dataset.uids;
-                uids = uidsStr ? JSON.parse(uidsStr) : [];
-            } catch (e) {
-                console.warn("UID parsing failed:", e);
-            }
-
             if (!file || !eventId || !pos || !driversStr) return alert("Please fill all fields and upload a photo.");
 
             try {
                 btn.disabled = true;
-                btn.textContent = "GENERATING CARD...";
-                console.log("Generating card for event:", eventId);
+                btn.textContent = "INITIALIZING...";
+                console.log("Starting generation for:", eventId, "File:", file.name);
 
-                // 1. Upload Original Photo
+                // 1. Upload with Progress
                 const storageRef = firebase.storage().ref(`results/${eventId}/${Date.now()}_${file.name}`);
-                const snapshot = await storageRef.put(file);
-                const rawUrl = await snapshot.ref.getDownloadURL();
-                console.log("Photo uploaded:", rawUrl);
+                const uploadTask = storageRef.put(file);
 
-                // 2. Safe Event Name Lookup
-                const event = UPCOMING_EVENTS.find(e => e.id === eventId);
-                const eventName = event ? event.name : (document.getElementById('card-event').options[document.getElementById('card-event').selectedIndex].text);
+                await new Promise((resolve, reject) => {
+                    uploadTask.on('state_changed', 
+                        (snapshot) => {
+                            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                            btn.textContent = `UPLOADING ${Math.round(progress)}%...`;
+                            console.log('Upload is ' + progress + '% done');
+                        }, 
+                        (error) => {
+                            console.error("Upload error:", error);
+                            reject(error);
+                        }, 
+                        async () => {
+                            try {
+                                const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                                resolve(downloadURL);
+                            } catch (err) { reject(err); }
+                        }
+                    );
+                }).then(async (rawUrl) => {
+                    btn.textContent = "SAVING DATA...";
+                    
+                    // 2. Safe Event Name Lookup
+                    const event = UPCOMING_EVENTS.find(ev => ev.id === eventId);
+                    const eventName = event ? event.name : (document.getElementById('card-event').options[document.getElementById('card-event').selectedIndex].text);
 
-                // 3. Save Metadata to Firestore
-                const cardData = {
-                    eventId: eventId,
-                    eventName: eventName,
-                    position: pos,
-                    carNumber: carNum,
-                    drivers: driversStr.split(',').map(d => d.trim()),
-                    uids: uids.filter(id => id), 
-                    rawUrl: rawUrl,
-                    status: 'completed',
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                };
+                    // 3. Resolve UIDs safely
+                    let uids = [];
+                    try {
+                        const uidsStr = document.getElementById('card-drivers').dataset.uids;
+                        uids = uidsStr ? JSON.parse(uidsStr) : [];
+                    } catch (err) { console.warn("UID parse fail:", err); }
 
-                await db.collection("race_results").add(cardData);
-                console.log("Firestore document created.");
-                
-                alert("SUCCESS! Race card created and distributed to drivers.");
-                loadResults();
+                    const cardData = {
+                        eventId: eventId,
+                        eventName: eventName,
+                        position: pos,
+                        carNumber: carNum,
+                        drivers: driversStr.split(',').map(d => d.trim()),
+                        uids: uids.filter(id => id), 
+                        rawUrl: rawUrl,
+                        status: 'completed',
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    };
 
-                // Clear form
-                document.getElementById('card-photo').value = '';
-                document.querySelectorAll('#section-results input').forEach(i => i.value = '');
-                if (document.getElementById('card-drivers')) document.getElementById('card-drivers').dataset.uids = '';
+                    await db.collection("race_results").add(cardData);
+                    alert("SUCCESS! Race card created.");
+                    loadResults();
+
+                    // Reset form
+                    document.getElementById('card-photo').value = '';
+                    document.getElementById('card-pos').value = '';
+                    document.getElementById('card-number').value = '';
+                    document.getElementById('card-drivers').value = '';
+                });
 
             } catch (e) {
-                console.error("Card generation error:", e);
-                alert("CRITICAL ERROR: " + e.message);
+                console.error("Card generation failed:", e);
+                alert("CRITICAL ERROR: " + e.message + "\n\nTip: check console (F12) for details.");
             } finally {
                 btn.disabled = false;
                 btn.textContent = originalText;
