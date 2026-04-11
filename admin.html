@@ -375,7 +375,7 @@
                                 <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem;">
                                     <span style="color: var(--primary); font-weight: 800;">AI ENGINE:</span> Once created, the AI will stylize your photo into a cinematic race trophy card.
                                 </p>
-                                <button onclick="generateRaceCard()" class="btn btn-primary" style="width: 100%; box-shadow: 0 0 30px rgba(0,207,255,0.4); text-transform: uppercase;">
+                                <button onclick="generateRaceCard(event)" class="btn btn-primary" style="width: 100%; box-shadow: 0 0 30px rgba(0,207,255,0.4); text-transform: uppercase;">
                                     Execute AI Generation
                                 </button>
                             </div>
@@ -826,6 +826,9 @@
         }
 
         async function generateRaceCard() {
+            const btn = event.target;
+            const originalText = btn.textContent;
+            
             const file = document.getElementById('card-photo').files[0];
             const eventId = document.getElementById('card-event').value;
             const pos = document.getElementById('card-pos').value.trim();
@@ -837,42 +840,57 @@
             try {
                 const uidsStr = document.getElementById('card-drivers').dataset.uids;
                 uids = uidsStr ? JSON.parse(uidsStr) : [];
-            } catch (e) {}
+            } catch (e) {
+                console.warn("UID parsing failed:", e);
+            }
 
             if (!file || !eventId || !pos || !driversStr) return alert("Please fill all fields and upload a photo.");
 
             try {
+                btn.disabled = true;
+                btn.textContent = "GENERATING CARD...";
+                console.log("Generating card for event:", eventId);
+
                 // 1. Upload Original Photo
                 const storageRef = firebase.storage().ref(`results/${eventId}/${Date.now()}_${file.name}`);
                 const snapshot = await storageRef.put(file);
                 const rawUrl = await snapshot.ref.getDownloadURL();
+                console.log("Photo uploaded:", rawUrl);
 
-                // 2. Save Metadata to Firestore
+                // 2. Safe Event Name Lookup
+                const event = UPCOMING_EVENTS.find(e => e.id === eventId);
+                const eventName = event ? event.name : (document.getElementById('card-event').options[document.getElementById('card-event').selectedIndex].text);
+
+                // 3. Save Metadata to Firestore
                 const cardData = {
                     eventId: eventId,
-                    eventName: UPCOMING_EVENTS.find(e => e.id === eventId).name,
+                    eventName: eventName,
                     position: pos,
                     carNumber: carNum,
                     drivers: driversStr.split(',').map(d => d.trim()),
-                    uids: uids.filter(id => id), // Clean empty IDs
+                    uids: uids.filter(id => id), 
                     rawUrl: rawUrl,
                     status: 'completed',
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 };
 
                 await db.collection("race_results").add(cardData);
+                console.log("Firestore document created.");
                 
-                alert("Race card created successfully!");
+                alert("SUCCESS! Race card created and distributed to drivers.");
                 loadResults();
 
                 // Clear form
                 document.getElementById('card-photo').value = '';
                 document.querySelectorAll('#section-results input').forEach(i => i.value = '');
-                document.getElementById('card-drivers').dataset.uids = '';
+                if (document.getElementById('card-drivers')) document.getElementById('card-drivers').dataset.uids = '';
 
             } catch (e) {
                 console.error("Card generation error:", e);
-                alert("Error: " + e.message);
+                alert("CRITICAL ERROR: " + e.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
             }
         }
 
