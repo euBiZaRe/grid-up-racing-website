@@ -258,8 +258,44 @@
             </div>
 
             <!-- Admins Management Section -->
-            <div id="section-admins" style="display: none;">
-                <!-- ... existing admins content ... -->
+            <div id="section-admins" class="tab-content" style="display: none;">
+                <div class="grid" style="grid-template-columns: 1fr 2fr; gap: 2rem; align-items: start;">
+                    <!-- Add Admin Form -->
+                    <div class="glass" style="padding: 2.5rem; border: 1px solid var(--glass-border);">
+                        <h3 style="color: var(--primary); margin-bottom: 2rem;">Add New Admin</h3>
+                        <div style="display: grid; gap: 1.5rem;">
+                            <div>
+                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">USER UID (from Profile)</label>
+                                <input type="text" id="new-admin-uid" class="btn btn-outline" style="width: 100%; text-align: left;" placeholder="Paste user UID here...">
+                            </div>
+                            <button onclick="addAdmin()" class="btn btn-primary">Grant Admin Access</button>
+                            <p style="font-size: 0.7rem; color: var(--text-muted); line-height: 1.4;">
+                                <strong>Note:</strong> Admins can manage claims, lineups, and live streams. Only the Master Admin can manage the Permissions list.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Admins List -->
+                    <div class="glass" style="padding: 2.5rem;">
+                        <h3 style="color: var(--primary); margin-bottom: 2rem;">Current Team Admins</h3>
+                        <div class="glass" style="padding: 0; background: none;">
+                            <table class="claims-table">
+                                <thead>
+                                    <tr>
+                                        <th>User UID</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admins-list">
+                                    <!-- Populated by JS -->
+                                    <tr>
+                                        <td colspan="2" style="text-align: center; color: var(--text-muted);">Loading admin list...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Events Management Section -->
