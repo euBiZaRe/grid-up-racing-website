@@ -133,15 +133,26 @@
 
 body {
     background-color: var(--bg-dark);
-    background-image: 
-        radial-gradient(circle at 50% 0%, rgba(77, 163, 255, 0.05) 0%, transparent 60%),
-        radial-gradient(circle at 100% 100%, rgba(0, 207, 255, 0.03) 0%, transparent 50%);
+    background-image: url('assets/motorsport_carbon_bg.png');
     background-attachment: fixed;
+    background-size: cover;
+    background-blend-mode: multiply;
     color: var(--text-main);
     font-family: 'Outfit', sans-serif;
     line-height: 1.6;
     overflow-x: hidden;
     scroll-behavior: smooth;
+}
+
+.tread-overlay {
+    background-image: url('assets/tire_tread_marks.png');
+    background-size: 800px;
+    background-repeat: repeat;
+    opacity: 0.1;
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
 }
 
 /* Custom Scrollbar */
@@ -203,7 +214,7 @@ h1, h2, h3 {
 
 /* Components */
 .glass {
-    background: var(--bg-card);
+    background: rgba(255, 255, 255, 0.02);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--glass-border);
