@@ -402,7 +402,7 @@
                                     <span style="color: var(--primary); font-weight: 800;">AI ENGINE:</span> Once created, the AI will stylize your photo into a cinematic race trophy card.
                                 </p>
                                 <button onclick="generateRaceCard(event)" class="btn btn-primary" style="width: 100%; box-shadow: 0 0 30px rgba(0,207,255,0.4); text-transform: uppercase;">
-                                    Execute AI Generation
+                                    GENERATE CARDS
                                 </button>
                             </div>
                         </div>
@@ -968,20 +968,17 @@
             
             if (!eventId || !pos || !driversStr) return alert("Please fill required fields (Event, Finish, and Drivers).");
 
-            let finalPhotoUrl = photoUrl;
-            
-            // Background default asset logic if no URL provided
-            if (!finalPhotoUrl) {
-                const teamIdx = document.getElementById('card-team').value;
-                if (teamIdx !== "" && CURRENT_CARD_TEAM) {
-                    const team = CURRENT_CARD_TEAM[teamIdx];
-                    const teamColor = team.name.split(' ').pop().toLowerCase();
-                    const ext = teamColor === 'blue' ? 'png' : 'jpg';
-                    finalPhotoUrl = `assets/Team ${teamColor.charAt(0).toUpperCase() + teamColor.slice(1)}.${ext}`;
-                } else {
-                    return alert("Please provide a Photo URL or select a Team to use a default asset.");
-                }
+            let teamAssetUrl = "";
+            const teamIdx = document.getElementById('card-team').value;
+            if (teamIdx !== "" && CURRENT_CARD_TEAM) {
+                const team = CURRENT_CARD_TEAM[teamIdx];
+                const teamColor = team.name.split(' ').pop().toLowerCase();
+                const ext = (teamColor === 'blue') ? 'png' : 'jpg';
+                teamAssetUrl = `assets/Team ${teamColor.charAt(0).toUpperCase() + teamColor.slice(1)}.${ext}`;
             }
+
+            const finalPhotoUrl = photoUrl || teamAssetUrl;
+            if (!finalPhotoUrl) return alert("Please provide a Photo URL or select a Team to use a default asset.");
 
             try {
                 btn.disabled = true;
@@ -1011,7 +1008,8 @@
                     raceDate: raceDate,
                     drivers: driversStr.split(',').map(d => d.trim()),
                     uids: uids.filter(id => id), 
-                    rawUrl: finalPhotoUrl,
+                    rawUrl: photoUrl, // User's specific photo
+                    teamAsset: teamAssetUrl, // Branded background
                     status: 'completed',
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 };
@@ -1067,10 +1065,18 @@
                     card.style.aspectRatio = '16/9';
                     card.style.borderRadius = '12px';
                     card.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
+                    
+                    const bgImg = d.teamAsset || d.rawUrl;
+                    const fgImg = d.rawUrl && d.teamAsset && d.rawUrl !== d.teamAsset ? d.rawUrl : null;
 
                     card.innerHTML = `
-                        <img src="${d.rawUrl}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.7;">
-                        <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, transparent 40%, rgba(0,0,0,0.4) 100%);"></div>
+                        <!-- Layer 1: Team Branded Background -->
+                        <img src="${bgImg}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.5; transition: transform 0.8s;">
+                        
+                        <!-- Layer 2: User Photo Overlay -->
+                        ${fgImg ? `<img src="${fgImg}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 0 20px rgba(0,0,0,0.8)); z-index: 1;">` : ''}
+
+                        <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, transparent 40%, rgba(0,0,0,0.3) 100%); z-index: 2;"></div>
                         
                         <!-- Top Left: Event Type/Track -->
                         <div style="position: absolute; top: 1rem; left: 1rem; text-align: left;">

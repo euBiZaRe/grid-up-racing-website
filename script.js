@@ -393,9 +393,17 @@ async function loadDynamicContent() {
 
                     card.onclick = () => openCardModal(d);
 
+                    const bgImg = d.teamAsset || d.rawUrl;
+                    const fgImg = d.rawUrl && d.teamAsset && d.rawUrl !== d.teamAsset ? d.rawUrl : null;
+
                     card.innerHTML = `
-                        <img src="${d.rawUrl}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.7; transition: transform 0.8s;">
-                        <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, transparent 40%, rgba(0,0,0,0.4) 100%);"></div>
+                        <!-- Layer 1: Team Branded Background -->
+                        <img src="${bgImg}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.5; transition: transform 0.8s;">
+                        
+                        <!-- Layer 2: User Photo Overlay -->
+                        ${fgImg ? `<img src="${fgImg}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 0 15px rgba(0,0,0,0.8)); z-index: 1;">` : ''}
+
+                        <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, transparent 40%, rgba(0,0,0,0.3) 100%); z-index: 2;"></div>
                         
                         <!-- Top Left: Event Type/Track -->
                         <div style="position: absolute; top: 1rem; left: 1rem; text-align: left;">
@@ -457,11 +465,19 @@ function openCardModal(data) {
     const container = document.getElementById('modal-container');
     if (!modal || !container) return;
 
+    const bgImg = data.teamAsset || data.rawUrl;
+    const fgImg = data.rawUrl && data.teamAsset && data.rawUrl !== data.teamAsset ? data.rawUrl : null;
+
     // Render high-fidelity version for the modal
     container.innerHTML = `
         <div class="card cinematic-poster" style="padding: 0; overflow: hidden; position: relative; background: #000; width: 100%; height: 100%; border-radius: 20px; box-shadow: 0 40px 80px rgba(0,0,0,0.9);">
-            <img src="${data.rawUrl}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.8;">
-            <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, transparent 40%, rgba(0,0,0,0.4) 100%);"></div>
+            <!-- Layer 1: Background -->
+            <img src="${bgImg}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.5;">
+            
+            <!-- Layer 2: Foreground Overlay -->
+            ${fgImg ? `<img src="${fgImg}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 0 30px rgba(0,0,0,0.9)); z-index: 1;">` : ''}
+
+            <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, transparent 40%, rgba(0,0,0,0.3) 100%); z-index: 2;"></div>
             
             <div style="position: absolute; top: 3rem; left: 4rem; text-align: left;">
                 <div style="font-size: 1.25rem; color: var(--primary); font-weight: 900; letter-spacing: 6px; text-transform: uppercase;">SPECIAL EVENTS</div>
@@ -518,20 +534,58 @@ async function downloadActiveCard() {
     btn.disabled = true;
 
     try {
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        img.src = d.rawUrl;
+        const bgImg = new Image();
+        bgImg.crossOrigin = "anonymous";
+        bgImg.src = d.teamAsset || d.rawUrl;
         
         await new Promise((resolve, reject) => {
-            img.onload = resolve;
-            img.onerror = () => reject(new Error("CORS block"));
+            bgImg.onload = resolve;
+            bgImg.onerror = () => reject(new Error("BG Load fail"));
         });
+
+        let fgImg = null;
+        if (d.rawUrl && d.teamAsset && d.rawUrl !== d.teamAsset) {
+            fgImg = new Image();
+            fgImg.crossOrigin = "anonymous";
+            fgImg.src = d.rawUrl;
+            await new Promise((resolve, reject) => {
+                fgImg.onload = resolve;
+                fgImg.onerror = () => reject(new Error("FG Load fail"));
+            });
+        }
 
         ctx.fillStyle = '#000';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.globalAlpha = 0.8; 
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        
+        // Draw Background
+        ctx.globalAlpha = 0.5; 
+        ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
         ctx.globalAlpha = 1.0;
+
+        // Draw Foreground if exists
+        if (fgImg) {
+            // Shadow
+            ctx.shadowColor = 'rgba(0,0,0,0.8)';
+            ctx.shadowBlur = 40;
+            
+            // Calculate contain aspect ratio for FG
+            const imgAspect = fgImg.width / fgImg.height;
+            const canvasAspect = canvas.width / canvas.height;
+            let drawW, drawH, drawX, drawY;
+
+            if (imgAspect > canvasAspect) {
+                drawW = canvas.width;
+                drawH = canvas.width / imgAspect;
+            } else {
+                drawH = canvas.height;
+                drawW = canvas.height * imgAspect;
+            }
+            drawX = (canvas.width - drawW) / 2;
+            drawY = (canvas.height - drawH) / 2;
+
+            ctx.drawImage(fgImg, drawX, drawY, drawW, drawH);
+            ctx.shadowBlur = 0; // Reset shadow
+        }
 
         const grad = ctx.createLinearGradient(0, canvas.height, 0, canvas.height * 0.4);
         grad.addColorStop(0, 'rgba(0,0,0,0.95)');
