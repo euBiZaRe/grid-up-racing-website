@@ -249,9 +249,17 @@ async function loadDynamicContent() {
             .orderBy("startDate", "asc")
             .get();
 
+        const heroTitle = document.getElementById('hero-event-name');
+        const heroSubtitle = document.getElementById('hero-event-subtitle');
+
         if (snap.empty) {
+            console.log("Auth: No upcoming events found.");
             if (upcomingTrack) upcomingTrack.innerHTML = '<p style="text-align: center; color: var(--text-muted); width: 100%;">No upcoming events scheduled.</p>';
             if (fullEventList) fullEventList.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Stay tuned for future event dates.</p>';
+            
+            // Clear LOADING state from hero
+            if (heroTitle) heroTitle.textContent = "STAY TUNED";
+            if (heroSubtitle) heroSubtitle.textContent = "No Active Events";
         } else {
             const events = [];
             snap.forEach(doc => events.push({ id: doc.id, ...doc.data() }));
@@ -346,6 +354,8 @@ async function loadDynamicContent() {
     } catch (error) {
         console.error("Error loading events:", error);
         if (upcomingTrack) upcomingTrack.innerHTML = '<p style="color: #ff0055;">Failed to load schedule.</p>';
+        const heroTitle = document.getElementById('hero-event-name');
+        if (heroTitle) heroTitle.textContent = "SYNC ERROR";
     }
 
     // 2. Load Recent Results (Race Cards)
