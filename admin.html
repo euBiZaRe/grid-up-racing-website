@@ -109,9 +109,11 @@
 <body class="admin-page">
     <nav id="navbar" class="scrolled">
         <div class="container nav-content">
-            <a href="index.html" class="logo">
-                <img src="assets/logo.png" alt="GRID UP" style="height: 40px; vertical-align: middle;">
-            </a>
+            <div class="menu-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
             <div class="nav-links">
                 <a href="index.html#home">Home</a>
                 <a href="index.html#about">About</a>
@@ -161,8 +163,8 @@
 
             <!-- Claims Section -->
             <div id="section-claims" class="tab-content" style="display: none;">
-                <div class="glass" style="padding: 0; overflow-x: auto;">
-                <table class="claims-table">
+                <div class="glass" style="padding: 1.5rem; overflow-x: auto;">
+                <table class="claims-table mobile-table">
                     <thead>
                         <tr>
                             <th>Driver Name</th>
@@ -287,10 +289,10 @@
                     </div>
 
                     <!-- Admins List -->
-                    <div class="glass" style="padding: 2.5rem;">
+                    <div class="glass" style="padding: 1.5rem;">
                         <h3 style="color: var(--primary); margin-bottom: 2rem;">Current Team Admins</h3>
-                        <div class="glass" style="padding: 0; background: none;">
-                            <table class="claims-table">
+                        <div class="glass" style="padding: 1.5rem; background: none; overflow-x: auto;">
+                            <table class="claims-table mobile-table">
                                 <thead>
                                     <tr>
                                         <th>User UID</th>
@@ -638,11 +640,11 @@
                     const row = document.createElement('tr');
                     
                     row.innerHTML = `
-                        <td><strong style="color: var(--text-main);">${id}</strong></td>
-                        <td style="font-family: monospace; color: var(--primary);">${data.iracingId}</td>
-                        <td><span class="status-badge status-${data.status}">${data.status.toUpperCase()}</span></td>
-                        <td>
-                            <div class="action-btns" style="display: flex; gap: 5px;">
+                        <td data-label="Driver Name"><strong style="color: var(--text-main);">${id}</strong></td>
+                        <td data-label="iRacing ID" style="font-family: monospace; color: var(--primary);">${data.iracingId}</td>
+                        <td data-label="Status"><span class="status-badge status-${data.status}">${data.status.toUpperCase()}</span></td>
+                        <td data-label="Actions">
+                            <div class="action-btns" style="display: flex; gap: 5px; justify-content: flex-end;">
                                 ${data.status !== 'verified' ? `<button onclick="updateClaim('${id}', 'verified')" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.7rem;">Approve</button>` : ''}
                                 ${data.status === 'verified' ? `<button onclick="promoteUIDAsAdmin('${data.discordId}', '${id}')" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; color: var(--primary); border-color: var(--primary);">Promote</button>` : ''}
                                 ${data.status !== 'denied' ? `<button onclick="updateClaim('${id}', 'denied')" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; border-color: #ff0099; color: #ff0099;">Deny</button>` : ''}
@@ -1439,8 +1441,8 @@
                     if (uid !== 'B0t4f4nqqpZIQKpT8Ed97xka5gM2') {
                         list.innerHTML += `
                             <tr>
-                                <td style="font-family: monospace;">${uid}</td>
-                                <td>
+                                <td data-label="User UID" style="font-family: monospace;">${uid}</td>
+                                <td data-label="Actions">
                                     <button onclick="removeAdmin('${uid}')" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; border-color: #ff0099; color: #ff0099;">Remove</button>
                                 </td>
                             </tr>
