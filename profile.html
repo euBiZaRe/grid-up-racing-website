@@ -378,12 +378,34 @@
             if (!gallery || !section) return;
 
             try {
-                // Query results where this user was a driver
-                const snap = await db.collection("race_results")
-                    .where("uids", "array-contains", uid)
-                    .get();
+                // 1. Fetch user's verified identity from claims
+                let identity = null;
+                const claimSnap = await db.collection("claims").where("discordId", "==", uid).get();
+                if (!claimSnap.empty) {
+                    const claimData = claimSnap.docs[0].data();
+                    if (claimData.status === 'verified') {
+                        identity = claimData.driverIdentity || claimData.discordName;
+                    }
+                }
 
-                if (snap.empty) {
+                // 2. Query results where this user was a driver (Parallel lookups)
+                const queries = [
+                    db.collection("race_results").where("uids", "array-contains", uid).get()
+                ];
+                
+                if (identity) {
+                    queries.push(db.collection("race_results").where("drivers", "array-contains", identity).get());
+                }
+
+                const results = await Promise.all(queries);
+                
+                // 3. Merge results by Doc ID
+                const allDocs = new Map();
+                results.forEach(snap => {
+                    snap.forEach(doc => allDocs.set(doc.id, doc.data()));
+                });
+
+                if (allDocs.size === 0) {
                     section.style.display = 'none';
                     return;
                 }
@@ -392,8 +414,7 @@
 
                 section.style.display = 'block';
                 gallery.innerHTML = '';
-                snap.forEach(doc => {
-                    const d = doc.data();
+                allDocs.forEach((d) => {
                     
                     // Personalize: Highlight self in the driver list
                     const driverList = d.drivers.map(name => {

@@ -933,7 +933,15 @@
             }
 
             try {
-                // 1. Build a Name -> UID map from availability
+                // 1. Build a Name -> UID map from ALL verified claims (Global Roster)
+                const verifiedSnap = await db.collection("claims").where("status", "==", "verified").get();
+                verifiedSnap.forEach(doc => {
+                    const data = doc.data();
+                    const name = data.driverIdentity || data.discordName;
+                    if (name) NAME_TO_UID_MAP[name.toLowerCase()] = doc.id;
+                });
+
+                // 2. Also check event availability for any unverified or event-specific names
                 const availSnap = await db.collection("event_availability").doc(eventId).collection("responses").get();
                 availSnap.forEach(doc => {
                     const data = doc.data();
@@ -1528,6 +1536,13 @@
                 const signedUpSnap = await db.collection("event_availability").doc(eventId).collection("responses").where("status", "==", "signed_up").get();
                 availableDrivers = [];
                 signedUpSnap.forEach(doc => availableDrivers.push(doc.data().driverName));
+
+                // NEW: Also fetch all verified drivers from the global roster
+                const verifiedSnap = await db.collection("claims").where("status", "==", "verified").get();
+                verifiedSnap.forEach(doc => {
+                    const name = doc.data().driverIdentity || doc.data().discordName;
+                    if (name && !availableDrivers.includes(name)) availableDrivers.push(name);
+                });
                 
                 const refBox = document.getElementById('signed-up-reference');
                 const nameList = document.getElementById('signed-up-names-list');
