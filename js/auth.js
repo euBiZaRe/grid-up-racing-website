@@ -257,38 +257,33 @@ async function loadRaceLineup(slug) {
                     });
                     tempDiv.innerHTML = html;
                 } else {
-                    const standardTeams = ["GRiD UP Sim Racing", "GRiD UP Black", "GRiD UP White", "GRiD UP Blue", "GRiD UP Red"];
+                    // SHOW EVERYTHING: Iterate through all teams saved in Firestore
                     let html = "";
-                    
-                    // Create a map of existing teams
-                    const teamMap = {};
-                    teams.forEach(t => teamMap[t.name] = t);
-                    
-                    standardTeams.forEach(name => {
-                        const team = teamMap[name];
-                        if (team) {
-                            html += `
-                                <div class="lineup-item" style="margin-top: 1rem;">
-                                    <span style="color: var(--primary); font-weight: 600;">${team.name}</span><br>
-                                    <span style="font-size: 0.9rem; color: var(--text-muted);">${team.car_class || ""}</span>
-                                </div>
-                                <ul style="list-style: none; margin-top: 0.5rem; padding-left: 1rem; border-left: 2px solid var(--primary);">
-                            `;
-                            if (team.captain) html += `<li>${team.captain} (C)</li>`;
-                            if (team.drivers) {
-                                team.drivers.forEach(driver => {
-                                    if (driver !== team.captain) html += `<li>${driver}</li>`;
-                                });
-                            }
-                            html += `</ul>`;
-                        } else {
-                            // Empty placeholder
-                            html += `
-                                <div class="lineup-item" style="margin-top: 1rem;">
-                                    <span style="color: var(--primary); font-weight: 600;">${name}</span>
-                                </div>
-                            `;
+                    teams.forEach(team => {
+                        html += `
+                            <div class="lineup-item" style="margin-top: 1rem;">
+                                <span style="color: var(--primary); font-weight: 600;">${team.name}</span><br>
+                                <span style="font-size: 0.9rem; color: var(--text-muted);">${team.car_class || ""}</span>
+                            </div>
+                            <ul style="list-style: none; margin-top: 0.5rem; padding-left: 1rem; border-left: 2px solid var(--primary);">
+                        `;
+                        
+                        // Render Captain
+                        if (team.captain) {
+                            html += `<li>${team.captain} (C)</li>`;
                         }
+                        
+                        // Render Roster
+                        if (team.drivers && team.drivers.length > 0) {
+                            team.drivers.forEach(driver => {
+                                // Don't duplicate if driver is also captain
+                                if (driver !== team.captain) {
+                                    html += `<li>${driver}</li>`;
+                                }
+                            });
+                        }
+                        
+                        html += `</ul>`;
                     });
                     tempDiv.innerHTML = html;
                 }
