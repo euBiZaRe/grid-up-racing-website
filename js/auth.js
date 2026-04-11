@@ -116,7 +116,19 @@ async function updateAuthUI(user) {
             }
         } catch (e) { console.warn("Verification Check Error:", e); }
 
-        const avatar = user.photoURL || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
+        let avatar = user.photoURL || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
+        
+        // Fetch custom avatar from Firestore if it exists
+        if (db) {
+            try {
+                const userDoc = await db.collection("users").doc(user.uid).get();
+                if (userDoc.exists && userDoc.data().customAvatarUrl) {
+                    avatar = userDoc.data().customAvatarUrl;
+                }
+            } catch (e) {
+                console.warn("Auth: Error fetching custom avatar:", e);
+            }
+        }
         
         // A. Handle Navbar UI (Replace #login-link or Append to .nav-links)
         const navLinks = document.querySelector('.nav-links');

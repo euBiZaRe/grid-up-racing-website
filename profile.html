@@ -107,10 +107,15 @@
         </div>
 
         <div id="profile-content" style="display: none;">
-            <div class="profile-header-alt glass">
-                <img id="user-avatar" src="" class="user-avatar-large">
+            <div class="profile-header-alt glass" style="position: relative;">
+                <div style="position: relative; display: inline-block;">
+                    <img id="user-avatar" src="" class="user-avatar-large">
+                    <button onclick="document.getElementById('avatar-upload').click()" class="btn" style="position: absolute; bottom: 10px; right: 0; padding: 0.4rem; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: var(--primary); color: #000; font-size: 0.8rem; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">📷</button>
+                    <input type="file" id="avatar-upload" style="display: none;" accept="image/*" onchange="uploadAvatar(this)">
+                </div>
                 <h1 id="user-name" class="glow-text">Driver Name</h1>
                 <p id="discord-username" style="color: var(--primary); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; margin-top: 0.5rem; opacity: 0.8;"></p>
+                <div id="upload-progress" style="font-size: 0.7rem; color: var(--primary); margin-top: 0.5rem; height: 1rem;"></div>
                 <p id="user-status" style="color: var(--text-muted); margin-top: 0.5rem;">Grid Up Community Member</p>
             </div>
 
@@ -204,6 +209,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
     <script src="js/auth.js"></script>
     <script src="script.js"></script>
     <script>
@@ -243,9 +249,12 @@
                     document.getElementById('input-tiktok').value = data.tiktokUrl || "";
                     document.getElementById('input-youtube').value = data.youtubeUrl || "";
                     
-                    // Update header if custom driver name exists
+                    // Update header if custom data exists
                     if (data.driverName) {
                         nameElt.textContent = data.driverName;
+                    }
+                    if (data.customAvatarUrl) {
+                        avatar.src = data.customAvatarUrl;
                     }
                 }
                 
@@ -301,6 +310,39 @@
                 console.error("Error saving profile:", error);
                 status.textContent = "Error saving changes.";
                 status.style.color = "#ff0099";
+            }
+        }
+
+        async function uploadAvatar(input) {
+            const file = input.files[0];
+            const user = firebase.auth().currentUser;
+            if (!file || !user) return;
+
+            const progress = document.getElementById('upload-progress');
+            progress.textContent = "Uploading...";
+
+            try {
+                // Ensure Storage is initialized (script.js usually takes care of it, but let's be safe)
+                if (!firebase.storage) {
+                    throw new Error("Firebase Storage not available.");
+                }
+
+                const storageRef = firebase.storage().ref(`profiles/${user.uid}/avatar.jpg`);
+                const snapshot = await storageRef.put(file);
+                const url = await snapshot.ref.getDownloadURL();
+
+                await db.collection("users").doc(user.uid).set({
+                    customAvatarUrl: url,
+                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+
+                document.getElementById('user-avatar').src = url;
+                progress.textContent = "Photo updated!";
+                setTimeout(() => { progress.textContent = ""; }, 3000);
+            } catch (error) {
+                console.error("Avatar upload failed:", error);
+                progress.textContent = "Upload failed: " + error.message;
+                progress.style.color = "#ff0099";
             }
         }
 
