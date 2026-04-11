@@ -45,8 +45,8 @@
         }
     </style>
 </head>
-<body style="overflow: hidden; padding-top: 0;"> <!-- Prevent double scrollbars -->
-    <nav id="navbar" class="scrolled"> <!-- Force solid navbar for instant clarity -->
+<body class="shop-landing-page">
+    <nav id="navbar" class="scrolled">
         <div class="container nav-content">
             <a href="index.html" class="logo">
                 <img src="assets/logo.png" alt="GRID UP" style="height: 40px; vertical-align: middle;">
@@ -63,21 +63,21 @@
         </div>
     </nav>
     
-    <div class="shop-container tread-overlay">
-        <div class="loader-wrapper">
-            <p style="color: var(--primary); font-weight: 800; letter-spacing: 3px; animation: liveDot 1s infinite;">LOADING SHOP...</p>
+    <header class="hero" style="min-height: 100vh; display: flex; align-items: center; padding-top: 70px; background: none; position: relative; overflow: hidden;">
+        <div class="tread-overlay" style="opacity: 0.2;"></div>
+        <div class="container hero-content" style="z-index: 2; position: relative;">
+            <p style="color: var(--primary); font-weight: 800; letter-spacing: 5px; text-transform: uppercase; margin-bottom: 1rem;">Official Merchandise</p>
+            <h1 class="glow-text" style="font-size: 5rem; margin-bottom: 2rem;">GRID UP STORE</h1>
+            <p style="color: var(--text-muted); font-size: 1.2rem; max-width: 600px; margin: 0 auto 3rem; line-height: 1.6;">
+                Gear up with the official Grid Up apparel and accessories. Secure your spot on the grid with premium sim racing merchandise.
+            </p>
+            <a href="https://gridup.shop/" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="font-size: 1.2rem; padding: 1.2rem 3rem; background: linear-gradient(135deg, var(--primary), #0099cc); box-shadow: 0 0 30px rgba(0,207,255,0.4); border: none; letter-spacing: 2px;">
+                ENTER THE SHOP <span style="margin-left: 10px;">→</span>
+            </a>
         </div>
-        <iframe src="https://gridup.shop/" class="shop-iframe" title="Grid Up Shop" _onload="this.style.opacity = 1" style="opacity: 0; transition: opacity 0.5s ease; background: transparent;"></iframe>
-    </div>
+    </header>
 
     <!-- Init Firebase -->
     <script src="auth.js"></script>
-    <script>
-        // Use iframe onload to fade it in smoothly over the loader
-        const iframe = document.querySelector('.shop-iframe');
-        iframe.onload = () => {
-            iframe.style.opacity = '1';
-        };
-    </script>
 </body>
 </html>
