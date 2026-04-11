@@ -127,6 +127,24 @@
         </div>
     </footer>
 
+    <!-- Cinematic Card Modal (Expansion Overlay) -->
+    <div id="card-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 10000; padding: 2rem; align-items: center; justify-content: center; backdrop-filter: blur(15px); transition: all 0.3s ease;">
+        <div style="position: relative; max-width: 1100px; width: 100%; aspect-ratio: 16/9; transform: scale(0.9); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);" id="modal-container">
+            <!-- Content will be injected by JavaScript -->
+        </div>
+        
+        <div style="position: absolute; top: 2rem; right: 2rem; display: flex; gap: 1rem;">
+            <button onclick="downloadActiveCard()" class="btn" style="background: var(--primary); color: #000; font-weight: 900; display: flex; align-items: center; gap: 10px; box-shadow: 0 0 30px rgba(0,207,255,0.3);">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                DOWNLOAD HD POSTER
+            </button>
+            <button onclick="closeCardModal()" class="btn btn-outline" style="border-radius: 50%; width: 50px; height: 50px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2);">&times;</button>
+        </div>
+    </div>
+
+    <!-- Background Canvas for High-Res Exports -->
+    <canvas id="export-canvas" style="display: none;"></canvas>
+
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
