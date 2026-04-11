@@ -143,7 +143,7 @@ const pastSection = document.getElementById('pastEventsSection');
 if (toggleBtn && pastSection) {
     toggleBtn.addEventListener('click', () => {
         const isHidden = pastSection.style.display === 'none';
-        pastSection.style.display = isHidden ? 'flex' : 'none';
+        pastSection.style.display = isHidden ? 'block' : 'none';
         toggleBtn.textContent = isHidden ? 'Hide Past Events' : 'Show Past Events';
     });
 }
