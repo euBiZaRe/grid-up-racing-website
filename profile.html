@@ -53,6 +53,34 @@
             border-color: var(--primary);
             box-shadow: 0 0 10px rgba(0, 207, 255, 0.2);
         }
+        .admin-hanging-btn {
+            position: fixed;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%) rotate(-90deg);
+            transform-origin: bottom right;
+            z-index: 9999;
+            padding: 0.8rem 2rem;
+            background: rgba(0, 0, 0, 0.9) !important;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--primary) !important;
+            border-bottom: none !important;
+            border-radius: 12px 12px 0 0;
+            font-weight: 900;
+            letter-spacing: 2px;
+            font-size: 0.65rem;
+            white-space: nowrap;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+            text-decoration: none;
+            color: var(--primary);
+        }
+        .admin-hanging-btn:hover {
+            padding-bottom: 1.2rem;
+            background: var(--primary) !important;
+            color: #000 !important;
+            box-shadow: 0 -10px 40px rgba(0, 207, 255, 0.4);
+        }
     </style>
 </head>
 <body class="member-profile-page">
@@ -135,7 +163,7 @@
 
                     <button onclick="saveProfile()" class="btn btn-primary" style="margin-top: 1rem; width: 100%;">Save Profile Changes</button>
                     
-                    <a href="admin.html" id="admin-dashboard-btn" class="btn btn-outline" style="display: none; margin-top: 1rem; width: 100%; border-color: var(--primary); color: var(--primary);">Access Admin Dashboard</a>
+                    <a href="admin.html" id="admin-dashboard-btn" class="admin-hanging-btn" style="display: none;">ACCESS ADMIN PANEL</a>
 
                     <div id="save-status" style="text-align: center; color: var(--primary); font-size: 0.8rem; height: 1rem;"></div>
                 </div>
