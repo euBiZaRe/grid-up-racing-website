@@ -129,25 +129,27 @@
 
         <!-- Admin Content -->
         <div id="admin-hub" class="admin-content">
-            <header style="margin-bottom: 4rem; display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid var(--glass-border); padding-bottom: 2rem;">
+            <header style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 1rem;">
                 <div>
                     <p style="color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 4px; font-size: 0.7rem; margin-bottom: 0.5rem; opacity: 0.8;">GRID UP // ADMIN</p>
-                    <h1 class="glow-text" style="font-size: 3.5rem; font-weight: 800; letter-spacing: -2px;" id="admin-title">Dashboard</h1>
+                    <h1 class="glow-text" style="font-size: 4rem; font-weight: 800; letter-spacing: -2px; margin: 0;" id="admin-title">Dashboard</h1>
                 </div>
-                <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 1.5rem;">
-                    <nav class="admin-nav" style="display: flex; gap: 0.5rem; background: rgba(255,255,255,0.03); padding: 0.5rem; border-radius: 12px; border: 1px solid var(--glass-border);">
-                        <button onclick="switchTab('claims')" class="btn btn-outline" id="tab-claims" style="padding: 0.6rem 1.2rem; font-size: 0.75rem; border: none;">Claims</button>
-                        <button onclick="switchTab('races')" class="btn btn-outline" id="tab-races" style="padding: 0.6rem 1.2rem; font-size: 0.75rem; border: none;">Lineups</button>
-                        <button onclick="switchTab('availability')" class="btn btn-outline" id="tab-availability" style="padding: 0.6rem 1.2rem; font-size: 0.75rem; border: none;">Availability</button>
-                        <button onclick="switchTab('events')" class="btn btn-outline" id="tab-events" style="padding: 0.6rem 1.2rem; font-size: 0.75rem; border: none;">Events</button>
-                        <button onclick="switchTab('admins')" class="btn btn-outline" id="tab-admins" style="padding: 0.6rem 1.2rem; font-size: 0.75rem; border: none;">Team</button>
-                    </nav>
+                <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;">
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <span id="admin-user-info" style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600;">...</span>
                         <div style="width: 8px; height: 8px; background: #00ff88; border-radius: 50%; box-shadow: 0 0 10px #00ff88;"></div>
                     </div>
                 </div>
             </header>
+
+            <!-- Prominent Admin Sub-Navigation -->
+            <nav class="admin-nav animate-fade-in" style="display: flex; gap: 1rem; margin-bottom: 3rem; background: rgba(255,255,255,0.02); padding: 0.75rem; border-radius: 12px; border: 1px solid var(--glass-border); position: sticky; top: 100px; z-index: 100;">
+                <button onclick="switchTab('claims')" class="btn btn-outline" id="tab-claims" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">DRIVER CLAIMS</button>
+                <button onclick="switchTab('races')" class="btn btn-outline" id="tab-races" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">LINEUP MANAGER</button>
+                <button onclick="switchTab('availability')" class="btn btn-outline" id="tab-availability" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">DRIVER ROSTER</button>
+                <button onclick="switchTab('events')" class="btn btn-outline" id="tab-events" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">SEASON SCHEDULE</button>
+                <button onclick="switchTab('admins')" class="btn btn-outline" id="tab-admins" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">TEAM PERMISSIONS</button>
+            </nav>
 
             <!-- Claims Section -->
             <div id="section-claims" class="tab-content" style="display: none;">
