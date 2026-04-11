@@ -215,14 +215,15 @@ async function loadRaceLineup(slug) {
     }
 
     try {
+        console.log("Auth: Fetching lineup for slug:", slug);
         const doc = await db.collection("race_lineups").doc(slug).get();
         if (doc.exists && doc.data().teams) {
             const teams = doc.data().teams;
-            console.log("Firestore override found for:", slug);
+            console.log("Auth: Lineup found! Team count:", teams.length);
             
             // Find the LINEUP_START and LINEUP_END markers to replace content
-            // However, in the DOM, these are comment nodes.
-            const iterator = document.createNodeIterator(document.body, NodeFilter.SHOW_COMMENT);
+            const searchRoot = document.getElementById('confirmed-lineup') || document.body;
+            const iterator = document.createNodeIterator(searchRoot, NodeFilter.SHOW_COMMENT);
             let startNode, endNode;
             let node = iterator.nextNode();
             while (node) {
@@ -230,6 +231,7 @@ async function loadRaceLineup(slug) {
                 if (node.textContent.trim() === "LINEUP_END") endNode = node;
                 node = iterator.nextNode();
             }
+            console.log("Auth: Markers found:", !!startNode, !!endNode);
 
             if (startNode && endNode) {
                 // Clear content between markers
@@ -293,6 +295,8 @@ async function loadRaceLineup(slug) {
                 }
                 startNode.parentNode.insertBefore(fragment, endNode);
             }
+        } else {
+            console.warn("Auth: No lineup record exists for slug:", slug);
         }
     } catch (error) {
         console.error("Error loading lineup from Firestore:", error);

@@ -178,7 +178,7 @@
             <div id="section-races" class="tab-content" style="display: none;">
                 <div class="glass" style="padding: 2.5rem; margin-bottom: 2rem; background: linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);">
                     <h3 style="margin-bottom: 1.5rem; color: var(--primary); font-size: 0.9rem; letter-spacing: 2px;">1. SELECT TARGET EVENT</h3>
-                    <select id="event-selector" class="btn btn-outline" style="width: 100%; text-align: left; padding: 1rem;" onchange="loadRaceData()">
+                    <select id="lineup-event-selector" class="btn btn-outline" style="width: 100%; text-align: left; padding: 1rem;" onchange="loadRaceData()">
                         <option value="">-- Choose an Event --</option>
                         <option value="imsa-classic-500">IMSA Classic 500</option>
                         <option value="nurburgring-24h">Nürburgring 24h</option>
@@ -587,7 +587,7 @@
         }
 
         function updateSelectors() {
-            const selectors = ['event-selector', 'availability-event-selector'];
+            const selectors = ['lineup-event-selector', 'availability-event-selector'];
             selectors.forEach(id => {
                 const sel = document.getElementById(id);
                 if (!sel) return;
@@ -1281,7 +1281,8 @@
         }
 
         async function loadRaceData() {
-            const eventId = document.getElementById('event-selector').value;
+            const eventId = document.getElementById('lineup-event-selector').value;
+            console.log("Admin: Loading race data for slug:", eventId);
             const editor = document.getElementById('race-editor');
             const container = document.getElementById('teams-container');
             
@@ -1449,7 +1450,8 @@
         }
 
         async function saveRaceData() {
-            const slug = document.getElementById('event-selector').value;
+            const slug = document.getElementById('lineup-event-selector').value;
+            console.log("Admin: Saving race data for slug:", slug);
             const teamCards = document.querySelectorAll('.team-card');
             const teams = [];
             
