@@ -681,7 +681,7 @@ async function checkLiveStreams() {
         } else if (activeStreams.length === 1) {
             btn.style.display = 'inline-flex';
             btn.style.alignItems = 'center';
-            btn.onclick = () => window.open(activeStreams[0].streamUrl, '_blank');
+            btn.onclick = () => openCinematicStream(activeStreams[0].streamUrl);
         } else {
             btn.style.display = 'inline-flex';
             btn.style.alignItems = 'center';
@@ -695,14 +695,62 @@ async function checkLiveStreams() {
     setTimeout(checkLiveStreams, 60000);
 }
 
+function getEmbedUrl(url) {
+    if (!url) return null;
+    let embedUrl = url;
+    
+    try {
+        if (url.includes('twitch.tv')) {
+            const channel = url.split('twitch.tv/')[1].split('/')[0].split('?')[0];
+            const parentDomain = window.location.hostname || 'eubizare.github.io';
+            embedUrl = `https://player.twitch.tv/?channel=${channel}&parent=${parentDomain}`;
+        } else if (url.includes('youtube.com/watch')) {
+            const videoId = new URL(url).searchParams.get('v');
+            embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+        } else if (url.includes('youtu.be/')) {
+            const videoId = url.split('youtu.be/')[1].split('?')[0];
+            embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+        }
+    } catch (e) {
+        console.warn("Could not parse embed URL for:", url);
+    }
+    
+    return embedUrl;
+}
+
+function openCinematicStream(sourceUrl) {
+    const modal = document.getElementById('stream-player-modal');
+    const iframe = document.getElementById('stream-iframe');
+    
+    // Auto-close picker if it's open
+    closeStreamsModal();
+    
+    if (modal && iframe) {
+        iframe.src = getEmbedUrl(sourceUrl);
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    } else {
+        // Fallback for pages without the modal (like events.html)
+        window.open(sourceUrl, '_blank');
+    }
+}
+
+function closeStreamPlayer() {
+    const modal = document.getElementById('stream-player-modal');
+    const iframe = document.getElementById('stream-iframe');
+    if (modal) modal.style.display = 'none';
+    if (iframe) iframe.src = ''; // Stop audio playing in background
+    document.body.style.overflow = '';
+}
+
 function openStreamsModal() {
     const modal = document.getElementById('streams-modal');
     const list = document.getElementById('streams-list');
     if (!modal || !list) return;
 
     list.innerHTML = activeStreams.map(stream => `
-        <a href="${stream.streamUrl}" target="_blank" rel="noopener noreferrer"
-           style="display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 1.5rem; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,0,0,0.2); border-radius: 10px; text-decoration: none; color: #fff; transition: all 0.2s; gap: 1rem;"
+        <button onclick="openCinematicStream('${stream.streamUrl}')"
+           style="cursor: pointer; display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 1.5rem; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,0,0,0.2); border-radius: 10px; color: #fff; transition: all 0.2s; gap: 1rem; width: 100%; text-align: left;"
            onmouseover="this.style.background='rgba(255,0,0,0.1)'; this.style.borderColor='rgba(255,0,0,0.5)'"
            onmouseout="this.style.background='rgba(255,255,255,0.04)'; this.style.borderColor='rgba(255,0,0,0.2)'">
             <div>
@@ -710,7 +758,7 @@ function openStreamsModal() {
                 <p style="font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 260px;">${stream.streamUrl}</p>
             </div>
             <span style="background: #cc0000; color: #fff; font-size: 0.65rem; font-weight: 800; letter-spacing: 2px; padding: 0.3rem 0.7rem; border-radius: 4px; white-space: nowrap;">WATCH →</span>
-        </a>
+        </button>
     `).join('');
 
     modal.style.display = 'flex';
