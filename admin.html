@@ -908,11 +908,10 @@
                     const track = eventDoc.track || FALLBACK_TRACKS[eventId] || "";
                     if (track) document.getElementById('card-track').value = track;
                     
-                    if (eventDoc.startDate) {
-                        const d = new Date(eventDoc.startDate);
-                        const options = { month: 'long', day: 'numeric', year: 'numeric' };
-                        document.getElementById('card-date').value = d.toLocaleDateString('en-US', options);
-                    }
+                    // Auto-fill today's date (month + day only)
+                    const today = new Date();
+                    const options = { month: 'long', day: 'numeric' };
+                    document.getElementById('card-date').value = today.toLocaleDateString('en-US', options);
                 }
             } catch (e) {
                 console.error("Error loading lineups for card:", e);
