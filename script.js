@@ -652,6 +652,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const dbCheckInterval = setInterval(() => {
         if (typeof db !== 'undefined') {
             loadDynamicContent();
+            checkLiveStreams(); // Watch Live feature
             clearInterval(dbCheckInterval);
         }
     }, 100);
@@ -659,3 +660,65 @@ document.addEventListener('DOMContentLoaded', () => {
     // Safety timeout to avoid infinite polling if Firestore fails
     setTimeout(() => clearInterval(dbCheckInterval), 5000);
 });
+
+// =============================================
+// WATCH LIVE — Live Stream Feature
+// =============================================
+
+let activeStreams = [];
+
+async function checkLiveStreams() {
+    try {
+        const snapshot = await db.collection('streams').where('isLive', '==', true).get();
+        activeStreams = [];
+        snapshot.forEach(doc => activeStreams.push({ id: doc.id, ...doc.data() }));
+
+        const btn = document.getElementById('watch-live-btn');
+        if (!btn) return;
+
+        if (activeStreams.length === 0) {
+            btn.style.display = 'none';
+        } else if (activeStreams.length === 1) {
+            btn.style.display = 'inline-flex';
+            btn.style.alignItems = 'center';
+            btn.onclick = () => window.open(activeStreams[0].streamUrl, '_blank');
+        } else {
+            btn.style.display = 'inline-flex';
+            btn.style.alignItems = 'center';
+            btn.onclick = openStreamsModal;
+        }
+    } catch (e) {
+        console.warn('Watch Live: Could not fetch streams.', e);
+    }
+    
+    // Re-check every 60 seconds for real-time updates
+    setTimeout(checkLiveStreams, 60000);
+}
+
+function openStreamsModal() {
+    const modal = document.getElementById('streams-modal');
+    const list = document.getElementById('streams-list');
+    if (!modal || !list) return;
+
+    list.innerHTML = activeStreams.map(stream => `
+        <a href="${stream.streamUrl}" target="_blank" rel="noopener noreferrer"
+           style="display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 1.5rem; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,0,0,0.2); border-radius: 10px; text-decoration: none; color: #fff; transition: all 0.2s; gap: 1rem;"
+           onmouseover="this.style.background='rgba(255,0,0,0.1)'; this.style.borderColor='rgba(255,0,0,0.5)'"
+           onmouseout="this.style.background='rgba(255,255,255,0.04)'; this.style.borderColor='rgba(255,0,0,0.2)'">
+            <div>
+                <p style="font-weight: 700; font-size: 1rem; margin-bottom: 0.2rem;">${stream.teamName}</p>
+                <p style="font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 260px;">${stream.streamUrl}</p>
+            </div>
+            <span style="background: #cc0000; color: #fff; font-size: 0.65rem; font-weight: 800; letter-spacing: 2px; padding: 0.3rem 0.7rem; border-radius: 4px; white-space: nowrap;">WATCH →</span>
+        </a>
+    `).join('');
+
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeStreamsModal() {
+    const modal = document.getElementById('streams-modal');
+    if (modal) modal.style.display = 'none';
+    document.body.style.overflow = '';
+}

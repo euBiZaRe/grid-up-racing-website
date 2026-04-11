@@ -125,6 +125,16 @@
   filter: brightness(1.2);
 }
 
+@keyframes livePulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(255, 0, 0, 0.5); }
+    50% { box-shadow: 0 0 40px rgba(255, 0, 0, 0.9), 0 0 60px rgba(255, 0, 0, 0.4); }
+}
+
+@keyframes liveDot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.3; transform: scale(0.7); }
+}
+
 * {
     margin: 0;
     padding: 0;

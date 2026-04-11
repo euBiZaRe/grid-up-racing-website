@@ -154,6 +154,7 @@
                 <button onclick="switchTab('availability')" class="btn btn-outline" id="tab-availability" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">DRIVER ROSTER</button>
                 <button onclick="switchTab('events')" class="btn btn-outline" id="tab-events" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">SEASON SCHEDULE</button>
                 <button onclick="switchTab('results')" class="btn btn-outline" id="tab-results" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">RESULT CARDS</button>
+                <button onclick="switchTab('streams')" class="btn btn-outline" id="tab-streams" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px; color: #ff4444;">LIVE STREAMS</button>
                 <button onclick="switchTab('admins')" class="btn btn-outline" id="tab-admins" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">TEAM PERMISSIONS</button>
             </nav>
 
@@ -414,6 +415,35 @@
                             <p style="color: var(--text-muted); text-align: center;">No cards generated yet.</p>
                         </div>
                     </div>
+            <!-- Live Streams Management Section -->
+            <div id="section-streams" class="tab-content" style="display: none;">
+                <div class="grid" style="grid-template-columns: 1fr 2fr; gap: 2rem; align-items: start;">
+                    <!-- Add Stream Form -->
+                    <div class="glass" style="padding: 2.5rem; border: 1px solid rgba(255,0,0,0.2);">
+                        <h3 style="color: #ff4444; margin-bottom: 2rem; display: flex; align-items: center; gap: 10px;">
+                            <span style="display: inline-block; width: 10px; height: 10px; background: #ff4444; border-radius: 50%; animation: liveDot 1s infinite;"></span>
+                            Add Team Stream
+                        </h3>
+                        <div style="display: grid; gap: 1.5rem;">
+                            <div>
+                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">TEAM NAME</label>
+                                <input type="text" id="stream-team-name" class="btn btn-outline" style="width: 100%; text-align: left;" placeholder="e.g. Grid Up #77 - GTP">
+                            </div>
+                            <div>
+                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">STREAM URL (Twitch, TikTok, YouTube)</label>
+                                <input type="text" id="stream-url" class="btn btn-outline" style="width: 100%; text-align: left;" placeholder="https://twitch.tv/gridup">
+                            </div>
+                            <button onclick="addStream()" class="btn btn-primary" style="background: #cc0000; border: none; box-shadow: 0 0 20px rgba(204,0,0,0.3);">Add Stream to List</button>
+                        </div>
+                    </div>
+
+                    <!-- Streams List -->
+                    <div class="glass" style="padding: 2.5rem;">
+                        <h3 style="color: var(--primary); margin-bottom: 2rem;">Active Streams List</h3>
+                        <div id="admin-streams-list" class="grid" style="grid-template-columns: 1fr; gap: 1rem;">
+                            <p style="text-align: center; color: var(--text-muted);">Loading streams...</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -515,6 +545,7 @@
             document.getElementById('section-availability').style.display = tab === 'availability' ? 'block' : 'none';
             document.getElementById('section-events').style.display = tab === 'events' ? 'block' : 'none';
             document.getElementById('section-results').style.display = tab === 'results' ? 'block' : 'none';
+            document.getElementById('section-streams').style.display = tab === 'streams' ? 'block' : 'none';
             
             const titleMap = { 
                 'claims': 'Driver Claims', 
@@ -522,11 +553,12 @@
                 'admins': 'Team Permissions',
                 'availability': 'Driver Roster',
                 'events': 'Season Schedule',
-                'results': 'Race Card Lab'
+                'results': 'Race Card Lab',
+                'streams': 'Live Streams'
             };
             document.getElementById('admin-title').textContent = titleMap[tab];
             
-            const tabs = ['claims', 'races', 'admins', 'availability', 'events', 'results'];
+            const tabs = ['claims', 'races', 'admins', 'availability', 'events', 'results', 'streams'];
             tabs.forEach(t => {
                 const btn = document.getElementById(`tab-${t}`);
                 if (btn) {
@@ -539,6 +571,7 @@
             if (tab === 'availability') loadAvailability();
             if (tab === 'events') loadEvents();
             if (tab === 'results') loadResults();
+            if (tab === 'streams') loadStreams();
         }
         let UPCOMING_EVENTS = [];
 
@@ -1813,6 +1846,105 @@
                 accessDenied.style.display = 'block';
             }
         });
+        // ==========================================
+        // Live Streams Management
+        // ==========================================
+        
+        async function loadStreams() {
+            const list = document.getElementById('admin-streams-list');
+            if (!list) return;
+            
+            list.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Loading streams...</p>';
+            
+            try {
+                const snapshot = await db.collection('streams').get();
+                if (snapshot.empty) {
+                    list.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No streams added yet.</p>';
+                    return;
+                }
+                
+                let html = '';
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const statusColor = data.isLive ? '#00ff88' : 'var(--text-muted)';
+                    const statusText = data.isLive ? 'LIVE' : 'OFFLINE';
+                    const toggleStyle = data.isLive ? 'background: rgba(0,255,136,0.1); border-color: #00ff88; color: #00ff88;' : 'background: rgba(255,255,255,0.05); color: var(--text-muted);';
+                    
+                    html += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border: 1px solid var(--glass-border); border-left: 4px solid ${statusColor}; background: rgba(255,255,255,0.02); border-radius: 8px;">
+                            <div style="flex: 2;">
+                                <h4 style="color: #fff; margin-bottom: 0.25rem;">${data.teamName}</h4>
+                                <a href="${data.streamUrl}" target="_blank" style="color: var(--primary); font-size: 0.75rem; text-decoration: none;">${data.streamUrl}</a>
+                            </div>
+                            <div style="flex: 1; text-align: center;">
+                                <span style="font-size: 0.7rem; font-weight: 800; letter-spacing: 2px; color: ${statusColor};">${statusText}</span>
+                            </div>
+                            <div style="flex: 1; display: flex; gap: 0.5rem; justify-content: flex-end;">
+                                <button onclick="toggleStreamLive('${doc.id}', ${data.isLive})" class="btn" style="padding: 0.5rem 1rem; font-size: 0.7rem; ${toggleStyle}">
+                                    ${data.isLive ? 'STOP' : 'GO LIVE'}
+                                </button>
+                                <button onclick="deleteStream('${doc.id}')" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.7rem; border-color: rgba(255,0,0,0.3); color: #ff4444;">
+                                    DELETE
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                list.innerHTML = html;
+            } catch(e) {
+                console.error("Error loading streams:", e);
+                list.innerHTML = '<p style="text-align: center; color: #ff4444;">Failed to load streams.</p>';
+            }
+        }
+        
+        async function addStream() {
+            const teamName = document.getElementById('stream-team-name').value.trim();
+            const streamUrl = document.getElementById('stream-url').value.trim();
+            
+            if (!teamName || !streamUrl) {
+                alert("Please provide both a Team Name and a Stream URL.");
+                return;
+            }
+            
+            try {
+                await db.collection('streams').add({
+                    teamName: teamName,
+                    streamUrl: streamUrl,
+                    isLive: false // Default to offline when first added
+                });
+                
+                document.getElementById('stream-team-name').value = '';
+                document.getElementById('stream-url').value = '';
+                loadStreams();
+            } catch(e) {
+                console.error("Error adding stream:", e);
+                alert("Failed to add stream.");
+            }
+        }
+        
+        async function toggleStreamLive(id, currentState) {
+            try {
+                await db.collection('streams').doc(id).update({
+                    isLive: !currentState
+                });
+                loadStreams();
+            } catch(e) {
+                console.error("Error toggling stream:", e);
+                alert("Failed to update stream status.");
+            }
+        }
+        
+        async function deleteStream(id) {
+            if (!confirm('Are you sure you want to delete this stream from the dashboard?')) return;
+            try {
+                await db.collection('streams').doc(id).delete();
+                loadStreams();
+            } catch(e) {
+                console.error("Error deleting stream:", e);
+                alert("Failed to delete stream.");
+            }
+        }
+
     </script>
     <div id="autocomplete-overlay"></div>
     <datalist id="signed-up-drivers-list"></datalist>
