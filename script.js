@@ -243,6 +243,11 @@ async function loadDynamicContent() {
     const upcomingTrack = document.getElementById('dynamic-upcoming-track');
     const fullEventList = document.getElementById('full-event-list');
     
+    // Global Constants for URL generation
+    const isSubdir = window.location.pathname.includes('/events/') || window.location.pathname.includes('/drivers/');
+    const prefix = isSubdir ? '../' : '';
+    const staticIds = ['imsa-classic-500', 'nurburgring-24h', 'indy-500', 'world-600', 'thruxton-4h', 'watkins-glen-6h'];
+    
     console.log("Auth: Querying events with filterTimestamp:", filterTimestamp);
     try {
         const snap = await db.collection("events")
@@ -297,13 +302,9 @@ async function loadDynamicContent() {
                 const colors = ['blue', 'pink', 'green'];
                 events.slice(0, 10).forEach((e, i) => {
                     const tile = document.createElement('a');
-                    // Check if we are in a subdirectory (e.g. events/ or drivers/)
-                    const isSubdir = window.location.pathname.includes('/events/') || window.location.pathname.includes('/drivers/');
-                    const prefix = isSubdir ? '../' : '';
                     
                     // Priority: If it's a known static page ID, link to it. 
                     // Otherwise, link to events.html with a query param.
-                    const staticIds = ['imsa-classic-500', 'nurburgring-24h', 'indy-500', 'world-600', 'thruxton-4h', 'watkins-glen-6h'];
                     const linkUrl = staticIds.includes(e.id) ? `${prefix}events/${e.id}.html` : `${prefix}events.html?id=${e.id}`;
                     
                     tile.href = linkUrl;
@@ -326,7 +327,6 @@ async function loadDynamicContent() {
                     card.className = 'glass event-horizontal-card reveal active';
                     card.style.borderLeft = `4px solid ${eventColors[i % 3]}`;
                     
-                    const staticIds = ['imsa-classic-500', 'nurburgring-24h', 'indy-500', 'world-600', 'thruxton-4h', 'watkins-glen-6h'];
                     const linkUrl = staticIds.includes(e.id) ? `events/${e.id}.html` : `events.html?id=${e.id}`;
 
                     card.innerHTML = `
