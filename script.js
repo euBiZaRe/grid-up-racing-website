@@ -301,6 +301,7 @@ async function loadDynamicContent() {
         'petit-le-mans':        `${BASE}/2025/12/iRSE-2026-Petit-Le-Mans-VCO.png`,
         'bathurst-1000':        `${BASE}/2025/12/iRSE-2026-Bathurst-1000.png`,
         'indianapolis-8h':      `${BASE}/2025/12/iRSE-2026-Indianapolis-8H.png`,
+        'indy-8h':              `${BASE}/2025/12/iRSE-2026-Indianapolis-8H.png`,
         'ff1600-festival':      `${BASE}/2026/01/iRSE-2026-iRacing-Conspit-FF1600-Festival.png`,
         'homestead-championship': `${BASE}/2025/12/iRSE-2026-Homestead-Championship.png`,
         'sfl-mountain-showdown': `${BASE}/2025/12/iRSE-2026-SFL-Mountain-Challenge.png`,
