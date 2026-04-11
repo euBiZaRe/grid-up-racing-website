@@ -243,11 +243,13 @@ async function loadDynamicContent() {
     const upcomingTrack = document.getElementById('dynamic-upcoming-track');
     const fullEventList = document.getElementById('full-event-list');
     
+    console.log("Auth: Querying events with filterTimestamp:", filterTimestamp);
     try {
         const snap = await db.collection("events")
             .where("startDate", ">=", filterTimestamp)
             .orderBy("startDate", "asc")
             .get();
+        console.log("Auth: Firestore returned snapshot, size:", snap.size);
 
         const heroTitle = document.getElementById('hero-event-name');
         const heroSubtitle = document.getElementById('hero-event-subtitle');
