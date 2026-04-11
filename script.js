@@ -297,7 +297,7 @@ async function loadDynamicContent() {
         'thruxton-4h':          `${BASE}/2025/12/iRSE-2026-4-Hours-at-Thruxton.png`,
         'watkins-glen-6h':      `${BASE}/2025/12/iRSE-2026-Watkis-Glen-6H-VCO.png`,
         'spa-24hr':             `${BASE}/2025/12/iRSE-2026-SPA-24HR.png`,
-        'brickyard-400':        `${BASE}/2025/12/iRSE-2026-Homestead-Championship.png`,
+        'brickyard-400':        'https://s100.iracing.com/wp-content/uploads/2025/04/iRSE-2025-Brickyard-400-v2.png',
         'road-america-6h':      `${BASE}/2025/12/iRSE-2026-6HRS-Road-America.png`,
         'firecracker-400':      `${BASE}/2025/12/iRSE-2026-Firecracker-400.png`,
         'knoxville-nationals':  `${BASE}/2025/12/iRSE-2026-Knoxville-Nationals.png`,
