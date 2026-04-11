@@ -1022,13 +1022,19 @@ footer {
 @media (max-width: 768px) {
     .event-horizontal-card {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
+        width: 100%;
         gap: 0;
         padding: 0;
     }
     
     .event-horizontal-card:hover {
         transform: translateY(-5px);
+    }
+    
+    .event-horizontal-card .event-info {
+        width: 100%;
+        padding: 1.25rem 1.5rem;
     }
     
     .event-action {
