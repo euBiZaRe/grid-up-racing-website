@@ -888,11 +888,28 @@
                 }
 
                 // NEW: Auto-fill track and date for the card
+                const FALLBACK_TRACKS = {
+                    'imsa-classic-500': 'Laguna Seca',
+                    'nurburgring-24h': 'Nürburgring',
+                    'indy-500': 'Indianapolis',
+                    'world-600': 'Charlotte',
+                    'thruxton-4h': 'Thruxton',
+                    'watkins-glen-6h': 'Watkins Glen',
+                    'firecracker-400': 'Daytona',
+                    'spa-24hr': 'Spa',
+                    'brickyard-400': 'Indianapolis',
+                    'road-america-6h': 'Road America',
+                    'suzuka-1000km': 'Suzuka',
+                    'petit-le-mans': 'Road Atlanta',
+                    'bathurst-1000': 'Mount Panorama',
+                    'indy-8h': 'Indianapolis'
+                };
+
                 const eventDoc = UPCOMING_EVENTS.find(ev => ev.id === eventId);
                 if (eventDoc) {
-                    if (eventDoc.track) document.getElementById('card-track').value = eventDoc.track;
+                    const track = eventDoc.track || FALLBACK_TRACKS[eventId] || "";
+                    if (track) document.getElementById('card-track').value = track;
                     
-                    // Format startDate for the date input (it usually expects YYYY-MM-DD or similar string)
                     if (eventDoc.startDate) {
                         const d = new Date(eventDoc.startDate);
                         const options = { month: 'long', day: 'numeric', year: 'numeric' };
