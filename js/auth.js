@@ -205,9 +205,6 @@ async function claimProfile(driverName, iracingId) {
 
 // Race Lineup Dynamic Loading
 async function loadRaceLineup(slug) {
-    const container = document.querySelector('<!-- LINEUP_START -->').parentElement; // This is a bit hacky, better to use a specific ID if possible
-    // Actually, I'll use a better approach: search for the markers in the DOM
-    
     console.log("Loading race lineup for:", slug);
     if (!db) {
         setTimeout(() => loadRaceLineup(slug), 500);
