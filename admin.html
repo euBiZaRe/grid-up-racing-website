@@ -359,13 +359,31 @@
                             </div>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                                 <div>
-                                    <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">POSITION</label>
-                                    <input type="text" id="card-pos" placeholder="e.g. P1" class="btn btn-outline" style="width: 100%; text-align: left;">
+                                    <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">TRACK NAME</label>
+                                    <input type="text" id="card-track" placeholder="e.g. BATHURST" class="btn btn-outline" style="width: 100%; text-align: left;">
+                                </div>
+                                <div>
+                                    <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">CAR USED</label>
+                                    <input type="text" id="card-car" placeholder="e.g. Porsche 911 GT3 R" class="btn btn-outline" style="width: 100%; text-align: left;">
+                                </div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                                <div>
+                                    <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">START</label>
+                                    <input type="text" id="card-start" placeholder="e.g. P36" class="btn btn-outline" style="width: 100%; text-align: left;">
+                                </div>
+                                <div>
+                                    <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">FINISH</label>
+                                    <input type="text" id="card-pos" placeholder="e.g. P4" class="btn btn-outline" style="width: 100%; text-align: left;">
                                 </div>
                                 <div>
                                     <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">CAR #</label>
                                     <input type="text" id="card-number" placeholder="e.g. 77" class="btn btn-outline" style="width: 100%; text-align: left;">
                                 </div>
+                            </div>
+                            <div>
+                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">RACE DATE</label>
+                                <input type="text" id="card-date" placeholder="February 21, 2026" class="btn btn-outline" style="width: 100%; text-align: left;">
                             </div>
                             <div>
                                 <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">DRIVERS (Comma separated)</label>
@@ -805,12 +823,28 @@
 
         function updateCardFromTeam() {
             const idx = document.getElementById('card-team').value;
+            const photoInput = document.getElementById('card-photo-url');
+            const carInput = document.getElementById('card-car');
+            const driverInput = document.getElementById('card-drivers');
+            const numberInput = document.getElementById('card-number');
+
             if (idx === "" || !CURRENT_CARD_TEAM) return;
 
             const team = CURRENT_CARD_TEAM[idx];
-            // Extract a number from car_class if possible, or leave blank for admin
-            const carMatch = team.car_class ? team.car_class.match(/#(\d+)/) : null;
-            document.getElementById('card-number').value = carMatch ? carMatch[1] : '';
+
+            // 1. Auto-fill Team Photo if URL is empty
+            if (!photoInput.value) {
+                const teamColor = team.name.split(' ').pop().toLowerCase();
+                const ext = teamColor === 'blue' ? 'png' : 'jpg';
+                photoInput.value = `assets/Team ${teamColor.charAt(0).toUpperCase() + teamColor.slice(1)}.${ext}`;
+            }
+
+            // 2. Set Car and Number
+            if (team.car_class) {
+                carInput.value = team.car_class.split(' #')[0];
+                const carMatch = team.car_class.match(/#(\d+)/);
+                if (carMatch) numberInput.value = carMatch[1];
+            }
             
             const driverNames = [...(team.drivers || [])];
             if (team.captain && !driverNames.includes(team.captain)) {
@@ -830,11 +864,15 @@
             
             const photoUrl = document.getElementById('card-photo-url').value.trim();
             const eventId = document.getElementById('card-event').value;
+            const trackName = document.getElementById('card-track').value.trim();
+            const carUsed = document.getElementById('card-car').value.trim();
+            const startPos = document.getElementById('card-start').value.trim();
             const pos = document.getElementById('card-pos').value.trim();
             const carNum = document.getElementById('card-number').value.trim();
+            const raceDate = document.getElementById('card-date').value.trim();
             const driversStr = document.getElementById('card-drivers').value.trim();
             
-            if (!photoUrl || !eventId || !pos || !driversStr) return alert("Please fill all fields (Position, Drivers, and Photo URL).");
+            if (!photoUrl || !eventId || !pos || !driversStr) return alert("Please fill required fields (Photo URL, Event, Finish, and Drivers).");
 
             try {
                 btn.disabled = true;
@@ -856,8 +894,12 @@
                 const cardData = {
                     eventId: eventId,
                     eventName: eventName,
+                    trackName: trackName,
+                    carUsed: carUsed,
+                    startPos: startPos,
                     position: pos,
                     carNumber: carNum,
+                    raceDate: raceDate,
                     drivers: driversStr.split(',').map(d => d.trim()),
                     uids: uids.filter(id => id), 
                     rawUrl: photoUrl,
@@ -908,21 +950,53 @@
                 snap.forEach(doc => {
                     const d = doc.data();
                     const card = document.createElement('div');
-                    card.className = 'card glass animate-fade-in';
+                    card.className = 'card cinematic-poster animate-fade-in';
                     card.style.padding = '0';
+                    card.style.overflow = 'hidden';
+                    card.style.position = 'relative';
+                    card.style.background = '#000';
+                    card.style.aspectRatio = '16/9';
+                    card.style.borderRadius = '12px';
+                    card.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
+
                     card.innerHTML = `
-                        <div style="position: relative; height: 180px; overflow: hidden; border-radius: 12px 12px 0 0;">
-                            <img src="${d.rawUrl}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.8;">
-                            <div style="position: absolute; top: 1rem; right: 1rem; background: var(--primary); color: #000; font-weight: 800; padding: 0.5rem 1rem; border-radius: 5px; box-shadow: 0 0 15px rgba(0,207,255,0.5);">${d.position}</div>
+                        <img src="${d.rawUrl}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.7;">
+                        <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, transparent 40%, rgba(0,0,0,0.4) 100%);"></div>
+                        
+                        <!-- Top Left: Event Type/Track -->
+                        <div style="position: absolute; top: 1rem; left: 1rem; text-align: left;">
+                            <div style="font-size: 0.6rem; color: var(--primary); font-weight: 900; letter-spacing: 2px; text-transform: uppercase;">SPECIAL EVENTS</div>
+                            <div style="font-size: 1.25rem; font-weight: 900; color: white; line-height: 1; margin-top: 0.2rem;">${(d.trackName || d.eventName).toUpperCase()}</div>
                         </div>
-                        <div style="padding: 1.5rem;">
-                            <p style="font-size: 0.7rem; color: var(--primary); font-weight: 800; margin-bottom: 0.2rem;">${d.eventName.toUpperCase()}</p>
-                            <h4 style="margin-bottom: 0.5rem; color: white;">#${d.carNumber} - ${d.drivers.join(', ')}</h4>
-                            <div style="display: flex; gap: 10px; margin-top: 1rem;">
-                                <button onclick="deleteResult('${doc.id}')" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; border-color: #ff0055; color: #ff0055;">Delete</button>
+
+                        <!-- Top Right: Car & Position -->
+                        <div style="position: absolute; top: 1rem; right: 1rem; text-align: right;">
+                            <div style="font-size: 0.75rem; color: white; font-weight: 700; opacity: 0.9;">Car: ${d.carUsed || 'TBD'}</div>
+                            <div style="font-size: 0.8rem; color: white; margin-top: 0.2rem;">Start: ${d.startPos || '?'}</div>
+                            <div style="font-size: 1.1rem; color: white; font-weight: 900; margin-top: 0.1rem;">Finish: ${d.position}</div>
+                        </div>
+
+                        <!-- Bottom: Drivers and Team Logo -->
+                        <div style="position: absolute; bottom: 1.5rem; left: 0; width: 100%; padding: 0 1.5rem; display: flex; justify-content: space-between; align-items: flex-end;">
+                            <div style="text-align: left;">
+                                <div style="font-size: 0.75rem; color: rgba(255,255,255,0.7); margin-bottom: 0.3rem;">${d.raceDate || ''}</div>
+                                <div style="font-size: 0.85rem; font-weight: 800; color: white; letter-spacing: 1px;">${d.drivers.join(' - ').toUpperCase()}</div>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.05); padding: 0.5rem; border-radius: 4px;">
+                                <img src="assets/Grid Up Sim Endurance.png" style="height: 30px; object-fit: contain;" onerror="this.style.display='none'">
                             </div>
                         </div>
+
+                        <!-- Absolute Overlay Control (Delete button) -->
+                        <div style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); opacity: 0; transition: opacity 0.3s;" class="hover-show">
+                            <button onclick="deleteResult('${doc.id}')" class="btn btn-outline" style="border-color: #ff0055; color: #ff0055;">Delete Card</button>
+                        </div>
                     `;
+                    
+                    // Add hover style via JS for the delete button
+                    card.onmouseenter = () => card.querySelector('.hover-show').style.opacity = '1';
+                    card.onmouseleave = () => card.querySelector('.hover-show').style.opacity = '0';
+                    
                     gallery.appendChild(card);
                 });
             } catch (e) {

@@ -283,17 +283,41 @@ async function loadDynamicContent() {
                 snap.forEach(doc => {
                     const d = doc.data();
                     const card = document.createElement('div');
-                    card.className = 'card glass reveal active';
+                    card.className = 'card cinematic-poster reveal active';
                     card.style.padding = '0';
                     card.style.overflow = 'hidden';
+                    card.style.position = 'relative';
+                    card.style.background = '#000';
+                    card.style.aspectRatio = '16/9';
+                    card.style.borderRadius = '12px';
+                    card.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
+
                     card.innerHTML = `
-                        <div style="position: relative; height: 180px;">
-                            <img src="${d.rawUrl}" style="width: 100%; height: 100%; object-fit: cover;">
-                            <div style="position: absolute; top: 1rem; right: 1rem; background: var(--primary); color: #000; font-weight: 800; padding: 0.5rem 1rem; border-radius: 5px; box-shadow: 0 0 15px rgba(0,207,255,0.5);">${d.position}</div>
+                        <img src="${d.rawUrl}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.7;">
+                        <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, transparent 40%, rgba(0,0,0,0.4) 100%);"></div>
+                        
+                        <!-- Top Left: Event Type/Track -->
+                        <div style="position: absolute; top: 1rem; left: 1rem; text-align: left;">
+                            <div style="font-size: 0.6rem; color: var(--primary); font-weight: 900; letter-spacing: 2px; text-transform: uppercase;">SPECIAL EVENTS</div>
+                            <div style="font-size: 1.2rem; font-weight: 900; color: white; line-height: 1; margin-top: 0.2rem;">${(d.trackName || d.eventName).toUpperCase()}</div>
                         </div>
-                        <div style="padding: 1.5rem;">
-                            <p style="font-size: 0.7rem; color: var(--primary); font-weight: 800; margin-bottom: 0.2rem;">${d.eventName.toUpperCase()}</p>
-                            <h4 style="margin-bottom: 0.5rem; color: white; font-size: 1rem;">#${d.carNumber} - ${d.drivers.join(', ')}</h4>
+
+                        <!-- Top Right: Car & Position -->
+                        <div style="position: absolute; top: 1rem; right: 1rem; text-align: right;">
+                            <div style="font-size: 0.65rem; color: white; font-weight: 700; opacity: 0.9;">Car: ${d.carUsed || 'TBD'}</div>
+                            <div style="font-size: 0.7rem; color: white; margin-top: 0.2rem;">Start: ${d.startPos || '?'}</div>
+                            <div style="font-size: 1rem; color: white; font-weight: 900; margin-top: 0.1rem;">Finish: ${d.position}</div>
+                        </div>
+
+                        <!-- Bottom: Drivers and Team Logo -->
+                        <div style="position: absolute; bottom: 1.25rem; left: 0; width: 100%; padding: 0 1.25rem; display: flex; justify-content: space-between; align-items: flex-end;">
+                            <div style="text-align: left;">
+                                <div style="font-size: 0.65rem; color: rgba(255,255,255,0.7); margin-bottom: 0.3rem;">${d.raceDate || ''}</div>
+                                <div style="font-size: 0.75rem; font-weight: 800; color: white; letter-spacing: 1px;">${d.drivers.join(' - ').toUpperCase()}</div>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.05); padding: 0.4rem; border-radius: 4px;">
+                                <img src="assets/Grid Up Sim Endurance.png" style="height: 24px; object-fit: contain;" onerror="this.style.display='none'">
+                            </div>
                         </div>
                     `;
                     resultsTrack.appendChild(card);
