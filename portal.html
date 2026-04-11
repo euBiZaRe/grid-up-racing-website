@@ -810,12 +810,13 @@
                     allResponses[event.id] = {};
                     snap.forEach(doc => {
                         const data = doc.data();
-                        allDrivers[doc.id] = data.driverName;
+                        // Fix: Use multiple fallbacks for driver name
+                        allDrivers[doc.id] = data.driverName || data.name || data.discordName || "Unknown Driver";
                         allResponses[event.id][doc.id] = data.status;
                     });
                 }
 
-                const driverUids = Object.keys(allDrivers).sort((a,b) => allDrivers[a].localeCompare(allDrivers[b]));
+                const driverUids = Object.keys(allDrivers).sort((a,b) => (allDrivers[a] || "").localeCompare(allDrivers[b] || ""));
 
                 if (driverUids.length === 0) {
                     html += `<tr><td colspan="${UPCOMING_EVENTS.length + 1}" style="padding: 2rem; text-align: center; color: var(--text-muted);">No responses received yet.</td></tr>`;

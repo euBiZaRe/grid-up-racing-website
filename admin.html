@@ -1190,7 +1190,8 @@
                         allResponses[event.id] = {};
                         snap.forEach(doc => {
                             const data = doc.data();
-                            allDrivers[doc.id] = data.driverName;
+                            // Fix: Use multiple fallbacks for driver name
+                            allDrivers[doc.id] = data.driverName || data.name || data.discordName || "Unknown Driver";
                             allResponses[event.id][doc.id] = {
                                 status: data.status,
                                 slot: data.preferredSlot
@@ -1198,7 +1199,7 @@
                         });
                     }
 
-                    let driverUids = Object.keys(allDrivers).sort((a,b) => allDrivers[a].localeCompare(allDrivers[b]));
+                    let driverUids = Object.keys(allDrivers).sort((a,b) => (allDrivers[a] || "").localeCompare(allDrivers[b] || ""));
 
                     if (availableOnly) {
                         driverUids = driverUids.filter(uid => {
@@ -1285,7 +1286,7 @@
 
                         html += `
                             <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
-                                <td style="padding: 1.25rem; font-weight: 700; color: var(--primary);">${data.driverName}</td>
+                                <td style="padding: 1.25rem; font-weight: 700; color: var(--primary);">${data.driverName || data.name || data.discordName || "Unknown Driver"}</td>
                                 <td style="padding: 1.25rem;"><span class="status-badge" style="background: ${statusColor}22; color: ${statusColor};">${statusText}</span></td>
                                 <td style="padding: 1.25rem; color: #fff;">${data.preferredSlot || '<span style="color:rgba(255,255,255,0.2);">No Preference Set</span>'}</td>
                             </tr>
