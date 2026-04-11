@@ -787,7 +787,9 @@
                     const teams = snap.data().teams;
                     teamSelector.innerHTML = '<option value="">-- Manual Entry --</option>' + 
                         teams.map((t, idx) => {
-                            const label = `${t.name} (${t.car_class || 'No Car Set'}) - ${t.drivers.join(', ')}`;
+                            const allParticipating = [...(t.drivers || [])];
+                            if (t.captain && !allParticipating.includes(t.captain)) allParticipating.unshift(t.captain);
+                            const label = `${t.name} (${t.car_class || 'No Car Set'}) - ${allParticipating.join(', ')}`;
                             return `<option value="${idx}">${label}</option>`;
                         }).join('');
                     CURRENT_CARD_TEAM = teams;
@@ -810,7 +812,11 @@
             const carMatch = team.car_class ? team.car_class.match(/#(\d+)/) : null;
             document.getElementById('card-number').value = carMatch ? carMatch[1] : '';
             
-            const driverNames = team.drivers;
+            const driverNames = [...(team.drivers || [])];
+            if (team.captain && !driverNames.includes(team.captain)) {
+                driverNames.unshift(team.captain);
+            }
+            
             document.getElementById('card-drivers').value = driverNames.join(', ');
             
             // Resolve UIDs
