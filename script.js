@@ -125,17 +125,22 @@ if (toggleBtn && pastSection) {
 }
 
 // Countdown Timer Logic
-function updateCountdown() {
-    // Corrected target date to April 10, 2026 based on next major event
-    const targetDate = new Date('April 10, 2026 00:00:00').getTime();
+function updateCountdown(targetTimestamp) {
+    if (!targetTimestamp) return;
+    
+    // Clear any existing timer
+    if (window.countdownInterval) clearInterval(window.countdownInterval);
+
+    const targetDate = new Date(targetTimestamp).getTime();
     
     function update() {
         const now = new Date().getTime();
         const distance = targetDate - now;
         
+        const countdownEl = document.getElementById('countdown');
         if (distance < 0) {
-            if (document.getElementById('countdown')) {
-                document.getElementById('countdown').innerHTML = "<div class='glow-text' style='font-size: 2rem;'>RACE WEEKEND</div>";
+            if (countdownEl) {
+                countdownEl.innerHTML = "<div class='glow-text' style='font-size: 2rem;'>RACE WEEKEND</div>";
             }
             return true; // Stop timer
         }
@@ -157,10 +162,9 @@ function updateCountdown() {
         return false;
     }
 
-    // Initial call to avoid '00' flicker
     if (!update()) {
-        const timer = setInterval(() => {
-            if (update()) clearInterval(timer);
+        window.countdownInterval = setInterval(() => {
+            if (update()) clearInterval(window.countdownInterval);
         }, 1000);
     }
 }
@@ -230,41 +234,106 @@ async function loadDynamicContent() {
         return;
     }
 
-    // 1. Load Upcoming Races
+    // 1. Load Upcoming Races & Update Hero
+    const now = new Date().toISOString();
     const upcomingTrack = document.getElementById('dynamic-upcoming-track');
-    if (upcomingTrack) {
-        try {
-            const now = new Date().toISOString();
-            const snap = await db.collection("events")
-                .where("startDate", ">=", now)
-                .orderBy("startDate", "asc")
-                .limit(10)
-                .get();
+    const fullEventList = document.getElementById('full-event-list');
+    
+    try {
+        const snap = await db.collection("events")
+            .where("startDate", ">=", now)
+            .orderBy("startDate", "asc")
+            .get();
 
-            if (snap.empty) {
-                upcomingTrack.innerHTML = '<p style="text-align: center; color: var(--text-muted); width: 100%;">No upcoming events scheduled.</p>';
-            } else {
+        if (snap.empty) {
+            if (upcomingTrack) upcomingTrack.innerHTML = '<p style="text-align: center; color: var(--text-muted); width: 100%;">No upcoming events scheduled.</p>';
+            if (fullEventList) fullEventList.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Stay tuned for future event dates.</p>';
+        } else {
+            const events = [];
+            snap.forEach(doc => events.push({ id: doc.id, ...doc.data() }));
+
+            // A. Update Home Hero (if on index.html)
+            const nextEvent = events[0];
+            const heroSubtitle = document.getElementById('hero-event-subtitle');
+            const heroTitle = document.getElementById('hero-event-name');
+            const heroLink = document.getElementById('hero-event-link');
+            
+            if (heroTitle) {
+                if (heroSubtitle) heroSubtitle.textContent = `Next Major Race: ${nextEvent.name}`;
+                heroTitle.textContent = nextEvent.name.toUpperCase();
+                if (heroLink) heroLink.href = `events.html?id=${nextEvent.id}`;
+                updateCountdown(nextEvent.startDate);
+            }
+
+            // B. Populate Carousel Track (shared)
+            if (upcomingTrack) {
                 upcomingTrack.innerHTML = '';
-                let index = 0;
                 const colors = ['blue', 'pink', 'green'];
-                snap.forEach(doc => {
-                    const e = doc.data();
-                    const color = colors[index % 3];
+                events.slice(0, 10).forEach((e, i) => {
                     const tile = document.createElement('a');
-                    tile.href = `events.html?id=${doc.id}`;
-                    tile.className = `race-tile tile-${color}`;
+                    // Check if we are in a subdirectory (e.g. events/ or drivers/)
+                    const isSubdir = window.location.pathname.includes('/events/') || window.location.pathname.includes('/drivers/');
+                    const prefix = isSubdir ? '../' : '';
+                    
+                    // Priority: If it's a known static page ID, link to it. 
+                    // Otherwise, link to events.html with a query param.
+                    const staticIds = ['imsa-classic-500', 'nurburgring-24h', 'indy-500', 'world-600', 'thruxton-4h', 'watkins-glen-6h'];
+                    const linkUrl = staticIds.includes(e.id) ? `${prefix}events/${e.id}.html` : `${prefix}events.html?id=${e.id}`;
+                    
+                    tile.href = linkUrl;
+                    tile.className = `race-tile tile-${colors[i % 3]}`;
                     tile.innerHTML = `
                         <h3>${e.name.toUpperCase()}</h3>
                         <div class="race-meta">${e.date}</div>
                     `;
                     upcomingTrack.appendChild(tile);
-                    index++;
                 });
             }
-        } catch (error) {
-            console.error("Error loading events:", error);
-            upcomingTrack.innerHTML = '<p style="color: #ff0055;">Failed to load schedule.</p>';
+
+            // C. Populate Full List (if on events.html)
+            if (fullEventList) {
+                fullEventList.innerHTML = '';
+                const eventColors = ['var(--primary)', 'var(--secondary)', '#00ff88'];
+                events.forEach((e, i) => {
+                    const card = document.createElement('div');
+                    card.id = `event-${e.id}`; // Add ID for scrolling
+                    card.className = 'glass event-horizontal-card reveal active';
+                    card.style.borderLeft = `4px solid ${eventColors[i % 3]}`;
+                    
+                    const staticIds = ['imsa-classic-500', 'nurburgring-24h', 'indy-500', 'world-600', 'thruxton-4h', 'watkins-glen-6h'];
+                    const linkUrl = staticIds.includes(e.id) ? `events/${e.id}.html` : `events.html?id=${e.id}`;
+
+                    card.innerHTML = `
+                        <div class="event-info">
+                            <h3>${e.name}</h3>
+                            <p class="event-meta">${e.date}</p>
+                            <p class="event-desc">${e.classes ? 'Classes: ' + e.classes.join(', ') : 'Details coming soon.'}</p>
+                        </div>
+                        <div class="event-action">
+                            <a href="${linkUrl}" class="btn btn-outline">Details</a>
+                        </div>
+                    `;
+                    fullEventList.appendChild(card);
+                });
+
+                // Handle Deep Linking (Scroll to event if ID in URL)
+                const urlParams = new URLSearchParams(window.location.search);
+                const eventId = urlParams.get('id');
+                if (eventId) {
+                    setTimeout(() => {
+                        const target = document.getElementById(`event-${eventId}`);
+                        if (target) {
+                            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            target.style.boxShadow = '0 0 30px rgba(0,207,255,0.3)';
+                            target.style.borderColor = 'var(--primary)';
+                        }
+                    }, 500);
+                }
+            }
         }
+    } catch (error) {
+        console.error("Error loading events:", error);
+        if (upcomingTrack) upcomingTrack.innerHTML = '<p style="color: #ff0055;">Failed to load schedule.</p>';
     }
 
     // 2. Load Recent Results (Race Cards)
@@ -493,3 +562,18 @@ async function downloadActiveCard() {
         btn.disabled = false;
     }
 }
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+    initCarousel();
+    
+    // Poll for Firestore 'db' initialization from auth.js
+    const dbCheckInterval = setInterval(() => {
+        if (typeof db !== 'undefined') {
+            loadDynamicContent();
+            clearInterval(dbCheckInterval);
+        }
+    }, 100);
+    
+    // Safety timeout to avoid infinite polling if Firestore fails
+    setTimeout(() => clearInterval(dbCheckInterval), 5000);
+});

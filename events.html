@@ -96,72 +96,8 @@
             <button id="togglePastEvents" class="btn btn-outline" style="min-width: 200px;">Show Past Events</button>
         </div>
 
-        <div class="event-list">
-            <div class="glass event-horizontal-card" style="border-left: 4px solid var(--primary);">
-                <div class="event-info">
-                    <h3>IMSA Classic 500</h3>
-                    <p class="event-meta">Laguna Seca | April 10-11</p>
-                    <p class="event-desc">A high-speed endurance classic at the iconic Laguna Seca, featuring GT3 and GTP machinery battling the legendary Corkscrew.</p>
-                </div>
-                <div class="event-action">
-                    <a href="events/imsa-classic-500.html" class="btn btn-outline">Learn More</a>
-                </div>
-            </div>
-
-            <div class="glass event-horizontal-card" style="border-left: 4px solid var(--secondary);">
-                <div class="event-info">
-                    <h3>Nürburgring 24h</h3>
-                    <p class="event-meta">Nürburgring | May 1-3</p>
-                    <p class="event-desc">The ultimate test of man and machine on the "Green Hell." 24 hours of pure adrenaline across the combined Nordschleife circuit.</p>
-                </div>
-                <div class="event-action">
-                    <a href="events/nurburgring-24h.html" class="btn btn-outline">Learn More</a>
-                </div>
-            </div>
-
-            <div class="glass event-horizontal-card" style="border-left: 4px solid #00ff88;">
-                <div class="event-info">
-                    <h3>INDY 500</h3>
-                    <p class="event-meta">Indianapolis | May 5-18</p>
-                    <p class="event-desc">The Greatest Spectacle in Racing. 500 miles of high-speed oval action at the world-famous Indianapolis Motor Speedway.</p>
-                </div>
-                <div class="event-action">
-                    <a href="events/indy-500.html" class="btn btn-outline">Learn More</a>
-                </div>
-            </div>
-
-            <div class="glass event-horizontal-card" style="border-left: 4px solid var(--primary);">
-                <div class="event-info">
-                    <h3>World 600</h3>
-                    <p class="event-meta">Charlotte | May 20-25</p>
-                    <p class="event-desc">NASCAR's longest and most grueling endurance test, a race of strategy and survival under the lights at Charlotte Motor Speedway.</p>
-                </div>
-                <div class="event-action">
-                    <a href="events/world-600.html" class="btn btn-outline">Learn More</a>
-                </div>
-            </div>
-
-            <div class="glass event-horizontal-card" style="border-left: 4px solid var(--secondary);">
-                <div class="event-info">
-                    <h3>4 Hours at Thruxton</h3>
-                    <p class="event-meta">Thruxton Circuit | May 29-31</p>
-                    <p class="event-desc">A flat-out sprint at the UK's fastest circuit. High-speed commitment and tactical slipstreaming are essential for victory.</p>
-                </div>
-                <div class="event-action">
-                    <a href="events/thruxton-4h.html" class="btn btn-outline">Learn More</a>
-                </div>
-            </div>
-
-            <div class="glass event-horizontal-card" style="border-left: 4px solid #00ff88;">
-                <div class="event-info">
-                    <h3>Watkins Glen 6 Hour</h3>
-                    <p class="event-meta">Watkins Glen | June 19-21</p>
-                    <p class="event-desc">A staple of North American endurance racing at the historic Watkins Glen International, known for its flowing and high-speed layout.</p>
-                </div>
-                <div class="event-action">
-                    <a href="events/watkins-glen-6h.html" class="btn btn-outline">Learn More</a>
-                </div>
-            </div>
+        <div id="full-event-list" class="event-list">
+            <p style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading season schedule...</p>
         </div>
 
         <div style="text-align: center; margin-top: 4rem;">
@@ -179,63 +115,8 @@
                     <button class="carousel-btn next-btn">→</button>
                 </div>
                 <div class="upcoming-races-container">
-                    <div class="carousel-track">
-                        <a href="events/imsa-classic-500.html" class="race-tile tile-blue">
-                            <h3>IMSA CLASSIC 500</h3>
-                            <div class="race-meta">Laguna Seca | April 10-11</div>
-                        </a>
-                        <a href="events/nurburgring-24h.html" class="race-tile tile-pink">
-                            <h3>NÜRBURGRING 24H</h3>
-                            <div class="race-meta">Nürburgring | May 1-3</div>
-                        </a>
-                        <a href="events/indy-500.html" class="race-tile tile-green">
-                            <h3>INDY 500</h3>
-                            <div class="race-meta">Indianapolis | May 5-18</div>
-                        </a>
-                        <a href="events/world-600.html" class="race-tile tile-blue">
-                            <h3>WORLD 600</h3>
-                            <div class="race-meta">Charlotte | May 20-25</div>
-                        </a>
-                        <a href="events/thruxton-4h.html" class="race-tile tile-pink">
-                            <h3>4 HOURS AT THRUXTON</h3>
-                            <div class="race-meta">Thruxton | May 29-31</div>
-                        </a>
-                        <a href="events/watkins-glen-6h.html" class="race-tile tile-green">
-                            <h3>WATKINS GLEN 6H</h3>
-                            <div class="race-meta">Watkins Glen | June 19-21</div>
-                        </a>
-                        <a href="events/firecracker-400.html" class="race-tile tile-blue">
-                            <h3>FIRECRACKER 400</h3>
-                            <div class="race-meta">Daytona | June 30 - July 6</div>
-                        </a>
-                        <a href="events/spa-24hr.html" class="race-tile tile-pink">
-                            <h3>SPA 24HR</h3>
-                            <div class="race-meta">Spa | July 10-12</div>
-                        </a>
-                        <a href="events/brickyard-400.html" class="race-tile tile-green">
-                            <h3>BRICKYARD 400</h3>
-                            <div class="race-meta">Indianapolis | July 22-27</div>
-                        </a>
-                        <a href="events/road-america-6h.html" class="race-tile tile-blue">
-                            <h3>ROAD AMERICA 6H</h3>
-                            <div class="race-meta">Road America | July 24-26</div>
-                        </a>
-                        <a href="events/suzuka-1000km.html" class="race-tile tile-pink">
-                            <h3>SUZUKA 1000KM</h3>
-                            <div class="race-meta">Suzuka | Sept 10-15</div>
-                        </a>
-                        <a href="events/petit-le-mans.html" class="race-tile tile-green">
-                            <h3>PETIT LE MANS</h3>
-                            <div class="race-meta">Road Atlanta | Sept 25-27</div>
-                        </a>
-                        <a href="events/bathurst-1000.html" class="race-tile tile-blue">
-                            <h3>BATHURST 1000</h3>
-                            <div class="race-meta">Mount Panorama | Oct 2-4</div>
-                        </a>
-                        <a href="events/indy-8h.html" class="race-tile tile-pink">
-                            <h3>INDY 8H</h3>
-                            <div class="race-meta">Indianapolis | Oct 16-18</div>
-                        </a>
+                    <div class="carousel-track" id="dynamic-upcoming-track">
+                        <p style="text-align: center; color: var(--text-muted); width: 100%;">Loading upcoming events...</p>
                     </div>
                 </div>
             </div>
