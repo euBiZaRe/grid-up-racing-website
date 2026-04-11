@@ -272,6 +272,13 @@ async function loadDynamicContent() {
     const prefix = isSubdir ? '../' : '';
     const staticIds = ['imsa-classic-500', 'nurburgring-24h', 'indy-500', 'world-600', 'thruxton-4h', 'watkins-glen-6h'];
     
+    // Official Special Event Banners
+    const eventBanners = {
+        'imsa-classic-500': 'https://s100.iracing.com/wp-content/uploads/2026/03/iRSE-2026-IMSA-Classic-500.png',
+        'nurburgring-24h': 'https://s100.iracing.com/wp-content/uploads/2025/12/iRSE-2026-Nurburgring-24H.png',
+        'indy-500': 'https://s100.iracing.com/wp-content/uploads/2025/12/iRSE-2026-Indy-500.png'
+    };
+    
     console.log("Auth: Querying events with filterTimestamp:", filterTimestamp);
     try {
         const snap = await db.collection("events")
@@ -333,7 +340,11 @@ async function loadDynamicContent() {
                     
                     tile.href = linkUrl;
                     tile.className = `race-tile tile-${colors[i % 3]}`;
+                    
+                    const bannerUrl = eventBanners[e.id];
+                    
                     tile.innerHTML = `
+                        ${bannerUrl ? `<div class="tile-banner" style="background-image: url('${bannerUrl}')"></div>` : ''}
                         <h3>${e.name.toUpperCase()}</h3>
                         <div class="race-meta">${e.date}</div>
                     `;
@@ -352,8 +363,10 @@ async function loadDynamicContent() {
                     card.style.borderLeft = `4px solid ${eventColors[i % 3]}`;
                     
                     const linkUrl = staticIds.includes(e.id) ? `events/${e.id}.html` : `events.html?id=${e.id}`;
+                    const bannerUrl = eventBanners[e.id];
 
                     card.innerHTML = `
+                        ${bannerUrl ? `<div class="event-card-banner" style="background-image: url('${bannerUrl}')"></div>` : ''}
                         <div class="event-info">
                             <h3>${e.name}</h3>
                             <p class="event-meta">${e.date}</p>
