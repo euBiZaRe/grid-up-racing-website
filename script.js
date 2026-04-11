@@ -234,14 +234,18 @@ async function loadDynamicContent() {
         return;
     }
 
-    // 1. Load Upcoming Races & Update Hero
-    const now = new Date().toISOString();
+    // 1. Load Upcoming Races & Update Hero (Show events starting now or recently finished)
+    // We use a 24h lookback so ongoing races stay visible
+    const lookbackDate = new Date();
+    lookbackDate.setHours(lookbackDate.getHours() - 24);
+    const filterTimestamp = lookbackDate.toISOString();
+
     const upcomingTrack = document.getElementById('dynamic-upcoming-track');
     const fullEventList = document.getElementById('full-event-list');
     
     try {
         const snap = await db.collection("events")
-            .where("startDate", ">=", now)
+            .where("startDate", ">=", filterTimestamp)
             .orderBy("startDate", "asc")
             .get();
 
@@ -259,7 +263,15 @@ async function loadDynamicContent() {
             const heroLink = document.getElementById('hero-event-link');
             
             if (heroTitle) {
-                if (heroSubtitle) heroSubtitle.textContent = `Next Major Race: ${nextEvent.name}`;
+                const now = new Date();
+                const startTime = new Date(nextEvent.startDate);
+                const isLive = startTime <= now;
+                
+                if (heroSubtitle) {
+                    heroSubtitle.textContent = isLive ? `LIVE NOW: ${nextEvent.name}` : `Next Major Race: ${nextEvent.name}`;
+                    if (isLive) heroSubtitle.style.color = '#ff0055'; // Pop red for live
+                }
+                
                 heroTitle.textContent = nextEvent.name.toUpperCase();
                 if (heroLink) heroLink.href = `events.html?id=${nextEvent.id}`;
                 updateCountdown(nextEvent.startDate);
