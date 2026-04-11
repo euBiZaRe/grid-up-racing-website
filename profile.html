@@ -55,7 +55,7 @@
         }
         .admin-hanging-btn {
             position: fixed;
-            right: 0;
+            right: 0px;
             top: 50%;
             transform: translateY(-50%) rotate(-90deg);
             transform-origin: bottom right;
@@ -74,6 +74,7 @@
             box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
             text-decoration: none;
             color: var(--primary);
+            cursor: pointer;
         }
         .admin-hanging-btn:hover {
             padding-bottom: 1.2rem;
@@ -163,8 +164,6 @@
 
                     <button onclick="saveProfile()" class="btn btn-primary" style="margin-top: 1rem; width: 100%;">Save Profile Changes</button>
                     
-                    <a href="admin.html" id="admin-dashboard-btn" class="admin-hanging-btn" style="display: none;">ACCESS ADMIN PANEL</a>
-
                     <div id="save-status" style="text-align: center; color: var(--primary); font-size: 0.8rem; height: 1rem;"></div>
                 </div>
             </div>
@@ -199,6 +198,8 @@
 
     <!-- Background Canvas for High-Res Exports -->
     <canvas id="export-canvas" style="display: none;"></canvas>
+
+    <a href="admin.html" id="admin-dashboard-btn" class="admin-hanging-btn" style="display: none;">ACCESS ADMIN PANEL</a>
 
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
