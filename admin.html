@@ -129,24 +129,28 @@
 
         <!-- Admin Content -->
         <div id="admin-hub" class="admin-content">
-            <header style="margin-bottom: 4rem; display: flex; justify-content: space-between; align-items: flex-end;">
+            <header style="margin-bottom: 4rem; display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid var(--glass-border); padding-bottom: 2rem;">
                 <div>
-                    <p style="color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 3px; font-size: 0.8rem; margin-bottom: 0.5rem;">Management Console</p>
-                    <h1 class="glow-text" style="font-size: 3rem;" id="admin-title">Driver Claims</h1>
+                    <p style="color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 4px; font-size: 0.7rem; margin-bottom: 0.5rem; opacity: 0.8;">GRID UP // ADMIN</p>
+                    <h1 class="glow-text" style="font-size: 3.5rem; font-weight: 800; letter-spacing: -2px;" id="admin-title">Dashboard</h1>
                 </div>
-                <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 1rem;">
-                    <div style="display: flex; gap: 1rem;">
-                        <button onclick="switchTab('claims')" class="btn btn-outline" id="tab-claims">Claims</button>
-                        <button onclick="switchTab('races')" class="btn btn-outline" id="tab-races">Races</button>
-                        <button onclick="switchTab('availability')" class="btn btn-outline" id="tab-availability">Availability</button>
-                        <button onclick="switchTab('admins')" class="btn btn-outline" id="tab-admins">Admins</button>
+                <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 1.5rem;">
+                    <nav class="admin-nav" style="display: flex; gap: 0.5rem; background: rgba(255,255,255,0.03); padding: 0.5rem; border-radius: 12px; border: 1px solid var(--glass-border);">
+                        <button onclick="switchTab('claims')" class="btn btn-outline" id="tab-claims" style="padding: 0.6rem 1.2rem; font-size: 0.75rem; border: none;">Claims</button>
+                        <button onclick="switchTab('races')" class="btn btn-outline" id="tab-races" style="padding: 0.6rem 1.2rem; font-size: 0.75rem; border: none;">Lineups</button>
+                        <button onclick="switchTab('availability')" class="btn btn-outline" id="tab-availability" style="padding: 0.6rem 1.2rem; font-size: 0.75rem; border: none;">Availability</button>
+                        <button onclick="switchTab('events')" class="btn btn-outline" id="tab-events" style="padding: 0.6rem 1.2rem; font-size: 0.75rem; border: none;">Events</button>
+                        <button onclick="switchTab('admins')" class="btn btn-outline" id="tab-admins" style="padding: 0.6rem 1.2rem; font-size: 0.75rem; border: none;">Team</button>
+                    </nav>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span id="admin-user-info" style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600;">...</span>
+                        <div style="width: 8px; height: 8px; background: #00ff88; border-radius: 50%; box-shadow: 0 0 10px #00ff88;"></div>
                     </div>
-                    <span id="admin-user-info" style="color: var(--text-muted); font-size: 0.8rem;">Logged in as: ...</span>
                 </div>
             </header>
 
             <!-- Claims Section -->
-            <div id="section-claims">
+            <div id="section-claims" class="tab-content" style="display: none;">
                 <div class="glass" style="padding: 0; overflow-x: auto;">
                 <table class="claims-table">
                     <thead>
@@ -168,9 +172,9 @@
             </div>
 
             <!-- Race Management Section -->
-            <div id="section-races" style="display: none;">
-                <div class="glass" style="padding: 2rem; margin-bottom: 2rem;">
-                    <h3 style="margin-bottom: 1.5rem; color: var(--primary);">Select Event</h3>
+            <div id="section-races" class="tab-content" style="display: none;">
+                <div class="glass" style="padding: 2.5rem; margin-bottom: 2rem; background: linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);">
+                    <h3 style="margin-bottom: 1.5rem; color: var(--primary); font-size: 0.9rem; letter-spacing: 2px;">1. SELECT TARGET EVENT</h3>
                     <select id="event-selector" class="btn btn-outline" style="width: 100%; text-align: left; padding: 1rem;" onchange="loadRaceData()">
                         <option value="">-- Choose an Event --</option>
                         <option value="imsa-classic-500">IMSA Classic 500</option>
@@ -246,29 +250,63 @@
 
             <!-- Admins Management Section -->
             <div id="section-admins" style="display: none;">
-                <div class="glass" style="padding: 2rem; margin-bottom: 2rem;">
-                    <h3 style="margin-bottom: 1.5rem; color: var(--primary);">Manage Administrators</h3>
+                <!-- ... existing admins content ... -->
+            </div>
+
+            <!-- Events Management Section -->
+            <div id="section-events" class="tab-content" style="display: none;">
+                <div class="glass" style="padding: 2.5rem; margin-bottom: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem;">
+                        <div>
+                            <h3 style="color: var(--primary); font-size: 1.2rem; margin-bottom: 0.5rem;">Event Schedule</h3>
+                            <p style="color: var(--text-muted); font-size: 0.8rem;">Manage the global list of upcoming races and countdowns.</p>
+                        </div>
+                        <button onclick="showEventModal()" class="btn btn-primary" style="box-shadow: 0 0 20px rgba(0,207,255,0.3);">+ Create Event</button>
+                    </div>
                     
-                    <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
-                        <input type="text" id="new-admin-uid" class="btn btn-outline" style="flex: 1; text-align: left;" placeholder="Enter Discord User UID to make Admin">
-                        <button onclick="addAdmin()" class="btn btn-primary" style="padding: 0 2rem;">Add Admin</button>
+                    <div id="events-manager-list" class="grid" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+                        <!-- Events populated here -->
+                        <p style="text-align: center; color: var(--text-muted); grid-column: 1/-1;">Loading events...</p>
                     </div>
 
-                    <table class="claims-table">
-                        <thead>
-                            <tr>
-                                <th>Admin UID</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admins-list">
-                            <tr>
-                                <td colspan="2" style="text-align: center; color: var(--text-muted);">Loading admins...</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div id="migration-notice" style="display:none; margin-top: 3rem; padding: 2rem; border: 1px dashed var(--primary); text-align: center;" class="glass">
+                        <p style="margin-bottom: 1rem; color: var(--text-muted);">No events found in Firestore. Would you like to import the default event list?</p>
+                        <button onclick="seedEvents()" class="btn btn-outline">Import Default Events</button>
+                    </div>
                 </div>
             </div>
+
+            <!-- Event Edit Modal (Simple overlay) -->
+            <div id="event-modal" class="glass" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10000; width: 90%; max-width: 600px; padding: 3rem; box-shadow: 0 0 50px rgba(0,0,0,0.8); border: 1px solid var(--primary);">
+                <h2 id="modal-title" class="glow-text" style="margin-bottom: 2rem;">Edit Event</h2>
+                <div style="display: grid; gap: 1.5rem;">
+                    <div>
+                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">EVENT ID (Cannot change)</label>
+                        <input type="text" id="edit-event-id" class="btn btn-outline" style="width:100%; text-align:left;" placeholder="e.g. spa-24hr">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">EVENT NAME</label>
+                        <input type="text" id="edit-event-name" class="btn btn-outline" style="width:100%; text-align:left;" placeholder="e.g. Spa 24hr">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">DATE DISPLAY</label>
+                        <input type="text" id="edit-event-date" class="btn btn-outline" style="width:100%; text-align:left;" placeholder="e.g. July 10-12">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">START DATE (ISO Format for Countdown)</label>
+                        <input type="datetime-local" id="edit-event-start" class="btn btn-outline" style="width:100%; text-align:left; color-scheme: dark;">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">CAR CLASSES (Comma separated)</label>
+                        <input type="text" id="edit-event-classes" class="btn btn-outline" style="width:100%; text-align:left;" placeholder="e.g. GT3, GT4">
+                    </div>
+                </div>
+                <div style="margin-top: 3rem; display: flex; gap: 1rem;">
+                    <button onclick="saveEvent()" class="btn btn-primary" style="flex: 2;">Save Event</button>
+                    <button onclick="hideEventModal()" class="btn btn-outline" style="flex: 1;">Cancel</button>
+                </div>
+            </div>
+            <div id="modal-backdrop" onclick="hideEventModal()" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999;"></div>
 
             <!-- Availability Section -->
             <div id="section-availability" style="display: none;">
@@ -370,12 +408,14 @@
             document.getElementById('section-races').style.display = tab === 'races' ? 'block' : 'none';
             document.getElementById('section-admins').style.display = tab === 'admins' ? 'block' : 'none';
             document.getElementById('section-availability').style.display = tab === 'availability' ? 'block' : 'none';
+            document.getElementById('section-events').style.display = tab === 'events' ? 'block' : 'none';
             
             const titleMap = { 
                 'claims': 'Driver Claims', 
-                'races': 'Team Confirmations', 
-                'admins': 'Admin Management',
-                'availability': 'Driver Availability'
+                'races': 'Lineup Manager', 
+                'admins': 'Team Permissions',
+                'availability': 'Driver Roster',
+                'events': 'Season Schedule'
             };
             document.getElementById('admin-title').textContent = titleMap[tab];
             
@@ -387,33 +427,188 @@
             document.getElementById('tab-admins').classList.toggle('btn-outline', tab !== 'admins');
             document.getElementById('tab-availability').classList.toggle('btn-primary', tab === 'availability');
             document.getElementById('tab-availability').classList.toggle('btn-outline', tab !== 'availability');
+            document.getElementById('tab-events').classList.toggle('btn-primary', tab === 'events');
+            document.getElementById('tab-events').classList.toggle('btn-outline', tab !== 'events');
+
+            if (tab === 'admins') loadAdmins();
+            if (tab === 'availability') loadAvailability();
+            if (tab === 'events') loadEvents();
 
             if (tab === 'admins') loadAdmins();
             if (tab === 'availability') loadAvailability();
         }
-        const IMSA_SLOTS = [
-            '#1: Friday 22:00 GMT (6:00PM EDT)', 
-            '#2: Saturday 7:00 GMT (3:00AM EDT)', 
-            '#3: Saturday 12:00 GMT (8:00AM EDT)', 
-            '#4: Saturday 16:00 GMT (12:00PM EDT)'
-        ];
+        let UPCOMING_EVENTS = [];
 
-        const UPCOMING_EVENTS = [
-            { id: 'imsa-classic-500', name: 'IMSA Classic 500', date: 'April 10-11', startDate: '2026-04-10T22:00:00Z', slots: IMSA_SLOTS },
-            { id: 'nurburgring-24h', name: 'Nürburgring 24h', date: 'May 1-3', startDate: '2026-05-01T22:00:00Z', slots: IMSA_SLOTS },
-            { id: 'indy-500', name: 'INDY 500', date: 'May 5-18', startDate: '2026-05-05T18:00:00Z', slots: IMSA_SLOTS },
-            { id: 'world-600', name: 'World 600', date: 'May 20-25', startDate: '2026-05-20T22:00:00Z', slots: IMSA_SLOTS },
-            { id: 'thruxton-4h', name: '4 Hours at Thruxton', date: 'May 29-31', startDate: '2026-05-29T22:00:00Z', slots: IMSA_SLOTS },
-            { id: 'watkins-glen-6h', name: 'Watkins Glen 6 Hour', date: 'June 19-21', startDate: '2026-06-19T22:00:00Z', slots: IMSA_SLOTS },
-            { id: 'firecracker-400', name: 'Firecracker 400', date: 'June 30 - July 6', startDate: '2026-06-30T22:00:00Z', slots: IMSA_SLOTS },
-            { id: 'spa-24hr', name: 'Spa 24hr', date: 'July 10-12', startDate: '2026-07-10T22:00:00Z', slots: IMSA_SLOTS },
-            { id: 'brickyard-400', name: 'Brickyard 400', date: 'July 22-27', startDate: '2026-07-22T22:00:00Z', slots: IMSA_SLOTS },
-            { id: 'road-america-6h', name: 'Road America 6h', date: 'July 24-26', startDate: '2026-07-24T22:00:00Z', slots: IMSA_SLOTS },
-            { id: 'suzuka-1000km', name: 'Suzuka 1000km', date: 'Sept 10-15', startDate: '2026-09-10T22:00:00Z', slots: IMSA_SLOTS },
-            { id: 'petit-le-mans', name: 'Petit Le Mans', date: 'Sept 25-27', startDate: '2026-09-25T22:00:00Z', slots: IMSA_SLOTS },
-            { id: 'bathurst-1000', name: 'Bathurst 1000', date: 'Oct 2-4', startDate: '2026-10-02T22:00:00Z', slots: IMSA_SLOTS },
-            { id: 'indy-8h', name: 'Indy 8h', date: 'Oct 16-18', startDate: '2026-10-16T22:00:00Z', slots: IMSA_SLOTS }
-        ];
+        async function loadEvents() {
+            const list = document.getElementById('events-manager-list');
+            const notice = document.getElementById('migration-notice');
+            if (!list) return;
+
+            list.innerHTML = '<p style="text-align: center; color: var(--text-muted); grid-column: 1/-1;">Loading events...</p>';
+            notice.style.display = 'none';
+
+            try {
+                const snapshot = await db.collection("events").orderBy("startDate", "asc").get();
+                UPCOMING_EVENTS = [];
+                snapshot.forEach(doc => UPCOMING_EVENTS.push({ id: doc.id, ...doc.data() }));
+
+                if (UPCOMING_EVENTS.length === 0) {
+                    list.innerHTML = '';
+                    notice.style.display = 'block';
+                    return;
+                }
+
+                list.innerHTML = '';
+                UPCOMING_EVENTS.forEach(event => {
+                    const card = document.createElement('div');
+                    card.className = 'card glass';
+                    card.style.padding = '1.5rem';
+                    card.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                            <div style="font-size: 0.7rem; color: var(--primary); font-weight: 700; text-transform: uppercase;">${event.date}</div>
+                            <div style="font-size: 0.6rem; color: var(--text-muted); font-family: monospace;">${event.id}</div>
+                        </div>
+                        <h4 style="margin-bottom: 1rem;">${event.name}</h4>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 2rem;">
+                            Classes: ${event.classes ? event.classes.join(', ') : 'None'}
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick='showEventModal(${JSON.stringify(event).replace(/'/g, "&apos;")})' class="btn btn-outline" style="flex: 1; font-size: 0.7rem; padding: 0.5rem;">Edit</button>
+                            <button onclick="deleteEvent('${event.id}')" class="btn btn-outline" style="flex: 1; font-size: 0.7rem; padding: 0.5rem; border-color: #ff0055; color: #ff0055;">Delete</button>
+                        </div>
+                    `;
+                    list.appendChild(card);
+                });
+
+                // Update selectors if they exist
+                updateSelectors();
+
+            } catch (e) {
+                console.error("Error loading events:", e);
+                list.innerHTML = `<p style="color: #ff0055; grid-column: 1/-1;">Error loading events: ${e.message}</p>`;
+            }
+        }
+
+        function updateSelectors() {
+            const selectors = ['event-selector', 'availability-event-selector'];
+            selectors.forEach(id => {
+                const sel = document.getElementById(id);
+                if (!sel) return;
+                
+                const currentVal = sel.value;
+                const baseOption = id === 'availability-event-selector' ? '<option value="matrix">-- Full Matrix View --</option>' : '<option value="">-- Choose an Event --</option>';
+                
+                sel.innerHTML = baseOption + UPCOMING_EVENTS.map(e => `<option value="${e.id}" ${e.id === currentVal ? 'selected' : ''}>${e.name}</option>`).join('');
+            });
+        }
+
+        async function seedEvents() {
+            if (!confirm("This will import the default 14 events. Proceed?")) return;
+            const IMSA_SLOTS = [
+                '#1: Friday 22:00 GMT (6:00PM EDT)', 
+                '#2: Saturday 7:00 GMT (3:00AM EDT)', 
+                '#3: Saturday 12:00 GMT (8:00AM EDT)', 
+                '#4: Saturday 16:00 GMT (12:00PM EDT)'
+            ];
+            const defaults = [
+                { id: 'imsa-classic-500', name: 'IMSA Classic 500', date: 'April 10-11', startDate: '2026-04-10T22:00:00Z', slots: IMSA_SLOTS, classes: ['GTP', 'LMP2', 'GT3'] },
+                { id: 'nurburgring-24h', name: 'Nürburgring 24h', date: 'May 1-3', startDate: '2026-05-01T22:00:00Z', slots: IMSA_SLOTS, classes: ['GT3', 'GT4', 'TCR', 'PC'] },
+                { id: 'indy-500', name: 'INDY 500', date: 'May 5-18', startDate: '2026-05-05T18:00:00Z', slots: IMSA_SLOTS, classes: ['IndyCar'] },
+                { id: 'world-600', name: 'World 600', date: 'May 20-25', startDate: '2026-05-20T22:00:00Z', slots: IMSA_SLOTS, classes: ['NASCAR Next Gen'] },
+                { id: 'thruxton-4h', name: '4 Hours at Thruxton', date: 'May 29-31', startDate: '2026-05-29T22:00:00Z', slots: IMSA_SLOTS, classes: ['GT3', 'LMP3'] },
+                { id: 'watkins-glen-6h', name: 'Watkins Glen 6 Hour', date: 'June 19-21', startDate: '2026-06-19T22:00:00Z', slots: IMSA_SLOTS, classes: ['GTP', 'LMP2', 'GT3'] },
+                { id: 'firecracker-400', name: 'Firecracker 400', date: 'June 30 - July 6', startDate: '2026-06-30T22:00:00Z', slots: IMSA_SLOTS, classes: ['NASCAR Next Gen'] },
+                { id: 'spa-24hr', name: 'Spa 24hr', date: 'July 10-12', startDate: '2026-07-10T22:00:00Z', slots: IMSA_SLOTS, classes: ['GT3'] },
+                { id: 'brickyard-400', name: 'Brickyard 400', date: 'July 22-27', startDate: '2026-07-22T22:00:00Z', slots: IMSA_SLOTS, classes: ['NASCAR Next Gen'] },
+                { id: 'road-america-6h', name: 'Road America 6h', date: 'July 24-26', startDate: '2026-07-24T22:00:00Z', slots: IMSA_SLOTS, classes: ['GTP', 'LMP2', 'GT3'] },
+                { id: 'suzuka-1000km', name: 'Suzuka 1000km', date: 'Sept 10-15', startDate: '2026-09-10T22:00:00Z', slots: IMSA_SLOTS, classes: ['GT3'] },
+                { id: 'petit-le-mans', name: 'Petit Le Mans', date: 'Sept 25-27', startDate: '2026-09-25T22:00:00Z', slots: IMSA_SLOTS, classes: ['GTP', 'LMP2', 'GT3'] },
+                { id: 'bathurst-1000', name: 'Bathurst 1000', date: 'Oct 2-4', startDate: '2026-10-02T22:00:00Z', slots: IMSA_SLOTS, classes: ['V8 Supercar'] },
+                { id: 'indy-8h', name: 'Indy 8h', date: 'Oct 16-18', startDate: '2026-10-16T22:00:00Z', slots: IMSA_SLOTS, classes: ['GT3'] }
+            ];
+
+            try {
+                const batch = db.batch();
+                defaults.forEach(e => batch.set(db.collection("events").doc(e.id), e));
+                await batch.commit();
+                alert("Defaults imported successfully!");
+                loadEvents();
+            } catch (e) {
+                alert("Error seeding: " + e.message);
+            }
+        }
+
+        function showEventModal(event = null) {
+            document.getElementById('edit-event-id').value = event ? event.id : '';
+            document.getElementById('edit-event-id').disabled = !!event;
+            document.getElementById('edit-event-name').value = event ? event.name : '';
+            document.getElementById('edit-event-date').value = event ? event.date : '';
+            
+            if (event && event.startDate) {
+                const date = new Date(event.startDate);
+                // Adjust to local datetime-local format (YYYY-MM-DDThh:mm)
+                const offset = date.getTimezoneOffset() * 60000;
+                const localISODate = new Date(date.getTime() - offset).toISOString().slice(0, 16);
+                document.getElementById('edit-event-start').value = localISODate;
+            } else {
+                document.getElementById('edit-event-start').value = '';
+            }
+
+            document.getElementById('edit-event-classes').value = event && event.classes ? event.classes.join(', ') : 'GT3, GTP, LMP2';
+            
+            document.getElementById('modal-title').textContent = event ? 'Edit Event' : 'Create New Event';
+            document.getElementById('event-modal').style.display = 'block';
+            document.getElementById('modal-backdrop').style.display = 'block';
+        }
+
+        function hideEventModal() {
+            document.getElementById('event-modal').style.display = 'none';
+            document.getElementById('modal-backdrop').style.display = 'none';
+        }
+
+        async function saveEvent() {
+            const id = document.getElementById('edit-event-id').value.trim();
+            const name = document.getElementById('edit-event-name').value.trim();
+            const dateStr = document.getElementById('edit-event-date').value.trim();
+            const startStr = document.getElementById('edit-event-start').value;
+            const classesRaw = document.getElementById('edit-event-classes').value.trim();
+
+            if (!id || !name || !dateStr || !startStr) return alert("Please fill all required fields.");
+
+            const IMSA_SLOTS = [
+                '#1: Friday 22:00 GMT (6:00PM EDT)', 
+                '#2: Saturday 7:00 GMT (3:00AM EDT)', 
+                '#3: Saturday 12:00 GMT (8:00AM EDT)', 
+                '#4: Saturday 16:00 GMT (12:00PM EDT)'
+            ];
+
+            const eventData = {
+                name: name,
+                date: dateStr,
+                startDate: new Date(startStr).toISOString(),
+                classes: classesRaw.split(',').map(c => c.trim()).filter(c => c),
+                slots: IMSA_SLOTS // For now, we use standard slots for all
+            };
+
+            try {
+                await db.collection("events").doc(id).set(eventData, { merge: true });
+                hideEventModal();
+                loadEvents();
+                alert("Event saved!");
+            } catch (e) {
+                alert("Error saving event: " + e.message);
+            }
+        }
+
+        async function deleteEvent(id) {
+            if (!confirm(`Are you sure you want to delete ${id}? This will NOT delete any associated lineups or telemetry.`)) return;
+            try {
+                await db.collection("events").doc(id).delete();
+                loadEvents();
+            } catch (e) {
+                alert("Error deleting: " + e.message);
+            }
+        }
 
         async function loadAvailability() {
             const container = document.getElementById('availability-matrix-container');

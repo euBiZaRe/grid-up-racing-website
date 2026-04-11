@@ -1,15 +1,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
 
 :root {
-    --bg-dark: #0d1117; /* High-end dark grey/navy */
+    --bg-dark: #0a0c10;
     --bg-card: rgba(22, 27, 34, 0.4);
-    --primary: #00CFFF; /* Electric Cyan */
-    --primary-glow: rgba(0, 207, 255, 0.15);
-    --secondary: #4DA3FF; /* Softer Blue */
+    --primary: #00CFFF;
+    --primary-glow: rgba(0, 207, 255, 0.2);
+    --secondary: #4DA3FF;
     --text-main: #E6EDF3;
     --text-muted: #8B949E;
-    --glass-border: rgba(255, 255, 255, 0.08);
-    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-border-bright: rgba(0, 207, 255, 0.3);
+    --transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    --shadow-premium: 0 20px 40px rgba(0,0,0,0.4);
 }
 
 /* Driver Roster Grid */
@@ -202,10 +204,17 @@ h1, h2, h3 {
 /* Components */
 .glass {
     background: var(--bg-card);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--glass-border);
     border-radius: 14px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    transition: var(--transition);
+}
+
+.glass:hover {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: var(--glass-border-bright);
 }
 
 /* Navbar */
@@ -321,12 +330,14 @@ nav.scrolled {
     transition: var(--transition);
     position: relative;
     overflow: hidden;
+    background: rgba(255, 255, 255, 0.015);
 }
 
 .card:hover {
-    transform: translateY(-10px);
+    transform: translateY(-8px) scale(1.02);
     border-color: var(--primary);
-    box-shadow: 0 10px 30px rgba(0, 210, 255, 0.1);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px var(--primary-glow);
+    background: rgba(255, 255, 255, 0.04);
 }
 
 .card::before {
@@ -336,8 +347,8 @@ nav.scrolled {
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
-    transition: 0.5s;
+    background: linear-gradient(90deg, transparent, rgba(0, 207, 255, 0.05), transparent);
+    transition: 0.8s;
 }
 
 .card:hover::before {
@@ -406,15 +417,46 @@ select:focus {
 }
 
 /* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-glow {
+    0% { box-shadow: 0 0 5px var(--primary-glow); }
+    50% { box-shadow: 0 0 20px var(--primary-glow); }
+    100% { box-shadow: 0 0 5px var(--primary-glow); }
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+.loading-shimmer {
+    background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+}
+
 .reveal {
     opacity: 0;
-    transform: translateY(30px);
-    transition: all 0.8s ease-out;
+    transform: translateY(20px);
+    transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
 .reveal.active {
     opacity: 1;
     transform: translateY(0);
+}
+
+/* Tab Content Visibility with Animation */
+.tab-content {
+    animation: fadeIn 0.4s ease-out forwards;
 }
 
 /* Footer */
