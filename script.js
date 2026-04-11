@@ -270,7 +270,15 @@ async function loadDynamicContent() {
     // Global Constants for URL generation
     const isSubdir = window.location.pathname.includes('/events/') || window.location.pathname.includes('/drivers/');
     const prefix = isSubdir ? '../' : '';
-    const staticIds = ['imsa-classic-500', 'nurburgring-24h', 'indy-500', 'world-600', 'thruxton-4h', 'watkins-glen-6h'];
+    const staticIds = [
+        // Upcoming events with static pages
+        'imsa-classic-500', 'nurburgring-24h', 'indy-500', 'world-600',
+        'thruxton-4h', 'watkins-glen-6h', 'spa-24hr', 'firecracker-400',
+        'road-america-6h', 'brickyard-400', 'suzuka-1000km', 'petit-le-mans',
+        'bathurst-1000', 'indy-8h',
+        // Completed events with static pages
+        'iracing-roar', 'daytona-24', 'daytona-500', 'bathurst-12', 'sebring-12hr'
+    ];
     
     // Official Special Event Banners (sourced from iracing.com/special-events/)
     const BASE = 'https://s100.iracing.com/wp-content/uploads';
