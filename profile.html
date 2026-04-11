@@ -117,6 +117,14 @@
                 </div>
             </div>
 
+            <div id="achievements-section" class="glass" style="margin-top: 2rem; padding: 2.5rem; display: none;">
+                <h2 class="section-title" style="font-size: 1.5rem; margin-bottom: 2rem; color: var(--primary);">My Race Trophies</h2>
+                <div id="trophy-gallery" class="grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem;">
+                    <!-- Dynamically populated from Firestore -->
+                    <p style="text-align: center; color: var(--text-muted); grid-column: 1/-1;">Loading your achievements...</p>
+                </div>
+            </div>
+
             <div id="claim-verification-status" class="glass" style="margin-top: 2rem; padding: 2rem; text-align: center; display: none;">
                 <!-- Filled via JS if they have a pending claim -->
             </div>
@@ -178,6 +186,10 @@
                     }
                 }
                 console.log("Profile: Data loaded successfully.");
+
+                // Load Driver Cards
+                loadUserCards(user.uid);
+
             } catch (error) {
                 console.error("Profile: Error loading user data:", error);
             }
@@ -210,6 +222,48 @@
                 console.error("Error saving profile:", error);
                 status.textContent = "Error saving changes.";
                 status.style.color = "#ff0099";
+            }
+        }
+
+        async function loadUserCards(uid) {
+            const gallery = document.getElementById('trophy-gallery');
+            const section = document.getElementById('achievements-section');
+            if (!gallery || !section) return;
+
+            try {
+                // Query results where this user was a driver
+                const snap = await db.collection("race_results")
+                    .where("uids", "array-contains", uid)
+                    .get();
+
+                if (snap.empty) {
+                    section.style.display = 'none';
+                    return;
+                }
+
+                section.style.display = 'block';
+                gallery.innerHTML = '';
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    const card = document.createElement('div');
+                    card.className = 'card glass animate-fade-in';
+                    card.style.padding = '0';
+                    card.style.overflow = 'hidden';
+                    card.innerHTML = `
+                        <div style="position: relative; height: 160px;">
+                            <img src="${d.rawUrl}" style="width: 100%; height: 100%; object-fit: cover;">
+                            <div style="position: absolute; top: 0.75rem; right: 0.75rem; background: var(--primary); color: #000; font-weight: 800; padding: 0.35rem 0.8rem; border-radius: 4px; font-size: 0.8rem;">${d.position}</div>
+                        </div>
+                        <div style="padding: 1rem;">
+                            <p style="font-size: 0.65rem; color: var(--primary); font-weight: 800; margin-bottom: 0.1rem;">${d.eventName.toUpperCase()}</p>
+                            <h4 style="margin-bottom: 0.2rem; color: white; font-size: 0.9rem;">#${d.carNumber} - ${d.drivers.join(', ')}</h4>
+                        </div>
+                    `;
+                    gallery.appendChild(card);
+                });
+            } catch (e) {
+                console.error("Error loading user cards:", e);
+                gallery.innerHTML = '<p style="color: #ff0055;">Failed to load results.</p>';
             }
         }
 

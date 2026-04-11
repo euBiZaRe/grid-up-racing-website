@@ -347,8 +347,14 @@
                             </div>
                             <div>
                                 <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">EVENT NAME</label>
-                                <select id="card-event" class="btn btn-outline" style="width: 100%; text-align: left; padding: 1rem;">
+                                <select id="card-event" class="btn btn-outline" style="width: 100%; text-align: left; padding: 1rem;" onchange="loadLineupsForCard(this.value)">
                                     <option value="">-- Choose Event --</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">SELECT TEAM (Optional - Auto-fills drivers)</label>
+                                <select id="card-team" class="btn btn-outline" style="width: 100%; text-align: left; padding: 1rem;" onchange="updateCardFromTeam()">
+                                    <option value="">-- Manual Entry or Choose Team --</option>
                                 </select>
                             </div>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
@@ -753,14 +759,61 @@
             }
         }
 
+        let CURRENT_CARD_TEAM = null;
+
+        async function loadLineupsForCard(eventId) {
+            const teamSelector = document.getElementById('card-team');
+            if (!teamSelector) return;
+            teamSelector.innerHTML = '<option value="">-- Loading Teams... --</option>';
+            
+            if (!eventId) {
+                teamSelector.innerHTML = '<option value="">-- Choose Event First --</option>';
+                return;
+            }
+
+            try {
+                const snap = await db.collection("race_lineups").doc(eventId).get();
+                if (snap.exists && snap.data().teams) {
+                    const teams = snap.data().teams;
+                    teamSelector.innerHTML = '<option value="">-- Manual Entry --</option>' + 
+                        teams.map((t, idx) => `<option value="${idx}">Team ${idx + 1}: #${t.carNumber} - ${t.drivers.map(d => d.name).join(', ')}</option>`).join('');
+                    CURRENT_CARD_TEAM = teams;
+                } else {
+                    teamSelector.innerHTML = '<option value="">-- No Teams Found (Manual Entry) --</option>';
+                    CURRENT_CARD_TEAM = null;
+                }
+            } catch (e) {
+                console.error("Error loading lineups for card:", e);
+                teamSelector.innerHTML = '<option value="">-- Error Loading Teams --</option>';
+            }
+        }
+
+        function updateCardFromTeam() {
+            const idx = document.getElementById('card-team').value;
+            if (idx === "" || !CURRENT_CARD_TEAM) return;
+
+            const team = CURRENT_CARD_TEAM[idx];
+            document.getElementById('card-number').value = team.carNumber || '';
+            document.getElementById('card-drivers').value = team.drivers.map(d => d.name).join(', ');
+            // We'll store the uids in a data attribute or similar for the generate function
+            document.getElementById('card-drivers').dataset.uids = JSON.stringify(team.drivers.map(d => d.uid));
+        }
+
         async function generateRaceCard() {
             const file = document.getElementById('card-photo').files[0];
             const eventId = document.getElementById('card-event').value;
             const pos = document.getElementById('card-pos').value.trim();
             const carNum = document.getElementById('card-number').value.trim();
-            const drivers = document.getElementById('card-drivers').value.trim();
+            const driversStr = document.getElementById('card-drivers').value.trim();
+            
+            // Try to get UIDs from dataset, otherwise empty array for manual entry
+            let uids = [];
+            try {
+                const uidsStr = document.getElementById('card-drivers').dataset.uids;
+                uids = uidsStr ? JSON.parse(uidsStr) : [];
+            } catch (e) {}
 
-            if (!file || !eventId || !pos || !drivers) return alert("Please fill all fields and upload a photo.");
+            if (!file || !eventId || !pos || !driversStr) return alert("Please fill all fields and upload a photo.");
 
             try {
                 // 1. Upload Original Photo
@@ -774,7 +827,8 @@
                     eventName: UPCOMING_EVENTS.find(e => e.id === eventId).name,
                     position: pos,
                     carNumber: carNum,
-                    drivers: drivers.split(',').map(d => d.trim()),
+                    drivers: driversStr.split(',').map(d => d.trim()),
+                    uids: uids.filter(id => id), // Clean empty IDs
                     rawUrl: rawUrl,
                     status: 'completed',
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
@@ -787,9 +841,8 @@
 
                 // Clear form
                 document.getElementById('card-photo').value = '';
-                document.getElementById('card-pos').value = '';
-                document.getElementById('card-number').value = '';
-                document.getElementById('card-drivers').value = '';
+                document.querySelectorAll('#section-results input').forEach(i => i.value = '');
+                document.getElementById('card-drivers').dataset.uids = '';
 
             } catch (e) {
                 console.error("Card generation error:", e);
@@ -1521,6 +1574,10 @@
                     accessDenied.style.display = 'none';
                     const adminName = user.displayName || user.email || user.uid;
                     userInfo.textContent = `Logged in as Admin: ${adminName}`;
+                    
+                    // NEW: Ensure events are loaded immediately for all tabs
+                    loadEvents(); 
+                    
                     switchTab('claims');
                     loadClaims();
                 } else {
