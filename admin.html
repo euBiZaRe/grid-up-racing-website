@@ -537,6 +537,47 @@
                     </div>
                 </div>
             </div>
+
+            <!-- System Sync Section -->
+            <div id="section-system" class="tab-content" style="display: none;">
+                <div class="grid" style="grid-template-columns: 1fr 2fr; gap: 2rem;">
+                    <!-- Token Management -->
+                    <div class="glass" style="padding: 2.5rem;">
+                        <h3 style="color: var(--primary); margin-bottom: 2rem;">GitHub API Authentication</h3>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.6;">
+                            A <strong>GitHub Personal Access Token (PAT)</strong> is required to trigger manual syncs.
+                        </p>
+                        <div style="display: grid; gap: 1.5rem;">
+                            <div>
+                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">GITHUB PAT</label>
+                                <input type="password" id="github-pat" class="btn btn-outline" style="width: 100%; text-align: left;" placeholder="ghp_xxxxxxxxxxxx">
+                            </div>
+                            <button onclick="savePat(document.getElementById('github-pat').value)" class="btn btn-outline" style="border-color: var(--primary); color: var(--primary);">Save Token Locally</button>
+                        </div>
+                        <div id="sync-status" style="margin-top: 1.5rem; padding: 1rem; border-radius: 8px; font-size: 0.8rem; display: none;"></div>
+                    </div>
+
+                    <!-- Sync Controls -->
+                    <div class="glass" style="padding: 2.5rem;">
+                        <h3 style="color: var(--primary); margin-bottom: 2rem;">Workflow Dispatch Center</h3>
+                        <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                            <!-- Garage 61 Sync -->
+                            <div style="padding: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 12px;">
+                                <h4 style="margin-bottom: 0.5rem; font-size: 0.9rem;">Garage 61 Sync</h4>
+                                <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.5rem;">Updates driver iR/SR rankings and stats.</p>
+                                <button onclick="triggerWorkflow('update-profiles.yml')" class="btn btn-primary" style="width: 100%; font-size: 0.8rem;">Trigger Driver Sync</button>
+                            </div>
+
+                            <!-- Events & Lineups Sync -->
+                            <div style="padding: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 12px;">
+                                <h4 style="margin-bottom: 0.5rem; font-size: 0.9rem;">Lineup Sync</h4>
+                                <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.5rem;">Syncs race lineups from Google Sheets.</p>
+                                <button onclick="triggerWorkflow('update-events.yml')" class="btn btn-primary" style="width: 100%; font-size: 0.8rem;">Trigger Lineup Sync</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -686,14 +727,12 @@
             }
         }
         function switchTab(tab) {
-            document.getElementById('section-claims').style.display = tab === 'claims' ? 'block' : 'none';
-            document.getElementById('section-races').style.display = tab === 'races' ? 'block' : 'none';
-            document.getElementById('section-admins').style.display = tab === 'admins' ? 'block' : 'none';
-            document.getElementById('section-availability').style.display = tab === 'availability' ? 'block' : 'none';
-            document.getElementById('section-events').style.display = tab === 'events' ? 'block' : 'none';
-            document.getElementById('section-results').style.display = tab === 'results' ? 'block' : 'none';
-            document.getElementById('section-streams').style.display = tab === 'streams' ? 'block' : 'none';
-            
+            const sections = ['claims', 'races', 'admins', 'availability', 'events', 'results', 'streams', 'system'];
+            sections.forEach(s => {
+                const el = document.getElementById(`section-${s}`);
+                if (el) el.style.display = (tab === s) ? 'block' : 'none';
+            });
+
             const titleMap = { 
                 'claims': 'Driver Claims', 
                 'races': 'Lineup Manager', 
@@ -701,11 +740,12 @@
                 'availability': 'Driver Roster',
                 'events': 'Season Schedule',
                 'results': 'Race Card Lab',
-                'streams': 'Live Streams'
+                'streams': 'Live Streams',
+                'system': 'System Maintenance & Sync'
             };
             document.getElementById('admin-title').textContent = titleMap[tab];
             
-            const tabs = ['claims', 'races', 'admins', 'availability', 'events', 'results', 'streams'];
+            const tabs = ['claims', 'races', 'admins', 'availability', 'events', 'results', 'streams', 'system'];
             tabs.forEach(t => {
                 const btn = document.getElementById(`tab-${t}`);
                 if (btn) {
