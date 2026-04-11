@@ -933,14 +933,7 @@
 
             const team = CURRENT_CARD_TEAM[idx];
 
-            // 1. Auto-fill Team Photo if URL is empty
-            if (!photoInput.value) {
-                const teamColor = team.name.split(' ').pop().toLowerCase();
-                const ext = teamColor === 'blue' ? 'png' : 'jpg';
-                photoInput.value = `assets/Team ${teamColor.charAt(0).toUpperCase() + teamColor.slice(1)}.${ext}`;
-            }
-
-            // 2. Set Car and Number
+            // 1. Set Car and Number
             if (team.car_class) {
                 carInput.value = team.car_class.split(' #')[0];
                 const carMatch = team.car_class.match(/#(\d+)/);
@@ -973,7 +966,22 @@
             const raceDate = document.getElementById('card-date').value.trim();
             const driversStr = document.getElementById('card-drivers').value.trim();
             
-            if (!photoUrl || !eventId || !pos || !driversStr) return alert("Please fill required fields (Photo URL, Event, Finish, and Drivers).");
+            if (!eventId || !pos || !driversStr) return alert("Please fill required fields (Event, Finish, and Drivers).");
+
+            let finalPhotoUrl = photoUrl;
+            
+            // Background default asset logic if no URL provided
+            if (!finalPhotoUrl) {
+                const teamIdx = document.getElementById('card-team').value;
+                if (teamIdx !== "" && CURRENT_CARD_TEAM) {
+                    const team = CURRENT_CARD_TEAM[teamIdx];
+                    const teamColor = team.name.split(' ').pop().toLowerCase();
+                    const ext = teamColor === 'blue' ? 'png' : 'jpg';
+                    finalPhotoUrl = `assets/Team ${teamColor.charAt(0).toUpperCase() + teamColor.slice(1)}.${ext}`;
+                } else {
+                    return alert("Please provide a Photo URL or select a Team to use a default asset.");
+                }
+            }
 
             try {
                 btn.disabled = true;
@@ -1003,7 +1011,7 @@
                     raceDate: raceDate,
                     drivers: driversStr.split(',').map(d => d.trim()),
                     uids: uids.filter(id => id), 
-                    rawUrl: photoUrl,
+                    rawUrl: finalPhotoUrl,
                     status: 'completed',
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 };
