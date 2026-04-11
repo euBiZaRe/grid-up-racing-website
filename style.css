@@ -14,6 +14,20 @@
     --shadow-premium: 0 20px 40px rgba(0,0,0,0.4);
 }
 
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Outfit', sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
 /* Driver Roster Grid */
 .driver-grid {
   display: grid;
@@ -194,48 +208,17 @@ body {
 /* Typography */
 h1, h2, h3 {
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-weight: 700;
-}
-
-.section-title {
-    font-size: 0.85rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.2em;
-    color: var(--primary);
-    margin-bottom: 2.5rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.section-title::after {
-    content: '';
-    height: 1px;
-    flex: 1;
-    background: linear-gradient(90deg, var(--primary), transparent);
-    opacity: 0.2;
+    letter-spacing: 0.15em;
+    font-weight: 800;
 }
 
 .glow-text {
-    text-shadow: 0 0 10px var(--primary-glow);
-}
-
-/* Components */
-.glass {
-    background: rgba(255, 255, 255, 0.02);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border);
-    border-radius: 14px;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-    transition: var(--transition);
-}
-
-.glass:hover {
-    background: rgba(255, 255, 255, 0.03);
-    border-color: var(--glass-border-bright);
+    background: linear-gradient(180deg, #fff 0%, var(--primary) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 15px var(--primary-glow));
+    line-height: 1.1;
 }
 
 /* Navbar */
@@ -245,12 +228,14 @@ nav {
     width: 100%;
     z-index: 1000;
     transition: var(--transition);
-    padding: 1.5rem 0;
+    padding: 1.25rem 0;
+    background: linear-gradient(to bottom, rgba(10, 12, 16, 0.8), transparent);
 }
 
 nav.scrolled {
-    padding: 1rem 0;
-    background: rgba(10, 10, 11, 0.9);
+    padding: 0.75rem 0;
+    background: rgba(10, 10, 11, 0.95);
+    backdrop-filter: blur(15px);
     border-bottom: 1px solid var(--glass-border);
 }
 
@@ -261,12 +246,15 @@ nav.scrolled {
 }
 
 .logo {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: var(--primary);
-    text-decoration: none;
     display: flex;
     align-items: center;
+    gap: 1rem;
+    z-index: 1002;
+}
+
+.logo img {
+    height: 35px;
+    width: auto;
 }
 
 /* Hamburger Menu Toggle */
@@ -370,19 +358,64 @@ nav.scrolled {
     .nav-links.active li:nth-child(7) { transition-delay: 0.4s; }
 
     .nav-links a {
-        font-size: 2rem;
+        font-size: 1.5rem; /* Slightly smaller for mobile elegance */
         font-weight: 800;
-        letter-spacing: 4px;
+        letter-spacing: 2px;
         text-transform: uppercase;
         color: var(--text-main);
         text-decoration: none;
         display: block;
-        padding: 1rem;
+        padding: 0.8rem;
     }
 
     .nav-links a:hover {
         color: var(--primary);
     }
+}
+
+.hero {
+    position: relative;
+    padding: 10rem 0 6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 400px;
+    overflow: hidden; /* Prevent image overflow */
+}
+
+.hero-img {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 100%;
+    min-height: 100%;
+    object-fit: cover;
+    z-index: 0;
+}
+
+.hero-overlay {
+    z-index: 1;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 1200px;
+    width: 100%;
+    padding: 0 2rem;
+}
+
+.hero-small {
+    min-height: 350px;
+    padding: 8rem 0 4rem;
+}
+
+.hero-content h1 {
+    font-size: 5rem;
+    margin-bottom: 0.5rem;
+    letter-spacing: -2px;
 }
 
 /* Typography Fluidity */
