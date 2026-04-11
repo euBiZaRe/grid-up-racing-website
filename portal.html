@@ -543,9 +543,14 @@
                 const myTeams = [];
                 const allTeamAssignments = [];
 
+                // Valid active event IDs
+                const activeEventIds = new Set(UPCOMING_EVENTS.map(e => e.id));
+
                 lineups.forEach(doc => {
-                    const data = doc.data();
                     const slug = doc.id;
+                    if (!activeEventIds.has(slug)) return; // Skip orphaned lineups
+
+                    const data = doc.data();
                     if (data.teams) {
                         data.teams.forEach(team => {
                             const teamObj = {

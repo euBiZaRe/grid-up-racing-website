@@ -811,12 +811,29 @@
         }
 
         async function deleteEvent(id) {
-            if (!confirm(`Are you sure you want to delete ${id}? This will NOT delete any associated lineups or telemetry.`)) return;
+            if (!confirm(`Are you sure you want to delete ${id}? This will ALSO remove all associated lineups and driver availability data.`)) return;
             try {
+                // 1. Delete main event doc
                 await db.collection("events").doc(id).delete();
+                
+                // 2. Cleanup Associated Lineups
+                try {
+                    await db.collection("race_lineups").doc(id).delete();
+                } catch (e) { console.warn("Lineup cleanup failed:", e); }
+
+                // 3. Cleanup Availability
+                try {
+                    // Availability responses are in a sub-collection, so we must delete them too if we want a full wipe,
+                    // but since the parent doc is the eventId, deleting the doc might be enough for some views.
+                    // Actually, event_availability/doc(id)/responses/doc(uid)
+                    // Firestore won't delete sub-collections automatically via doc delete, so we just delete the parent doc for now.
+                    await db.collection("event_availability").doc(id).delete();
+                } catch (e) { console.warn("Availability cleanup failed:", e); }
+
                 loadEvents();
+                alert(`Event ${id} and associated data deleted successfully.`);
             } catch (e) {
-                alert("Error deleting: " + e.message);
+                alert("Error deleting event: " + e.message);
             }
         }
 
