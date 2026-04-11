@@ -1225,7 +1225,16 @@
 
                     driverUids.forEach(uid => {
                         html += `<tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
-                            <td style="padding: 0.8rem; font-weight: 700; color: var(--primary); position: sticky; left: 0; background: var(--bg-card); z-index: 1;">${allDrivers[uid]}</td>
+                            <td style="padding: 0.8rem; font-weight: 700; color: var(--primary); position: sticky; left: 0; background: var(--bg-card); z-index: 1;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                                    <span>${allDrivers[uid]}</span>
+                                    <button onclick="deleteDriverRecord('${uid}', '${(allDrivers[uid] || '').replace(/'/g, "\\'")}')" 
+                                            style="background: none; border: none; cursor: pointer; font-size: 0.8rem; opacity: 0.4; transition: opacity 0.2s;" 
+                                            onmouseenter="this.style.opacity='1'" 
+                                            onmouseleave="this.style.opacity='0.4'"
+                                            title="Remove all responses for this driver">🗑️</button>
+                                </div>
+                            </td>
                         `;
                         UPCOMING_EVENTS.forEach(event => {
                             const resp = allResponses[event.id] ? allResponses[event.id][uid] : null;
@@ -1297,8 +1306,26 @@
                     container.innerHTML = html;
                 }
             } catch (error) {
-                console.error("Error loading availability:", error);
                 container.innerHTML = `<p style="color: #ff0055; text-align: center;">Error loading data: ${error.message}</p>`;
+            }
+        }
+
+        async function deleteDriverRecord(uid, name) {
+            if (!confirm(`Are you sure you want to remove ALL availability responses for ${name}? This will clear their status for all upcoming events.`)) return;
+            
+            try {
+                const batch = db.batch();
+                for (const event of UPCOMING_EVENTS) {
+                    const docRef = db.collection("event_availability").doc(event.id).collection("responses").doc(uid);
+                    batch.delete(docRef);
+                }
+                
+                await batch.commit();
+                alert(`Successfully removed ${name} from all lists.`);
+                loadAvailability();
+            } catch (error) {
+                console.error("Error deleting driver records:", error);
+                alert("Action failed: " + error.message);
             }
         }
 
