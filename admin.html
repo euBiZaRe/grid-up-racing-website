@@ -848,118 +848,7 @@
             }
         }
 
-        async function generateRaceCard() {
-            const file = document.getElementById('card-photo').files[0];
-            const eventId = document.getElementById('card-event').value;
-            const pos = document.getElementById('card-pos').value.trim();
-            const carNum = document.getElementById('card-number').value.trim();
-            const drivers = document.getElementById('card-drivers').value.trim();
 
-            if (!file || !eventId || !pos || !drivers) return alert("Please fill all fields and upload a photo.");
-
-            try {
-                // 1. Upload Original Photo
-                const storageRef = firebase.storage().ref(`results/${eventId}/${Date.now()}_${file.name}`);
-                const snapshot = await storageRef.put(file);
-                const rawUrl = await snapshot.ref.getDownloadURL();
-
-                // 2. Save Metadata to Firestore
-                // This triggers the "AI Generation" (in this demo, we'll simulate it)
-                const cardData = {
-                    eventId: eventId,
-                    eventName: UPCOMING_EVENTS.find(e => e.id === eventId).name,
-                    position: pos,
-                    carNumber: carNum,
-                    drivers: drivers.split(',').map(d => d.trim()),
-                    rawUrl: rawUrl,
-                    status: 'processing', // Simulated AI processing
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                };
-
-                const docRef = await db.collection("race_results").add(cardData);
-                
-                alert("Upload successful! AI is now stylizing your card. (In this demo, refresh in a few seconds)");
-                loadResults();
-
-                // Clear form
-                document.getElementById('card-photo').value = '';
-                document.getElementById('card-pos').value = '';
-                document.getElementById('card-number').value = '';
-                document.getElementById('card-drivers').value = '';
-
-            } catch (e) {
-                console.error("Card generation error:", e);
-                alert("Error: " + e.message);
-            }
-        }
-
-        async function loadResults() {
-            const gallery = document.getElementById('results-gallery');
-            const eventSelector = document.getElementById('card-event');
-            if (!gallery) return;
-
-            // Populate event selector if needed
-            if (eventSelector.options.length <= 1) {
-                eventSelector.innerHTML = '<option value="">-- Choose Event --</option>' + 
-                    UPCOMING_EVENTS.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
-            }
-
-            try {
-                const snap = await db.collection("race_results").orderBy("timestamp", "desc").get();
-                if (snap.empty) {
-                    gallery.innerHTML = '<p style="color: var(--text-muted); text-align: center;">No cards generated yet.</p>';
-                    return;
-                }
-
-                gallery.innerHTML = '';
-                snap.forEach(doc => {
-                    const d = doc.data();
-                    const card = document.createElement('div');
-                    card.className = 'card cinematic-poster animate-fade-in';
-                    card.style.padding = '0';
-                    card.style.overflow = 'hidden';
-                    card.style.position = 'relative';
-                    card.style.background = '#000';
-                    card.style.aspectRatio = '16/9';
-                    card.style.borderRadius = '12px';
-                    card.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
-                    card.style.cursor = 'pointer';
-                    card.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-
-                    card.innerHTML = `
-                        <img src="${d.rawUrl}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.7; transition: transform 0.8s;">
-                        <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, transparent 40%, rgba(0,0,0,0.4) 100%);" onclick="openCardModal(${JSON.stringify(d).replace(/"/g, '&quot;')})"></div>
-                        
-                        <div style="position: absolute; top: 0.75rem; left: 1rem; text-align: left; pointer-events: none;">
-                            <div style="font-size: 0.45rem; color: var(--primary); font-weight: 900; opacity: 0.8;">${(d.trackName || 'GRID UP').toUpperCase()}</div>
-                            <div style="font-size: 0.9rem; font-weight: 900; color: white;">${d.position}</div>
-                        </div>
-
-                        <div style="position: absolute; bottom: 0.75rem; left: 1rem; pointer-events: none;">
-                            <div style="font-size: 0.6rem; font-weight: 800; color: white;">${d.drivers.join(', ').toUpperCase()}</div>
-                        </div>
-
-                        <!-- Admin Actions -->
-                        <div style="position: absolute; bottom: 0.5rem; right: 0.5rem; display: flex; gap: 5px;">
-                            <button onclick="deleteResult('${doc.id}')" class="btn" style="padding: 0.3rem 0.6rem; font-size: 0.6rem; background: rgba(255,0,85,0.2); color: #ff0055; border: 1px solid rgba(255,0,85,0.3); border-radius: 4px;">DELETE</button>
-                        </div>
-                    `;
-
-                    card.onmouseenter = () => {
-                        card.style.transform = 'scale(1.02)';
-                        card.querySelector('img').style.transform = 'scale(1.1)';
-                    };
-                    card.onmouseleave = () => {
-                        card.style.transform = 'scale(1)';
-                        card.querySelector('img').style.transform = 'scale(1)';
-                    };
-
-                    gallery.appendChild(card);
-                });
-            } catch (e) {
-                console.error("Error loading results:", e);
-            }
-        }
 
         async function deleteEvent(id) {
             if (!confirm(`Are you sure you want to delete ${id}? This will ALSO remove all associated lineups and driver availability data.`)) return;
@@ -1242,8 +1131,8 @@
                         </div>
 
                         <!-- Absolute Overlay Control (Delete button) -->
-                        <div style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); opacity: 0; transition: opacity 0.3s;" class="hover-show">
-                            <button onclick="deleteResult('${doc.id}')" class="btn btn-outline" style="border-color: #ff0055; color: #ff0055;">Delete Card</button>
+                        <div style="position: absolute; top: 0.5rem; right: 0.5rem; opacity: 0; transition: opacity 0.3s; z-index: 10;" class="hover-show">
+                            <button onclick="event.stopPropagation(); deleteResult('${doc.id}')" class="btn btn-outline" style="border-color: #ff0055; background: rgba(0,0,0,0.6); color: #ff0055; padding: 0.4rem 0.8rem; font-size: 0.7rem; backdrop-filter: blur(5px);">Delete Card</button>
                         </div>
                     `;
                     
