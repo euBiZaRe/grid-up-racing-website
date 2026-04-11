@@ -28,6 +28,34 @@ try {
     console.error("Grid Up Auth: Initialization Error", e);
 }
 
+// --- GLOBAL STYLES FOR SOCIALS ---
+if (typeof document !== 'undefined' && !document.getElementById('social-styles')) {
+    const style = document.createElement('style');
+    style.id = 'social-styles';
+    style.textContent = `
+        .social-links-lineup { display: inline-flex; gap: 8px; margin-left: 12px; vertical-align: middle; }
+        .social-icon-sm { width: 16px; height: 16px; opacity: 0.7; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); vertical-align: middle; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
+        .social-icon-sm:hover { opacity: 1; transform: scale(1.2) translateY(-2px); }
+        .live-pulse {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #ff0055;
+            border-radius: 50%;
+            margin-right: 6px;
+            box-shadow: 0 0 0 rgba(255,0,85, 0.4);
+            animation: pulse 1.5s infinite;
+            vertical-align: middle;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255,0,85, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(255,0,85, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255,0,85, 0); }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
 function initAuth() {
     // Listen for Auth State changes
     auth.onAuthStateChanged((user) => {
@@ -218,6 +246,50 @@ async function loadRaceLineup(slug) {
             const teams = doc.data().teams;
             console.log("Auth: Lineup found! Team count:", teams.length);
             
+            // Collect all unique driver names to fetch their profiles
+            const allDriverNames = new Set();
+            teams.forEach(t => {
+                if (t.captain) allDriverNames.add(t.captain);
+                if (t.drivers) t.drivers.forEach(d => allDriverNames.add(d));
+            });
+            
+            const profileMap = {};
+            if (allDriverNames.size > 0) {
+                // Fetch profiles in batches of 10 (Firestore 'in' query limit)
+                const nameArray = Array.from(allDriverNames);
+                const batches = [];
+                for (let i = 0; i < nameArray.length; i += 10) {
+                    batches.push(nameArray.slice(i, i + 10));
+                }
+                
+                for (const batch of batches) {
+                    const snap = await db.collection("users").where("driverName", "in", batch).get();
+                    snap.forEach(pDoc => {
+                        const pData = pDoc.data();
+                        profileMap[pData.driverName] = pData;
+                    });
+                }
+            }
+            
+            // Helper to render driver with socials
+            const renderDriver = (name) => {
+                const p = profileMap[name];
+                let socialHtml = `<span class="social-links-lineup">`;
+                if (p) {
+                    if (p.twitchUrl) {
+                        socialHtml += `<a href="${p.twitchUrl}" target="_blank" title="Watch on Twitch"><span class="live-pulse"></span><img src="https://cdn-icons-png.flaticon.com/512/5968/5968819.png" class="social-icon-sm"></a>`;
+                    }
+                    if (p.tiktokUrl) {
+                        socialHtml += `<a href="${p.tiktokUrl}" target="_blank" title="Follow on TikTok"><img src="https://cdn-icons-png.flaticon.com/512/3046/3046124.png" class="social-icon-sm"></a>`;
+                    }
+                    if (p.youtubeUrl) {
+                        socialHtml += `<a href="${p.youtubeUrl}" target="_blank" title="Subscribe on YouTube"><img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" class="social-icon-sm"></a>`;
+                    }
+                }
+                socialHtml += `</span>`;
+                return `${name}${socialHtml}`;
+            };
+
             // Find the LINEUP_START and LINEUP_END markers to replace content
             const searchRoot = document.getElementById('confirmed-lineup') || document.body;
             const iterator = document.createNodeIterator(searchRoot, NodeFilter.SHOW_COMMENT);
@@ -269,7 +341,7 @@ async function loadRaceLineup(slug) {
                         
                         // Render Captain
                         if (team.captain) {
-                            html += `<li>${team.captain} (C)</li>`;
+                            html += `<li>${renderDriver(team.captain)} (C)</li>`;
                         }
                         
                         // Render Roster
@@ -277,7 +349,7 @@ async function loadRaceLineup(slug) {
                             team.drivers.forEach(driver => {
                                 // Don't duplicate if driver is also captain
                                 if (driver !== team.captain) {
-                                    html += `<li>${driver}</li>`;
+                                    html += `<li>${renderDriver(driver)}</li>`;
                                 }
                             });
                         }

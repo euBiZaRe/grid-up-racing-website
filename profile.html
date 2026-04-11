@@ -111,6 +111,24 @@
                         </select>
                     </div>
 
+                    <h2 class="section-title" style="font-size: 1.5rem; margin-top: 2rem;">Streaming & Socials</h2>
+                    <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 1rem;">Link your channels to show up as LIVE on event pages!</p>
+
+                    <div class="form-group">
+                        <label>Twitch Channel URL</label>
+                        <input type="text" id="input-twitch" class="form-input" placeholder="https://twitch.tv/yourname">
+                    </div>
+
+                    <div class="form-group">
+                        <label>TikTok Profile URL</label>
+                        <input type="text" id="input-tiktok" class="form-input" placeholder="https://tiktok.com/@yourname">
+                    </div>
+
+                    <div class="form-group">
+                        <label>YouTube Channel URL</label>
+                        <input type="text" id="input-youtube" class="form-input" placeholder="https://youtube.com/@yourname">
+                    </div>
+
                     <button onclick="saveProfile()" class="btn btn-primary" style="margin-top: 1rem; width: 100%;">Save Profile Changes</button>
                     
                     <div id="save-status" style="text-align: center; color: var(--primary); font-size: 0.8rem; height: 1rem;"></div>
@@ -185,6 +203,11 @@
                     document.getElementById('input-g61-url').value = data.g61Url || "";
                     document.getElementById('input-class').value = data.driverClass || "GT3";
                     
+                    // Social Links
+                    document.getElementById('input-twitch').value = data.twitchUrl || "";
+                    document.getElementById('input-tiktok').value = data.tiktokUrl || "";
+                    document.getElementById('input-youtube').value = data.youtubeUrl || "";
+                    
                     // Update header if custom driver name exists
                     if (data.driverName) {
                         nameElt.textContent = data.driverName;
@@ -231,6 +254,9 @@
                     iracingId: document.getElementById('input-iracing-id').value,
                     g61Url: document.getElementById('input-g61-url').value,
                     driverClass: document.getElementById('input-class').value,
+                    twitchUrl: document.getElementById('input-twitch').value,
+                    tiktokUrl: document.getElementById('input-tiktok').value,
+                    youtubeUrl: document.getElementById('input-youtube').value,
                     lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });
                 
