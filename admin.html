@@ -760,11 +760,13 @@
         }
 
         let CURRENT_CARD_TEAM = null;
+        let NAME_TO_UID_MAP = {};
 
         async function loadLineupsForCard(eventId) {
             const teamSelector = document.getElementById('card-team');
             if (!teamSelector) return;
             teamSelector.innerHTML = '<option value="">-- Loading Teams... --</option>';
+            NAME_TO_UID_MAP = {};
             
             if (!eventId) {
                 teamSelector.innerHTML = '<option value="">-- Choose Event First --</option>';
@@ -772,11 +774,22 @@
             }
 
             try {
+                // 1. Build a Name -> UID map from availability
+                const availSnap = await db.collection("event_availability").doc(eventId).collection("responses").get();
+                availSnap.forEach(doc => {
+                    const data = doc.data();
+                    if (data.driverName) NAME_TO_UID_MAP[data.driverName.toLowerCase()] = doc.id;
+                });
+
+                // 2. Fetch Lineups
                 const snap = await db.collection("race_lineups").doc(eventId).get();
                 if (snap.exists && snap.data().teams) {
                     const teams = snap.data().teams;
                     teamSelector.innerHTML = '<option value="">-- Manual Entry --</option>' + 
-                        teams.map((t, idx) => `<option value="${idx}">Team ${idx + 1}: #${t.carNumber} - ${t.drivers.map(d => d.name).join(', ')}</option>`).join('');
+                        teams.map((t, idx) => {
+                            const label = `${t.name} (${t.car_class || 'No Car Set'}) - ${t.drivers.join(', ')}`;
+                            return `<option value="${idx}">${label}</option>`;
+                        }).join('');
                     CURRENT_CARD_TEAM = teams;
                 } else {
                     teamSelector.innerHTML = '<option value="">-- No Teams Found (Manual Entry) --</option>';
@@ -793,10 +806,16 @@
             if (idx === "" || !CURRENT_CARD_TEAM) return;
 
             const team = CURRENT_CARD_TEAM[idx];
-            document.getElementById('card-number').value = team.carNumber || '';
-            document.getElementById('card-drivers').value = team.drivers.map(d => d.name).join(', ');
-            // We'll store the uids in a data attribute or similar for the generate function
-            document.getElementById('card-drivers').dataset.uids = JSON.stringify(team.drivers.map(d => d.uid));
+            // Extract a number from car_class if possible, or leave blank for admin
+            const carMatch = team.car_class ? team.car_class.match(/#(\d+)/) : null;
+            document.getElementById('card-number').value = carMatch ? carMatch[1] : '';
+            
+            const driverNames = team.drivers;
+            document.getElementById('card-drivers').value = driverNames.join(', ');
+            
+            // Resolve UIDs
+            const resolvedUids = driverNames.map(name => NAME_TO_UID_MAP[name.toLowerCase()] || null).filter(u => u);
+            document.getElementById('card-drivers').dataset.uids = JSON.stringify(resolvedUids);
         }
 
         async function generateRaceCard() {
