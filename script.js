@@ -272,20 +272,24 @@ async function loadDynamicContent() {
             const heroTitle = document.getElementById('hero-event-name');
             const heroLink = document.getElementById('hero-event-link');
             
-            if (heroTitle) {
-                const now = new Date();
-                const startTime = new Date(nextEvent.startDate);
-                const isLive = startTime <= now;
-                
-                if (heroSubtitle) {
-                    heroSubtitle.textContent = isLive ? `LIVE NOW: ${nextEvent.name}` : `Next Major Race: ${nextEvent.name}`;
-                    if (isLive) heroSubtitle.style.color = '#ff0055'; // Pop red for live
-                }
-                
-                heroTitle.textContent = nextEvent.name.toUpperCase();
-                if (heroLink) heroLink.href = `events.html?id=${nextEvent.id}`;
-                updateCountdown(nextEvent.startDate);
+            const now = new Date();
+            const startTime = new Date(nextEvent.startDate);
+            const isLive = startTime <= now;
+            
+            if (heroSubtitle) {
+                heroSubtitle.textContent = isLive ? `LIVE NOW: ${nextEvent.name}` : `Next Major Race: ${nextEvent.name}`;
+                if (isLive) heroSubtitle.style.color = '#ff0055'; 
             }
+            
+            if (heroTitle) {
+                heroTitle.textContent = nextEvent.name.toUpperCase();
+            }
+            
+            if (heroLink) {
+                heroLink.href = staticIds.includes(nextEvent.id) ? `${prefix}events/${nextEvent.id}.html` : `${prefix}events.html?id=${nextEvent.id}`;
+            }
+            
+            updateCountdown(nextEvent.startDate);
 
             // B. Populate Carousel Track (shared)
             if (upcomingTrack) {
