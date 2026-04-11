@@ -272,11 +272,42 @@ async function loadDynamicContent() {
     const prefix = isSubdir ? '../' : '';
     const staticIds = ['imsa-classic-500', 'nurburgring-24h', 'indy-500', 'world-600', 'thruxton-4h', 'watkins-glen-6h'];
     
-    // Official Special Event Banners
+    // Official Special Event Banners (sourced from iracing.com/special-events/)
+    const BASE = 'https://s100.iracing.com/wp-content/uploads';
     const eventBanners = {
-        'imsa-classic-500': 'https://s100.iracing.com/wp-content/uploads/2026/03/iRSE-2026-IMSA-Classic-500.png',
-        'nurburgring-24h': 'https://s100.iracing.com/wp-content/uploads/2025/12/iRSE-2026-Nurburgring-24H.png',
-        'indy-500': 'https://s100.iracing.com/wp-content/uploads/2025/12/iRSE-2026-Indy-500.png'
+        // Completed Events
+        'iracing-roar':         `${BASE}/2025/12/iRSE-2026-ROAR-960x576.png`,
+        'daytona-24':           `${BASE}/2025/12/iRSE-2026-Daytona-24-VCO-960x576.png`,
+        'daytona-500':          `${BASE}/2025/12/iRSE-2026-Daytona-500.png`,
+        'bathurst-12':          `${BASE}/2025/12/iRSE-2026-Bathurst-12.png`,
+        'sebring-12hr':         `${BASE}/2025/12/iRSE-2026-Sebring-12-VCO.png`,
+        // Upcoming Events
+        'imsa-classic-500':     `${BASE}/2026/03/iRSE-2026-IMSA-Classic-500.png`,
+        'nurburgring-24h':      `${BASE}/2025/12/iRSE-2026-Nurburgring-24H.png`,
+        'indy-500':             `${BASE}/2025/12/iRSE-2026-Indy-500.png`,
+        'world-600':            `${BASE}/2025/12/iRSE-2026-World-600.png`,
+        'thruxton-4h':          `${BASE}/2025/12/iRSE-2026-4-Hours-at-Thruxton.png`,
+        'watkins-glen-6h':      `${BASE}/2025/12/iRSE-2026-Watkis-Glen-6H-VCO.png`,
+        'spa-24hr':             `${BASE}/2025/12/iRSE-2026-SPA-24HR.png`,
+        'brickyard-400':        `${BASE}/2025/12/iRSE-2026-Homestead-Championship.png`,
+        'road-america-6h':      `${BASE}/2025/12/iRSE-2026-6HRS-Road-America.png`,
+        'firecracker-400':      `${BASE}/2025/12/iRSE-2026-Firecracker-400.png`,
+        'knoxville-nationals':  `${BASE}/2025/12/iRSE-2026-Knoxville-Nationals.png`,
+        'portimao-1000':        `${BASE}/2025/12/iRSE-2026-Portimao-1000.png`,
+        'crandon-championship': `${BASE}/2025/12/iRSE-2026-Crandon.png`,
+        'southern-500':         `${BASE}/2025/12/iRSE-2026-Southern-500.png`,
+        'suzuka-1000km':        `${BASE}/2026/01/iRSE-2026-PiMax-Suzuka-1000km.png`,
+        'britcar-24hr':         `${BASE}/2025/12/iRSE-2026-Britcar-24.png`,
+        'petit-le-mans':        `${BASE}/2025/12/iRSE-2026-Petit-Le-Mans-VCO.png`,
+        'bathurst-1000':        `${BASE}/2025/12/iRSE-2026-Bathurst-1000.png`,
+        'indianapolis-8h':      `${BASE}/2025/12/iRSE-2026-Indianapolis-8H.png`,
+        'ff1600-festival':      `${BASE}/2026/01/iRSE-2026-iRacing-Conspit-FF1600-Festival.png`,
+        'homestead-championship': `${BASE}/2025/12/iRSE-2026-Homestead-Championship.png`,
+        'sfl-mountain-showdown': `${BASE}/2025/12/iRSE-2026-SFL-Mountain-Challenge.png`,
+        '992-endurance-cup':    `${BASE}/2026/04/iRSE-2026-Creventic-992-Endurance-Cup.png`,
+        'winter-derby':         `${BASE}/2025/12/iRSE-2026-Winter-Derby.png`,
+        'chili-bowl':           `${BASE}/2025/12/iRSE-2026-Chili-Bowl.png`,
+        'production-car-challenge': `${BASE}/2025/12/iRSE-2026-Production-Car-Challenge.png`,
     };
     
     console.log("Auth: Querying events with filterTimestamp:", filterTimestamp);
