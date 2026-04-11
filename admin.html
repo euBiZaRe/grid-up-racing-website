@@ -264,8 +264,18 @@
                     <div class="glass" style="padding: 2.5rem; border: 1px solid var(--glass-border);">
                         <h3 style="color: var(--primary); margin-bottom: 2rem;">Add New Admin</h3>
                         <div style="display: grid; gap: 1.5rem;">
+                            <!-- Search Picker (New) -->
                             <div>
-                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">USER UID (from Profile)</label>
+                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">SELECT VERIFIED DRIVER</label>
+                                <input type="text" id="admin-driver-search" class="btn btn-outline" style="width: 100%; text-align: left;" placeholder="Type name to find UID..." list="verified-drivers-list" onchange="lookupUid(this.value)">
+                                <datalist id="verified-drivers-list"></datalist>
+                                <p style="font-size: 0.6rem; color: var(--text-muted); margin-top: 5px;">Only verified team members appear here.</p>
+                            </div>
+
+                            <hr style="border:0; border-top: 1px solid rgba(255,255,255,0.05);">
+
+                            <div>
+                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">OR MANUALLY ENTER UID</label>
                                 <input type="text" id="new-admin-uid" class="btn btn-outline" style="width: 100%; text-align: left;" placeholder="Paste user UID here...">
                             </div>
                             <button onclick="addAdmin()" class="btn btn-primary">Grant Admin Access</button>
@@ -550,8 +560,9 @@
                         <td style="font-family: monospace; color: var(--primary);">${data.iracingId}</td>
                         <td><span class="status-badge status-${data.status}">${data.status.toUpperCase()}</span></td>
                         <td>
-                            <div class="action-btns">
+                            <div class="action-btns" style="display: flex; gap: 5px;">
                                 ${data.status !== 'verified' ? `<button onclick="updateClaim('${id}', 'verified')" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.7rem;">Approve</button>` : ''}
+                                ${data.status === 'verified' ? `<button onclick="promoteUIDAsAdmin('${data.discordId}', '${id}')" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; color: var(--primary); border-color: var(--primary);">Promote</button>` : ''}
                                 ${data.status !== 'denied' ? `<button onclick="updateClaim('${id}', 'denied')" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; border-color: #ff0099; color: #ff0099;">Deny</button>` : ''}
                             </div>
                         </td>
@@ -561,6 +572,61 @@
             } catch (error) {
                 console.error("Error loading claims:", error);
                 list.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #ff0099;">Error loading data. Check permissions.</td></tr>';
+            }
+        }
+
+        let VERIFIED_DRIVER_MAP = {};
+        async function loadVerifiedDriversForAdmin() {
+            const datalist = document.getElementById('verified-drivers-list');
+            if (!datalist) return;
+            
+            try {
+                const snap = await db.collection("claims").where("status", "==", "verified").get();
+                datalist.innerHTML = '';
+                VERIFIED_DRIVER_MAP = {};
+                
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    if (data.discordId) {
+                        const option = document.createElement('option');
+                        option.value = doc.id; // Driver Name
+                        datalist.appendChild(option);
+                        VERIFIED_DRIVER_MAP[doc.id] = data.discordId;
+                    }
+                });
+            } catch (e) { console.warn("Error loading verified drivers for search:", e); }
+        }
+
+        function lookupUid(name) {
+            const uidInput = document.getElementById('new-admin-uid');
+            if (VERIFIED_DRIVER_MAP[name]) {
+                uidInput.value = VERIFIED_DRIVER_MAP[name];
+            }
+        }
+
+        async function promoteUIDAsAdmin(uid, name) {
+            if (!uid) return alert(`Error: No UID found for ${name}.`);
+            if (!confirm(`Are you sure you want to grant Admin privileges to ${name}?`)) return;
+            
+            try {
+                const docRef = db.collection("settings").doc("admins");
+                const doc = await docRef.get();
+                let uids = doc.exists ? (doc.data().uids || []) : [];
+                
+                if (!uids.includes(uid)) {
+                    uids.push(uid);
+                    await docRef.set({ uids: uids }, { merge: true });
+                    alert(`SUCCESS: ${name} is now an Admin!`);
+                    // If we're on the admins tab, reload the list
+                    if (document.getElementById('section-admins').style.display === 'block') {
+                        loadAdmins();
+                    }
+                } else {
+                    alert(`${name} is already an admin.`);
+                }
+            } catch (e) {
+                console.error("Error promoting admin:", e);
+                alert("Failed to promote info: " + e.message);
             }
         }
 
@@ -607,7 +673,10 @@
                 }
             });
 
-            if (tab === 'admins') loadAdmins();
+            if (tab === 'admins') {
+                loadAdmins();
+                loadVerifiedDriversForAdmin();
+            }
             if (tab === 'availability') loadAvailability();
             if (tab === 'events') loadEvents();
             if (tab === 'results') loadResults();
