@@ -221,10 +221,103 @@ function initCarousel() {
     });
 }
 
+
+// Firestore Data Integration
+async function loadDynamicContent() {
+    console.log("Loading dynamic site content...");
+    if (typeof db === 'undefined') {
+        console.warn("Firestore 'db' not initialized yet. Waiting...");
+        return;
+    }
+
+    // 1. Load Upcoming Races
+    const upcomingTrack = document.getElementById('dynamic-upcoming-track');
+    if (upcomingTrack) {
+        try {
+            const now = new Date().toISOString();
+            const snap = await db.collection("events")
+                .where("startDate", ">=", now)
+                .orderBy("startDate", "asc")
+                .limit(10)
+                .get();
+
+            if (snap.empty) {
+                upcomingTrack.innerHTML = '<p style="text-align: center; color: var(--text-muted); width: 100%;">No upcoming events scheduled.</p>';
+            } else {
+                upcomingTrack.innerHTML = '';
+                let index = 0;
+                const colors = ['blue', 'pink', 'green'];
+                snap.forEach(doc => {
+                    const e = doc.data();
+                    const color = colors[index % 3];
+                    const tile = document.createElement('a');
+                    tile.href = `events.html?id=${doc.id}`;
+                    tile.className = `race-tile tile-${color}`;
+                    tile.innerHTML = `
+                        <h3>${e.name.toUpperCase()}</h3>
+                        <div class="race-meta">${e.date}</div>
+                    `;
+                    upcomingTrack.appendChild(tile);
+                    index++;
+                });
+            }
+        } catch (error) {
+            console.error("Error loading events:", error);
+            upcomingTrack.innerHTML = '<p style="color: #ff0055;">Failed to load schedule.</p>';
+        }
+    }
+
+    // 2. Load Recent Results (Race Cards)
+    const resultsTrack = document.getElementById('results-track');
+    if (resultsTrack) {
+        try {
+            const snap = await db.collection("race_results")
+                .orderBy("timestamp", "desc")
+                .limit(6)
+                .get();
+
+            if (snap.empty) {
+                resultsTrack.innerHTML = '<p style="text-align: center; color: var(--text-muted); grid-column: 1/-1;">No recent results to show.</p>';
+            } else {
+                resultsTrack.innerHTML = '';
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    const card = document.createElement('div');
+                    card.className = 'card glass reveal active';
+                    card.style.padding = '0';
+                    card.style.overflow = 'hidden';
+                    card.innerHTML = `
+                        <div style="position: relative; height: 180px;">
+                            <img src="${d.rawUrl}" style="width: 100%; height: 100%; object-fit: cover;">
+                            <div style="position: absolute; top: 1rem; right: 1rem; background: var(--primary); color: #000; font-weight: 800; padding: 0.5rem 1rem; border-radius: 5px; box-shadow: 0 0 15px rgba(0,207,255,0.5);">${d.position}</div>
+                        </div>
+                        <div style="padding: 1.5rem;">
+                            <p style="font-size: 0.7rem; color: var(--primary); font-weight: 800; margin-bottom: 0.2rem;">${d.eventName.toUpperCase()}</p>
+                            <h4 style="margin-bottom: 0.5rem; color: white; font-size: 1rem;">#${d.carNumber} - ${d.drivers.join(', ')}</h4>
+                        </div>
+                    `;
+                    resultsTrack.appendChild(card);
+                });
+            }
+        } catch (error) {
+            console.error("Error loading results:", error);
+            resultsTrack.innerHTML = '<p style="color: #ff0055; grid-column: 1/-1;">Failed to load results.</p>';
+        }
+    }
+}
+
 // Global initialization
 document.addEventListener('DOMContentLoaded', () => {
     initCarousel();
     if (document.getElementById('countdown')) {
         updateCountdown();
     }
+    
+    // Check for Firebase existence before loading dynamic content
+    const checkFirebase = setInterval(() => {
+        if (typeof firebase !== 'undefined' && typeof db !== 'undefined') {
+            loadDynamicContent();
+            clearInterval(checkFirebase);
+        }
+    }, 500);
 });

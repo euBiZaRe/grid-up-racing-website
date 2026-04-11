@@ -148,6 +148,7 @@
                 <button onclick="switchTab('races')" class="btn btn-outline" id="tab-races" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">LINEUP MANAGER</button>
                 <button onclick="switchTab('availability')" class="btn btn-outline" id="tab-availability" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">DRIVER ROSTER</button>
                 <button onclick="switchTab('events')" class="btn btn-outline" id="tab-events" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">SEASON SCHEDULE</button>
+                <button onclick="switchTab('results')" class="btn btn-outline" id="tab-results" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">RESULT CARDS</button>
                 <button onclick="switchTab('admins')" class="btn btn-outline" id="tab-admins" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">TEAM PERMISSIONS</button>
             </nav>
 
@@ -332,6 +333,59 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Result Cards Management Section -->
+            <div id="section-results" class="tab-content" style="display: none;">
+                <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start;">
+                    <!-- Generator Form -->
+                    <div class="glass" style="padding: 2.5rem;">
+                        <h3 style="color: var(--primary); margin-bottom: 2rem;">Card Generator</h3>
+                        <div style="display: grid; gap: 1.5rem;">
+                            <div>
+                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">CAR PHOTO (Screengrab)</label>
+                                <input type="file" id="card-photo" accept="image/*" class="btn btn-outline" style="width: 100%; padding: 0.75rem;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">EVENT NAME</label>
+                                <select id="card-event" class="btn btn-outline" style="width: 100%; text-align: left; padding: 1rem;">
+                                    <option value="">-- Choose Event --</option>
+                                </select>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div>
+                                    <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">POSITION</label>
+                                    <input type="text" id="card-pos" placeholder="e.g. P1" class="btn btn-outline" style="width: 100%; text-align: left;">
+                                </div>
+                                <div>
+                                    <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">CAR #</label>
+                                    <input type="text" id="card-number" placeholder="e.g. 77" class="btn btn-outline" style="width: 100%; text-align: left;">
+                                </div>
+                            </div>
+                            <div>
+                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">DRIVERS (Comma separated)</label>
+                                <input type="text" id="card-drivers" placeholder="Name 1, Name 2..." class="btn btn-outline" style="width: 100%; text-align: left;">
+                            </div>
+                            <div style="margin-top: 1rem; padding: 1.5rem; background: rgba(0, 207, 255, 0.05); border: 1px dashed var(--primary); border-radius: 8px;">
+                                <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem;">
+                                    <span style="color: var(--primary); font-weight: 800;">AI ENGINE:</span> Once created, the AI will stylize your photo into a cinematic race trophy card.
+                                </p>
+                                <button onclick="generateRaceCard()" class="btn btn-primary" style="width: 100%; box-shadow: 0 0 30px rgba(0,207,255,0.4); text-transform: uppercase;">
+                                    Execute AI Generation
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gallery / Recent Cards -->
+                    <div class="glass" style="padding: 2.5rem;">
+                        <h3 style="color: var(--primary); margin-bottom: 2rem;">Recent Cards</h3>
+                        <div id="results-gallery" class="grid" style="grid-template-columns: 1fr; gap: 1.5rem;">
+                            <!-- Result cards listed here -->
+                            <p style="color: var(--text-muted); text-align: center;">No cards generated yet.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -411,33 +465,31 @@
             document.getElementById('section-admins').style.display = tab === 'admins' ? 'block' : 'none';
             document.getElementById('section-availability').style.display = tab === 'availability' ? 'block' : 'none';
             document.getElementById('section-events').style.display = tab === 'events' ? 'block' : 'none';
+            document.getElementById('section-results').style.display = tab === 'results' ? 'block' : 'none';
             
             const titleMap = { 
                 'claims': 'Driver Claims', 
                 'races': 'Lineup Manager', 
                 'admins': 'Team Permissions',
                 'availability': 'Driver Roster',
-                'events': 'Season Schedule'
+                'events': 'Season Schedule',
+                'results': 'Race Card Lab'
             };
             document.getElementById('admin-title').textContent = titleMap[tab];
             
-            document.getElementById('tab-claims').classList.toggle('btn-primary', tab === 'claims');
-            document.getElementById('tab-claims').classList.toggle('btn-outline', tab !== 'claims');
-            document.getElementById('tab-races').classList.toggle('btn-primary', tab === 'races');
-            document.getElementById('tab-races').classList.toggle('btn-outline', tab !== 'races');
-            document.getElementById('tab-admins').classList.toggle('btn-primary', tab === 'admins');
-            document.getElementById('tab-admins').classList.toggle('btn-outline', tab !== 'admins');
-            document.getElementById('tab-availability').classList.toggle('btn-primary', tab === 'availability');
-            document.getElementById('tab-availability').classList.toggle('btn-outline', tab !== 'availability');
-            document.getElementById('tab-events').classList.toggle('btn-primary', tab === 'events');
-            document.getElementById('tab-events').classList.toggle('btn-outline', tab !== 'events');
+            const tabs = ['claims', 'races', 'admins', 'availability', 'events', 'results'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                if (btn) {
+                    btn.classList.toggle('btn-primary', tab === t);
+                    btn.classList.toggle('btn-outline', tab !== t);
+                }
+            });
 
             if (tab === 'admins') loadAdmins();
             if (tab === 'availability') loadAvailability();
             if (tab === 'events') loadEvents();
-
-            if (tab === 'admins') loadAdmins();
-            if (tab === 'availability') loadAvailability();
+            if (tab === 'results') loadResults();
         }
         let UPCOMING_EVENTS = [];
 
@@ -602,6 +654,95 @@
             }
         }
 
+        async function generateRaceCard() {
+            const file = document.getElementById('card-photo').files[0];
+            const eventId = document.getElementById('card-event').value;
+            const pos = document.getElementById('card-pos').value.trim();
+            const carNum = document.getElementById('card-number').value.trim();
+            const drivers = document.getElementById('card-drivers').value.trim();
+
+            if (!file || !eventId || !pos || !drivers) return alert("Please fill all fields and upload a photo.");
+
+            try {
+                // 1. Upload Original Photo
+                const storageRef = firebase.storage().ref(`results/${eventId}/${Date.now()}_${file.name}`);
+                const snapshot = await storageRef.put(file);
+                const rawUrl = await snapshot.ref.getDownloadURL();
+
+                // 2. Save Metadata to Firestore
+                // This triggers the "AI Generation" (in this demo, we'll simulate it)
+                const cardData = {
+                    eventId: eventId,
+                    eventName: UPCOMING_EVENTS.find(e => e.id === eventId).name,
+                    position: pos,
+                    carNumber: carNum,
+                    drivers: drivers.split(',').map(d => d.trim()),
+                    rawUrl: rawUrl,
+                    status: 'processing', // Simulated AI processing
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                const docRef = await db.collection("race_results").add(cardData);
+                
+                alert("Upload successful! AI is now stylizing your card. (In this demo, refresh in a few seconds)");
+                loadResults();
+
+                // Clear form
+                document.getElementById('card-photo').value = '';
+                document.getElementById('card-pos').value = '';
+                document.getElementById('card-number').value = '';
+                document.getElementById('card-drivers').value = '';
+
+            } catch (e) {
+                console.error("Card generation error:", e);
+                alert("Error: " + e.message);
+            }
+        }
+
+        async function loadResults() {
+            const gallery = document.getElementById('results-gallery');
+            const eventSelector = document.getElementById('card-event');
+            if (!gallery) return;
+
+            // Populate event selector if needed
+            if (eventSelector.options.length <= 1) {
+                eventSelector.innerHTML = '<option value="">-- Choose Event --</option>' + 
+                    UPCOMING_EVENTS.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
+            }
+
+            try {
+                const snap = await db.collection("race_results").orderBy("timestamp", "desc").get();
+                if (snap.empty) {
+                    gallery.innerHTML = '<p style="color: var(--text-muted); text-align: center;">No cards generated yet.</p>';
+                    return;
+                }
+
+                gallery.innerHTML = '';
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    const card = document.createElement('div');
+                    card.className = 'card glass animate-fade-in';
+                    card.style.padding = '0';
+                    card.innerHTML = `
+                        <div style="position: relative; height: 180px; overflow: hidden; border-radius: 12px 12px 0 0;">
+                            <img src="${d.rawUrl}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.6;">
+                            <div style="position: absolute; top: 1rem; right: 1rem; background: var(--primary); color: #000; font-weight: 800; padding: 0.5rem 1rem; border-radius: 5px;">${d.position}</div>
+                        </div>
+                        <div style="padding: 1.5rem;">
+                            <p style="font-size: 0.7rem; color: var(--primary); font-weight: 800;">${d.eventName.toUpperCase()}</p>
+                            <h4 style="margin-bottom: 0.5rem; color: white;">#${d.carNumber} - ${d.drivers.join(', ')}</h4>
+                            <div style="display: flex; gap: 10px; margin-top: 1rem;">
+                                <button onclick="deleteResult('${doc.id}')" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; border-color: #ff0055; color: #ff0055;">Delete</button>
+                            </div>
+                        </div>
+                    `;
+                    gallery.appendChild(card);
+                });
+            } catch (e) {
+                console.error("Error loading results:", e);
+            }
+        }
+
         async function deleteEvent(id) {
             if (!confirm(`Are you sure you want to delete ${id}? This will NOT delete any associated lineups or telemetry.`)) return;
             try {
@@ -609,6 +750,104 @@
                 loadEvents();
             } catch (e) {
                 alert("Error deleting: " + e.message);
+            }
+        }
+
+        async function generateRaceCard() {
+            const file = document.getElementById('card-photo').files[0];
+            const eventId = document.getElementById('card-event').value;
+            const pos = document.getElementById('card-pos').value.trim();
+            const carNum = document.getElementById('card-number').value.trim();
+            const drivers = document.getElementById('card-drivers').value.trim();
+
+            if (!file || !eventId || !pos || !drivers) return alert("Please fill all fields and upload a photo.");
+
+            try {
+                // 1. Upload Original Photo
+                const storageRef = firebase.storage().ref(`results/${eventId}/${Date.now()}_${file.name}`);
+                const snapshot = await storageRef.put(file);
+                const rawUrl = await snapshot.ref.getDownloadURL();
+
+                // 2. Save Metadata to Firestore
+                const cardData = {
+                    eventId: eventId,
+                    eventName: UPCOMING_EVENTS.find(e => e.id === eventId).name,
+                    position: pos,
+                    carNumber: carNum,
+                    drivers: drivers.split(',').map(d => d.trim()),
+                    rawUrl: rawUrl,
+                    status: 'completed',
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                await db.collection("race_results").add(cardData);
+                
+                alert("Race card created successfully!");
+                loadResults();
+
+                // Clear form
+                document.getElementById('card-photo').value = '';
+                document.getElementById('card-pos').value = '';
+                document.getElementById('card-number').value = '';
+                document.getElementById('card-drivers').value = '';
+
+            } catch (e) {
+                console.error("Card generation error:", e);
+                alert("Error: " + e.message);
+            }
+        }
+
+        async function loadResults() {
+            const gallery = document.getElementById('results-gallery');
+            const eventSelector = document.getElementById('card-event');
+            if (!gallery) return;
+
+            // Populate event selector if needed
+            if (eventSelector && eventSelector.options.length <= 1) {
+                eventSelector.innerHTML = '<option value="">-- Choose Event --</option>' + 
+                    UPCOMING_EVENTS.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
+            }
+
+            try {
+                const snap = await db.collection("race_results").orderBy("timestamp", "desc").get();
+                if (snap.empty) {
+                    gallery.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 2rem;">No cards generated yet.</p>';
+                    return;
+                }
+
+                gallery.innerHTML = '';
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    const card = document.createElement('div');
+                    card.className = 'card glass animate-fade-in';
+                    card.style.padding = '0';
+                    card.innerHTML = `
+                        <div style="position: relative; height: 180px; overflow: hidden; border-radius: 12px 12px 0 0;">
+                            <img src="${d.rawUrl}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.8;">
+                            <div style="position: absolute; top: 1rem; right: 1rem; background: var(--primary); color: #000; font-weight: 800; padding: 0.5rem 1rem; border-radius: 5px; box-shadow: 0 0 15px rgba(0,207,255,0.5);">${d.position}</div>
+                        </div>
+                        <div style="padding: 1.5rem;">
+                            <p style="font-size: 0.7rem; color: var(--primary); font-weight: 800; margin-bottom: 0.2rem;">${d.eventName.toUpperCase()}</p>
+                            <h4 style="margin-bottom: 0.5rem; color: white;">#${d.carNumber} - ${d.drivers.join(', ')}</h4>
+                            <div style="display: flex; gap: 10px; margin-top: 1rem;">
+                                <button onclick="deleteResult('${doc.id}')" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; border-color: #ff0055; color: #ff0055;">Delete</button>
+                            </div>
+                        </div>
+                    `;
+                    gallery.appendChild(card);
+                });
+            } catch (e) {
+                console.error("Error loading results:", e);
+            }
+        }
+
+        async function deleteResult(id) {
+            if (!confirm("Delete this result card?")) return;
+            try {
+                await db.collection("race_results").doc(id).delete();
+                loadResults();
+            } catch (e) {
+                alert("Error: " + e.message);
             }
         }
 
