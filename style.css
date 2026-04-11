@@ -267,17 +267,19 @@ h1, h2, h3 {
         position: fixed;
         top: 0;
         right: -100%;
-        width: 80%;
+        width: 100%; /* Full screen for better UX */
         height: 100vh;
         background: rgba(10, 12, 16, 0.98);
         backdrop-filter: blur(20px);
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        gap: 3rem;
+        gap: 2.5rem;
         transition: 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
         z-index: 1000;
-        border-left: 1px solid var(--glass-border);
+        list-style: none;
+        padding: 0;
+        margin: 0;
     }
 
     .nav-links.active {
@@ -285,26 +287,40 @@ h1, h2, h3 {
     }
 
     .nav-links li {
+        list-style: none;
         opacity: 0;
-        transform: translateX(30px);
+        transform: translateY(20px);
+        width: 100%;
+        text-align: center;
     }
 
     .nav-links.active li {
         opacity: 1;
-        transform: translateX(0);
-        transition: 0.4s ease forwards;
+        transform: translateY(0);
+        transition: 0.5s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
     }
 
     .nav-links.active li:nth-child(1) { transition-delay: 0.1s; }
-    .nav-links.active li:nth-child(2) { transition-delay: 0.2s; }
-    .nav-links.active li:nth-child(3) { transition-delay: 0.3s; }
-    .nav-links.active li:nth-child(4) { transition-delay: 0.4s; }
-    .nav-links.active li:nth-child(5) { transition-delay: 0.5s; }
-    .nav-links.active li:nth-child(6) { transition-delay: 0.6s; }
+    .nav-links.active li:nth-child(2) { transition-delay: 0.15s; }
+    .nav-links.active li:nth-child(3) { transition-delay: 0.2s; }
+    .nav-links.active li:nth-child(4) { transition-delay: 0.25s; }
+    .nav-links.active li:nth-child(5) { transition-delay: 0.3s; }
+    .nav-links.active li:nth-child(6) { transition-delay: 0.35s; }
+    .nav-links.active li:nth-child(7) { transition-delay: 0.4s; }
 
     .nav-links a {
-        font-size: 1.5rem;
-        letter-spacing: 2px;
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--text-main);
+        text-decoration: none;
+        display: block;
+        padding: 1rem;
+    }
+
+    .nav-links a:hover {
+        color: var(--primary);
     }
 }
 
@@ -599,10 +615,6 @@ footer {
 .carousel-btn.next { right: 1rem; }
 
 @media (max-width: 768px) {
-    .nav-links {
-        display: none;
-    }
-    
     .section {
         padding: 4rem 0;
     }
