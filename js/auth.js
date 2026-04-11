@@ -87,72 +87,112 @@ async function updateAuthUI(user) {
     const claimSection = document.getElementById('claim-section');
     const driverTitle = document.querySelector('h1.glow-text');
 
+    // Auto-detect relative path prefix based on depth
+    const isSubdir = window.location.pathname.includes('/events/') || window.location.pathname.includes('/drivers/');
+    const basePath = isSubdir ? "../" : "";
+
     if (user) {
         console.log("Updating UI for logged-in user:", user.uid);
-        if (loginBtn) {
-            const displayName = user.displayName || "";
-            const avatar = user.photoURL || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
-            
-            // Check for Admin (Master Admin + Firestore Settings)
-            const MASTER_ADMIN = 'B0t4f4nqqpZIQKpT8Ed97xka5gM2';
-            let isAdmin = (user.uid === MASTER_ADMIN);
-            
-            if (!isAdmin && db) {
-                try {
-                    const adminDoc = await db.collection("settings").doc("admins").get();
-                    if (adminDoc.exists) {
-                        const adminList = adminDoc.data().uids || [];
-                        isAdmin = adminList.includes(user.uid);
-                    }
-                } catch (e) {
-                    console.error("Error reading admin settings:", e);
-                }
-            }
-            
-            // Check for Verification (to show Team Portal link)
-            let isVerified = false;
+        
+        // Check for Admin status (Master + Firestore)
+        const MASTER_ADMIN = 'B0t4f4nqqpZIQKpT8Ed97xka5gM2';
+        let isAdmin = (user.uid === MASTER_ADMIN);
+        if (!isAdmin && db) {
             try {
-                const claimSnapshot = await db.collection("claims").where("discordId", "==", user.uid).get();
-                if (!claimSnapshot.empty && claimSnapshot.docs[0].data().status === 'verified') {
-                    isVerified = true;
+                const adminDoc = await db.collection("settings").doc("admins").get();
+                if (adminDoc.exists) {
+                    const admins = adminDoc.data().uids || [];
+                    isAdmin = admins.includes(user.uid);
                 }
-            } catch (e) {
-                console.error("Error checking verification for UI:", e);
-            }
-            
-            const isSubdir = window.location.pathname.includes('/drivers/') || window.location.pathname.includes('/events/');
-            const basePath = isSubdir ? "../" : "";
-            
-            // Replace the anchor with a div to avoid nested anchor issues
-            const container = document.createElement('div');
-            container.id = "login-link";
-            container.style.marginLeft = "1.5rem";
-            container.style.display = "flex";
-            container.style.alignItems = "center";
-            container.style.gap = "8px";
+            } catch (e) { console.warn("Admin Check Error:", e); }
+        }
 
-            const adminLink = isAdmin ? `<a href="${basePath}admin.html" class="btn btn-primary" style="padding: 0.4rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border-radius: 4px;">Admin</a>` : '';
+        // Check for Verification
+        let isVerified = false;
+        try {
+            const claimSnapshot = await db.collection("claims").where("discordId", "==", user.uid).get();
+            if (!claimSnapshot.empty && claimSnapshot.docs[0].data().status === 'verified') {
+                isVerified = true;
+            }
+        } catch (e) { console.warn("Verification Check Error:", e); }
+
+        const avatar = user.photoURL || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
+        
+        // A. Handle Navbar UI (Replace #login-link or Append to .nav-links)
+        const navLinks = document.querySelector('.nav-links');
+        if (loginBtn || navLinks) {
+            let container = document.getElementById('navbar-user-ui');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = "navbar-user-ui";
+                container.style.marginLeft = "1.5rem";
+                container.style.display = "flex";
+                container.style.alignItems = "center";
+                container.style.gap = "8px";
+            }
+
+            // Construct Inner HTML (Admin is REMOVED from navbar, moved to Profile)
             const portalLink = (isVerified || isAdmin) ? `<a href="${basePath}portal.html" class="btn btn-primary" style="background: var(--secondary); padding: 0.4rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border-radius: 4px;">Portal</a>` : '';
             const profileLink = `<a href="${basePath}profile.html" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border-radius: 4px;">Profile</a>`;
             const logoutBtn = `<a href="#" onclick="if(confirm('Logout?')) firebase.auth().signOut()" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border-color: rgba(255,255,255,0.15); border-radius: 4px;"><img src="${avatar}" style="width: 16px; height: 16px; border-radius: 50%; vertical-align: middle; margin-right: 5px;"> Logout</a>`;
 
-            container.innerHTML = `${adminLink}${portalLink}${profileLink}${logoutBtn}`;
-            loginBtn.replaceWith(container);
+            container.innerHTML = `${portalLink}${profileLink}${logoutBtn}`;
+            
+            if (loginBtn) {
+                loginBtn.replaceWith(container);
+            } else if (navLinks && !document.getElementById('navbar-user-ui')) {
+                // Check if navLinks is a list or a div
+                if (navLinks.tagName === 'UL' || navLinks.tagName === 'OL') {
+                    const li = document.createElement('li');
+                    li.appendChild(container);
+                    navLinks.appendChild(li);
+                } else {
+                    navLinks.appendChild(container);
+                }
+            }
+        }
+
+        // B. Handle Profile Page Admin Button
+        const adminProfileBtn = document.getElementById('admin-dashboard-btn');
+        if (adminProfileBtn && isAdmin) {
+            adminProfileBtn.style.display = 'inline-block';
+            adminProfileBtn.href = `${basePath}admin.html`;
         }
         
-        // Handle Driver Profile Page logic
+        // C. Handle Driver Profile logic (Claim checking)
         if (claimSection && driverTitle) {
             const driverName = driverTitle.textContent.trim();
             checkClaimStatus(driverName, user);
         }
     } else {
+        // Logged Out State
+        const navLinks = document.querySelector('.nav-links');
+        const userUI = document.getElementById('navbar-user-ui');
+
         if (loginBtn) {
             loginBtn.textContent = "Login";
-            const isSubdir = window.location.pathname.includes('/drivers/') || window.location.pathname.includes('/events/');
-            loginBtn.href = isSubdir ? "../login.html" : "login.html";
+            loginBtn.href = `${basePath}login.html`;
             loginBtn.onclick = null;
+        } else if (navLinks && !userUI) {
+            if (navLinks.tagName === 'UL' || navLinks.tagName === 'OL') {
+                const li = document.createElement('li');
+                li.innerHTML = `<a href="${basePath}login.html" id="login-link" class="btn btn-outline" style="padding: 0.5rem 1.25rem; font-size: 0.8rem; margin-left: 1rem;">Login</a>`;
+                navLinks.appendChild(li);
+            } else {
+                const a = document.createElement('a');
+                a.href = `${basePath}login.html`;
+                a.id = "login-link";
+                a.className = "btn btn-outline";
+                a.style.padding = "0.5rem 1.25rem";
+                a.style.fontSize = "0.8rem";
+                a.style.marginLeft = "1rem";
+                a.textContent = "Login";
+                navLinks.appendChild(a);
+            }
         }
+        
         if (claimSection) claimSection.style.display = 'none';
+        if (userUI) userUI.remove();
     }
 }
 
