@@ -426,7 +426,7 @@ async function loadDynamicContent() {
                         fullEventList.appendChild(card);
                     });
 
-                    // Handle Deep Linking
+                    // Handle Deep Linking & Results
                     const urlParams = new URLSearchParams(window.location.search);
                     const eventId = urlParams.get('id');
                     if (eventId) {
@@ -436,6 +436,9 @@ async function loadDynamicContent() {
                                 target.scrollIntoView({ behavior: 'smooth', block: 'center' });
                                 target.style.boxShadow = '0 0 30px rgba(0,207,255,0.3)';
                                 target.style.borderColor = 'var(--primary)';
+                                
+                                // Load Results for this event
+                                renderEventResults(eventId, target);
                             }
                         }, 500);
                     }
@@ -472,7 +475,71 @@ async function loadDynamicContent() {
         if (upcomingTrack) upcomingTrack.innerHTML = '<p style="color: #ff0055;">Failed to load schedule.</p>';
     }
 
-    // 2. Load Recent Results (Race Cards)
+    async function renderEventResults(eventId, targetElement) {
+    try {
+        const snap = await db.collection("event_results")
+            .where("eventId", "==", eventId)
+            .orderBy("timestamp", "asc")
+            .get();
+        
+        if (snap.empty) return;
+
+        const resultsContainer = document.createElement('div');
+        resultsContainer.className = 'results-section reveal active';
+        resultsContainer.style.marginTop = '2rem';
+        
+        let rowsHtml = '';
+        snap.forEach(doc => {
+            const d = doc.data();
+            const drivers = Array.isArray(d.drivers) ? d.drivers.join(', ') : d.drivers;
+            
+            rowsHtml += `
+                <tr>
+                    <td>
+                        <span class="result-team-name">${d.teamName}</span>
+                        <span class="result-car-name">${d.car}</span>
+                        <span class="result-drivers">${drivers}</span>
+                    </td>
+                    <td>
+                        <div class="result-split-info">Split ${d.split || '?'} / ${d.sof || '????'}</div>
+                    </td>
+                    <td>
+                        <div class="result-qualy ${d.qualy === 'P1' ? 'result-highlight' : ''}">${d.qualy || '-'}</div>
+                    </td>
+                    <td>
+                        <div class="result-finish ${d.finish === 'P1' ? 'result-highlight' : ''}">${d.finish || '-'}</div>
+                    </td>
+                </tr>
+            `;
+        });
+
+        resultsContainer.innerHTML = `
+            <h2 style="color: var(--primary); margin-bottom: 2rem;">Team Results</h2>
+            <div class="results-table-wrapper">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Team / Car</th>
+                            <th>Split / SoF</th>
+                            <th>Qualy</th>
+                            <th>Finish</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rowsHtml}
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+        targetElement.after(resultsContainer);
+        
+    } catch (e) {
+        console.error("Error rendering results:", e);
+    }
+}
+
+// 2. Load Recent Results (Race Cards)
     const resultsTrack = document.getElementById('results-track');
     if (resultsTrack) {
         try {

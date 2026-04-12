@@ -155,10 +155,11 @@
                 <button onclick="switchTab('races')" class="btn btn-outline" id="tab-races" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">LINEUP MANAGER</button>
                 <button onclick="switchTab('availability')" class="btn btn-outline" id="tab-availability" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">DRIVER ROSTER</button>
                 <button onclick="switchTab('events')" class="btn btn-outline" id="tab-events" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">SEASON SCHEDULE</button>
-                <button onclick="switchTab('results')" class="btn btn-outline" id="tab-results" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">RESULT CARDS</button>
+                <button onclick="switchTab('race-results')" class="btn btn-outline" id="tab-race-results" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px; color: var(--primary);">RACE RESULTS</button>
+                <button onclick="switchTab('posters')" class="btn btn-outline" id="tab-posters" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">POSTER LAB</button>
                 <button onclick="switchTab('streams')" class="btn btn-outline" id="tab-streams" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px; color: #ff4444;">LIVE STREAMS</button>
                 <button onclick="switchTab('admins')" class="btn btn-outline" id="tab-admins" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">TEAM PERMISSIONS</button>
-                <button onclick="switchTab('system')" class="btn btn-outline" id="tab-system" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px; color: var(--primary);">SYSTEM SYNC</button>
+                <button onclick="switchTab('system')" class="btn btn-outline" id="tab-system" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">SYSTEM SYNC</button>
             </nav>
 
             <!-- Claims Section -->
@@ -733,7 +734,7 @@
             }
         }
         function switchTab(tab) {
-            const sections = ['claims', 'races', 'admins', 'availability', 'events', 'results', 'streams', 'system'];
+            const sections = ['claims', 'races', 'admins', 'availability', 'events', 'race-results', 'posters', 'streams', 'system'];
             sections.forEach(s => {
                 const el = document.getElementById(`section-${s}`);
                 if (el) el.style.display = (tab === s) ? 'block' : 'none';
@@ -745,13 +746,14 @@
                 'admins': 'Team Permissions',
                 'availability': 'Driver Roster',
                 'events': 'Season Schedule',
-                'results': 'Race Card Lab',
+                'race-results': 'Race Results Portal',
+                'posters': 'Poster Lab',
                 'streams': 'Live Streams',
                 'system': 'System Maintenance & Sync'
             };
             document.getElementById('admin-title').textContent = titleMap[tab];
             
-            const tabs = ['claims', 'races', 'admins', 'availability', 'events', 'results', 'streams', 'system'];
+            const tabs = ['claims', 'races', 'admins', 'availability', 'events', 'race-results', 'posters', 'streams', 'system'];
             tabs.forEach(t => {
                 const btn = document.getElementById(`tab-${t}`);
                 if (btn) {
@@ -766,7 +768,7 @@
             }
             if (tab === 'availability') loadAvailability();
             if (tab === 'events') loadEvents();
-            if (tab === 'results') loadResults();
+            if (tab === 'race-results') loadEventResults();
             if (tab === 'streams') loadStreams();
         }
         let UPCOMING_EVENTS = [];
@@ -822,7 +824,7 @@
         }
 
         function updateSelectors() {
-            const selectors = ['lineup-event-selector', 'availability-event-selector'];
+            const selectors = ['lineup-event-selector', 'availability-event-selector', 'result-event-selector'];
             selectors.forEach(id => {
                 const sel = document.getElementById(id);
                 if (!sel) return;
@@ -2008,6 +2010,8 @@
             const accessDenied = document.getElementById('access-denied');
             const userInfo = document.getElementById('admin-user-info');
 
+
+
             if (user) {
                 const MASTER_ADMIN = 'B0t4f4nqqpZIQKpT8Ed97xka5gM2';
                 let isAdmin = (user.uid === MASTER_ADMIN);
@@ -2147,6 +2151,124 @@
             } catch(e) {
                 console.error("Error deleting stream:", e);
                 alert("Failed to delete stream.");
+            }
+        }
+
+        // ==========================================
+        // Race Results Management
+        // ==========================================
+        
+        async function loadEventResults() {
+            const eventId = document.getElementById('result-event-selector').value;
+            const list = document.getElementById('admin-results-list');
+            if (!list) return;
+
+            if (!eventId) {
+                list.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Select an event to view/edit results.</p>';
+                return;
+            }
+
+            list.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Loading results...</p>';
+
+            try {
+                const snapshot = await db.collection("event_results").where("eventId", "==", eventId).get();
+                if (snapshot.empty) {
+                    list.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No results recorded for this event yet.</p>';
+                    return;
+                }
+
+                let html = `
+                    <table class="claims-table" style="font-size: 0.8rem;">
+                        <thead>
+                            <tr>
+                                <th>Team</th>
+                                <th>Car</th>
+                                <th>Qualy / Finish</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                snapshot.forEach(doc => {
+                    const d = doc.data();
+                    html += `
+                        <tr>
+                            <td>
+                                <strong>${d.teamName}</strong><br>
+                                <span style="font-size: 0.7rem; color: var(--text-muted);">${Array.isArray(d.drivers) ? d.drivers.join(', ') : d.drivers}</span>
+                            </td>
+                            <td>${d.car}</td>
+                            <td>${d.qualy} / <strong style="color: var(--primary);">${d.finish}</strong></td>
+                            <td>
+                                <button onclick="deleteRaceResult('${doc.id}')" class="btn btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.6rem; color: #ff4444; border-color: rgba(255,0,0,0.3);">DEL</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                html += '</tbody></table>';
+                list.innerHTML = html;
+            } catch (e) {
+                console.error("Error loading results:", e);
+                list.innerHTML = '<p style="color: #ff4444;">Failed to load results.</p>';
+            }
+        }
+
+        async function saveRaceResult() {
+            const eventId = document.getElementById('result-event-selector').value;
+            const teamName = document.getElementById('result-team-name').value.trim();
+            const car = document.getElementById('result-car').value.trim();
+            const driversStr = document.getElementById('result-drivers').value.trim();
+            const split = document.getElementById('result-split').value.trim();
+            const sof = document.getElementById('result-sof').value.trim();
+            const qualy = document.getElementById('result-qualy').value.trim();
+            const finish = document.getElementById('result-finish').value.trim();
+
+            if (!eventId || !teamName || !car || !finish) {
+                alert("Event, Team, Car, and Finish position are required.");
+                return;
+            }
+
+            const data = {
+                eventId,
+                teamName,
+                car,
+                drivers: driversStr.split(',').map(s => s.trim()).filter(s => s),
+                split,
+                sof,
+                qualy,
+                finish,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            try {
+                await db.collection("event_results").add(data);
+                
+                // Clear form
+                document.getElementById('result-team-name').value = '';
+                document.getElementById('result-car').value = '';
+                document.getElementById('result-drivers').value = '';
+                document.getElementById('result-split').value = '';
+                document.getElementById('result-sof').value = '';
+                document.getElementById('result-qualy').value = '';
+                document.getElementById('result-finish').value = '';
+                
+                loadEventResults();
+                alert("Result saved!");
+            } catch (e) {
+                console.error("Error saving result:", e);
+                alert("Failed to save: " + e.message);
+            }
+        }
+
+        async function deleteRaceResult(id) {
+            if (!confirm("Are you sure?")) return;
+            try {
+                await db.collection("event_results").doc(id).delete();
+                loadEventResults();
+            } catch (e) {
+                alert("Error deleting: " + e.message);
             }
         }
 
