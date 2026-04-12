@@ -326,123 +326,150 @@ async function loadDynamicContent() {
     console.log("Auth: Querying events with filterTimestamp:", filterTimestamp);
     try {
         const snap = await db.collection("events")
-            .where("startDate", ">=", filterTimestamp)
+            .where("startDate", ">=", "2026-01-01")
             .orderBy("startDate", "asc")
             .get();
         console.log("Auth: Firestore returned snapshot, size:", snap.size);
 
-        const heroTitle = document.getElementById('hero-event-name');
-        const heroSubtitle = document.getElementById('hero-event-subtitle');
-
         if (snap.empty) {
-            console.log("Auth: No upcoming events found.");
+            console.log("Auth: No events found.");
             if (upcomingTrack) upcomingTrack.innerHTML = '<p style="text-align: center; color: var(--text-muted); width: 100%;">No upcoming events scheduled.</p>';
             if (fullEventList) fullEventList.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Stay tuned for future event dates.</p>';
-            
-            // Clear LOADING state from hero
-            if (heroTitle) heroTitle.textContent = "STAY TUNED";
-            if (heroSubtitle) heroSubtitle.textContent = "No Active Events";
         } else {
-            const events = [];
-            snap.forEach(doc => events.push({ id: doc.id, ...doc.data() }));
+            const allEvents = [];
+            snap.forEach(doc => allEvents.push({ id: doc.id, ...doc.data() }));
 
-            // A. Update Home Hero (if on index.html)
-            const nextEvent = events[0];
-            const heroSubtitle = document.getElementById('hero-event-subtitle');
-            const heroTitle = document.getElementById('hero-event-name');
-            const heroLink = document.getElementById('hero-event-link');
-            
             const now = new Date();
-            const startTime = new Date(nextEvent.startDate);
-            const isLive = startTime <= now;
-            
-            if (heroSubtitle) {
-                heroSubtitle.textContent = isLive ? `LIVE NOW: ${nextEvent.name}` : `Next Major Race: ${nextEvent.name}`;
-                if (isLive) heroSubtitle.style.color = '#ff0055'; 
-            }
-            
-            if (heroTitle) {
-                heroTitle.textContent = nextEvent.name.toUpperCase();
-            }
-            
-            if (heroLink) {
-                heroLink.href = staticIds.includes(nextEvent.id) ? `${prefix}events/${nextEvent.id}.html` : `${prefix}events.html?id=${nextEvent.id}`;
-            }
-            
-            updateCountdown(nextEvent.startDate);
+            const lookbackDate = new Date();
+            lookbackDate.setHours(lookbackDate.getHours() - 24);
 
-            // B. Populate Carousel Track (shared)
-            if (upcomingTrack) {
-                upcomingTrack.innerHTML = '';
-                const colors = ['blue', 'pink', 'green'];
-                events.slice(0, 10).forEach((e, i) => {
-                    const tile = document.createElement('a');
-                    
-                    // Priority: If it's a known static page ID, link to it. 
-                    // Otherwise, link to events.html with a query param.
-                    const linkUrl = staticIds.includes(e.id) ? `${prefix}events/${e.id}.html` : `${prefix}events.html?id=${e.id}`;
-                    
-                    tile.href = linkUrl;
-                    tile.className = `race-tile tile-${colors[i % 3]}`;
-                    
-                    const bannerUrl = eventBanners[e.id];
-                    
-                    tile.innerHTML = `
-                        ${bannerUrl ? `<div class="tile-banner" style="background-image: url('${bannerUrl}')"></div>` : ''}
-                        <h3>${e.name.toUpperCase()}</h3>
-                        <div class="race-meta">${e.date}</div>
-                    `;
-                    upcomingTrack.appendChild(tile);
-                });
+            // Filter events
+            const upcomingEvents = allEvents.filter(e => {
+                if (e.endDate) return new Date(e.endDate) >= now;
+                return new Date(e.startDate) >= lookbackDate;
+            });
+
+            const pastEvents = allEvents.filter(e => {
+                if (e.endDate) return new Date(e.endDate) < now;
+                return new Date(e.startDate) < lookbackDate;
+            }).reverse(); // Most recent past events first
+
+            // A. Update Upcoming UI
+            if (upcomingEvents.length === 0) {
+                if (upcomingTrack) upcomingTrack.innerHTML = '<p style="text-align: center; color: var(--text-muted); width: 100%;">No upcoming events scheduled.</p>';
+                if (fullEventList) fullEventList.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Stay tuned for future event dates.</p>';
+            } else {
+                const nextEvent = upcomingEvents[0];
+                const heroSubtitle = document.getElementById('hero-event-subtitle');
+                const heroTitle = document.getElementById('hero-event-name');
+                const heroLink = document.getElementById('hero-event-link');
+                
+                const startTime = new Date(nextEvent.startDate);
+                const isLive = startTime <= now;
+                
+                if (heroSubtitle) {
+                    heroSubtitle.textContent = isLive ? `LIVE NOW: ${nextEvent.name}` : `Next Major Race: ${nextEvent.name}`;
+                    if (isLive) heroSubtitle.style.color = '#ff0055'; 
+                }
+                
+                if (heroTitle) {
+                    heroTitle.textContent = nextEvent.name.toUpperCase();
+                }
+                
+                if (heroLink) {
+                    heroLink.href = staticIds.includes(nextEvent.id) ? `${prefix}events/${nextEvent.id}.html` : `${prefix}events.html?id=${nextEvent.id}`;
+                }
+                
+                updateCountdown(nextEvent.startDate);
+
+                // B. Populate Carousel Track (shared)
+                if (upcomingTrack) {
+                    upcomingTrack.innerHTML = '';
+                    const colors = ['blue', 'pink', 'green'];
+                    upcomingEvents.slice(0, 10).forEach((e, i) => {
+                        const tile = document.createElement('a');
+                        const linkUrl = staticIds.includes(e.id) ? `${prefix}events/${e.id}.html` : `${prefix}events.html?id=${e.id}`;
+                        tile.href = linkUrl;
+                        tile.className = `race-tile tile-${colors[i % 3]}`;
+                        const bannerUrl = eventBanners[e.id];
+                        tile.innerHTML = `
+                            ${bannerUrl ? `<div class="tile-banner" style="background-image: url('${bannerUrl}')"></div>` : ''}
+                            <h3>${e.name.toUpperCase()}</h3>
+                            <div class="race-meta">${e.date}</div>
+                        `;
+                        upcomingTrack.appendChild(tile);
+                    });
+                }
+
+                // C. Populate Full List (if on events.html)
+                if (fullEventList) {
+                    fullEventList.innerHTML = '';
+                    const eventColors = ['var(--primary)', 'var(--secondary)', '#00ff88'];
+                    upcomingEvents.forEach((e, i) => {
+                        const card = document.createElement('div');
+                        card.id = `event-${e.id}`;
+                        card.className = 'glass event-horizontal-card reveal active';
+                        card.style.borderLeft = `4px solid ${eventColors[i % 3]}`;
+                        const linkUrl = staticIds.includes(e.id) ? `events/${e.id}.html` : `events.html?id=${e.id}`;
+                        const bannerUrl = eventBanners[e.id];
+                        card.innerHTML = `
+                            ${bannerUrl ? `<div class="event-card-banner" style="background-image: url('${bannerUrl}')"></div>` : ''}
+                            <div class="event-info">
+                                <h3>${e.name}</h3>
+                                <p class="event-meta">${e.date}</p>
+                                <p class="event-desc">${e.classes ? 'Classes: ' + e.classes.join(', ') : 'Details coming soon.'}</p>
+                            </div>
+                            <div class="event-action">
+                                <a href="${linkUrl}" class="btn btn-outline">Details</a>
+                            </div>
+                        `;
+                        fullEventList.appendChild(card);
+                    });
+
+                    // Handle Deep Linking
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const eventId = urlParams.get('id');
+                    if (eventId) {
+                        setTimeout(() => {
+                            const target = document.getElementById(`event-${eventId}`);
+                            if (target) {
+                                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                target.style.boxShadow = '0 0 30px rgba(0,207,255,0.3)';
+                                target.style.borderColor = 'var(--primary)';
+                            }
+                        }, 500);
+                    }
+                }
             }
 
-            // C. Populate Full List (if on events.html)
-            if (fullEventList) {
-                fullEventList.innerHTML = '';
-                const eventColors = ['var(--primary)', 'var(--secondary)', '#00ff88'];
-                events.forEach((e, i) => {
+            // D. Populate Past List
+            const pastList = document.getElementById('dynamic-past-list');
+            if (pastList) {
+                const hardcodedIds = ['iracing-roar', 'daytona-24', 'daytona-500', 'bathurst-12', 'sebring-12hr'];
+                pastList.innerHTML = '';
+                pastEvents.forEach(e => {
+                    if (hardcodedIds.includes(e.id)) return;
                     const card = document.createElement('div');
-                    card.id = `event-${e.id}`; // Add ID for scrolling
-                    card.className = 'glass event-horizontal-card reveal active';
-                    card.style.borderLeft = `4px solid ${eventColors[i % 3]}`;
-                    
+                    card.className = 'glass event-horizontal-card';
+                    card.style.borderLeft = '4px solid #555';
                     const linkUrl = staticIds.includes(e.id) ? `events/${e.id}.html` : `events.html?id=${e.id}`;
-                    const bannerUrl = eventBanners[e.id];
-
                     card.innerHTML = `
-                        ${bannerUrl ? `<div class="event-card-banner" style="background-image: url('${bannerUrl}')"></div>` : ''}
                         <div class="event-info">
                             <h3>${e.name}</h3>
                             <p class="event-meta">${e.date}</p>
-                            <p class="event-desc">${e.classes ? 'Classes: ' + e.classes.join(', ') : 'Details coming soon.'}</p>
+                            <p class="event-desc">${e.classes ? 'Classes: ' + e.classes.join(', ') : 'Race event completed.'}</p>
                         </div>
                         <div class="event-action">
                             <a href="${linkUrl}" class="btn btn-outline">Details</a>
                         </div>
                     `;
-                    fullEventList.appendChild(card);
+                    pastList.appendChild(card);
                 });
-
-                // Handle Deep Linking (Scroll to event if ID in URL)
-                const urlParams = new URLSearchParams(window.location.search);
-                const eventId = urlParams.get('id');
-                if (eventId) {
-                    setTimeout(() => {
-                        const target = document.getElementById(`event-${eventId}`);
-                        if (target) {
-                            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            target.style.boxShadow = '0 0 30px rgba(0,207,255,0.3)';
-                            target.style.borderColor = 'var(--primary)';
-                        }
-                    }, 500);
-                }
             }
         }
     } catch (error) {
         console.error("Error loading events:", error);
         if (upcomingTrack) upcomingTrack.innerHTML = '<p style="color: #ff0055;">Failed to load schedule.</p>';
-        const heroTitle = document.getElementById('hero-event-name');
-        if (heroTitle) heroTitle.textContent = "SYNC ERROR";
     }
 
     // 2. Load Recent Results (Race Cards)
