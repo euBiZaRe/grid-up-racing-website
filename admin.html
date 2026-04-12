@@ -438,8 +438,8 @@
                 </div>
             </div>
 
-            <!-- Result Cards Management Section -->
-            <div id="section-results" class="tab-content" style="display: none;">
+            <!-- Poster Lab Section -->
+            <div id="section-posters" class="tab-content" style="display: none;">
                 <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start;">
                     <!-- Generator Form -->
                     <div class="glass" style="padding: 2.5rem;">
@@ -582,6 +582,67 @@
                                 <button onclick="triggerWorkflow('update-events.yml')" class="btn btn-primary" style="width: 100%; font-size: 0.8rem;">Trigger Lineup Sync</button>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Race Results Portal Section -->
+        <div id="section-race-results" class="tab-content" style="display: none;">
+            <div class="grid" style="grid-template-columns: 1fr 2fr; gap: 2rem; align-items: start;">
+                <!-- Result Entry Form -->
+                <div class="glass" style="padding: 2.5rem;">
+                    <h3 style="color: var(--primary); margin-bottom: 2rem; font-size: 0.9rem; letter-spacing: 2px;">ADD RACE RESULT</h3>
+                    <div style="display: grid; gap: 1.5rem;">
+                        <div>
+                            <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">EVENT</label>
+                            <select id="result-event-selector" class="btn btn-outline" style="width: 100%; text-align: left; padding: 1rem;" onchange="loadEventResults()">
+                                <option value="">-- Choose Event --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">TEAM NAME</label>
+                            <input type="text" id="result-team-name" class="btn btn-outline" style="width: 100%; text-align: left;" placeholder="e.g. GRiD UP Sim Racing">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div>
+                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">CAR</label>
+                                <input type="text" id="result-car" class="btn btn-outline" style="width: 100%; text-align: left;" placeholder="e.g. Dallara P217">
+                            </div>
+                            <div>
+                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">DRIVERS (Comma separated)</label>
+                                <input type="text" id="result-drivers" class="btn btn-outline" style="width: 100%; text-align: left;" placeholder="Driver 1, Driver 2...">
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div>
+                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">SPLIT</label>
+                                <input type="number" id="result-split" class="btn btn-outline" style="width: 100%; text-align: left;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">SOF</label>
+                                <input type="number" id="result-sof" class="btn btn-outline" style="width: 100%; text-align: left;">
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div>
+                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">QUALY</label>
+                                <input type="text" id="result-qualy" class="btn btn-outline" style="width: 100%; text-align: left;" placeholder="e.g. P1">
+                            </div>
+                            <div>
+                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">FINISH</label>
+                                <input type="text" id="result-finish" class="btn btn-outline" style="width: 100%; text-align: left;" placeholder="e.g. P4">
+                            </div>
+                        </div>
+                        <button onclick="saveRaceResult()" class="btn btn-primary" style="margin-top: 1rem;">SAVE TEAM RESULT</button>
+                    </div>
+                </div>
+
+                <!-- Results List for selected event -->
+                <div class="glass" style="padding: 2.5rem;">
+                    <h3 style="color: var(--primary); margin-bottom: 2rem; font-size: 0.9rem; letter-spacing: 2px;">EVENT RESULTS TABLE</h3>
+                    <div id="admin-results-list" class="grid" style="grid-template-columns: 1fr; gap: 1rem;">
+                        <p style="text-align: center; color: var(--text-muted);">Select an event to view/edit results.</p>
                     </div>
                 </div>
             </div>
