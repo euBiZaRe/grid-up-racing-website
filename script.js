@@ -490,8 +490,10 @@ async function loadDynamicContent() {
 
         if (pageName && mainSection) {
             console.log("Event Page Detected:", pageName, "Loading result data...");
-            // Use last child of main section as the anchor for results
-            const anchor = mainSection.querySelector('.event-section:last-of-type') || mainSection.lastElementChild;
+            // Prioritize a dedicated results anchor if it exists
+            const anchor = document.getElementById('event-results-anchor') || 
+                           mainSection.querySelector('.event-section:last-of-type') || 
+                           mainSection.lastElementChild;
             renderEventResults(pageName, anchor);
         }
     }
