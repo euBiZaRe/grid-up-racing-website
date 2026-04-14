@@ -481,10 +481,18 @@ async function loadDynamicContent() {
     // Auto-detect Event Detail Pages and load results
     if (document.body.classList.contains('event-detail-page')) {
         const pageName = window.location.pathname.split('/').pop().replace('.html', '');
-        const mainSection = document.querySelector('.event-main');
+        const targets = ['.event-main', '.event-details', '.section', 'main'];
+        let mainSection = null;
+        for (const t of targets) {
+            mainSection = document.querySelector(t);
+            if (mainSection) break;
+        }
+
         if (pageName && mainSection) {
             console.log("Event Page Detected:", pageName, "Loading result data...");
-            renderEventResults(pageName, mainSection.lastElementChild);
+            // Use last child of main section as the anchor for results
+            const anchor = mainSection.querySelector('.event-section:last-of-type') || mainSection.lastElementChild;
+            renderEventResults(pageName, anchor);
         }
     }
 
