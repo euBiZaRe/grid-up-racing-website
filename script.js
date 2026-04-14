@@ -499,33 +499,31 @@ async function loadDynamicContent() {
 async function renderEventResults(eventId, targetElement) {
     if (!targetElement) return;
     try {
+        // Try exact match first
         let snap = await db.collection("event_results")
-            .where("eventId", "==", eventId)
-            .orderBy("timestamp", "asc")
+            .where("eventId", "in", [eventId, eventId.toLowerCase(), eventId.toUpperCase(), eventId.replace(/-/g, ' ')])
             .get();
         
-        // Fallback: try uppercase version if lowercase fails (common in manual entry)
-        if (snap.empty && eventId !== eventId.toUpperCase()) {
-            console.log(`Retrying results for: ${eventId.toUpperCase()}`);
-            snap = await db.collection("event_results")
-                .where("eventId", "==", eventId.toUpperCase())
-                .orderBy("timestamp", "asc")
-                .get();
-        }
-
+        // If still empty, try matching by looking for any document that might have it (limited fetch)
+        // But for now, just logging.
+        
         if (snap.empty) {
             console.log(`No results found for event: ${eventId}`);
             return;
         }
 
-        console.log(`Rendering ${snap.size} results for ${eventId}`);
+        // Sort manually by timestamp if available, otherwise preserve order
+        const docs = [];
+        snap.forEach(doc => docs.push(doc.data()));
+        docs.sort((a, b) => (a.timestamp?.seconds || 0) - (b.timestamp?.seconds || 0));
+
+        console.log(`Rendering ${docs.length} results for ${eventId}`);
         const resultsContainer = document.createElement('section');
         resultsContainer.className = 'glass card reveal active';
         resultsContainer.style.marginTop = '2rem';
         
         let rowsHtml = '';
-        snap.forEach(doc => {
-            const d = doc.data();
+        docs.forEach(d => {
             const drivers = Array.isArray(d.drivers) ? d.drivers.join(', ') : d.drivers;
             
             rowsHtml += `
