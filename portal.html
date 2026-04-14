@@ -514,7 +514,15 @@
                 // 0. Load Global Events
                 const eventsSnap = await db.collection("events").orderBy("startDate", "asc").get();
                 UPCOMING_EVENTS = [];
-                eventsSnap.forEach(doc => UPCOMING_EVENTS.push({ id: doc.id, ...doc.data() }));
+                const now = new Date();
+                eventsSnap.forEach(doc => {
+                    const data = doc.data();
+                    const eventEndDate = data.endDate ? new Date(data.endDate) : new Date(data.startDate);
+                    // Filter: Only include events where endDate is in the future
+                    if (eventEndDate >= now) {
+                        UPCOMING_EVENTS.push({ id: doc.id, ...data });
+                    }
+                });
 
                 if (UPCOMING_EVENTS.length === 0) {
                     loading.innerHTML = `<p style="color: var(--text-muted);">No upcoming events found. Please wait for an admin to post the schedule.</p>`;
@@ -864,6 +872,26 @@
         document.getElementById('chat-input').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') sendMessage();
         });
+
+        function injectCredits() {
+            if (document.querySelector('.bizare-credits')) return;
+            const footer = document.querySelector('footer');
+            if (!footer) return;
+            
+            const credits = document.createElement('a');
+            credits.href = 'https://bizare.shop/';
+            credits.target = '_blank';
+            credits.className = 'bizare-credits';
+            credits.innerHTML = 'Created by BiZaRe';
+            footer.appendChild(credits);
+        }
+
+        // Initialize Credits
+        document.addEventListener('DOMContentLoaded', injectCredits);
+        injectCredits(); // Immediate call in case DOM already loaded
     </script>
+    <footer style="padding: 3rem 0; border-top: 1px solid rgba(255,255,255,0.05); text-align: center; margin-top: 4rem;">
+        <p style="color: var(--text-muted); font-size: 0.85rem;">&copy; 2026 Grid Up Sim Racing. Not affiliated with iRacing.com</p>
+    </footer>
 </body>
 </html>

@@ -866,6 +866,7 @@ async function downloadActiveCard() {
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
     initCarousel();
+    injectCredits();
     
     // Poll for Firestore 'db' initialization from auth.js
     const dbCheckInterval = setInterval(() => {
@@ -879,6 +880,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // Safety timeout to avoid infinite polling if Firestore fails
     setTimeout(() => clearInterval(dbCheckInterval), 5000);
 });
+
+function injectCredits() {
+    if (document.querySelector('.bizare-credits')) return;
+    const footer = document.querySelector('footer');
+    if (!footer) return;
+    
+    const credits = document.createElement('a');
+    credits.href = 'https://bizare.shop/';
+    credits.target = '_blank';
+    credits.className = 'bizare-credits';
+    credits.innerHTML = 'Created by BiZaRe';
+    footer.appendChild(credits);
+}
 
 // =============================================
 // WATCH LIVE — Live Stream Feature
@@ -989,3 +1003,7 @@ function closeStreamsModal() {
     if (modal) modal.style.display = 'none';
     document.body.style.overflow = '';
 }
+
+// Initialize Site-Wide Credits
+document.addEventListener('DOMContentLoaded', injectCredits);
+window.addEventListener('load', injectCredits);
