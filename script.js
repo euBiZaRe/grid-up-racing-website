@@ -506,11 +506,24 @@ async function renderEventResults(eventId, targetElement) {
             .where("eventId", "in", [eventId, eventId.toLowerCase(), eventId.toUpperCase(), eventId.replace(/-/g, ' ')])
             .get();
         
-        // If still empty, try matching by looking for any document that might have it (limited fetch)
-        // But for now, just logging.
-        
+        // Deep Fallback: Search the 'events' collection for a name match to find the actual Firestore ID
         if (snap.empty) {
-            console.log(`No results found for event: ${eventId}`);
+            const pageTitle = document.querySelector('h1')?.textContent.trim();
+            if (pageTitle) {
+                console.log(`Trying deep fallback for name: ${pageTitle}`);
+                const eventSearch = await db.collection("events").where("name", "==", pageTitle).get();
+                if (!eventSearch.empty) {
+                    const actualId = eventSearch.docs[0].id;
+                    console.log(`Deep Fallback: Found actual event ID ${actualId} for name "${pageTitle}"`);
+                    snap = await db.collection("event_results")
+                        .where("eventId", "==", actualId)
+                        .get();
+                }
+            }
+        }
+
+        if (snap.empty) {
+            console.log(`No results found for event keyword: ${eventId}`);
             return;
         }
 
