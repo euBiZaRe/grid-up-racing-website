@@ -496,11 +496,14 @@ async function renderEventResults(eventId, targetElement) {
             .orderBy("timestamp", "asc")
             .get();
         
-        if (snap.empty) return;
+        if (snap.empty) {
+            console.log(`No results found for event: ${eventId}`);
+            return;
+        }
 
         console.log(`Rendering ${snap.size} results for ${eventId}`);
-        const resultsContainer = document.createElement('div');
-        resultsContainer.className = 'results-section reveal active';
+        const resultsContainer = document.createElement('section');
+        resultsContainer.className = 'glass card reveal active';
         resultsContainer.style.marginTop = '2rem';
         
         let rowsHtml = '';
@@ -509,35 +512,31 @@ async function renderEventResults(eventId, targetElement) {
             const drivers = Array.isArray(d.drivers) ? d.drivers.join(', ') : d.drivers;
             
             rowsHtml += `
-                <tr>
-                    <td>
-                        <span class="result-team-name">${d.teamName}</span>
-                        <span class="result-car-name">${d.car}</span>
-                        <span class="result-drivers">${drivers}</span>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <td style="padding: 1rem;">
+                        <strong style="color: var(--text);">${d.teamName}</strong><br>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">${d.car}</span><br>
+                        <span style="font-size: 0.75rem; color: var(--text-muted); opacity: 0.6;">${drivers}</span>
                     </td>
-                    <td>
-                        <div class="result-split-info">Split ${d.split || '?'} / ${d.sof || '????'}</div>
+                    <td style="padding: 1rem;">
+                        <span style="color: var(--text-muted);">${d.qualy || '-'}</span>
                     </td>
-                    <td>
-                        <div class="result-qualy ${d.qualy === 'P1' ? 'result-highlight' : ''}">${d.qualy || '-'}</div>
-                    </td>
-                    <td>
-                        <div class="result-finish ${d.finish === 'P1' ? 'result-highlight' : ''}">${d.finish || '-'}</div>
+                    <td style="padding: 1rem;">
+                        <strong style="color: var(--primary); font-weight: 900; font-size: 1.1rem;">${d.finish || '-'}</strong>
                     </td>
                 </tr>
             `;
         });
 
         resultsContainer.innerHTML = `
-            <h2 style="color: var(--primary); margin-bottom: 2rem;">Team Results</h2>
-            <div class="results-table-wrapper">
-                <table class="results-table">
+            <h2 style="color: var(--secondary); margin-bottom: 1.5rem;">Team Results</h2>
+            <div class="results-table-container" style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; color: var(--text-muted); font-size: 0.9rem;">
                     <thead>
-                        <tr>
-                            <th>Team / Car</th>
-                            <th>Split / SoF</th>
-                            <th>Qualy</th>
-                            <th>Finish</th>
+                        <tr style="border-bottom: 1px solid var(--glass-border); text-align: left;">
+                            <th style="padding: 1rem;">Team / Car</th>
+                            <th style="padding: 1rem;">Qualy</th>
+                            <th style="padding: 1rem;">Finish</th>
                         </tr>
                     </thead>
                     <tbody>
