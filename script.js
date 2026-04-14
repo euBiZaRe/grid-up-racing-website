@@ -449,12 +449,13 @@ async function loadDynamicContent() {
             const pastList = document.getElementById('dynamic-past-list');
             if (pastList) {
                 const hardcodedIds = ['iracing-roar', 'daytona-24', 'daytona-500', 'bathurst-12', 'sebring-12hr'];
+                const eventColors = ['var(--primary)', 'var(--secondary)', '#00ff88'];
                 pastList.innerHTML = '';
-                pastEvents.forEach(e => {
+                pastEvents.forEach((e, i) => {
                     if (hardcodedIds.includes(e.id)) return;
                     const card = document.createElement('div');
                     card.className = 'glass event-horizontal-card reveal active';
-                    card.style.borderLeft = '4px solid #555';
+                    card.style.borderLeft = `4px solid ${eventColors[(i + hardcodedIds.length) % 3]}`;
                     const linkUrl = staticIds.includes(e.id) ? `events/${e.id}.html` : `events.html?id=${e.id}`;
                     const bannerUrl = eventBanners[e.id];
                     card.innerHTML = `
