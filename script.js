@@ -478,7 +478,18 @@ async function loadDynamicContent() {
         if (upcomingTrack) upcomingTrack.innerHTML = '<p style="color: #ff0055;">Failed to load schedule.</p>';
     }
 
-    async function renderEventResults(eventId, targetElement) {
+    // Auto-detect Event Detail Pages and load results
+    if (document.body.classList.contains('event-detail-page')) {
+        const pageName = window.location.pathname.split('/').pop().replace('.html', '');
+        const mainSection = document.querySelector('.event-main');
+        if (pageName && mainSection) {
+            console.log("Event Page Detected:", pageName, "Loading result data...");
+            renderEventResults(pageName, mainSection.lastElementChild);
+        }
+    }
+
+async function renderEventResults(eventId, targetElement) {
+    if (!targetElement) return;
     try {
         const snap = await db.collection("event_results")
             .where("eventId", "==", eventId)
@@ -487,6 +498,7 @@ async function loadDynamicContent() {
         
         if (snap.empty) return;
 
+        console.log(`Rendering ${snap.size} results for ${eventId}`);
         const resultsContainer = document.createElement('div');
         resultsContainer.className = 'results-section reveal active';
         resultsContainer.style.marginTop = '2rem';
