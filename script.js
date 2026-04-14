@@ -453,10 +453,12 @@ async function loadDynamicContent() {
                 pastEvents.forEach(e => {
                     if (hardcodedIds.includes(e.id)) return;
                     const card = document.createElement('div');
-                    card.className = 'glass event-horizontal-card';
+                    card.className = 'glass event-horizontal-card reveal active';
                     card.style.borderLeft = '4px solid #555';
                     const linkUrl = staticIds.includes(e.id) ? `events/${e.id}.html` : `events.html?id=${e.id}`;
+                    const bannerUrl = eventBanners[e.id];
                     card.innerHTML = `
+                        ${bannerUrl ? `<div class="event-card-banner" style="background-image: url('${bannerUrl}')"></div>` : ''}
                         <div class="event-info">
                             <h3>${e.name}</h3>
                             <p class="event-meta">${e.date}</p>
