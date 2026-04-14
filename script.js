@@ -352,7 +352,7 @@ async function loadDynamicContent() {
             const pastEvents = allEvents.filter(e => {
                 if (e.endDate) return new Date(e.endDate) < now;
                 return new Date(e.startDate) < lookbackDate;
-            }).reverse(); // Most recent past events first
+            }); // Oldest first
 
             // A. Update Upcoming UI
             if (upcomingEvents.length === 0) {
