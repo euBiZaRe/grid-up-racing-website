@@ -499,11 +499,20 @@ async function loadDynamicContent() {
 async function renderEventResults(eventId, targetElement) {
     if (!targetElement) return;
     try {
-        const snap = await db.collection("event_results")
+        let snap = await db.collection("event_results")
             .where("eventId", "==", eventId)
             .orderBy("timestamp", "asc")
             .get();
         
+        // Fallback: try uppercase version if lowercase fails (common in manual entry)
+        if (snap.empty && eventId !== eventId.toUpperCase()) {
+            console.log(`Retrying results for: ${eventId.toUpperCase()}`);
+            snap = await db.collection("event_results")
+                .where("eventId", "==", eventId.toUpperCase())
+                .orderBy("timestamp", "asc")
+                .get();
+        }
+
         if (snap.empty) {
             console.log(`No results found for event: ${eventId}`);
             return;
