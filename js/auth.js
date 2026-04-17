@@ -1,8 +1,6 @@
 // Grid Up - Authentication & Profile Claiming Engine
 // Powered by Firebase
 
-// NOTE: Replace these with your actual Firebase project config from the Firebase Console
-// Official Grid Up Firebase Configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAomPdMD_IrBw52m0Nc2l-cuDKNmH_qqAk",
   authDomain: "gridup.online",
@@ -13,20 +11,17 @@ const firebaseConfig = {
   measurementId: "G-956CFQ680Q"
 };
 
-// Initialize Firebase (Immediately)
-console.log("Grid Up Auth: Initializing Firebase...");
-try {
-    if (typeof firebase !== 'undefined') {
-        firebase.initializeApp(firebaseConfig);
-        var auth = firebase.auth();
-        var db = firebase.firestore();
-        console.log("Grid Up Auth: Firebase initialized successfully.");
-    } else {
-        console.error("Grid Up Auth: Firebase SDK NOT FOUND!");
-    }
-} catch (e) {
-    console.error("Grid Up Auth: Initialization Error", e);
+// Initialize Firebase
+if (typeof firebase !== 'undefined') {
+    firebase.initializeApp(firebaseConfig);
+    var auth = firebase.auth();
+    var db = firebase.firestore();
 }
+
+// Global Auth State
+let AUTH_USER = null;
+let IS_ADMIN = false;
+let IS_VERIFIED = false;
 
 // --- GLOBAL STYLES FOR SOCIALS ---
 if (typeof document !== 'undefined' && !document.getElementById('social-styles')) {
@@ -57,15 +52,72 @@ if (typeof document !== 'undefined' && !document.getElementById('social-styles')
 }
 
 function initAuth() {
-    // Listen for Auth State changes
-    auth.onAuthStateChanged((user) => {
+    console.log("Grid Up Auth: Initializing Listener...");
+    auth.onAuthStateChanged(async (user) => {
         console.log("Auth State Changed. User:", user ? user.uid : "None");
+        AUTH_USER = user;
+        
         if (user) {
+            // 1. Immediate UI update with what we know
             updateAuthUI(user);
+            
+            // 2. Background Enrichment (Admin/Verification)
+            enrichAuthData(user);
         } else {
             updateAuthUI(null);
+            handleLogOutRedirect();
+        }
+
+        // Trigger page-specific hooks if they exist
+        if (typeof onAuthReady === 'function') {
+            onAuthReady(user);
         }
     });
+}
+
+async function enrichAuthData(user) {
+    // Check for Admin status (Master + Firestore)
+    const MASTER_ADMIN = 'B0t4f4nqqpZIQKpT8Ed97xka5gM2';
+    IS_ADMIN = (user.uid === MASTER_ADMIN);
+    
+    if (!IS_ADMIN && db) {
+        try {
+            const adminDoc = await db.collection("settings").doc("admins").get();
+            if (adminDoc.exists) {
+                const admins = adminDoc.data().uids || [];
+                IS_ADMIN = admins.includes(user.uid);
+            }
+        } catch (e) { console.warn("Admin Check Error:", e); }
+    }
+
+    // Check for Verification
+    try {
+        const claimSnapshot = await db.collection("claims").where("discordId", "==", user.uid).get();
+        if (!claimSnapshot.empty && claimSnapshot.docs[0].data().status === 'verified') {
+            IS_VERIFIED = true;
+        }
+    } catch (e) { console.warn("Verification Check Error:", e); }
+
+    // Re-update UI with enriched data
+    updateAuthUI(user);
+    
+    // Trigger page-specific data hooks
+    if (typeof onAuthEnriched === 'function') {
+        onAuthEnriched(user, { isAdmin: IS_ADMIN, isVerified: IS_VERIFIED });
+    }
+}
+
+function handleLogOutRedirect() {
+    const protectedPages = ['admin.html', 'portal.html', 'profile.html'];
+    const pathParts = window.location.pathname.split('/');
+    const currentPage = pathParts[pathParts.length - 1];
+    
+    if (protectedPages.includes(currentPage)) {
+        // Handle subdirectory relative path
+        const isSubdir = window.location.pathname.includes('/events/') || window.location.pathname.includes('/drivers/');
+        const basePath = isSubdir ? "../" : "";
+        window.location.href = basePath + "login.html";
+    }
 }
 
 // Discord Login Flow
@@ -87,50 +139,14 @@ async function updateAuthUI(user) {
     const claimSection = document.getElementById('claim-section');
     const driverTitle = document.querySelector('h1.glow-text');
 
-    // Auto-detect relative path prefix based on depth
+    // Auto-detect relative path prefix
     const isSubdir = window.location.pathname.includes('/events/') || window.location.pathname.includes('/drivers/');
     const basePath = isSubdir ? "../" : "";
 
     if (user) {
-        console.log("Updating UI for logged-in user:", user.uid);
-        
-        // Check for Admin status (Master + Firestore)
-        const MASTER_ADMIN = 'B0t4f4nqqpZIQKpT8Ed97xka5gM2';
-        let isAdmin = (user.uid === MASTER_ADMIN);
-        if (!isAdmin && db) {
-            try {
-                const adminDoc = await db.collection("settings").doc("admins").get();
-                if (adminDoc.exists) {
-                    const admins = adminDoc.data().uids || [];
-                    isAdmin = admins.includes(user.uid);
-                }
-            } catch (e) { console.warn("Admin Check Error:", e); }
-        }
-
-        // Check for Verification
-        let isVerified = false;
-        try {
-            const claimSnapshot = await db.collection("claims").where("discordId", "==", user.uid).get();
-            if (!claimSnapshot.empty && claimSnapshot.docs[0].data().status === 'verified') {
-                isVerified = true;
-            }
-        } catch (e) { console.warn("Verification Check Error:", e); }
-
         let avatar = user.photoURL || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
         
-        // Fetch custom avatar from Firestore if it exists
-        if (db) {
-            try {
-                const userDoc = await db.collection("users").doc(user.uid).get();
-                if (userDoc.exists && userDoc.data().customAvatarUrl) {
-                    avatar = userDoc.data().customAvatarUrl;
-                }
-            } catch (e) {
-                console.warn("Auth: Error fetching custom avatar:", e);
-            }
-        }
-        
-        // A. Handle Navbar UI (Replace #login-link or Append to .nav-links)
+        // A. Handle Navbar UI
         const navLinks = document.querySelector('.nav-links');
         if (loginBtn || navLinks) {
             let container = document.getElementById('navbar-user-ui');
@@ -143,8 +159,7 @@ async function updateAuthUI(user) {
                 container.style.gap = "8px";
             }
 
-            // Construct Inner HTML (Admin is REMOVED from navbar, moved to Profile)
-            const portalLink = (isVerified || isAdmin) ? `<a href="${basePath}portal.html" class="btn btn-primary" style="background: var(--secondary); padding: 0.4rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border-radius: 4px;">Portal</a>` : '';
+            const portalLink = (IS_VERIFIED || IS_ADMIN) ? `<a href="${basePath}portal.html" class="btn btn-primary" style="background: var(--secondary); padding: 0.4rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border-radius: 4px;">Portal</a>` : '';
             const profileLink = `<a href="${basePath}profile.html" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border-radius: 4px;">Profile</a>`;
             const logoutBtn = `<a href="#" onclick="if(confirm('Logout?')) firebase.auth().signOut()" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border-color: rgba(255,255,255,0.15); border-radius: 4px;"><img src="${avatar}" style="width: 16px; height: 16px; border-radius: 50%; vertical-align: middle; margin-right: 5px;"> Logout</a>`;
 
@@ -152,10 +167,10 @@ async function updateAuthUI(user) {
             
             if (loginBtn) {
                 loginBtn.replaceWith(container);
-            } else if (navLinks && !document.getElementById('navbar-user-ui')) {
-                // Check if navLinks is a list or a div
+            } else if (!document.getElementById('navbar-user-ui')) {
                 if (navLinks.tagName === 'UL' || navLinks.tagName === 'OL') {
                     const li = document.createElement('li');
+                    li.id = "navbar-user-li";
                     li.appendChild(container);
                     navLinks.appendChild(li);
                 } else {
@@ -166,45 +181,35 @@ async function updateAuthUI(user) {
 
         // B. Handle Profile Page Admin Button
         const adminProfileBtn = document.getElementById('admin-dashboard-btn');
-        if (adminProfileBtn && isAdmin) {
-            adminProfileBtn.style.display = 'inline-block';
+        if (adminProfileBtn) {
+            adminProfileBtn.style.display = IS_ADMIN ? 'inline-block' : 'none';
             adminProfileBtn.href = `${basePath}admin.html`;
         }
         
-        // C. Handle Driver Profile logic (Claim checking)
+        // C. Profile Claim status check
         if (claimSection && driverTitle) {
-            const driverName = driverTitle.textContent.trim();
-            checkClaimStatus(driverName, user);
+            checkClaimStatus(driverTitle.textContent.trim(), user);
         }
     } else {
         // Logged Out State
-        const navLinks = document.querySelector('.nav-links');
         const userUI = document.getElementById('navbar-user-ui');
+        const userLI = document.getElementById('navbar-user-li');
+        if (userUI) userUI.remove();
+        if (userLI) userLI.remove();
 
-        if (loginBtn) {
-            loginBtn.textContent = "Login";
-            loginBtn.href = `${basePath}login.html`;
-            loginBtn.onclick = null;
-        } else if (navLinks && !userUI) {
+        const navLinks = document.querySelector('.nav-links');
+        if (!document.getElementById('login-link') && navLinks) {
+            const loginHtml = `<a href="${basePath}login.html" id="login-link" class="btn btn-outline" style="padding: 0.5rem 1.25rem; font-size: 0.8rem; margin-left: 1rem;">Login</a>`;
             if (navLinks.tagName === 'UL' || navLinks.tagName === 'OL') {
                 const li = document.createElement('li');
-                li.innerHTML = `<a href="${basePath}login.html" id="login-link" class="btn btn-outline" style="padding: 0.5rem 1.25rem; font-size: 0.8rem; margin-left: 1rem;">Login</a>`;
+                li.innerHTML = loginHtml;
                 navLinks.appendChild(li);
             } else {
-                const a = document.createElement('a');
-                a.href = `${basePath}login.html`;
-                a.id = "login-link";
-                a.className = "btn btn-outline";
-                a.style.padding = "0.5rem 1.25rem";
-                a.style.fontSize = "0.8rem";
-                a.style.marginLeft = "1rem";
-                a.textContent = "Login";
-                navLinks.appendChild(a);
+                navLinks.insertAdjacentHTML('beforeend', loginHtml);
             }
         }
         
         if (claimSection) claimSection.style.display = 'none';
-        if (userUI) userUI.remove();
     }
 }
 
@@ -215,37 +220,27 @@ async function checkClaimStatus(driverName, user) {
     
     console.log("Checking claim status for:", driverName);
 
-    // Ensure db is initialized (it should be, but let's be safe)
     if (!db) {
-        console.warn("Firestore not ready, retrying in 500ms...");
         setTimeout(() => checkClaimStatus(driverName, user), 500);
         return;
     }
 
     try {
         const docSnapshot = await db.collection("claims").doc(driverName).get();
-        console.log("Claim Doc Exists:", docSnapshot.exists);
-        
         claimSection.style.display = 'block';
         
         if (docSnapshot.exists) {
             const data = docSnapshot.data();
-            console.log("Claim Status:", data.status);
-            
             if (data.status === "verified") {
-                const displayName = data.discordName || "Verified Driver";
                 claimSection.innerHTML = `<div class="badge-verified" style="background: rgba(0, 207, 255, 0.1); color: var(--primary); padding: 0.75rem 1.5rem; border: 1px solid var(--primary); border-radius: 4px; display: inline-block; font-weight: 700;">✓ VERIFIED TEAM MEMBER</div>`;
             } else {
                 claimSection.innerHTML = `<div class="badge-pending" style="background: rgba(255, 255, 255, 0.05); color: var(--text-muted); padding: 0.75rem 1.5rem; border: 1px solid var(--glass-border); border-radius: 4px; display: inline-block;">CLAIM PENDING VERIFICATION</div>`;
             }
         } else {
-            // No claim exists, show the button
-            console.log("Showing claim button for:", driverName);
             claimSection.innerHTML = `<button class="btn btn-outline claim-btn" onclick="openClaimModal()" style="font-size: 0.75rem; padding: 0.6rem 1.5rem;">Claim This Driver Profile</button>`;
         }
     } catch (error) {
         console.error("Error checking claim status:", error);
-        // Fallback to showing the button if error
         claimSection.style.display = 'block';
         claimSection.innerHTML = `<button class="btn btn-outline claim-btn" onclick="openClaimModal()" style="font-size: 0.75rem; padding: 0.6rem 1.5rem;">Claim This Driver Profile</button>`;
     }
@@ -257,7 +252,6 @@ async function claimProfile(driverName, iracingId) {
     if (!user) return alert("Please login first.");
 
     try {
-        // Fetch current profile data to get the custom driverName
         const userDoc = await db.collection("users").doc(user.uid).get();
         const userData = userDoc.exists ? userDoc.data() : {};
         
@@ -268,14 +262,13 @@ async function claimProfile(driverName, iracingId) {
         await db.collection("claims").doc(driverName).set({
             discordId: user.uid,
             discordName: discordName,
-            driverIdentity: driverIdentity, // Store the custom name if set
+            driverIdentity: driverIdentity,
             avatar: avatar,
             iracingId: iracingId,
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
             status: "pending"
         });
         alert("Claim request sent! An admin will verify your identity shortly.");
-        // Refresh UI state
         updateAuthUI(user);
     } catch (error) {
         console.error("Error claiming profile:", error);
@@ -285,20 +278,16 @@ async function claimProfile(driverName, iracingId) {
 
 // Race Lineup Dynamic Loading
 async function loadRaceLineup(slug) {
-    console.log("Loading race lineup for:", slug);
     if (!db) {
         setTimeout(() => loadRaceLineup(slug), 500);
         return;
     }
 
     try {
-        console.log("Auth: Fetching lineup for slug:", slug);
         const doc = await db.collection("race_lineups").doc(slug).get();
         if (doc.exists && doc.data().teams) {
             const teams = doc.data().teams;
-            console.log("Auth: Lineup found! Team count:", teams.length);
             
-            // Collect all unique driver names to fetch their profiles
             const allDriverNames = new Set();
             teams.forEach(t => {
                 if (t.captain) allDriverNames.add(t.captain);
@@ -307,7 +296,6 @@ async function loadRaceLineup(slug) {
             
             const profileMap = {};
             if (allDriverNames.size > 0) {
-                // Fetch profiles in batches of 10 (Firestore 'in' query limit)
                 const nameArray = Array.from(allDriverNames);
                 const batches = [];
                 for (let i = 0; i < nameArray.length; i += 10) {
@@ -323,7 +311,6 @@ async function loadRaceLineup(slug) {
                 }
             }
             
-            // Helper to render driver with socials
             const renderDriver = (name) => {
                 const p = profileMap[name];
                 let socialHtml = `<span class="social-links-lineup">`;
@@ -342,7 +329,6 @@ async function loadRaceLineup(slug) {
                 return `${name}${socialHtml}`;
             };
 
-            // Find the LINEUP_START and LINEUP_END markers to replace content
             const searchRoot = document.getElementById('confirmed-lineup') || document.body;
             const iterator = document.createNodeIterator(searchRoot, NodeFilter.SHOW_COMMENT);
             let startNode, endNode;
@@ -352,10 +338,8 @@ async function loadRaceLineup(slug) {
                 if (node.textContent.trim() === "LINEUP_END") endNode = node;
                 node = iterator.nextNode();
             }
-            console.log("Auth: Markers found:", !!startNode, !!endNode);
 
             if (startNode && endNode) {
-                // Clear content between markers
                 let current = startNode.nextSibling;
                 while (current && current !== endNode) {
                     let next = current.nextSibling;
@@ -363,12 +347,10 @@ async function loadRaceLineup(slug) {
                     current = next;
                 }
 
-                // Insert new HTML
                 const fragment = document.createDocumentFragment();
                 const tempDiv = document.createElement('div');
                 
                 if (teams.length === 0) {
-                    // Show placeholders for the 5 standard teams
                     const standardTeams = ["GRiD UP Sim Racing", "GRiD UP Black", "GRiD UP White", "GRiD UP Blue", "GRiD UP Red"];
                     let html = "";
                     standardTeams.forEach(name => {
@@ -380,7 +362,6 @@ async function loadRaceLineup(slug) {
                     });
                     tempDiv.innerHTML = html;
                 } else {
-                    // SHOW EVERYTHING: Iterate through all teams saved in Firestore
                     let html = "";
                     teams.forEach(team => {
                         html += `
@@ -390,22 +371,12 @@ async function loadRaceLineup(slug) {
                             </div>
                             <ul style="list-style: none; margin-top: 0.5rem; padding-left: 1rem; border-left: 2px solid var(--primary);">
                         `;
-                        
-                        // Render Captain
-                        if (team.captain) {
-                            html += `<li>${renderDriver(team.captain)} (C)</li>`;
-                        }
-                        
-                        // Render Roster
-                        if (team.drivers && team.drivers.length > 0) {
+                        if (team.captain) html += `<li>${renderDriver(team.captain)} (C)</li>`;
+                        if (team.drivers) {
                             team.drivers.forEach(driver => {
-                                // Don't duplicate if driver is also captain
-                                if (driver !== team.captain) {
-                                    html += `<li>${renderDriver(driver)}</li>`;
-                                }
+                                if (driver !== team.captain) html += `<li>${renderDriver(driver)}</li>`;
                             });
                         }
-                        
                         html += `</ul>`;
                     });
                     tempDiv.innerHTML = html;
@@ -416,8 +387,6 @@ async function loadRaceLineup(slug) {
                 }
                 startNode.parentNode.insertBefore(fragment, endNode);
             }
-        } else {
-            console.warn("Auth: No lineup record exists for slug:", slug);
         }
     } catch (error) {
         console.error("Error loading lineup from Firestore:", error);

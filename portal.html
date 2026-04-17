@@ -859,14 +859,12 @@
             }
         }
 
-        // Auth Listener
-        firebase.auth().onAuthStateChanged((user) => {
+        // Consolidated Auth Hook from auth.js
+        function onAuthReady(user) {
             if (user) {
                 initPortal(user);
-            } else {
-                window.location.href = "login.html";
             }
-        });
+        }
 
         // Enter key for chat
         document.getElementById('chat-input').addEventListener('keypress', (e) => {

@@ -497,13 +497,12 @@
         }
 
 
-        firebase.auth().onAuthStateChanged((user) => {
+        // Consolidated Auth Hook from auth.js
+        function onAuthReady(user) {
             if (user) {
                 loadUserProfile(user);
-            } else {
-                window.location.href = "login.html";
             }
-        });
+        }
     </script>
 </body>
 </html>

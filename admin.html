@@ -880,7 +880,10 @@
                             <div style="font-size: 0.7rem; color: var(--primary); font-weight: 700; text-transform: uppercase;">${event.date}</div>
                             <div style="font-size: 0.6rem; color: var(--text-muted); font-family: monospace;">${event.id}</div>
                         </div>
-                        <h4 style="margin-bottom: 1rem;">${event.name}</h4>
+                        <h4 style="margin-bottom: 0.5rem;">${event.name}</h4>
+                        <div style="font-size: 0.65rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem;">
+                            ${event.type || 'Standard'} // ${event.distance || 'Sprint'}
+                        </div>
                         <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 2rem;">
                             Classes: ${event.classes ? event.classes.join(', ') : 'None'}
                         </div>
@@ -2102,56 +2105,39 @@
             }
         }
 
-        firebase.auth().onAuthStateChanged(async (user) => {
+        // Consolidated Auth Hook from auth.js
+        function onAuthEnriched(user, data) {
             const adminHub = document.getElementById('admin-hub');
             const accessDenied = document.getElementById('access-denied');
             const userInfo = document.getElementById('admin-user-info');
 
-
-
-            if (user) {
-                const MASTER_ADMIN = 'B0t4f4nqqpZIQKpT8Ed97xka5gM2';
-                let isAdmin = (user.uid === MASTER_ADMIN);
+            if (user && data.isAdmin) {
+                adminHub.style.display = 'block';
+                accessDenied.style.display = 'none';
+                const adminName = user.displayName || user.email || user.uid;
+                userInfo.textContent = `Logged in as Admin: ${adminName}`;
                 
-                if (!isAdmin && db) {
-                    try {
-                        const adminDoc = await db.collection("settings").doc("admins").get();
-                        if (adminDoc.exists) {
-                            const adminList = adminDoc.data().uids || [];
-                            isAdmin = adminList.includes(user.uid);
-                        }
-                    } catch (e) {
-                        console.error("Error reading admin list:", e);
-                    }
-                }
-
-                if (isAdmin) {
-                    adminHub.style.display = 'block';
-                    accessDenied.style.display = 'none';
-                    const adminName = user.displayName || user.email || user.uid;
-                    userInfo.textContent = `Logged in as Admin: ${adminName}`;
-                    
-                    // NEW: Ensure events are loaded immediately for all tabs
+                // Load events if not already done
+                if (UPCOMING_EVENTS.length === 0) {
                     loadEvents(); 
-                    
-                    switchTab('claims');
-                    loadClaims();
-
-                    // Load saved PAT
-                    const savedPat = localStorage.getItem('gridup_github_pat');
-                    if (savedPat) {
-                        const patInput = document.getElementById('github-pat');
-                        if (patInput) patInput.value = savedPat;
-                    }
-                } else {
-                    adminHub.style.display = 'none';
-                    accessDenied.style.display = 'block';
+                }
+                
+                // If on a tab that needs loading, load it
+                const activeTab = document.querySelector('.portal-tab.active')?.id || 'tab-claims';
+                if (activeTab === 'tab-claims') loadClaims();
+                
+                // Load saved PAT
+                const savedPat = localStorage.getItem('gridup_github_pat');
+                if (savedPat) {
+                    const patInput = document.getElementById('github-pat');
+                    if (patInput) patInput.value = savedPat;
                 }
             } else {
                 adminHub.style.display = 'none';
                 accessDenied.style.display = 'block';
+                if (userInfo) userInfo.textContent = "...";
             }
-        });
+        }
         // ==========================================
         // Live Streams Management
         // ==========================================
