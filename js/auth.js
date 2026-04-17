@@ -23,6 +23,34 @@ let AUTH_USER = null;
 let IS_ADMIN = false;
 let IS_VERIFIED = false;
 
+// FAST-PATH: Restore UI from cache immediately to prevent flash
+(function restoreCachedUI() {
+    try {
+        const cached = localStorage.getItem('gridup_auth_cache');
+        if (cached) {
+            const data = JSON.parse(cached);
+            // Wait for DOM to be ready to update UI safely
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', () => {
+                    IS_ADMIN = data.isAdmin;
+                    IS_VERIFIED = data.isVerified;
+                    updateAuthUI(data.user, true);
+                });
+            } else {
+                IS_ADMIN = data.isAdmin;
+                IS_VERIFIED = data.isVerified;
+                updateAuthUI(data.user, true);
+            }
+        } else {
+            // No cache: hide login link by default to prevent flash if we might be logged in
+            const style = document.createElement('style');
+            style.id = 'auth-flash-prevention';
+            style.textContent = '#login-link { visibility: hidden !important; }';
+            document.head.appendChild(style);
+        }
+    } catch (e) { console.error("Cache Restore Error:", e); }
+})();
+
 // --- GLOBAL STYLES FOR SOCIALS ---
 if (typeof document !== 'undefined' && !document.getElementById('social-styles')) {
     const style = document.createElement('style');
@@ -55,15 +83,29 @@ function initAuth() {
     console.log("Grid Up Auth: Initializing Listener...");
     auth.onAuthStateChanged(async (user) => {
         console.log("Auth State Changed. User:", user ? user.uid : "None");
+        
+        // Remove flash prevention once we know the actual state
+        const flashStyle = document.getElementById('auth-flash-prevention');
+        if (flashStyle) flashStyle.remove();
+
         AUTH_USER = user;
         
         if (user) {
-            // 1. Immediate UI update with what we know
+            // Update cache with basic user info
+            const cached = JSON.parse(localStorage.getItem('gridup_auth_cache') || '{}');
+            localStorage.setItem('gridup_auth_cache', JSON.stringify({
+                user: { uid: user.uid, photoURL: user.photoURL, displayName: user.displayName },
+                isAdmin: cached.isAdmin || false,
+                isVerified: cached.isVerified || false
+            }));
+
+            // 1. Immediate UI update
             updateAuthUI(user);
             
             // 2. Background Enrichment (Admin/Verification)
             enrichAuthData(user);
         } else {
+            localStorage.removeItem('gridup_auth_cache');
             updateAuthUI(null);
             handleLogOutRedirect();
         }
@@ -100,6 +142,13 @@ async function enrichAuthData(user) {
 
     // Re-update UI with enriched data
     updateAuthUI(user);
+
+    // Save enriched state to cache
+    localStorage.setItem('gridup_auth_cache', JSON.stringify({
+        user: { uid: user.uid, photoURL: user.photoURL, displayName: user.displayName },
+        isAdmin: IS_ADMIN,
+        isVerified: IS_VERIFIED
+    }));
     
     // Trigger page-specific data hooks
     if (typeof onAuthEnriched === 'function') {
@@ -134,7 +183,7 @@ function loginWithDiscord() {
 }
 
 // Update UI based on Login State
-async function updateAuthUI(user) {
+async function updateAuthUI(user, isTentative = false) {
     const loginBtn = document.getElementById('login-link');
     const claimSection = document.getElementById('claim-section');
     const driverTitle = document.querySelector('h1.glow-text');
