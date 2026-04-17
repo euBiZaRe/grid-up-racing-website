@@ -407,6 +407,14 @@
                         <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">CAR CLASSES (Comma separated)</label>
                         <input type="text" id="edit-event-classes" class="btn btn-outline" style="width:100%; text-align:left;" placeholder="e.g. GT3, GT4">
                     </div>
+                    <div>
+                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">RACE TYPE</label>
+                        <input type="text" id="edit-event-type" class="btn btn-outline" style="width:100%; text-align:left;" placeholder="e.g. Team Event (Multi-Class)">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">RACE DISTANCE</label>
+                        <input type="text" id="edit-event-distance" class="btn btn-outline" style="width:100%; text-align:left;" placeholder="e.g. 500 Miles / 24 Hours">
+                    </div>
                 </div>
                 <div style="margin-top: 3rem; display: flex; gap: 1rem;">
                     <button onclick="saveEvent()" class="btn btn-primary" style="flex: 2;">Save Event</button>
@@ -845,7 +853,16 @@
             try {
                 const snapshot = await db.collection("events").orderBy("startDate", "asc").get();
                 UPCOMING_EVENTS = [];
-                snapshot.forEach(doc => UPCOMING_EVENTS.push({ id: doc.id, ...doc.data() }));
+                const now = new Date();
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const endDate = data.endDate ? new Date(data.endDate) : null;
+                    // Filter out past events
+                    if (!endDate || endDate > now) {
+                        UPCOMING_EVENTS.push({ id: doc.id, ...data });
+                    }
+                });
 
                 if (UPCOMING_EVENTS.length === 0) {
                     list.innerHTML = '';
@@ -972,6 +989,8 @@
             }
 
             document.getElementById('edit-event-classes').value = event && event.classes ? event.classes.join(', ') : 'GT3, GTP, LMP2';
+            document.getElementById('edit-event-type').value = event ? (event.type || '') : '';
+            document.getElementById('edit-event-distance').value = event ? (event.distance || '') : '';
             
             document.getElementById('modal-title').textContent = event ? 'Edit Event' : 'Create New Event';
             document.getElementById('event-modal').style.display = 'block';
@@ -991,6 +1010,8 @@
             const startStr = document.getElementById('edit-event-start').value;
             const endStr = document.getElementById('edit-event-end').value;
             const classesRaw = document.getElementById('edit-event-classes').value.trim();
+            const type = document.getElementById('edit-event-type').value.trim();
+            const distance = document.getElementById('edit-event-distance').value.trim();
 
             if (!id || !name || !dateStr || !startStr) return alert("Please fill all required fields.");
 
@@ -1008,6 +1029,8 @@
                 startDate: new Date(startStr).toISOString(),
                 endDate: endStr ? new Date(endStr).toISOString() : null,
                 classes: classesRaw.split(',').map(c => c.trim()).filter(c => c),
+                type: type,
+                distance: distance,
                 slots: IMSA_SLOTS // For now, we use standard slots for all
             };
 

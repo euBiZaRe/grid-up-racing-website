@@ -5,7 +5,7 @@
 // Official Grid Up Firebase Configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAomPdMD_IrBw52m0Nc2l-cuDKNmH_qqAk",
-  authDomain: "grid-up.firebaseapp.com",
+  authDomain: "gridup.online",
   projectId: "grid-up",
   storageBucket: "grid-up.firebasestorage.app",
   messagingSenderId: "649006432736",

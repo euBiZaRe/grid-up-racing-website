@@ -1534,3 +1534,20 @@ footer {
         order: 1; /* Move back to bottom on mobile */
     }
 }
+
+/* Event Detail Sidebar Enhancements */
+.sidebar-card {
+    padding: 1.5rem !important; /* Give more horizontal breathing room */
+}
+
+.sidebar-card ul li {
+    word-break: break-word; /* Ensure extremely long classes don't break layout */
+    overflow-wrap: break-word;
+}
+
+@media (max-width: 768px) {
+    .sidebar-card {
+        padding: 1.25rem !important;
+    }
+}
+

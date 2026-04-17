@@ -935,7 +935,7 @@ function getEmbedUrl(url) {
     try {
         if (url.includes('twitch.tv')) {
             const channel = url.split('twitch.tv/')[1].split('/')[0].split('?')[0];
-            const parentDomain = window.location.hostname || 'eubizare.github.io';
+            const parentDomain = window.location.hostname || 'gridup.online';
             embedUrl = `https://player.twitch.tv/?channel=${channel}&parent=${parentDomain}`;
         } else if (url.includes('youtube.com/watch')) {
             const videoId = new URL(url).searchParams.get('v');
