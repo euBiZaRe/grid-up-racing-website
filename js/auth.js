@@ -3,7 +3,7 @@
 
 const firebaseConfig = {
   apiKey: "AIzaSyAomPdMD_IrBw52m0Nc2l-cuDKNmH_qqAk",
-  authDomain: "gridup.online",
+  authDomain: "grid-up.firebaseapp.com",
   projectId: "grid-up",
   storageBucket: "grid-up.firebasestorage.app",
   messagingSenderId: "649006432736",

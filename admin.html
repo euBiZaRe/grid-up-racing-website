@@ -556,41 +556,48 @@
             <!-- System Sync Section -->
             <div id="section-system" class="tab-content" style="display: none;">
                 <div class="grid" style="grid-template-columns: 1fr 2fr; gap: 2rem;">
-                    <!-- Token Management -->
+                    <!-- Status & Documentation -->
                     <div class="glass" style="padding: 2.5rem;">
-                        <h3 style="color: var(--primary); margin-bottom: 2rem;">GitHub API Authentication</h3>
+                        <h3 style="color: var(--primary); margin-bottom: 2rem;">Background Sync Status</h3>
                         <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.6;">
-                            A <strong>GitHub Personal Access Token (PAT)</strong> is required to trigger manual syncs.
+                            Syncs are now managed automatically. Clicking a trigger button will schedule a background task that completes within <strong>15-30 minutes</strong>.
                         </p>
-                        <div style="display: grid; gap: 1.5rem;">
-                            <div>
-                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">GITHUB PAT</label>
-                                <input type="password" id="github-pat" class="btn btn-outline" style="width: 100%; text-align: left;" placeholder="ghp_xxxxxxxxxxxx">
+                        
+                        <div id="sync-active-indicator" style="display: none; padding: 1.5rem; background: rgba(0, 207, 255, 0.05); border: 1px solid var(--primary); border-radius: 12px; margin-bottom: 1.5rem;">
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <div class="sync-spinner" style="width: 20px; height: 20px; border: 2px solid rgba(0,207,255,0.2); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                                <div>
+                                    <p style="color: var(--primary); font-weight: 700; font-size: 0.9rem;">SYNC IN PROGRESS</p>
+                                    <p id="sync-active-msg" style="font-size: 0.7rem; color: var(--text-muted); margin-top: 5px;">A sync task is currently pending or running in GitHub Actions.</p>
+                                </div>
                             </div>
-                            <button onclick="savePat(document.getElementById('github-pat').value)" class="btn btn-outline" style="border-color: var(--primary); color: var(--primary);">Save Token Locally</button>
                         </div>
-                        <div id="sync-status" style="margin-top: 1.5rem; padding: 1rem; border-radius: 8px; font-size: 0.8rem; display: none;"></div>
+
+                        <div id="sync-status" style="padding: 1rem; border-radius: 8px; font-size: 0.8rem; display: none;"></div>
                     </div>
 
                     <!-- Sync Controls -->
                     <div class="glass" style="padding: 2.5rem;">
-                        <h3 style="color: var(--primary); margin-bottom: 2rem;">Workflow Dispatch Center</h3>
+                        <h3 style="color: var(--primary); margin-bottom: 2rem;">Manual Sync Triggers</h3>
                         <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                             <!-- Garage 61 Sync -->
                             <div style="padding: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 12px;">
-                                <h4 style="margin-bottom: 0.5rem; font-size: 0.9rem;">Garage 61 Sync</h4>
-                                <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.5rem;">Updates driver iR/SR rankings and stats.</p>
-                                <button onclick="triggerWorkflow('update-profiles.yml')" class="btn btn-primary" style="width: 100%; font-size: 0.8rem;">Trigger Driver Sync</button>
+                                <h4 style="margin-bottom: 0.5rem; font-size: 0.9rem;">Driver Stats (G61)</h4>
+                                <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.5rem;">Updates driver iRating, License, and Career stats.</p>
+                                <button onclick="triggerWorkflow('update-profiles.yml')" class="btn btn-primary" style="width: 100%; font-size: 0.8rem;">Schedule Driver Sync</button>
                             </div>
 
                             <!-- Events & Lineups Sync -->
-                            <div style="padding: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 12px;">
-                                <h4 style="margin-bottom: 0.5rem; font-size: 0.9rem;">Lineup Sync</h4>
-                                <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.5rem;">Syncs race lineups from Google Sheets.</p>
-                                <button onclick="triggerWorkflow('update-events.yml')" class="btn btn-primary" style="width: 100%; font-size: 0.8rem;">Trigger Lineup Sync</button>
+                            <div style="padding: 1.25rem; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 12px;">
+                                <h4 style="margin-bottom: 0.5rem; font-size: 0.9rem;">Event Lineups</h4>
+                                <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.5rem;">Syncs race entries from Official Sheets.</p>
+                                <button onclick="triggerWorkflow('update-events.yml')" class="btn btn-primary" style="width: 100%; font-size: 0.8rem;">Schedule Lineup Sync</button>
                             </div>
                         </div>
                     </div>
+                    </div>
+                </div>
+            </div>
                 </div>
             </div>
         </div>
@@ -1615,64 +1622,57 @@
             }
         }
 
-        // --- System Sync Logic ---
-        function savePat(val) {
-            localStorage.setItem('gridup_github_pat', val);
-            showSyncStatus("Token saved locally.", "rgba(0,255,136,0.1)", "#00ff88");
-        }
-
+        // --- System Sync Logic (Firestore-based) ---
         function showSyncStatus(msg, bg, color) {
             const el = document.getElementById('sync-status');
+            if (!el) return;
             el.textContent = msg;
             el.style.background = bg;
             el.style.color = color;
             el.style.display = 'block';
+            setTimeout(() => { el.style.display = 'none'; }, 5000);
         }
 
         async function triggerWorkflow(workflowId) {
             const btn = event.target;
             const originalText = btn.textContent;
-            const pat = document.getElementById('github-pat').value || localStorage.getItem('gridup_github_pat');
             
-            if (!pat) {
-                alert("Please enter a GitHub Personal Access Token (PAT) first.");
-                return;
-            }
-
             btn.disabled = true;
-            btn.textContent = "⌛ Triggering...";
-            showSyncStatus("Connecting to GitHub...", "rgba(255,255,255,0.05)", "#fff");
+            btn.textContent = "⌛ Scheduling...";
 
             try {
-                const owner = "euBiZaRe";
-                const repo = "grid-up-racing-website";
-                const url = `https://api.github.com/repos/${owner}/${repo}/actions/workflows/${workflowId}/dispatches`;
-                
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/vnd.github+json',
-                        'Authorization': `Bearer ${pat}`,
-                        'X-GitHub-Api-Version': '2022-11-28'
-                    },
-                    body: JSON.stringify({
-                        ref: 'master'
-                    })
+                // Instead of calling GitHub API, we write a request to Firestore
+                await db.collection("sync_requests").doc(workflowId).set({
+                    requestedBy: firebase.auth().currentUser.uid,
+                    requestedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    status: 'pending',
+                    workflowId: workflowId
                 });
 
-                if (response.status === 204) {
-                    showSyncStatus("✅ Sync Triggered Successfully! The update will appear on the site in a few minutes.", "rgba(0,255,136,0.1)", "#00ff88");
-                } else {
-                    const error = await response.json();
-                    throw new Error(error.message || "Failed to trigger workflow");
-                }
+                showSyncStatus("✅ Sync Scheduled! The task will start shortly.", "rgba(0,255,136,0.1)", "#00ff88");
             } catch (e) {
                 console.error("Sync Error:", e);
-                showSyncStatus("❌ Error: " + e.message, "rgba(255,0,85,0.1)", "#ff0055");
+                showSyncStatus("❌ Error scheduling sync: " + e.message, "rgba(255,0,85,0.1)", "#ff0055");
             } finally {
                 btn.disabled = false;
                 btn.textContent = originalText;
             }
+        }
+
+        function listenToSyncStatus() {
+            db.collection("sync_requests").onSnapshot(snapshot => {
+                const activeIndicator = document.getElementById('sync-active-indicator');
+                const activeMsg = document.getElementById('sync-active-msg');
+                const pending = snapshot.docs.filter(doc => doc.data().status === 'pending' || doc.data().status === 'running');
+                
+                if (pending.length > 0) {
+                    activeIndicator.style.display = 'block';
+                    const list = pending.map(d => d.id === 'update-profiles.yml' ? 'Driver Stats' : 'Lineups').join(' & ');
+                    activeMsg.textContent = `Currently syncing: ${list}. This may take up to 20 mins.`;
+                } else {
+                    activeIndicator.style.display = 'none';
+                }
+            });
         }
 
         async function loadRaceData() {
@@ -2126,12 +2126,8 @@
                 const activeTab = document.querySelector('.portal-tab.active')?.id || 'tab-claims';
                 if (activeTab === 'tab-claims') loadClaims();
                 
-                // Load saved PAT
-                const savedPat = localStorage.getItem('gridup_github_pat');
-                if (savedPat) {
-                    const patInput = document.getElementById('github-pat');
-                    if (patInput) patInput.value = savedPat;
-                }
+                // Initialize Sync Status Listener
+                listenToSyncStatus();
             } else {
                 adminHub.style.display = 'none';
                 accessDenied.style.display = 'block';

@@ -2,7 +2,7 @@ name: Update Event Lineups
 
 on:
   schedule:
-    - cron: '0 */4 * * *' # Every 4 hours
+    - cron: '*/30 * * * *' # Every 30 minutes
   workflow_dispatch: # Allow manual trigger
 
 jobs:
@@ -19,7 +19,14 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install requests
+          pip install requests firebase-admin
+          
+      - name: Check for Sync Request
+        id: check_sync
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: python scripts/check_sync_requests.py update-events.yml
+        continue-on-error: false
 
       - name: Run Sync Script
         run: python scripts/sync_sheets.py
@@ -30,3 +37,19 @@ jobs:
           git config --global user.email "action@github.com"
           git add events/*.html events/past/*.html
           git diff --quiet && git diff --staged --quiet || (git commit -m "auto: update event lineups from Google Sheets" && git push)
+
+      - name: Cleanup Sync Request
+        if: always()
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          python -c "
+          import firebase_admin, os, json
+          from firebase_admin import credentials, firestore
+          sa_json = os.environ.get('FIREBASE_SERVICE_ACCOUNT')
+          if sa_json:
+              cred = credentials.Certificate(json.loads(sa_json))
+              firebase_admin.initialize_app(cred)
+              db = firestore.client()
+              db.collection('sync_requests').doc('update-events.yml').delete()
+          "

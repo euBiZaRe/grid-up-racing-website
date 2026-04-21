@@ -2,7 +2,7 @@ name: Update Driver Profiles
 
 on:
   schedule:
-    - cron: '0 0 * * 0' # Weekly on Sunday at midnight
+    - cron: '*/30 * * * *' # Every 30 minutes
   workflow_dispatch: # Allow manual trigger
 
 jobs:
@@ -15,15 +15,24 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-code: '3.10'
+          python-version: '3.10'
 
       - name: Install Dependencies
         run: |
-          pip install playwright
+          pip install playwright firebase-admin requests
           playwright install --with-deps chromium
+
+      - name: Check for Sync Request
+        id: check_sync
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: python scripts/check_sync_requests.py update-profiles.yml
+        continue-on-error: false
 
       - name: Run Update Script
         run: python scripts/update_drivers.py
+        env:
+          G61_PAT: ${{ secrets.G61_PAT }}
 
       - name: Commit and Push Changes
         run: |
@@ -31,3 +40,19 @@ jobs:
           git config --global user.email "action@github.com"
           git add drivers/*.html
           git diff --quiet && git diff --staged --quiet || (git commit -m "auto: update driver profiles from Garage 61" && git push)
+
+      - name: Cleanup Sync Request
+        if: always()
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          python -c "
+          import firebase_admin, os, json
+          from firebase_admin import credentials, firestore
+          sa_json = os.environ.get('FIREBASE_SERVICE_ACCOUNT')
+          if sa_json:
+              cred = credentials.Certificate(json.loads(sa_json))
+              firebase_admin.initialize_app(cred)
+              db = firestore.client()
+              db.collection('sync_requests').doc('update-profiles.yml').delete()
+          "
