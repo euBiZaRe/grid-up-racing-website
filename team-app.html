@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team App | Grid Up Sim Racing</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2.5rem;
+            margin-top: 3rem;
+        }
+
+        .feature-card {
+            background: rgba(22, 27, 34, 0.4);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px var(--primary-glow);
+        }
+
+        .feature-img-wrapper {
+            width: 100%;
+            aspect-ratio: 16/9;
+            overflow: hidden;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .feature-img-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .feature-card:hover .feature-img-wrapper img {
+            transform: scale(1.05);
+        }
+
+        .feature-info {
+            padding: 2rem;
+        }
+
+        .feature-info h3 {
+            color: var(--primary);
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+            letter-spacing: 1px;
+        }
+
+        .feature-info p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .use-cases {
+            background: rgba(0, 207, 255, 0.02);
+            border-radius: 20px;
+            padding: 4rem;
+            margin-top: 6rem;
+            border: 1px solid rgba(0, 207, 255, 0.1);
+        }
+
+        .use-case-item {
+            margin-bottom: 2.5rem;
+        }
+
+        .use-case-item h4 {
+            color: #fff;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .download-banner {
+            text-align: center;
+            padding: 6rem 2rem;
+            background: linear-gradient(rgba(10, 12, 16, 0.8), rgba(10, 12, 16, 0.8)), url('assets/team-app/Showcase.png');
+            background-size: cover;
+            background-position: center;
+            border-radius: 20px;
+            margin-top: 6rem;
+            border: 1px solid var(--glass-border);
+        }
+
+        @media (max-width: 768px) {
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+            .use-cases {
+                padding: 2rem;
+            }
+        }
+    </style>
+</head>
+<body class="team-app-page">
+    <nav id="navbar" class="scrolled">
+        <div class="container nav-content">
+            <a href="index.html" class="logo">
+                <img src="assets/logo.png" alt="GRID UP" style="height: 40px; vertical-align: middle;">
+            </a>
+            <div class="menu-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <div class="nav-links">
+                <a href="index.html#home">Home</a>
+                <a href="index.html#about">About</a>
+                <a href="team-app.html" class="active" style="color: var(--primary);">Team App</a>
+                <a href="roster.html">Roster</a>
+                <a href="events.html">Events</a>
+                <a href="shop.html">Shop</a>
+                <a href="index.html#contact">Contact</a>
+                <a href="login.html" id="login-link" class="btn btn-outline" style="padding: 0.5rem 1.25rem; font-size: 0.8rem; margin-left: 1rem;">Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero hero-small">
+        <img src="assets/team-app/Showcase.png" alt="Grid Up Team App" class="hero-img" style="opacity: 0.2; filter: blur(5px);">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <p style="color: var(--primary); font-weight: 800; letter-spacing: 5px; text-transform: uppercase; margin-bottom: 1rem;">Performance Center</p>
+            <h1 class="glow-text" style="font-size: 4rem;">The Team App</h1>
+            <p style="color: var(--text-muted); font-weight: 400; text-transform: uppercase; letter-spacing: 4px; font-size: 0.8rem; max-width: 600px; margin: 1rem auto 0;">Next-Gen Telemetry & Team Management for Elite Endurance Racing</p>
+        </div>
+    </header>
+
+    <main class="container section">
+        <div style="text-align: center; max-width: 800px; margin: 0 auto 5rem;">
+            <h2 style="color: #fff; margin-bottom: 1.5rem;">Engineered for Victory</h2>
+            <p style="color: var(--text-muted); font-size: 1.1rem; line-height: 1.8;">
+                The Grid Up Team App is more than just a telemetry tool—it's a comprehensive performance ecosystem. 
+                Built by racers for racers, it bridges the gap between raw data and actionable strategy, 
+                giving our team the edge needed to dominate the world's most demanding endurance events.
+            </p>
+        </div>
+
+        <section id="features">
+            <h2 class="section-title">Core Features</h2>
+            <div class="feature-grid">
+                <!-- Loading Screen -->
+                <div class="feature-card reveal">
+                    <div class="feature-img-wrapper">
+                        <img src="assets/team-app/1.Loading Screen.png" alt="Loading Screen">
+                    </div>
+                    <div class="feature-info">
+                        <h3>Professional Entry</h3>
+                        <p>A sleek, optimized loading experience that sets the tone for your race session. Built for reliability and 100% application uptime.</p>
+                    </div>
+                </div>
+
+                <!-- Team Select -->
+                <div class="feature-card reveal">
+                    <div class="feature-img-wrapper">
+                        <img src="assets/team-app/2.Team Select.png" alt="Team Select">
+                    </div>
+                    <div class="feature-info">
+                        <h3>Team Hub</h3>
+                        <p>Effortlessly manage and switch between your racing teams. One application, all your racing identities in one place.</p>
+                    </div>
+                </div>
+
+                <!-- Stint Manager -->
+                <div class="feature-card reveal">
+                    <div class="feature-img-wrapper">
+                        <img src="assets/team-app/6.Stint Manager.png" alt="Stint Manager">
+                    </div>
+                    <div class="feature-info">
+                        <h3>Stint Manager</h3>
+                        <p>Track driver swaps and stint lengths with pinpoint accuracy. Know exactly when your next driver needs to be ready and manage your rotations effortlessly.</p>
+                    </div>
+                </div>
+
+                <!-- Race Monitor -->
+                <div class="feature-card reveal">
+                    <div class="feature-img-wrapper">
+                        <img src="assets/team-app/3.Race Monitor.png" alt="Race Monitor">
+                    </div>
+                    <div class="feature-info">
+                        <h3>Race Monitor</h3>
+                        <p>Stay ahead of the competition with real-time race tracking. Monitor gaps, lap times, and track positions for every car on the grid.</p>
+                    </div>
+                </div>
+
+                <!-- Fuel Strategy -->
+                <div class="feature-card reveal">
+                    <div class="feature-img-wrapper">
+                        <img src="assets/team-app/5.Fuel Strategy.png" alt="Fuel Strategy">
+                    </div>
+                    <div class="feature-info">
+                        <h3>Fuel Strategy</h3>
+                        <p>Advanced fuel calculations that adapt to live track conditions. Optimize your pit stops and ensure you finish every race with the perfect amount of fuel.</p>
+                    </div>
+                </div>
+
+                <!-- Race Control -->
+                <div class="feature-card reveal">
+                    <div class="feature-img-wrapper">
+                        <img src="assets/team-app/8.Race Control.png" alt="Race Control">
+                    </div>
+                    <div class="feature-info">
+                        <h3>Race Control</h3>
+                        <p>The central nervous system of your race. Monitor the entire field, track incidents, and coordinate with your driver from a single high-impact dashboard.</p>
+                    </div>
+                </div>
+
+                <!-- Setup Centre -->
+                <div class="feature-card reveal">
+                    <div class="feature-img-wrapper">
+                        <img src="assets/team-app/10.Setup Centre With Setup.png" alt="Setup Centre">
+                    </div>
+                    <div class="feature-info">
+                        <h3>Setup Centre</h3>
+                        <p>A centralized hub for car setups. Create, share, and version car setups across the entire team to ensure everyone is running at peak performance.</p>
+                    </div>
+                </div>
+
+                <!-- Car Health -->
+                <div class="feature-card reveal">
+                    <div class="feature-img-wrapper">
+                        <img src="assets/team-app/7.Car Health.png" alt="Car Health">
+                    </div>
+                    <div class="feature-info">
+                        <h3>Car Health</h3>
+                        <p>Monitor critical vehicle data in real-time. Track engine status, tire wear, and aerodynamic damage to make informed decisions during long stints.</p>
+                    </div>
+                </div>
+
+                <!-- Team Lobby -->
+                <div class="feature-card reveal">
+                    <div class="feature-img-wrapper">
+                        <img src="assets/team-app/4.Team Lobby.png" alt="Team Lobby">
+                    </div>
+                    <div class="feature-info">
+                        <h3>Team Lobby</h3>
+                        <p>The social hub of the application. Synchronize with your teammates, see who's online, and coordinate your racing efforts in real-time.</p>
+                    </div>
+                </div>
+
+                <!-- Settings & Theming -->
+                <div class="feature-card reveal">
+                    <div class="feature-img-wrapper">
+                        <img src="assets/team-app/11.Settings.png" alt="Settings">
+                    </div>
+                    <div class="feature-info">
+                        <h3>Dynamic Theming</h3>
+                        <p>Make it yours. The built-in theming engine allows for full customization of colors, sidebars, and badges with custom hex code support.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="use-cases" class="use-cases reveal">
+            <h2 style="color: var(--primary); margin-bottom: 3rem; text-align: center;">Strategic Use Cases</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 3rem;">
+                <div class="use-case-item">
+                    <h4>Endurance Strategy</h4>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">
+                        Coordinate multi-hour stints by tracking fuel consumption and tire wear. Use the Stint Manager to ensure seamless driver transitions under pressure.
+                    </p>
+                </div>
+                <div class="use-case-item">
+                    <h4>Collaborative Setup Dev</h4>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">
+                        Iterate on car setups during practice sessions. Drivers can push setup changes to the Setup Centre for instant feedback and testing by teammates.
+                    </p>
+                </div>
+                <div class="use-case-item">
+                    <h4>Race Management</h4>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">
+                        Spotters and Team Managers use Race Control to monitor the field, track incidents, and provide critical information to the driver in real-time.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section id="technical-specs" style="margin-top: 6rem;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
+                <div class="glass" style="padding: 2rem; text-align: center;">
+                    <h3 style="color: var(--primary); margin-bottom: 1rem; font-size: 1rem;">Telemetry Sync</h3>
+                    <p style="color: var(--text-muted); font-size: 0.85rem;">Ultra-low latency telemetry bridge for real-time driver feedback.</p>
+                </div>
+                <div class="glass" style="padding: 2rem; text-align: center;">
+                    <h3 style="color: var(--primary); margin-bottom: 1rem; font-size: 1rem;">Dynamic Theming</h3>
+                    <p style="color: var(--text-muted); font-size: 0.85rem;">Fully customizable UI with custom hex code support for team branding.</p>
+                </div>
+                <div class="glass" style="padding: 2rem; text-align: center;">
+                    <h3 style="color: var(--primary); margin-bottom: 1rem; font-size: 1rem;">Secure Identity</h3>
+                    <p style="color: var(--text-muted); font-size: 0.85rem;">Hardware-locked identification via Machine ID for secure team access.</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="download-banner reveal">
+            <h2 style="font-size: 2.5rem; margin-bottom: 1.5rem;">Ready to Level Up?</h2>
+            <p style="color: var(--text-main); margin-bottom: 2.5rem; max-width: 600px; margin-left: auto; margin-right: auto; opacity: 0.8;">
+                The Grid Up Team App is currently in exclusive distribution for team members and partners. 
+                Experience the next generation of sim racing management today.
+            </p>
+            <a href="login.html" class="btn" style="padding: 1.25rem 3.5rem;">Access Performance Center</a>
+        </div>
+
+        <div style="text-align: center; margin-top: 4rem;">
+            <a href="index.html" class="btn btn-outline" style="padding: 1rem 3rem;">← Back to Home</a>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p style="color: var(--text-muted); font-size: 0.8rem;">&copy; 2026 GRID UP SIM RACING. ALL RIGHTS RESERVED.</p>
+        </div>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="script.js"></script>
+    <script src="js/auth.js"></script>
+</body>
+</html>
