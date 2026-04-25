@@ -2432,6 +2432,8 @@
         }
 
         // --- ROSTER MANAGEMENT ---
+        let ROSTER_CACHE = {};
+
         async function loadRoster() {
             const list = document.getElementById('admin-roster-list');
             const countEl = document.getElementById('roster-count');
@@ -2449,8 +2451,11 @@
                     return;
                 }
 
+                ROSTER_CACHE = {};
                 snap.forEach(doc => {
                     const d = doc.data();
+                    ROSTER_CACHE[doc.id] = d;
+                    
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td><strong>${d.name}</strong></td>
@@ -2459,8 +2464,8 @@
                         <td><span class="status-badge ${d.active ? 'status-verified' : 'status-denied'}">${d.active ? 'ACTIVE' : 'INACTIVE'}</span></td>
                         <td style="text-align: right;">
                             <div class="action-btns" style="justify-content: flex-end;">
-                                <button onclick="editDriver('${doc.id}', '${d.name.replace(/'/g, "\\'")}', '${(d.iracingId || '')}', '${(d.role || '').replace(/'/g, "\\'")}', '${(d.slug || '')}', ${d.active})" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem;">EDIT</button>
-                                <button onclick="deleteDriver('${doc.id}', '${d.name.replace(/'/g, "\\'")}')" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; color: #ff4444; border-color: rgba(255,68,68,0.2);">DEL</button>
+                                <button onclick="prepareEdit('${doc.id}')" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem;">EDIT</button>
+                                <button onclick="deleteDriver('${doc.id}')" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; color: #ff4444; border-color: rgba(255,68,68,0.2);">DEL</button>
                             </div>
                         </td>
                     `;
@@ -2497,17 +2502,24 @@
             }
         }
 
-        function editDriver(id, name, iracingId, role, slug, active) {
+        function prepareEdit(id) {
+            const d = ROSTER_CACHE[id];
+            if (!d) return;
+            
             document.getElementById('edit-driver-id').value = id;
-            document.getElementById('roster-name').value = name;
-            document.getElementById('roster-iracing-id').value = iracingId;
-            document.getElementById('roster-role').value = role;
-            document.getElementById('roster-slug').value = slug;
-            document.getElementById('roster-active').checked = active;
+            document.getElementById('roster-name').value = d.name || '';
+            document.getElementById('roster-iracing-id').value = d.iracingId || '';
+            document.getElementById('roster-role').value = d.role || '';
+            document.getElementById('roster-slug').value = d.slug || '';
+            document.getElementById('roster-active').checked = d.active !== false;
             document.getElementById('driver-form-title').textContent = "Edit Team Member";
+            
+            // Scroll to form
+            document.getElementById('driver-form-title').scrollIntoView({ behavior: 'smooth' });
         }
 
-        async function deleteDriver(id, name) {
+        async function deleteDriver(id) {
+            const name = ROSTER_CACHE[id] ? ROSTER_CACHE[id].name : "this driver";
             if (!confirm(`Are you sure you want to remove ${name} from the roster?`)) return;
             try {
                 await db.collection("drivers").doc(id).delete();
