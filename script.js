@@ -654,6 +654,7 @@ async function renderEventResults(eventId, targetElement) {
             if (snap.empty) {
                 resultsTrack.innerHTML = '<p style="text-align: center; color: var(--text-muted); grid-column: 1/-1;">No recent results to show.</p>';
             } else {
+                resultsTrack.innerHTML = '';
                 snap.forEach(doc => {
                     const d = doc.data();
                     const card = document.createElement('div');
