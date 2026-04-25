@@ -488,27 +488,51 @@ async function loadDynamicContent() {
     }
 
     // Auto-detect Event Detail Pages and load results
-    if (document.body.classList.contains('event-detail-page')) {
-        const pageName = window.location.pathname.split('/').pop().replace('.html', '');
-        const targets = ['.event-main', '.event-details', '.section', 'main'];
-        let mainSection = null;
-        for (const t of targets) {
-            mainSection = document.querySelector(t);
-            if (mainSection) break;
-        }
+    function initAutoResults() {
+        if (document.body.classList.contains('event-detail-page')) {
+            if (typeof db === 'undefined') {
+                setTimeout(initAutoResults, 500);
+                return;
+            }
 
-        if (pageName && mainSection) {
-            console.log("Event Page Detected:", pageName, "Loading result data...");
-            // Prioritize a dedicated results anchor if it exists
-            const anchor = document.getElementById('event-results-anchor') || 
-                           mainSection.querySelector('.event-section:last-of-type') || 
-                           mainSection.lastElementChild;
-            renderEventResults(pageName, anchor);
+            let pageName = window.location.pathname.split('/').pop().replace('.html', '');
+            
+            // Handle dynamic details page
+            if (pageName === 'details' || pageName === 'events') {
+                const params = new URLSearchParams(window.location.search);
+                const urlId = params.get('id');
+                if (urlId) pageName = urlId;
+            }
+
+            const targets = ['.event-main', '.event-details', '.section', 'main'];
+            let mainSection = null;
+            for (const t of targets) {
+                mainSection = document.querySelector(t);
+                if (mainSection) break;
+            }
+
+            // Don't auto-load for generic names that aren't real event IDs
+            const genericNames = ['details', 'events', 'index', 'admin', 'roster'];
+            if (pageName && !genericNames.includes(pageName) && mainSection) {
+                console.log("Event Page Detected:", pageName, "Loading result data...");
+                const anchor = document.getElementById('results-anchor') || 
+                               document.getElementById('event-results-anchor') || 
+                               mainSection.querySelector('.event-section:last-of-type') || 
+                               mainSection.lastElementChild;
+                renderEventResults(pageName, anchor);
+            }
         }
     }
+    
+    // Start auto-detection
+    initAutoResults();
 
 async function renderEventResults(eventId, targetElement) {
     if (!targetElement) return;
+    
+    // Prevent duplicate rendering
+    if (targetElement.dataset.loadedResults === eventId) return;
+    targetElement.dataset.loadedResults = eventId;
     try {
         // Try exact match first
         let snap = await db.collection("event_results")
@@ -517,14 +541,16 @@ async function renderEventResults(eventId, targetElement) {
         
         // Deep Fallback: Search the 'events' collection for a name match to find the actual Firestore ID
         if (snap.empty) {
-            // Priority: Try card name first, then page title
-            const eventName = targetElement.querySelector('h3')?.textContent.trim();
+            // Priority: Try card name first, then page title, then header
+            const eventName = targetElement.closest('.event-horizontal-card')?.querySelector('h3')?.textContent.trim() || 
+                              document.getElementById('event-title')?.textContent.trim();
             const pageTitle = document.querySelector('h1')?.textContent.trim();
-            const searchName = (eventName && eventName !== "Upcoming Races") ? eventName : pageTitle;
+            const searchName = (eventName && !["Upcoming Races", "Loading Event..."].includes(eventName)) ? eventName : pageTitle;
 
-            if (searchName && searchName !== "Upcoming Races") {
+            if (searchName && !["Upcoming Races", "Loading Event..."].includes(searchName)) {
                 console.log(`Trying deep fallback for name: ${searchName}`);
-                const eventSearch = await db.collection("events").where("name", "==", searchName).get();
+                // Try exact and partial matches
+                const eventSearch = await db.collection("events").where("name", ">=", searchName).where("name", "<=", searchName + '\uf8ff').get();
                 if (!eventSearch.empty) {
                     const actualId = eventSearch.docs[0].id;
                     console.log(`Deep Fallback: Found actual event ID ${actualId} for name "${searchName}"`);
@@ -538,9 +564,13 @@ async function renderEventResults(eventId, targetElement) {
         if (snap.empty) {
             console.log(`No results found for event keyword: ${eventId}`);
             
+            // Remove any existing results/pending messages
+            const existing = targetElement.parentNode.querySelectorAll('.event-results-container, .results-pending-placeholder');
+            existing.forEach(el => el.remove());
+
             // NEW: Feedback for empty results
             const noResults = document.createElement('section');
-            noResults.className = 'glass card reveal active';
+            noResults.className = 'glass card reveal active results-pending-placeholder';
             noResults.style.marginTop = '2rem';
             noResults.style.padding = '2rem';
             noResults.style.textAlign = 'center';
@@ -559,8 +589,12 @@ async function renderEventResults(eventId, targetElement) {
 
         console.log(`Rendering ${docs.length} results for ${eventId}`);
         const resultsContainer = document.createElement('section');
-        resultsContainer.className = 'glass card reveal active';
+        resultsContainer.className = 'glass card reveal active event-results-container';
         resultsContainer.style.marginTop = '2rem';
+        
+        // Remove any existing "Pending" messages or previous results
+        const existing = targetElement.parentNode.querySelectorAll('.event-results-container, .results-pending-placeholder');
+        existing.forEach(el => el.remove());
         
         let rowsHtml = '';
         docs.forEach(d => {
