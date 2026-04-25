@@ -1331,34 +1331,32 @@
 
                     card.innerHTML = `
                         <!-- Layer 1: Team Branded Background -->
-                        <img src="${bgImg}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.5; transition: transform 0.8s;">
+                        <img src="${bgImg}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.6; transition: transform 0.8s; z-index: 0;">
                         
                         <!-- Layer 2: User Photo Overlay -->
                         ${fgImg ? `<img src="${fgImg}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 0 20px rgba(0,0,0,0.8)); z-index: 1;">` : ''}
 
-                        <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, transparent 40%, rgba(0,0,0,0.3) 100%); z-index: 2;"></div>
+                        <!-- Layer 3: Cinematic Gradient -->
+                        <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.6) 100%); z-index: 2;"></div>
                         
                         <!-- Top Left: Event Type/Track -->
-                        <div style="position: absolute; top: 1rem; left: 1rem; text-align: left;">
-                            <div style="font-size: 0.6rem; color: var(--primary); font-weight: 900; letter-spacing: 2px; text-transform: uppercase;">SPECIAL EVENTS</div>
-                            <div style="font-size: 1.25rem; font-weight: 900; color: white; line-height: 1; margin-top: 0.2rem;">${(d.trackName || d.eventName).toUpperCase()}</div>
+                        <div style="position: absolute; top: 1.5rem; left: 1.5rem; text-align: left; z-index: 3;">
+                            <div style="font-size: 0.65rem; color: var(--primary); font-weight: 900; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 0.2rem;">SPECIAL EVENTS</div>
+                            <div style="font-size: 1.5rem; font-weight: 900; color: white; line-height: 1; letter-spacing: -0.5px;">${(d.trackName || d.eventName).toUpperCase()}</div>
                         </div>
 
                         <!-- Top Right: Car & Position -->
-                        <div style="position: absolute; top: 1rem; right: 1rem; text-align: right;">
-                            <div style="font-size: 0.75rem; color: white; font-weight: 700; opacity: 0.9;">Car: ${d.carUsed || 'TBD'}</div>
-                            <div style="font-size: 0.8rem; color: white; margin-top: 0.2rem;">Start: ${d.startPos || '?'}</div>
-                            <div style="font-size: 1.1rem; color: white; font-weight: 900; margin-top: 0.1rem;">Finish: ${d.position}</div>
+                        <div style="position: absolute; top: 1.5rem; right: 1.5rem; text-align: right; z-index: 3;">
+                            <div style="font-size: 0.8rem; color: white; font-weight: 700; opacity: 0.9;">${d.carUsed || 'GT3'}</div>
+                            <div style="font-size: 0.9rem; color: white; margin-top: 0.2rem; font-weight: 500;">START: ${d.startPos || '?'}</div>
+                            <div style="font-size: 1.25rem; color: var(--primary); font-weight: 900; margin-top: 0.2rem; filter: drop-shadow(0 0 10px rgba(0,207,255,0.4));">FINISH: ${d.position}</div>
                         </div>
 
-                        <!-- Bottom: Drivers and Team Logo -->
-                        <div style="position: absolute; bottom: 1.5rem; left: 0; width: 100%; padding: 0 1.5rem; display: flex; justify-content: space-between; align-items: flex-end;">
+                        <!-- Bottom: Drivers and Date -->
+                        <div style="position: absolute; bottom: 1.5rem; left: 1.5rem; right: 1.5rem; display: flex; justify-content: space-between; align-items: flex-end; z-index: 3;">
                             <div style="text-align: left;">
-                                <div style="font-size: 0.75rem; color: rgba(255,255,255,0.7); margin-bottom: 0.3rem;">${d.raceDate || ''}</div>
-                                <div style="font-size: 0.85rem; font-weight: 800; color: white; letter-spacing: 1px;">${d.drivers.join(' - ').toUpperCase()}</div>
-                            </div>
-                            <div style="background: rgba(255,255,255,0.05); padding: 0.5rem; border-radius: 4px;">
-                                <img src="assets/Grid Up Sim Endurance.png" style="height: 30px; object-fit: contain;" onerror="this.style.display='none'">
+                                <div style="font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-bottom: 0.4rem; font-weight: 600; letter-spacing: 1px;">${d.raceDate || ''}</div>
+                                <div style="font-size: 1rem; font-weight: 900; color: white; letter-spacing: 1.5px; text-transform: uppercase;">${d.drivers.join(' - ')}</div>
                             </div>
                         </div>
 
