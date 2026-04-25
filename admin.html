@@ -104,6 +104,60 @@
         input, textarea {
             color: white !important;
         }
+        /* Cinematic Poster Styles */
+        .cinematic-poster {
+            position: relative;
+            background: #000;
+            aspect-ratio: 16/9;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            transition: transform 0.3s ease;
+        }
+        .cinematic-poster:hover {
+            transform: translateY(-5px);
+        }
+        .cinematic-poster img.bg-layer {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.65;
+            z-index: 0;
+        }
+        .cinematic-poster img.fg-layer {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            z-index: 1;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.8));
+        }
+        .cinematic-poster .gradient-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.7) 100%);
+            z-index: 2;
+        }
+        .cinematic-poster .text-overlay {
+            position: absolute;
+            z-index: 5;
+            color: white;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.4);
+            pointer-events: none;
+        }
+        .cinematic-poster .event-branding {
+            position: absolute;
+            bottom: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0.15;
+            width: 60%;
+            z-index: 1;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body class="admin-page">
@@ -1318,51 +1372,49 @@
                     const d = doc.data();
                     const card = document.createElement('div');
                     card.className = 'card cinematic-poster animate-fade-in';
-                    card.style.padding = '0';
-                    card.style.overflow = 'hidden';
-                    card.style.position = 'relative';
-                    card.style.background = '#000';
-                    card.style.aspectRatio = '16/9';
-                    card.style.borderRadius = '12px';
-                    card.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
+                    card.style.padding = '0'; // Ensure no padding interferes with absolute children
                     
                     const bgImg = d.teamAsset || d.rawUrl;
                     const fgImg = d.rawUrl && d.teamAsset && d.rawUrl !== d.teamAsset ? d.rawUrl : null;
 
                     card.innerHTML = `
-                        <!-- Layer 1: Team Branded Background -->
-                        <img src="${bgImg}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.6; transition: transform 0.8s; z-index: 0;">
+                        <!-- Layers -->
+                        <img src="${bgImg}" class="bg-layer">
+                        ${fgImg ? `<img src="${fgImg}" class="fg-layer">` : ''}
                         
-                        <!-- Layer 2: User Photo Overlay -->
-                        ${fgImg ? `<img src="${fgImg}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 0 20px rgba(0,0,0,0.8)); z-index: 1;">` : ''}
+                        <!-- Watermark Branding (Center Background) -->
+                        <img src="assets/GridUpLogo.png" class="event-branding" onerror="this.style.display='none'">
 
-                        <!-- Layer 3: Cinematic Gradient -->
-                        <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.6) 100%); z-index: 2;"></div>
+                        <div class="gradient-overlay"></div>
                         
-                        <!-- Top Left: Event Type/Track -->
-                        <div style="position: absolute; top: 1.5rem; left: 1.5rem; text-align: left; z-index: 3;">
-                            <div style="font-size: 0.65rem; color: var(--primary); font-weight: 900; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 0.2rem;">SPECIAL EVENTS</div>
-                            <div style="font-size: 1.5rem; font-weight: 900; color: white; line-height: 1; letter-spacing: -0.5px;">${(d.trackName || d.eventName).toUpperCase()}</div>
+                        <!-- Top Left Metadata -->
+                        <div class="text-overlay" style="top: 1.5rem; left: 1.5rem; text-align: left;">
+                            <div style="font-size: 0.6rem; color: var(--primary); font-weight: 900; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 0.2rem;">GRID UP // SPECIAL EVENT</div>
+                            <div style="font-size: 1.6rem; font-weight: 900; line-height: 1.1; letter-spacing: -0.5px;">${(d.trackName || d.eventName || 'RACE EVENT').toUpperCase()}</div>
+                            <div style="font-size: 0.7rem; opacity: 0.8; margin-top: 0.4rem; font-weight: 600;">${d.raceDate || ''}</div>
                         </div>
 
-                        <!-- Top Right: Car & Position -->
-                        <div style="position: absolute; top: 1.5rem; right: 1.5rem; text-align: right; z-index: 3;">
-                            <div style="font-size: 0.8rem; color: white; font-weight: 700; opacity: 0.9;">${d.carUsed || 'GT3'}</div>
-                            <div style="font-size: 0.9rem; color: white; margin-top: 0.2rem; font-weight: 500;">START: ${d.startPos || '?'}</div>
-                            <div style="font-size: 1.25rem; color: var(--primary); font-weight: 900; margin-top: 0.2rem; filter: drop-shadow(0 0 10px rgba(0,207,255,0.4));">FINISH: ${d.position}</div>
+                        <!-- Top Right Stats -->
+                        <div class="text-overlay" style="top: 1.5rem; right: 1.5rem; text-align: right;">
+                            <div style="font-size: 0.75rem; font-weight: 800; opacity: 0.9; color: var(--primary);">${d.carUsed || 'GT3'}</div>
+                            <div style="font-size: 1.2rem; font-weight: 900; margin-top: 0.2rem;">FINISH: ${d.position}</div>
+                            ${d.startPos ? `<div style="font-size: 0.7rem; opacity: 0.8; margin-top: 0.1rem;">STARTED: ${d.startPos}</div>` : ''}
                         </div>
 
-                        <!-- Bottom: Drivers and Date -->
-                        <div style="position: absolute; bottom: 1.5rem; left: 1.5rem; right: 1.5rem; display: flex; justify-content: space-between; align-items: flex-end; z-index: 3;">
+                        <!-- Bottom Banner -->
+                        <div class="text-overlay" style="bottom: 1.5rem; left: 1.5rem; right: 1.5rem; display: flex; justify-content: space-between; align-items: flex-end;">
                             <div style="text-align: left;">
-                                <div style="font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-bottom: 0.4rem; font-weight: 600; letter-spacing: 1px;">${d.raceDate || ''}</div>
-                                <div style="font-size: 1rem; font-weight: 900; color: white; letter-spacing: 1.5px; text-transform: uppercase;">${d.drivers.join(' - ')}</div>
+                                <div style="font-size: 1.1rem; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">${Array.isArray(d.drivers) ? d.drivers.join(' - ') : d.drivers}</div>
+                                <div style="font-size: 0.6rem; color: var(--primary); font-weight: 700; margin-top: 0.2rem; letter-spacing: 2px;">CONFIRMED TEAM ENTRY</div>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.1); padding: 0.6rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(8px);">
+                                <img src="assets/GridUpLogo.png" style="height: 25px; filter: brightness(0) invert(1);" onerror="this.style.display='none'">
                             </div>
                         </div>
 
-                        <!-- Absolute Overlay Control (Delete button) -->
+                        <!-- Admin Controls -->
                         <div style="position: absolute; top: 0.5rem; right: 0.5rem; opacity: 0; transition: opacity 0.3s; z-index: 10;" class="hover-show">
-                            <button onclick="event.stopPropagation(); deleteResult('${doc.id}')" class="btn btn-outline" style="border-color: #ff0055; background: rgba(0,0,0,0.6); color: #ff0055; padding: 0.4rem 0.8rem; font-size: 0.7rem; backdrop-filter: blur(5px);">Delete Card</button>
+                            <button onclick="event.stopPropagation(); deleteResult('${doc.id}')" class="btn btn-outline" style="border-color: #ff0055; background: rgba(0,0,0,0.8); color: #ff0055; padding: 0.4rem 0.8rem; font-size: 0.7rem; backdrop-filter: blur(5px); font-weight: 800;">DELETE CARD</button>
                         </div>
                     `;
                     
