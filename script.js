@@ -433,6 +433,14 @@ async function loadDynamicContent() {
                         setTimeout(() => {
                             const target = document.getElementById(`event-${eventId}`);
                             if (target) {
+                                // If inside past section, expand it
+                                const pastSection = document.getElementById('pastEventsSection');
+                                const toggleBtn = document.getElementById('togglePastEvents');
+                                if (pastSection && pastSection.contains(target) && pastSection.style.display === 'none') {
+                                    pastSection.style.display = 'block';
+                                    if (toggleBtn) toggleBtn.textContent = 'Hide Past Events';
+                                }
+
                                 target.scrollIntoView({ behavior: 'smooth', block: 'center' });
                                 target.style.boxShadow = '0 0 30px rgba(0,207,255,0.3)';
                                 target.style.borderColor = 'var(--primary)';
@@ -454,6 +462,7 @@ async function loadDynamicContent() {
                 pastEvents.forEach((e, i) => {
                     if (hardcodedIds.includes(e.id)) return;
                     const card = document.createElement('div');
+                    card.id = `event-${e.id}`;
                     card.className = 'glass event-horizontal-card reveal active';
                     card.style.borderLeft = `4px solid ${eventColors[(i + hardcodedIds.length) % 3]}`;
                     const linkUrl = staticIds.includes(e.id) ? `events/${e.id}.html` : `events.html?id=${e.id}`;
@@ -508,13 +517,17 @@ async function renderEventResults(eventId, targetElement) {
         
         // Deep Fallback: Search the 'events' collection for a name match to find the actual Firestore ID
         if (snap.empty) {
+            // Priority: Try card name first, then page title
+            const eventName = targetElement.querySelector('h3')?.textContent.trim();
             const pageTitle = document.querySelector('h1')?.textContent.trim();
-            if (pageTitle) {
-                console.log(`Trying deep fallback for name: ${pageTitle}`);
-                const eventSearch = await db.collection("events").where("name", "==", pageTitle).get();
+            const searchName = (eventName && eventName !== "Upcoming Races") ? eventName : pageTitle;
+
+            if (searchName && searchName !== "Upcoming Races") {
+                console.log(`Trying deep fallback for name: ${searchName}`);
+                const eventSearch = await db.collection("events").where("name", "==", searchName).get();
                 if (!eventSearch.empty) {
                     const actualId = eventSearch.docs[0].id;
-                    console.log(`Deep Fallback: Found actual event ID ${actualId} for name "${pageTitle}"`);
+                    console.log(`Deep Fallback: Found actual event ID ${actualId} for name "${searchName}"`);
                     snap = await db.collection("event_results")
                         .where("eventId", "==", actualId)
                         .get();
@@ -524,6 +537,18 @@ async function renderEventResults(eventId, targetElement) {
 
         if (snap.empty) {
             console.log(`No results found for event keyword: ${eventId}`);
+            
+            // NEW: Feedback for empty results
+            const noResults = document.createElement('section');
+            noResults.className = 'glass card reveal active';
+            noResults.style.marginTop = '2rem';
+            noResults.style.padding = '2rem';
+            noResults.style.textAlign = 'center';
+            noResults.innerHTML = `
+                <h3 style="color: var(--primary); margin-bottom: 0.5rem;">Race Results Pending</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Official team results for this event haven't been recorded yet. Check back soon!</p>
+            `;
+            targetElement.after(noResults);
             return;
         }
 
