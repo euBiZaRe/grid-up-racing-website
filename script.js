@@ -506,6 +506,16 @@ function getEventLink(id, isStatic = false) {
     return `events/details.html#${id}`;
 }
 
+// Hidden Download Handler for Team App
+function downloadTeamApp() {
+    const link = document.createElement('a');
+    link.href = 'https://github.com/euBiZaRe/GRiD-UP-Center/releases/download/v1.2/GridUp_Setup_V1.2.0.exe';
+    link.download = 'GridUp_Setup_V1.2.0.exe';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
     // Auto-detect Event Detail Pages and load results
     function initAutoResults() {
         if (document.body.classList.contains('event-detail-page')) {
