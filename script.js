@@ -662,6 +662,7 @@ async function renderEventResults(eventId, targetElement) {
 }
 
 // 2. Load Recent Results (Race Cards)
+async function loadRecentResults() {
     const resultsTrack = document.getElementById('results-track');
     if (resultsTrack) {
         try {
@@ -988,6 +989,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const dbCheckInterval = setInterval(() => {
         if (typeof db !== 'undefined') {
             loadDynamicContent();
+            loadRecentResults(); // Added this call
             checkLiveStreams(); // Watch Live feature
             clearInterval(dbCheckInterval);
         }
