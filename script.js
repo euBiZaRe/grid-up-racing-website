@@ -502,8 +502,8 @@ window.addEventListener('DOMContentLoaded', beautifyCurrentURL);
 
 // Helper for clean event links
 function getEventLink(id, isStatic = false) {
-    if (isStatic) return `events/${id}`;
-    return `events/details#${id}`;
+    if (isStatic) return `events/${id}.html`;
+    return `events/details.html#${id}`;
 }
 
     // Auto-detect Event Detail Pages and load results
