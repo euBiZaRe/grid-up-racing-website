@@ -718,6 +718,18 @@ nav.scrolled {
     box-shadow: 0 4px 15px var(--primary-glow);
 }
 
+.nav-discord-btn {
+    color: #5865F2 !important;
+    font-weight: 800 !important;
+    text-transform: uppercase;
+    transition: var(--transition);
+}
+
+.nav-discord-btn:hover {
+    color: #fff !important;
+    text-shadow: 0 0 10px rgba(88, 101, 242, 0.8);
+}
+
 /* Global Select & Option Styles */
 select {
     appearance: none;
