@@ -377,7 +377,7 @@ async function loadDynamicContent() {
                 }
                 
                 if (heroLink) {
-                    heroLink.href = staticIds.includes(nextEvent.id) ? `${prefix}events/${nextEvent.id}.html` : `${prefix}events/details.html?id=${nextEvent.id}`;
+                    heroLink.href = staticIds.includes(nextEvent.id) ? getEventLink(nextEvent.id, true) : getEventLink(nextEvent.id);
                 }
                 
                 updateCountdown(nextEvent.startDate);
@@ -388,7 +388,7 @@ async function loadDynamicContent() {
                     const colors = ['blue', 'pink', 'green'];
                     upcomingEvents.slice(0, 10).forEach((e, i) => {
                         const tile = document.createElement('a');
-                        const linkUrl = staticIds.includes(e.id) ? `${prefix}events/${e.id}.html` : `${prefix}events/details.html?id=${e.id}`;
+                        const linkUrl = staticIds.includes(e.id) ? getEventLink(e.id, true) : getEventLink(e.id);
                         tile.href = linkUrl;
                         tile.className = `race-tile tile-${colors[i % 3]}`;
                         const bannerUrl = eventBanners[e.id];
@@ -410,7 +410,7 @@ async function loadDynamicContent() {
                         card.id = `event-${e.id}`;
                         card.className = 'glass event-horizontal-card reveal active';
                         card.style.borderLeft = `4px solid ${eventColors[i % 3]}`;
-                        const linkUrl = staticIds.includes(e.id) ? `events/${e.id}.html` : `events/details.html?id=${e.id}`;
+                        const linkUrl = staticIds.includes(e.id) ? getEventLink(e.id, true) : getEventLink(e.id);
                         const bannerUrl = eventBanners[e.id];
                         card.innerHTML = `
                             ${bannerUrl ? `<div class="event-card-banner" style="background-image: url('${bannerUrl}')"></div>` : ''}
@@ -465,7 +465,7 @@ async function loadDynamicContent() {
                     card.id = `event-${e.id}`;
                     card.className = 'glass event-horizontal-card reveal active';
                     card.style.borderLeft = `4px solid ${eventColors[(i + hardcodedIds.length) % 3]}`;
-                    const linkUrl = staticIds.includes(e.id) ? `events/${e.id}.html` : `events/details.html?id=${e.id}`;
+                    const linkUrl = staticIds.includes(e.id) ? getEventLink(e.id, true) : getEventLink(e.id);
                     const bannerUrl = eventBanners[e.id];
                     card.innerHTML = `
                         ${bannerUrl ? `<div class="event-card-banner" style="background-image: url('${bannerUrl}')"></div>` : ''}
@@ -486,6 +486,25 @@ async function loadDynamicContent() {
         console.error("Error loading events:", error);
         if (upcomingTrack) upcomingTrack.innerHTML = '<p style="color: #ff0055;">Failed to load schedule.</p>';
     }
+}
+
+// --- URL CLEANING (Pretty Links) ---
+function beautifyCurrentURL() {
+    let path = window.location.pathname;
+    if (path.endsWith('.html')) {
+        let newPath = path.replace('.html', '');
+        // Keep search/hash if they exist
+        let cleanURL = newPath + window.location.search + window.location.hash;
+        window.history.replaceState(null, '', cleanURL);
+    }
+}
+window.addEventListener('DOMContentLoaded', beautifyCurrentURL);
+
+// Helper for clean event links
+function getEventLink(id, isStatic = false) {
+    if (isStatic) return `events/${id}`;
+    return `events/details#${id}`;
+}
 
     // Auto-detect Event Detail Pages and load results
     function initAutoResults() {

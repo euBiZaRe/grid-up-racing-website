@@ -131,7 +131,9 @@
     <script>
         async function loadDynamicEvent() {
             const params = new URLSearchParams(window.location.search);
-            const id = params.get('id');
+            // Support both ?id=XXX and #XXX for cleaner URLs
+            const id = params.get('id') || window.location.hash.substring(1);
+            
             const loading = document.getElementById('loading');
             const content = document.getElementById('event-content');
             const error = document.getElementById('error-content');
