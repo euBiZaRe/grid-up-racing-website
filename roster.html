@@ -40,62 +40,17 @@
     </header>
 
     <main class="container section" style="padding-top: 2rem;">
-        <section class="roster-section">
+        <section class="roster-section" id="leadership-section" style="display: none;">
             <h2 class="section-title">Team Leadership</h2>
-            <div class="driver-grid">
-                <a href="drivers/adam-jones.html" class="glass driver-card">
-                    <div class="driver-info">
-                        <h3>Adam Jones</h3>
-                        <p class="role">Team Owner</p>
-                    </div>
-                </a>
-                <a href="drivers/matthew-koch.html" class="glass driver-card">
-                    <div class="driver-info">
-                        <h3>Matthew Koch</h3>
-                        <p class="role">Team Owner</p>
-                    </div>
-                </a>
+            <div class="driver-grid" id="leadership-grid">
+                <!-- Dynamically populated -->
             </div>
         </section>
 
         <section class="roster-section" style="margin-top: 6rem;">
             <h2 class="section-title">Grid Up Drivers</h2>
-            <div class="driver-grid">
-                <!-- Driver Cards -->
-                <a href="drivers/alex-cortez.html" class="glass driver-card"><h3>Alex Cortez</h3></a>
-                <a href="drivers/aman-johnson.html" class="glass driver-card"><h3>Aman Johnson</h3></a>
-                <a href="drivers/andrew-fabian.html" class="glass driver-card"><h3>Andrew Fabian</h3></a>
-                <a href="drivers/aten-wa-theba.html" class="glass driver-card"><h3>Aten-Wa Theba</h3></a>
-                <a href="drivers/brandon-koch.html" class="glass driver-card"><h3>Brandon Koch</h3></a>
-                <a href="drivers/broughton-jones.html" class="glass driver-card"><h3>Broughton Jones</h3></a>
-                <a href="drivers/bud-carmon.html" class="glass driver-card"><h3>Bud Carmon</h3></a>
-                <a href="drivers/connor-hatfield.html" class="glass driver-card"><h3>Connor Hatfield</h3></a>
-                <a href="drivers/daniel-tamminga.html" class="glass driver-card"><h3>Daniel Tamminga</h3></a>
-                <a href="drivers/david-shreve.html" class="glass driver-card"><h3>David Shreve</h3></a>
-                <a href="drivers/faraz-ebrahim.html" class="glass driver-card"><h3>Faraz Ebrahim</h3></a>
-                <a href="drivers/gabe-wilmoth.html" class="glass driver-card"><h3>Gabe Wilmoth</h3></a>
-                <a href="drivers/isaac-shore.html" class="glass driver-card"><h3>Isaac Shore</h3></a>
-                <a href="drivers/jacob-reid.html" class="glass driver-card"><h3>Jacob Reid</h3></a>
-                <a href="drivers/jacob-roberts.html" class="glass driver-card"><h3>Jacob Roberts</h3></a>
-                <a href="drivers/jason-hayden.html" class="glass driver-card"><h3>Jason Hayden</h3></a>
-                <a href="drivers/john-daniels.html" class="glass driver-card"><h3>John Daniels</h3></a>
-                <a href="drivers/john-houston.html" class="glass driver-card"><h3>John Houston</h3></a>
-                <a href="drivers/johnathan-shampine.html" class="glass driver-card"><h3>Johnathan Shampine</h3></a>
-                <a href="drivers/justin-sadowski.html" class="glass driver-card"><h3>Justin Sadowski</h3></a>
-                <a href="drivers/keith-todd.html" class="glass driver-card"><h3>Keith Todd</h3></a>
-                <a href="drivers/landen-hendershot.html" class="glass driver-card"><h3>Landen Hendershot</h3></a>
-                <a href="drivers/levi-wolfe.html" class="glass driver-card"><h3>Levi Wolfe</h3></a>
-                <a href="drivers/marko-skrnjug.html" class="glass driver-card"><h3>Marko Skrnjug</h3></a>
-                <a href="drivers/martyn-cook.html" class="glass driver-card"><h3>Martyn Cook</h3></a>
-                <a href="drivers/matthew-graham-4.html" class="glass driver-card"><h3>Matthew Graham</h3></a>
-                <a href="drivers/matty-roberts.html" class="glass driver-card"><h3>Matty Roberts</h3></a>
-                <a href="drivers/michael-odell.html" class="glass driver-card"><h3>Michael O'Dell</h3></a>
-                <a href="drivers/michael-zuver.html" class="glass driver-card"><h3>Michael Zuver</h3></a>
-                <a href="drivers/strats-g.html" class="glass driver-card"><h3>Strats G</h3></a>
-                <a href="drivers/tanner-hupp.html" class="glass driver-card"><h3>Tanner Hupp</h3></a>
-                <a href="drivers/terry-cantwell.html" class="glass driver-card"><h3>Terry Cantwell</h3></a>
-                <a href="drivers/william-mcclain.html" class="glass driver-card"><h3>William McClain</h3></a>
-                <a href="drivers/zack-saunders.html" class="glass driver-card"><h3>Zack Saunders</h3></a>
+            <div class="driver-grid" id="roster-grid">
+                <p style="text-align: center; color: var(--text-muted); grid-column: 1/-1;">Loading team roster...</p>
             </div>
         </section>
 
@@ -194,5 +149,63 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
     <script src="script.js"></script>
     <script src="js/auth.js"></script>
+    <script>
+        // Wait for DB to be initialized by auth.js
+        const dbCheckInterval = setInterval(() => {
+            if (window.db) {
+                clearInterval(dbCheckInterval);
+                loadRoster();
+            }
+        }, 100);
+
+        async function loadRoster() {
+            const leadershipGrid = document.getElementById('leadership-grid');
+            const leadershipSection = document.getElementById('leadership-section');
+            const rosterGrid = document.getElementById('roster-grid');
+
+            try {
+                const snap = await db.collection("drivers").where("active", "==", true).orderBy("name").get();
+                
+                leadershipGrid.innerHTML = '';
+                rosterGrid.innerHTML = '';
+
+                if (snap.empty) {
+                    rosterGrid.innerHTML = '<p style="text-align: center; color: var(--text-muted); grid-column: 1/-1;">No active drivers found.</p>';
+                    return;
+                }
+
+                let hasLeadership = false;
+
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    const isLeadership = (d.role && (d.role.toLowerCase().includes('owner') || d.role.toLowerCase().includes('lead')));
+                    
+                    const card = document.createElement('a');
+                    card.href = d.slug ? `drivers/${d.slug}.html` : '#';
+                    card.className = 'glass driver-card';
+                    
+                    if (isLeadership) {
+                        hasLeadership = true;
+                        card.innerHTML = `
+                            <div class="driver-info">
+                                <h3>${d.name}</h3>
+                                <p class="role">${d.role}</p>
+                            </div>
+                        `;
+                        leadershipGrid.appendChild(card);
+                    } else {
+                        card.innerHTML = `<h3>${d.name}</h3>`;
+                        rosterGrid.appendChild(card);
+                    }
+                });
+
+                if (hasLeadership) leadershipSection.style.display = 'block';
+
+            } catch (e) {
+                console.error("Error loading roster:", e);
+                rosterGrid.innerHTML = `<p style="text-align: center; color: var(--secondary); grid-column: 1/-1;">Failed to load roster data.</p>`;
+            }
+        }
+    </script>
 </body>
 </html>

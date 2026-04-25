@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head><title>Seed Roster</title></head>
+<body>
+    <h1>Seeding Roster... Check Console</h1>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        const drivers = [
+            { name: "Adam Jones", role: "Team Owner", slug: "adam-jones", active: true },
+            { name: "Matthew Koch", role: "Team Owner", slug: "matthew-koch", active: true },
+            { name: "Alex Cortez", role: "Driver", slug: "alex-cortez", active: true },
+            { name: "Aman Johnson", role: "Driver", slug: "aman-johnson", active: true },
+            { name: "Andrew Fabian", role: "Driver", slug: "andrew-fabian", active: true },
+            { name: "Aten-Wa Theba", role: "Driver", slug: "aten-wa-theba", active: true },
+            { name: "Brandon Koch", role: "Driver", slug: "brandon-koch", active: true },
+            { name: "Broughton Jones", role: "Driver", slug: "broughton-jones", active: true },
+            { name: "Bud Carmon", role: "Driver", slug: "bud-carmon", active: true },
+            { name: "Connor Hatfield", role: "Driver", slug: "connor-hatfield", active: true },
+            { name: "Daniel Tamminga", role: "Driver", slug: "daniel-tamminga", active: true },
+            { name: "David Shreve", role: "Driver", slug: "david-shreve", active: true },
+            { name: "Faraz Ebrahim", role: "Driver", slug: "faraz-ebrahim", active: true },
+            { name: "Gabe Wilmoth", role: "Driver", slug: "gabe-wilmoth", active: true },
+            { name: "Isaac Shore", role: "Driver", slug: "isaac-shore", active: true },
+            { name: "Jacob Reid", role: "Driver", slug: "jacob-reid", active: true },
+            { name: "Jacob Roberts", role: "Driver", slug: "jacob-roberts", active: true },
+            { name: "Jason Hayden", role: "Driver", slug: "jason-hayden", active: true },
+            { name: "John Daniels", role: "Driver", slug: "john-daniels", active: true },
+            { name: "John Houston", role: "Driver", slug: "john-houston", active: true },
+            { name: "Johnathan Shampine", role: "Driver", slug: "johnathan-shampine", active: true },
+            { name: "Justin Sadowski", role: "Driver", slug: "justin-sadowski", active: true },
+            { name: "Keith Todd", role: "Driver", slug: "keith-todd", active: true },
+            { name: "Landen Hendershot", role: "Driver", slug: "landen-hendershot", active: true },
+            { name: "Levi Wolfe", role: "Driver", slug: "levi-wolfe", active: true },
+            { name: "Marko Skrnjug", role: "Driver", slug: "marko-skrnjug", active: true },
+            { name: "Martyn Cook", role: "Driver", slug: "martyn-cook", active: true },
+            { name: "Matthew Graham", role: "Driver", slug: "matthew-graham-4", active: true },
+            { name: "Matty Roberts", role: "Driver", slug: "matty-roberts", active: true },
+            { name: "Michael O'Dell", role: "Driver", slug: "michael-odell", active: true },
+            { name: "Michael Zuver", role: "Driver", slug: "michael-zuver", active: true },
+            { name: "Strats G", role: "Driver", slug: "strats-g", active: true },
+            { name: "Tanner Hupp", role: "Driver", slug: "tanner-hupp", active: true },
+            { name: "Terry Cantwell", role: "Driver", slug: "terry-cantwell", active: true },
+            { name: "William McClain", role: "Driver", slug: "william-mcclain", active: true },
+            { name: "Zack Saunders", role: "Driver", slug: "zack-saunders", active: true }
+        ];
+
+        const dbCheck = setInterval(async () => {
+            if (window.db) {
+                clearInterval(dbCheck);
+                console.log("Starting seed...");
+                for (const d of drivers) {
+                    await db.collection("drivers").add(d);
+                    console.log("Added", d.name);
+                }
+                alert("Seeding complete!");
+            }
+        }, 100);
+    </script>
+</body>
+</html>

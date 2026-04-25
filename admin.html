@@ -151,11 +151,11 @@
                 </div>
             </header>
 
-            <!-- Prominent Admin Sub-Navigation -->
             <nav class="admin-nav animate-fade-in" style="display: flex; gap: 1rem; margin-bottom: 3rem; background: rgba(255,255,255,0.02); padding: 0.75rem; border-radius: 12px; border: 1px solid var(--glass-border); position: relative; z-index: 100; overflow-x: auto;">
                 <button onclick="switchTab('claims')" class="btn btn-outline" id="tab-claims" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">DRIVER CLAIMS</button>
                 <button onclick="switchTab('races')" class="btn btn-outline" id="tab-races" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">LINEUP MANAGER</button>
-                <button onclick="switchTab('availability')" class="btn btn-outline" id="tab-availability" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">DRIVER ROSTER</button>
+                <button onclick="switchTab('availability')" class="btn btn-outline" id="tab-availability" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">AVAILABILITY</button>
+                <button onclick="switchTab('roster')" class="btn btn-outline" id="tab-roster" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">TEAM ROSTER</button>
                 <button onclick="switchTab('events')" class="btn btn-outline" id="tab-events" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">SEASON SCHEDULE</button>
                 <button onclick="switchTab('race-results')" class="btn btn-outline" id="tab-race-results" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">RACE RESULTS</button>
                 <button onclick="switchTab('posters')" class="btn btn-outline" id="tab-posters" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">POSTER LAB</button>
@@ -429,8 +429,70 @@
             </div>
             <div id="modal-backdrop" onclick="hideEventModal()" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999;"></div>
 
-            <!-- Availability Section -->
-            <div id="section-availability" style="display: none;">
+            <!-- Roster Management Section -->
+            <div id="section-roster" class="tab-content" style="display: none;">
+                <div class="grid" style="grid-template-columns: 1fr 2fr; gap: 2rem; align-items: start;">
+                    <!-- Driver Form -->
+                    <div class="glass" style="padding: 2.5rem;">
+                        <h3 style="color: var(--primary); margin-bottom: 2rem;" id="driver-form-title">Add Team Member</h3>
+                        <input type="hidden" id="edit-driver-id">
+                        <div style="display: grid; gap: 1.5rem;">
+                            <div>
+                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">DRIVER NAME</label>
+                                <input type="text" id="roster-name" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;" placeholder="Full Name">
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div>
+                                    <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">iRACING ID</label>
+                                    <input type="text" id="roster-iracing-id" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;" placeholder="123456">
+                                </div>
+                                <div>
+                                    <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">ROLE / TITLE</label>
+                                    <input type="text" id="roster-role" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;" placeholder="Driver, Team Owner, etc.">
+                                </div>
+                            </div>
+                            <div>
+                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">URL SLUG (e.g. matty-roberts)</label>
+                                <input type="text" id="roster-slug" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;" placeholder="matty-roberts">
+                                <p style="font-size: 0.6rem; color: var(--text-muted); margin-top: 5px;">This links the roster card to their profile page.</p>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <input type="checkbox" id="roster-active" checked style="width: 20px; height: 20px;">
+                                <label for="roster-active" style="font-size: 0.8rem; color: var(--text-muted);">Active Member</label>
+                            </div>
+                            <div style="display: flex; gap: 1rem;">
+                                <button onclick="saveDriver()" class="btn btn-primary" style="flex: 2;">Save Member</button>
+                                <button onclick="resetDriverForm()" class="btn btn-outline" style="flex: 1;">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Driver List -->
+                    <div class="glass" style="padding: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                            <h3 style="color: var(--primary);">Current Team Members</h3>
+                            <span id="roster-count" style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700;">0 Members</span>
+                        </div>
+                        <div class="glass" style="padding: 0; background: none; overflow-x: auto;">
+                            <table class="claims-table mobile-table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Role</th>
+                                        <th>ID</th>
+                                        <th>Status</th>
+                                        <th style="text-align: right;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-roster-list">
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
                 <div class="glass" style="padding: 2rem; margin-bottom: 2rem; display: flex; align-items: flex-end; gap: 2rem;">
                     <div style="flex: 1;">
                         <h3 style="margin-bottom: 1.5rem; color: var(--primary);">View Mode</h3>
@@ -816,7 +878,7 @@
             }
         }
         function switchTab(tab) {
-            const sections = ['claims', 'races', 'admins', 'availability', 'events', 'race-results', 'posters', 'streams', 'system'];
+            const sections = ['claims', 'races', 'admins', 'availability', 'roster', 'events', 'race-results', 'posters', 'streams', 'system'];
             sections.forEach(s => {
                 const el = document.getElementById(`section-${s}`);
                 if (el) el.style.display = (tab === s) ? 'block' : 'none';
@@ -826,7 +888,8 @@
                 'claims': 'Driver Claims', 
                 'races': 'Lineup Manager', 
                 'admins': 'Team Permissions',
-                'availability': 'Driver Roster',
+                'availability': 'Availability Matrix',
+                'roster': 'Team Roster Management',
                 'events': 'Season Schedule',
                 'race-results': 'Race Results Portal',
                 'posters': 'Poster Lab',
@@ -835,7 +898,7 @@
             };
             document.getElementById('admin-title').textContent = titleMap[tab];
             
-            const tabs = ['claims', 'races', 'admins', 'availability', 'events', 'race-results', 'posters', 'streams', 'system'];
+            const tabs = ['claims', 'races', 'admins', 'availability', 'roster', 'events', 'race-results', 'posters', 'streams', 'system'];
             tabs.forEach(t => {
                 const btn = document.getElementById(`tab-${t}`);
                 if (btn) {
@@ -843,6 +906,8 @@
                     btn.classList.toggle('btn-outline', tab !== t);
                 }
             });
+
+            if (tab === 'roster') loadRoster();
 
             if (tab === 'admins') {
                 loadAdmins();
@@ -2364,6 +2429,102 @@
             } catch (e) {
                 alert("Error deleting: " + e.message);
             }
+        }
+
+        // --- ROSTER MANAGEMENT ---
+        async function loadRoster() {
+            const list = document.getElementById('admin-roster-list');
+            const countEl = document.getElementById('roster-count');
+            if (!list) return;
+
+            list.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 2rem;">Loading roster...</td></tr>';
+
+            try {
+                const snap = await db.collection("drivers").orderBy("name").get();
+                list.innerHTML = '';
+                countEl.textContent = `${snap.size} Members`;
+
+                if (snap.empty) {
+                    list.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 2rem;">No drivers found.</td></tr>';
+                    return;
+                }
+
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><strong>${d.name}</strong></td>
+                        <td>${d.role || 'Driver'}</td>
+                        <td style="font-family: monospace; font-size: 0.7rem; opacity: 0.7;">${d.iracingId || '-'}</td>
+                        <td><span class="status-badge ${d.active ? 'status-verified' : 'status-denied'}">${d.active ? 'ACTIVE' : 'INACTIVE'}</span></td>
+                        <td style="text-align: right;">
+                            <div class="action-btns" style="justify-content: flex-end;">
+                                <button onclick="editDriver('${doc.id}', '${d.name.replace(/'/g, "\\'")}', '${(d.iracingId || '')}', '${(d.role || '').replace(/'/g, "\\'")}', '${(d.slug || '')}', ${d.active})" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem;">EDIT</button>
+                                <button onclick="deleteDriver('${doc.id}', '${d.name.replace(/'/g, "\\'")}')" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; color: #ff4444; border-color: rgba(255,68,68,0.2);">DEL</button>
+                            </div>
+                        </td>
+                    `;
+                    list.appendChild(row);
+                });
+            } catch (e) {
+                list.innerHTML = `<tr><td colspan="5" style="text-align:center; color: #ff4444; padding: 2rem;">Error: ${e.message}</td></tr>`;
+            }
+        }
+
+        async function saveDriver() {
+            const id = document.getElementById('edit-driver-id').value;
+            const name = document.getElementById('roster-name').value.trim();
+            const iracingId = document.getElementById('roster-iracing-id').value.trim();
+            const role = document.getElementById('roster-role').value.trim();
+            const slug = document.getElementById('roster-slug').value.trim();
+            const active = document.getElementById('roster-active').checked;
+
+            if (!name) return alert("Driver name is required.");
+
+            const data = { name, iracingId, role, slug, active, lastUpdated: firebase.firestore.FieldValue.serverTimestamp() };
+
+            try {
+                if (id) {
+                    await db.collection("drivers").doc(id).update(data);
+                } else {
+                    await db.collection("drivers").add(data);
+                }
+                resetDriverForm();
+                loadRoster();
+                alert("Driver saved successfully!");
+            } catch (e) {
+                alert("Error saving driver: " + e.message);
+            }
+        }
+
+        function editDriver(id, name, iracingId, role, slug, active) {
+            document.getElementById('edit-driver-id').value = id;
+            document.getElementById('roster-name').value = name;
+            document.getElementById('roster-iracing-id').value = iracingId;
+            document.getElementById('roster-role').value = role;
+            document.getElementById('roster-slug').value = slug;
+            document.getElementById('roster-active').checked = active;
+            document.getElementById('driver-form-title').textContent = "Edit Team Member";
+        }
+
+        async function deleteDriver(id, name) {
+            if (!confirm(`Are you sure you want to remove ${name} from the roster?`)) return;
+            try {
+                await db.collection("drivers").doc(id).delete();
+                loadRoster();
+            } catch (e) {
+                alert("Error deleting driver: " + e.message);
+            }
+        }
+
+        function resetDriverForm() {
+            document.getElementById('edit-driver-id').value = '';
+            document.getElementById('roster-name').value = '';
+            document.getElementById('roster-iracing-id').value = '';
+            document.getElementById('roster-role').value = '';
+            document.getElementById('roster-slug').value = '';
+            document.getElementById('roster-active').checked = true;
+            document.getElementById('driver-form-title').textContent = "Add Team Member";
         }
 
     </script>
