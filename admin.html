@@ -104,60 +104,6 @@
         input, textarea {
             color: white !important;
         }
-        /* Cinematic Poster Styles */
-        .cinematic-poster {
-            position: relative;
-            background: #000;
-            aspect-ratio: 16/9;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-            transition: transform 0.3s ease;
-        }
-        .cinematic-poster:hover {
-            transform: translateY(-5px);
-        }
-        .cinematic-poster img.bg-layer {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            opacity: 0.65;
-            z-index: 0;
-        }
-        .cinematic-poster img.fg-layer {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            z-index: 1;
-            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.8));
-        }
-        .cinematic-poster .gradient-overlay {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.7) 100%);
-            z-index: 2;
-        }
-        .cinematic-poster .text-overlay {
-            position: absolute;
-            z-index: 5;
-            color: white;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.4);
-            pointer-events: none;
-        }
-        .cinematic-poster .event-branding {
-            position: absolute;
-            bottom: 20%;
-            left: 50%;
-            transform: translateX(-50%);
-            opacity: 0.15;
-            width: 60%;
-            z-index: 1;
-            pointer-events: none;
-        }
     </style>
 </head>
 <body class="admin-page">

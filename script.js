@@ -654,73 +654,59 @@ async function renderEventResults(eventId, targetElement) {
             if (snap.empty) {
                 resultsTrack.innerHTML = '<p style="text-align: center; color: var(--text-muted); grid-column: 1/-1;">No recent results to show.</p>';
             } else {
-                resultsTrack.innerHTML = '';
                 snap.forEach(doc => {
                     const d = doc.data();
                     const card = document.createElement('div');
                     card.className = 'card cinematic-poster reveal active';
-                    card.style.padding = '0';
-                    card.style.overflow = 'hidden';
-                    card.style.position = 'relative';
-                    card.style.background = '#000';
-                    card.style.aspectRatio = '16/9';
-                    card.style.borderRadius = '12px';
-                    card.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
                     card.style.cursor = 'pointer';
-                    card.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-
                     card.onclick = () => openCardModal(d);
 
                     const bgImg = d.teamAsset || d.rawUrl;
                     const fgImg = d.rawUrl && d.teamAsset && d.rawUrl !== d.teamAsset ? d.rawUrl : null;
 
                     card.innerHTML = `
-                        <!-- Layer 1: Team Branded Background -->
-                        <img src="${bgImg}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.5; transition: transform 0.8s;">
+                        <!-- Layers -->
+                        <img src="${bgImg}" class="bg-layer">
+                        ${fgImg ? `<img src="${fgImg}" class="fg-layer">` : ''}
                         
-                        <!-- Layer 2: User Photo Overlay -->
-                        ${fgImg ? `<img src="${fgImg}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 0 15px rgba(0,0,0,0.8)); z-index: 1;">` : ''}
+                        <!-- Watermark Branding (Center Background) -->
+                        <img src="assets/GridUpLogo.png" class="event-branding" onerror="this.style.display='none'">
 
-                        <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, transparent 40%, rgba(0,0,0,0.3) 100%); z-index: 2;"></div>
+                        <div class="gradient-overlay"></div>
                         
-                        <!-- Top Left: Event Type/Track -->
-                        <div style="position: absolute; top: 1rem; left: 1rem; text-align: left;">
-                            <div style="font-size: 0.6rem; color: var(--primary); font-weight: 900; letter-spacing: 2px; text-transform: uppercase;">SPECIAL EVENTS</div>
-                            <div style="font-size: 1.2rem; font-weight: 900; color: white; line-height: 1; margin-top: 0.2rem;">${(d.trackName || d.eventName).toUpperCase()}</div>
+                        <!-- Top Left Metadata -->
+                        <div class="text-overlay" style="top: 1.5rem; left: 1.5rem; text-align: left;">
+                            <div style="font-size: 0.6rem; color: var(--primary); font-weight: 900; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 0.2rem;">GRID UP // SPECIAL EVENT</div>
+                            <div style="font-size: 1.4rem; font-weight: 900; line-height: 1.1; letter-spacing: -0.5px;">${(d.trackName || d.eventName || 'RACE EVENT').toUpperCase()}</div>
+                            <div style="font-size: 0.7rem; opacity: 0.8; margin-top: 0.4rem; font-weight: 600;">${d.raceDate || ''}</div>
                         </div>
 
-                        <!-- Top Right: Car & Position -->
-                        <div style="position: absolute; top: 1rem; right: 1rem; text-align: right;">
-                            <div style="font-size: 0.65rem; color: white; font-weight: 700; opacity: 0.9;">Car: ${d.carUsed || 'TBD'}</div>
-                            <div style="font-size: 0.7rem; color: white; margin-top: 0.2rem;">Start: ${d.startPos || '?'}</div>
-                            <div style="font-size: 1rem; color: white; font-weight: 900; margin-top: 0.1rem;">Finish: ${d.position}</div>
+                        <!-- Top Right Stats -->
+                        <div class="text-overlay" style="top: 1.5rem; right: 1.5rem; text-align: right;">
+                            <div style="font-size: 0.75rem; font-weight: 800; opacity: 0.9; color: var(--primary);">${d.carUsed || 'GT3'}</div>
+                            <div style="font-size: 1.2rem; font-weight: 900; margin-top: 0.2rem;">FINISH: ${d.position}</div>
                         </div>
 
-                        <!-- Bottom: Drivers and Team Logo -->
-                        <div style="position: absolute; bottom: 1.25rem; left: 0; width: 100%; padding: 0 1.25rem; display: flex; justify-content: space-between; align-items: flex-end;">
+                        <!-- Bottom Banner -->
+                        <div class="text-overlay" style="bottom: 1.5rem; left: 1.5rem; right: 1.5rem; display: flex; justify-content: space-between; align-items: flex-end;">
                             <div style="text-align: left;">
-                                <div style="font-size: 0.65rem; color: rgba(255,255,255,0.7); margin-bottom: 0.3rem;">${d.raceDate || ''}</div>
-                                <div style="font-size: 0.75rem; font-weight: 800; color: white; letter-spacing: 1px;">${d.drivers.join(' - ').toUpperCase()}</div>
-                            </div>
-                            <div style="background: rgba(255,255,255,0.05); padding: 0.4rem; border-radius: 4px;">
-                                <img src="assets/Grid Up Sim Endurance.png" style="height: 24px; object-fit: contain;" onerror="this.style.display='none'">
+                                <div style="font-size: 1.1rem; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase;">${Array.isArray(d.drivers) ? d.drivers.join(' - ') : d.drivers}</div>
+                                <div style="font-size: 0.6rem; color: var(--primary); font-weight: 700; margin-top: 0.2rem; letter-spacing: 2px;">CONFIRMED TEAM ENTRY</div>
                             </div>
                         </div>
 
                         <!-- Interaction Overlay -->
-                        <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,207,255,0.1); opacity: 0; transition: opacity 0.3s;" class="hover-overlay">
-                             <div style="padding: 0.75rem 1.5rem; border: 2px solid var(--primary); color: var(--primary); font-weight: 800; font-size: 0.8rem; letter-spacing: 2px; border-radius: 4px;">EXPAND</div>
+                        <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,207,255,0.1); opacity: 0; transition: opacity 0.3s; z-index: 6;" class="hover-overlay">
+                             <div style="padding: 0.75rem 1.5rem; border: 2px solid var(--primary); color: var(--primary); font-weight: 800; font-size: 0.8rem; letter-spacing: 2px; border-radius: 4px; backdrop-filter: blur(5px);">EXPAND</div>
                         </div>
                     `;
 
                     card.onmouseenter = () => {
-                        card.style.transform = 'scale(1.05) translateY(-5px)';
-                        card.querySelector('img').style.transform = 'scale(1.1)';
+                        card.style.transform = 'translateY(-5px)';
                         card.querySelector('.hover-overlay').style.opacity = '1';
                     };
                     card.onmouseleave = () => {
-                        card.style.transform = 'scale(1) translateY(0)';
-                        card.querySelector('img').style.transform = 'scale(1)';
+                        card.style.transform = 'translateY(0)';
                         card.querySelector('.hover-overlay').style.opacity = '0';
                     };
                     resultsTrack.appendChild(card);
