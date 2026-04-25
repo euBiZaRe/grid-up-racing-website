@@ -257,6 +257,38 @@ h1, h2, h3 {
     border-color: var(--glass-border-bright);
 }
 
+/* Modal Specific Glass */
+.modal-glass {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10000;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 3rem;
+    box-shadow: 0 0 50px rgba(0,0,0,0.8);
+    border: 1px solid var(--primary);
+}
+
+/* Modal Scrollbar */
+.modal-glass::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-glass::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+}
+
+.modal-glass::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 10px;
+    box-shadow: 0 0 10px var(--primary-glow);
+}
+
 /* Ensure event card text is always visible */
 .event-info h3 {
     color: var(--text-main);
