@@ -732,35 +732,40 @@ function openCardModal(data) {
     const bgImg = data.teamAsset || data.rawUrl;
     const fgImg = data.rawUrl && data.teamAsset && data.rawUrl !== data.teamAsset ? data.rawUrl : null;
 
-    // Render high-fidelity version for the modal
+    // Render standardized high-fidelity version for the modal
     container.innerHTML = `
-        <div class="card cinematic-poster" style="padding: 0; overflow: hidden; position: relative; background: #000; width: 100%; height: 100%; border-radius: 20px; box-shadow: 0 40px 80px rgba(0,0,0,0.9);">
-            <!-- Layer 1: Background -->
-            <img src="${bgImg}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.5;">
+        <div class="card cinematic-poster" style="width: 100%; height: 100%; border-radius: 20px; box-shadow: 0 40px 80px rgba(0,0,0,0.9);">
+            <!-- Layers -->
+            <img src="${bgImg}" class="bg-layer">
+            ${fgImg ? `<img src="${fgImg}" class="fg-layer" style="filter: drop-shadow(0 20px 40px rgba(0,0,0,0.9));">` : ''}
             
-            <!-- Layer 2: Foreground Overlay -->
-            ${fgImg ? `<img src="${fgImg}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 0 30px rgba(0,0,0,0.9)); z-index: 1;">` : ''}
+            <!-- Watermark Branding -->
+            <img src="assets/GridUpLogo.png" class="event-branding" style="opacity: 0.12;" onerror="this.style.display='none'">
 
-            <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, transparent 40%, rgba(0,0,0,0.3) 100%); z-index: 2;"></div>
+            <div class="gradient-overlay"></div>
             
-            <div style="position: absolute; top: 3rem; left: 4rem; text-align: left;">
-                <div style="font-size: 1.25rem; color: var(--primary); font-weight: 900; letter-spacing: 6px; text-transform: uppercase;">SPECIAL EVENTS</div>
-                <div style="font-size: 4rem; font-weight: 900; color: white; line-height: 1; margin-top: 0.75rem; letter-spacing: -1px;">${(data.trackName || data.eventName).toUpperCase()}</div>
+            <!-- Metadata Overlay (Top Left) -->
+            <div class="text-overlay" style="top: 3rem; left: 4rem; text-align: left;">
+                <div style="font-size: 1.25rem; color: var(--primary); font-weight: 900; letter-spacing: 6px; text-transform: uppercase; margin-bottom: 0.5rem;">GRID UP // SPECIAL EVENT</div>
+                <div style="font-size: 4rem; font-weight: 900; line-height: 1.1; letter-spacing: -1.5px;">${(data.trackName || data.eventName || 'RACE EVENT').toUpperCase()}</div>
+                <div style="font-size: 1.5rem; opacity: 0.8; margin-top: 1rem; font-weight: 600; letter-spacing: 2px;">${data.raceDate || ''}</div>
             </div>
 
-            <div style="position: absolute; top: 3rem; right: 4rem; text-align: right;">
-                <div style="font-size: 1.5rem; color: white; font-weight: 700; opacity: 0.9;">Car: ${data.carUsed || 'TBD'}</div>
-                <div style="font-size: 1.75rem; color: white; margin-top: 0.5rem; font-weight: 400;">Start: ${data.startPos || '?'}</div>
-                <div style="font-size: 3rem; color: white; font-weight: 900; margin-top: 0.25rem; text-shadow: 0 0 30px rgba(255,255,255,0.2);">Finish: ${data.position}</div>
+            <!-- Stats Overlay (Top Right) -->
+            <div class="text-overlay" style="top: 3rem; right: 4rem; text-align: right;">
+                <div style="font-size: 1.5rem; font-weight: 800; opacity: 0.9; color: var(--primary); letter-spacing: 1px;">${data.carUsed || 'GT3'}</div>
+                <div style="font-size: 3rem; font-weight: 900; margin-top: 0.5rem; text-shadow: 0 0 30px rgba(0,207,255,0.4);">FINISH: ${data.position}</div>
+                ${data.startPos ? `<div style="font-size: 1.5rem; opacity: 0.8; margin-top: 0.2rem; font-weight: 600;">STARTED: ${data.startPos}</div>` : ''}
             </div>
 
-            <div style="position: absolute; bottom: 4rem; left: 0; width: 100%; padding: 0 4rem; display: flex; justify-content: space-between; align-items: flex-end;">
+            <!-- Bottom Entry Details -->
+            <div class="text-overlay" style="bottom: 4rem; left: 4rem; right: 4rem; display: flex; justify-content: space-between; align-items: flex-end;">
                 <div style="text-align: left;">
-                    <div style="font-size: 1.25rem; color: rgba(255,255,255,0.7); margin-bottom: 0.75rem; font-weight: 500;">${data.raceDate || ''}</div>
-                    <div style="font-size: 2rem; font-weight: 800; color: white; letter-spacing: 2px;">${data.drivers.join(' - ').toUpperCase()}</div>
+                    <div style="font-size: 2.5rem; font-weight: 900; letter-spacing: 2px; text-transform: uppercase;">${Array.isArray(data.drivers) ? data.drivers.join(' - ') : data.drivers}</div>
+                    <div style="font-size: 1.25rem; color: var(--primary); font-weight: 700; margin-top: 0.5rem; letter-spacing: 4px;">OFFICIAL TEAM ENTRY</div>
                 </div>
-                <div style="background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 12px; backdrop-filter: blur(5px);">
-                    <img src="assets/Grid Up Sim Endurance.png" style="height: 80px; object-fit: contain;">
+                <div style="background: rgba(255,255,255,0.08); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(12px);">
+                    <img src="assets/GridUpLogo.png" style="height: 60px; filter: brightness(0) invert(1);" onerror="this.style.display='none'">
                 </div>
             </div>
         </div>
@@ -857,43 +862,89 @@ async function downloadActiveCard() {
         ctx.fillStyle = grad;
         ctx.fillRect(0, canvas.height * 0.4, canvas.width, canvas.height * 0.6);
 
-        const topGrad = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.3);
-        topGrad.addColorStop(0, 'rgba(0,0,0,0.5)');
+        const topGrad = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.4);
+        topGrad.addColorStop(0, 'rgba(0,0,0,0.7)');
         topGrad.addColorStop(1, 'transparent');
         ctx.fillStyle = topGrad;
-        ctx.fillRect(0, 0, canvas.width, canvas.height * 0.3);
+        ctx.fillRect(0, 0, canvas.width, canvas.height * 0.4);
+
+        // Watermark Logo
+        const logo = new Image();
+        logo.crossOrigin = "anonymous";
+        logo.src = 'assets/GridUpLogo.png';
+        await new Promise(r => logo.onload = r).catch(() => console.warn("Watermark logo fail"));
+        if (logo.complete) {
+            ctx.globalAlpha = 0.12;
+            const logoH = canvas.height * 0.6;
+            const logoW = (logo.width / logo.height) * logoH;
+            ctx.drawImage(logo, (canvas.width - logoW)/2, (canvas.height - logoH)/2 + 100, logoW, logoH);
+            ctx.globalAlpha = 1.0;
+        }
 
         ctx.textBaseline = 'top';
-        ctx.font = '900 30px Montserrat, Arial, sans-serif';
+        ctx.shadowColor = 'rgba(0,0,0,0.9)';
+        ctx.shadowBlur = 15;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 2;
+
+        // Top Left Info
         ctx.fillStyle = '#00cfff';
-        ctx.fillText('SPECIAL EVENTS', 80, 80);
+        ctx.font = '900 24px Montserrat, sans-serif';
+        ctx.fillText('GRID UP // SPECIAL EVENT', 80, 80);
         
-        ctx.font = '900 100px Montserrat, Arial, sans-serif';
         ctx.fillStyle = '#fff';
-        ctx.fillText((d.trackName || d.eventName).toUpperCase(), 80, 130);
+        ctx.font = '900 80px Montserrat, sans-serif';
+        ctx.fillText((d.trackName || d.eventName || 'RACE EVENT').toUpperCase(), 80, 120);
 
+        ctx.fillStyle = 'rgba(255,255,255,0.8)';
+        ctx.font = '600 35px Montserrat, sans-serif';
+        ctx.fillText(d.raceDate || '', 80, 210);
+
+        // Top Right Info
         ctx.textAlign = 'right';
-        ctx.font = '700 45px Montserrat, Arial, sans-serif';
-        ctx.fillText(`Car: ${d.carUsed || 'TBD'}`, canvas.width - 80, 80);
-        ctx.font = '400 50px Montserrat, Arial, sans-serif';
-        ctx.fillText(`Start: ${d.startPos || '?'}`, canvas.width - 80, 150);
-        ctx.font = '900 80px Montserrat, Arial, sans-serif';
-        ctx.fillText(`Finish: ${d.position}`, canvas.width - 80, 220);
-
-        ctx.textAlign = 'left';
-        ctx.fillStyle = 'rgba(255,255,255,0.7)';
-        ctx.font = '500 40px Montserrat, Arial, sans-serif';
-        ctx.fillText(d.raceDate || '', 80, canvas.height - 220);
+        ctx.fillStyle = '#00cfff';
+        ctx.font = '800 35px Montserrat, sans-serif';
+        ctx.fillText(d.carUsed || 'GT3', canvas.width - 80, 80);
+        
         ctx.fillStyle = '#fff';
-        ctx.font = '900 60px Montserrat, Arial, sans-serif';
-        ctx.fillText(d.drivers.join(' - ').toUpperCase(), 80, canvas.height - 150);
+        ctx.font = '900 65px Montserrat, sans-serif';
+        ctx.fillText(`FINISH: ${d.position}`, canvas.width - 80, 130);
+        
+        if (d.startPos) {
+            ctx.fillStyle = 'rgba(255,255,255,0.8)';
+            ctx.font = '600 35px Montserrat, sans-serif';
+            ctx.fillText(`STARTED: ${d.startPos}`, canvas.width - 80, 210);
+        }
 
-        const logo = new Image();
-        logo.src = 'assets/Grid Up Sim Endurance.png';
-        await new Promise(r => logo.onload = r);
-        const logoH = 150;
-        const logoW = (logo.width / logo.height) * logoH;
-        ctx.drawImage(logo, canvas.width - 80 - logoW, canvas.height - 200, logoW, logoH);
+        // Bottom Banner Info
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#fff';
+        ctx.font = '900 55px Montserrat, sans-serif';
+        const driverText = Array.isArray(d.drivers) ? d.drivers.join(' - ').toUpperCase() : String(d.drivers).toUpperCase();
+        ctx.fillText(driverText, 80, canvas.height - 160);
+        
+        ctx.fillStyle = '#00cfff';
+        ctx.font = '700 28px Montserrat, sans-serif';
+        ctx.fillText('OFFICIAL TEAM ENTRY', 80, canvas.height - 90);
+
+        // Corner Logo
+        if (logo.complete) {
+            const logoH = 100;
+            const logoW = (logo.width / logo.height) * logoH;
+            
+            // Draw glass background for logo
+            ctx.fillStyle = 'rgba(255,255,255,0.1)';
+            ctx.beginPath();
+            ctx.roundRect(canvas.width - 80 - logoW - 40, canvas.height - 80 - logoH - 20, logoW + 80, logoH + 40, 15);
+            ctx.fill();
+            
+            ctx.globalCompositeOperation = 'destination-out'; // This is a trick to "invert" logo if it's black
+            // Wait, actually just draw it inverted
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.filter = 'brightness(0) invert(1)';
+            ctx.drawImage(logo, canvas.width - 80 - logoW, canvas.height - 80 - logoH, logoW, logoH);
+            ctx.filter = 'none';
+        }
 
         const link = document.createElement('a');
         link.download = `GridUp_${d.trackName || 'Poster'}_${d.position}.png`;
