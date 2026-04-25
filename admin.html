@@ -416,6 +416,10 @@
                         <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">RACE DISTANCE</label>
                         <input type="text" id="edit-event-distance" class="btn btn-outline" style="width:100%; text-align:left;" placeholder="e.g. 500 Miles / 24 Hours">
                     </div>
+                    <div>
+                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">EVENT DESCRIPTION / OVERVIEW</label>
+                        <textarea id="edit-event-description" class="btn btn-outline" style="width:100%; text-align:left; min-height: 100px; line-height: 1.4; padding: 1rem;" placeholder="Write a brief overview of the race..."></textarea>
+                    </div>
                 </div>
                 <div style="margin-top: 3rem; display: flex; gap: 1rem;">
                     <button onclick="saveEvent()" class="btn btn-primary" style="flex: 2;">Save Event</button>
@@ -980,6 +984,7 @@
             document.getElementById('edit-event-name').value = event ? event.name : '';
             document.getElementById('edit-event-track').value = event ? (event.track || '') : '';
             document.getElementById('edit-event-date').value = event ? event.date : '';
+            document.getElementById('edit-event-description').value = event ? (event.description || '') : '';
             
             if (event && event.startDate) {
                 const date = new Date(event.startDate);
@@ -1023,6 +1028,7 @@
             const classesRaw = document.getElementById('edit-event-classes').value.trim();
             const type = document.getElementById('edit-event-type').value.trim();
             const distance = document.getElementById('edit-event-distance').value.trim();
+            const description = document.getElementById('edit-event-description').value.trim();
 
             if (!id || !name || !dateStr || !startStr) return alert("Please fill all required fields.");
 
@@ -1042,6 +1048,7 @@
                 classes: classesRaw.split(',').map(c => c.trim()).filter(c => c),
                 type: type,
                 distance: distance,
+                description: description,
                 slots: IMSA_SLOTS // For now, we use standard slots for all
             };
 

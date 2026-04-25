@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Details | Grid Up Sim Racing</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.5s;
+        }
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(0, 207, 255, 0.1);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="event-detail-page">
+    <div id="loading" class="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <nav id="navbar" class="scrolled">
+        <div class="container nav-content">
+            <a href="../index.html" class="logo">
+                <img src="../assets/logo.png" alt="GRID UP" style="height: 40px; vertical-align: middle;">
+            </a>
+            <div class="nav-links">
+                <a href="../index.html#home">Home</a>
+                <a href="../index.html#about">About</a>
+                <a href="../roster.html">Roster</a>
+                <a href="../events.html">Events</a>
+                <a href="../index.html#contact">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero hero-small">
+        <img src="../assets/hero.png" alt="Event Banner" id="event-hero-img" class="hero-img" style="opacity: 0.3;">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1 class="glow-text" id="event-title">Loading Event...</h1>
+            <p id="event-date-display" style="color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 2px;"></p>
+        </div>
+    </header>
+
+    <main class="container event-details">
+        <a href="../events.html" class="back-btn">← Back to Events</a>
+        
+        <div id="event-content" class="event-grid" style="display: none;">
+            <div class="event-main">
+                <section class="event-section">
+                    <h2>Event Overview</h2>
+                    <p id="event-overview">No description available for this event.</p>
+                </section>
+
+                <section class="event-section">
+                    <h2>Cars Competing</h2>
+                    <div id="event-cars" class="car-list">
+                        <!-- Dynamic Cars -->
+                    </div>
+                </section>
+
+                <section class="event-section">
+                    <h2>Track Information</h2>
+                    <div class="glass sidebar-card">
+                        <h3 id="event-track-name">Track TBD</h3>
+                        <p>Experience the challenge of racing at <span class="track-placeholder">this circuit</span> on the iRacing platform.</p>
+                    </div>
+                </section>
+
+                <!-- Results will be injected here by renderEventResults -->
+                <div id="results-anchor"></div>
+            </div>
+
+            <aside class="event-sidebar">
+                <div class="glass sidebar-card">
+                    <h3>Race Format</h3>
+                    <ul style="list-style: none; margin-top: 1rem;">
+                        <li style="margin-bottom: 0.5rem;"><strong style="color: var(--primary);">Type:</strong> <span id="event-type">N/A</span></li>
+                        <li style="margin-bottom: 0.5rem;"><strong style="color: var(--primary);">Distance:</strong> <span id="event-distance">N/A</span></li>
+                        <li style="margin-bottom: 0.5rem;"><strong style="color: var(--primary);">Classes:</strong> <span id="event-classes-list">N/A</span></li>
+                    </ul>
+                </div>
+
+                <div class="glass sidebar-card">
+                    <h3>Confirmed Lineup</h3>
+                    <div id="confirmed-lineup">
+                        <!-- LINEUP_START -->
+                        <div style="text-align: center; padding: 1rem; color: var(--text-muted);">Loading lineup...</div>
+                        <!-- LINEUP_END -->
+                    </div>
+                </div>
+
+                <div class="glass sidebar-card" style="border-color: var(--secondary);">
+                    <h3>Join the Team</h3>
+                    <p style="margin-bottom: 1.5rem;">Interested in racing this event with Grid Up? Join our Discord to register.</p>
+                    <a href="https://discord.gg/gridup" class="btn" style="width: 100%; text-align: center;">Join Discord</a>
+                </div>
+            </aside>
+        </div>
+
+        <div id="error-content" style="display: none; text-align: center; padding: 5rem 0;">
+            <h2 style="color: #ff0055;">Event Not Found</h2>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">The event you are looking for does not exist or has been removed.</p>
+            <a href="../events.html" class="btn btn-outline">Back to Events</a>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Grid Up Sim Racing. Not affiliated with iRacing.com</p>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="../script.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        async function loadDynamicEvent() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+            const loading = document.getElementById('loading');
+            const content = document.getElementById('event-content');
+            const error = document.getElementById('error-content');
+
+            if (!id) {
+                loading.style.opacity = '0';
+                setTimeout(() => loading.style.display = 'none', 500);
+                error.style.display = 'block';
+                return;
+            }
+
+            try {
+                // Wait for Firebase to init via auth.js/script.js
+                if (typeof db === 'undefined') {
+                    setTimeout(loadDynamicEvent, 200);
+                    return;
+                }
+
+                const doc = await db.collection("events").doc(id).get();
+                if (!doc.exists) {
+                    error.style.display = 'block';
+                } else {
+                    const data = doc.data();
+                    
+                    // Populate UI
+                    document.title = `${data.name} | Grid Up Sim Racing`;
+                    document.getElementById('event-title').textContent = data.name;
+                    document.getElementById('event-date-display').textContent = data.date;
+                    document.getElementById('event-overview').textContent = data.description || "Official details for this event are being finalized. Check our Discord for the latest updates.";
+                    document.getElementById('event-track-name').textContent = data.track || "TBA";
+                    document.querySelectorAll('.track-placeholder').forEach(el => el.textContent = data.track || "this circuit");
+                    
+                    document.getElementById('event-type').textContent = data.type || "Special Event";
+                    document.getElementById('event-distance').textContent = data.distance || "Varies";
+                    document.getElementById('event-classes-list').textContent = data.classes ? data.classes.join(', ') : "TBD";
+
+                    // Populate Classes List
+                    const carsContainer = document.getElementById('event-cars');
+                    if (data.classes && data.classes.length > 0) {
+                        carsContainer.innerHTML = data.classes.map(c => `<div class="car-item">${c}</div>`).join('');
+                    } else {
+                        carsContainer.innerHTML = '<div class="car-item">TBD</div>';
+                    }
+
+                    // Show content
+                    content.style.display = 'grid';
+                    
+                    // Load Lineup & Results
+                    if (typeof loadRaceLineup === 'function') loadRaceLineup(id);
+                    if (typeof renderEventResults === 'function') {
+                        renderEventResults(id, document.getElementById('results-anchor'));
+                    }
+                }
+            } catch (err) {
+                console.error("Error loading event:", err);
+                error.style.display = 'block';
+            } finally {
+                loading.style.opacity = '0';
+                setTimeout(() => loading.style.display = 'none', 500);
+            }
+        }
+
+        window.addEventListener('load', loadDynamicEvent);
+    </script>
+</body>
+</html>

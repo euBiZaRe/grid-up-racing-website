@@ -377,7 +377,7 @@ async function loadDynamicContent() {
                 }
                 
                 if (heroLink) {
-                    heroLink.href = staticIds.includes(nextEvent.id) ? `${prefix}events/${nextEvent.id}.html` : `${prefix}events.html?id=${nextEvent.id}`;
+                    heroLink.href = staticIds.includes(nextEvent.id) ? `${prefix}events/${nextEvent.id}.html` : `${prefix}events/details.html?id=${nextEvent.id}`;
                 }
                 
                 updateCountdown(nextEvent.startDate);
@@ -388,7 +388,7 @@ async function loadDynamicContent() {
                     const colors = ['blue', 'pink', 'green'];
                     upcomingEvents.slice(0, 10).forEach((e, i) => {
                         const tile = document.createElement('a');
-                        const linkUrl = staticIds.includes(e.id) ? `${prefix}events/${e.id}.html` : `${prefix}events.html?id=${e.id}`;
+                        const linkUrl = staticIds.includes(e.id) ? `${prefix}events/${e.id}.html` : `${prefix}events/details.html?id=${e.id}`;
                         tile.href = linkUrl;
                         tile.className = `race-tile tile-${colors[i % 3]}`;
                         const bannerUrl = eventBanners[e.id];
@@ -410,7 +410,7 @@ async function loadDynamicContent() {
                         card.id = `event-${e.id}`;
                         card.className = 'glass event-horizontal-card reveal active';
                         card.style.borderLeft = `4px solid ${eventColors[i % 3]}`;
-                        const linkUrl = staticIds.includes(e.id) ? `events/${e.id}.html` : `events.html?id=${e.id}`;
+                        const linkUrl = staticIds.includes(e.id) ? `events/${e.id}.html` : `events/details.html?id=${e.id}`;
                         const bannerUrl = eventBanners[e.id];
                         card.innerHTML = `
                             ${bannerUrl ? `<div class="event-card-banner" style="background-image: url('${bannerUrl}')"></div>` : ''}
@@ -465,7 +465,7 @@ async function loadDynamicContent() {
                     card.id = `event-${e.id}`;
                     card.className = 'glass event-horizontal-card reveal active';
                     card.style.borderLeft = `4px solid ${eventColors[(i + hardcodedIds.length) % 3]}`;
-                    const linkUrl = staticIds.includes(e.id) ? `events/${e.id}.html` : `events.html?id=${e.id}`;
+                    const linkUrl = staticIds.includes(e.id) ? `events/${e.id}.html` : `events/details.html?id=${e.id}`;
                     const bannerUrl = eventBanners[e.id];
                     card.innerHTML = `
                         ${bannerUrl ? `<div class="event-card-banner" style="background-image: url('${bannerUrl}')"></div>` : ''}
