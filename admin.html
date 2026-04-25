@@ -851,8 +851,10 @@
             if (tab === 'events') loadEvents();
             if (tab === 'race-results') loadEventResults();
             if (tab === 'streams') loadStreams();
+            if (tab === 'posters') loadResults();
         }
         let UPCOMING_EVENTS = [];
+        let ALL_EVENTS = [];
 
         async function loadEvents() {
             const list = document.getElementById('events-manager-list');
@@ -865,14 +867,18 @@
             try {
                 const snapshot = await db.collection("events").orderBy("startDate", "asc").get();
                 UPCOMING_EVENTS = [];
+                ALL_EVENTS = [];
                 const now = new Date();
                 
                 snapshot.forEach(doc => {
                     const data = doc.data();
+                    const eventObj = { id: doc.id, ...data };
+                    ALL_EVENTS.push(eventObj);
+
                     const endDate = data.endDate ? new Date(data.endDate) : null;
-                    // Filter out past events
+                    // Filter out past events for the schedule manager view
                     if (!endDate || endDate > now) {
-                        UPCOMING_EVENTS.push({ id: doc.id, ...data });
+                        UPCOMING_EVENTS.push(eventObj);
                     }
                 });
 
@@ -917,7 +923,7 @@
         }
 
         function updateSelectors() {
-            const selectors = ['lineup-event-selector', 'availability-event-selector', 'result-event-selector'];
+            const selectors = ['lineup-event-selector', 'availability-event-selector', 'result-event-selector', 'card-event'];
             selectors.forEach(id => {
                 const sel = document.getElementById(id);
                 if (!sel) return;
@@ -925,7 +931,10 @@
                 const currentVal = sel.value;
                 const baseOption = id === 'availability-event-selector' ? '<option value="matrix">-- Full Matrix View --</option>' : '<option value="">-- Choose an Event --</option>';
                 
-                sel.innerHTML = baseOption + UPCOMING_EVENTS.map(e => `<option value="${e.id}" ${e.id === currentVal ? 'selected' : ''}>${e.name}</option>`).join('');
+                // Use ALL_EVENTS for results and posters, UPCOMING_EVENTS for lineups/availability
+                const sourceList = (id === 'result-event-selector' || id === 'card-event') ? ALL_EVENTS : UPCOMING_EVENTS;
+                
+                sel.innerHTML = baseOption + sourceList.map(e => `<option value="${e.id}" ${e.id === currentVal ? 'selected' : ''}>${e.name}</option>`).join('');
             });
         }
 
@@ -1291,9 +1300,10 @@
             if (!gallery) return;
 
             // Populate event selector if needed
-            if (eventSelector && eventSelector.options.length <= 1) {
+            if (eventSelector && (eventSelector.options.length <= 1 || eventSelector.innerHTML.includes('Loading'))) {
+                const source = ALL_EVENTS.length > 0 ? ALL_EVENTS : UPCOMING_EVENTS;
                 eventSelector.innerHTML = '<option value="">-- Choose Event --</option>' + 
-                    UPCOMING_EVENTS.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
+                    source.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
             }
 
             try {
