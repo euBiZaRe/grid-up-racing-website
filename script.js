@@ -820,62 +820,84 @@ function closeCardModal() {
 /**
  * Helper to load images with CORS support using fetch/blobs to bypass cache issues.
  */
-async function loadImageWithCORS(url) {
+async function loadImageWithCORS(url, timeout = 10000) {
     if (!url) return null;
-    try {
-        // Add cache-buster to prevent non-CORS cached versions from being used
-        const cacheBustedUrl = url + (url.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
-        
-        const response = await fetch(cacheBustedUrl, { mode: 'cors' });
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        
-        const blob = await response.blob();
-        const blobUrl = URL.createObjectURL(blob);
-        
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        
-        await new Promise((resolve, reject) => {
-            img.onload = () => resolve();
-            img.onerror = () => reject(new Error("Image creation fail"));
-            img.src = blobUrl;
-        });
-        
-        return img;
-    } catch (e) {
-        console.warn("Direct CORS fetch failed, trying proxy fallback:", url);
-        try {
-            // Last resort: Use a CORS proxy (AllOrigins)
-            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-            const response = await fetch(proxyUrl);
-            if (!response.ok) throw new Error(`Proxy error! status: ${response.status}`);
-            
-            const blob = await response.blob();
-            const blobUrl = URL.createObjectURL(blob);
-            
-            const img = new Image();
-            img.crossOrigin = "anonymous";
-            
-            await new Promise((resolve, reject) => {
-                img.onload = () => resolve();
-                img.onerror = () => reject(new Error("Image creation fail via proxy"));
+    
+    return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+            reject(new Error(`Timeout loading image: ${url.substring(0, 40)}...`));
+        }, timeout);
+
+        const run = async () => {
+            try {
+                // Add cache-buster to prevent non-CORS cached versions from being used
+                const cacheBustedUrl = url + (url.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
+                
+                const response = await fetch(cacheBustedUrl, { mode: 'cors' });
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                const blob = await response.blob();
+                const blobUrl = URL.createObjectURL(blob);
+                
+                const img = new Image();
+                img.crossOrigin = "anonymous";
+                
+                img.onload = () => {
+                    clearTimeout(timer);
+                    URL.revokeObjectURL(blobUrl);
+                    resolve(img);
+                };
+                img.onerror = () => {
+                    clearTimeout(timer);
+                    URL.revokeObjectURL(blobUrl);
+                    reject(new Error("Image creation fail"));
+                };
                 img.src = blobUrl;
-            });
-            
-            return img;
-        } catch (proxyErr) {
-            console.error("Proxy fallback failed:", proxyErr);
-            // Final attempt: regular Image load (will likely fail canvas but might work for display)
-            const img = new Image();
-            img.crossOrigin = "anonymous";
-            img.src = url;
-            await new Promise((resolve, reject) => {
-                img.onload = resolve;
-                img.onerror = () => reject(new Error(`Image load fail: ${url.substring(0, 50)}...`));
-            });
-            return img;
-        }
-    }
+                
+            } catch (e) {
+                console.warn("Direct CORS fetch failed, trying proxy fallback:", url);
+                try {
+                    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+                    const response = await fetch(proxyUrl);
+                    if (!response.ok) throw new Error(`Proxy error! status: ${response.status}`);
+                    
+                    const blob = await response.blob();
+                    const blobUrl = URL.createObjectURL(blob);
+                    
+                    const img = new Image();
+                    img.crossOrigin = "anonymous";
+                    
+                    img.onload = () => {
+                        clearTimeout(timer);
+                        URL.revokeObjectURL(blobUrl);
+                        resolve(img);
+                    };
+                    img.onerror = () => {
+                        clearTimeout(timer);
+                        URL.revokeObjectURL(blobUrl);
+                        reject(new Error("Image creation fail via proxy"));
+                    };
+                    img.src = blobUrl;
+                    
+                } catch (proxyErr) {
+                    console.error("Proxy fallback failed:", proxyErr);
+                    const img = new Image();
+                    img.crossOrigin = "anonymous";
+                    img.onload = () => {
+                        clearTimeout(timer);
+                        resolve(img);
+                    };
+                    img.onerror = () => {
+                        clearTimeout(timer);
+                        reject(new Error(`Image load fail: ${url.substring(0, 50)}...`));
+                    };
+                    img.src = url;
+                }
+            }
+        };
+        
+        run();
+    });
 }
 
 async function downloadActiveCard() {
