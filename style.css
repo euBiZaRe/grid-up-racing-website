@@ -802,7 +802,7 @@ footer {
     padding: 4rem 0;
     background: #050506;
     border-top: 1px solid var(--glass-border);
-    text-align: center;
+    text-align: right;
 }
 
 .social-links {
@@ -1541,7 +1541,7 @@ footer {
 /* Site Credits */
 footer {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
     padding: 2rem;
     border-top: 1px solid var(--glass-border);
