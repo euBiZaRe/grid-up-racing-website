@@ -41,7 +41,7 @@
 
     <main class="container section" style="padding-top: 2rem;">
         <section class="roster-section" id="leadership-section" style="display: none;">
-            <h2 class="section-title">Team Leadership</h2>
+            <h2 class="section-title">Leadership</h2>
             <div class="driver-grid" id="leadership-grid">
                 <!-- Dynamically populated -->
             </div>
@@ -184,7 +184,7 @@
                 let hasLeadership = false;
 
                 activeDrivers.forEach(d => {
-                    const isLeadership = (d.role && (d.role.toLowerCase().includes('owner') || d.role.toLowerCase().includes('lead')));
+                    const isLeadership = !d.role || !d.role.toLowerCase().includes('driver');
                     
                     const card = document.createElement('a');
                     card.href = d.slug ? `drivers/${d.slug}.html` : '#';
