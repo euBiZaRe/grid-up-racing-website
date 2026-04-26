@@ -799,10 +799,25 @@ select:focus {
 
 /* Footer */
 footer {
-    padding: 4rem 0;
+    padding: 2rem 5%;
     background: #050506;
     border-top: 1px solid var(--glass-border);
-    text-align: right;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+footer .container {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+}
+
+footer p {
+    margin: 0;
 }
 
 .social-links {
@@ -1541,9 +1556,9 @@ footer {
 /* Site Credits */
 footer {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     align-items: center;
-    padding: 2rem;
+    padding: 2rem 5%;
     border-top: 1px solid var(--glass-border);
     margin-top: 4rem;
     flex-wrap: wrap;
@@ -1551,27 +1566,25 @@ footer {
 }
 
 .bizare-credits {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     color: rgba(255, 255, 255, 0.4);
     text-decoration: none;
     letter-spacing: 2px;
     text-transform: uppercase;
     font-weight: 800;
     transition: all 0.3s ease;
-    padding: 5px 10px;
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 0.5rem 1rem;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.05);
     border-radius: 4px;
-    order: -1; /* Move to the left in flexbox */
 }
 
 .bizare-credits:hover {
     color: var(--primary);
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 207, 255, 0.1);
     border-color: var(--primary);
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 207, 255, 0.2);
+}
 }
 
 @media (max-width: 768px) {

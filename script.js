@@ -1086,7 +1086,7 @@ function injectCredits() {
     credits.target = '_blank';
     credits.className = 'bizare-credits';
     credits.innerHTML = 'Created by BiZaRe';
-    footer.appendChild(credits);
+    footer.prepend(credits);
 }
 
 // =============================================
