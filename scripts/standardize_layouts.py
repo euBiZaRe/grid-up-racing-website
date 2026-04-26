@@ -36,7 +36,7 @@ def convert_page(filename):
         return
 
     # Extract info
-    title_match = re.search(r"<title>(.*?) \| Grid Up Sim Racing</title>", content)
+    title_match = re.search(r"<title>(.*?) \| GRiD UP Sim Racing</title>", content)
     title = title_match.group(1) if title_match else filename.replace(".html", "").replace("-", " ").title()
     
     date_match = re.search(r'<p class="reveal">(.*?) \| (.*?)</p>', content)
@@ -50,7 +50,7 @@ def convert_page(filename):
     duration = extract_stat(content, "Duration")
     
     # Overview (try to find a paragraph that isn't stats)
-    overview = f"Join Grid Up Sim Racing for the {title} at {track}. High-stakes competition on the iRacing platform."
+    overview = f"Join GRiD UP Sim Racing for the {title} at {track}. High-stakes competition on the iRacing platform."
     
     # Extract existing lineup content
     lineup_match = re.search(r'<!-- LINEUP_START -->(.*?)<!-- LINEUP_END -->', content, re.DOTALL)
@@ -66,13 +66,13 @@ def convert_page(filename):
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{title} | Grid Up Sim Racing</title>
+    <title>{title} | GRiD UP Sim Racing</title>
     <link rel="stylesheet" href="../style.css">
 </head>
 <body class="event-detail-page">
     <nav id="navbar" class="scrolled">
         <div class="container nav-content">
-            <a href="../index.html" class="logo">GRID UP</a>
+            <a href="../index.html" class="logo">GRiD UP</a>
             <div class="nav-links">
                 <a href="../index.html#home">Home</a>
                 <a href="../index.html#about">About</a>
@@ -132,7 +132,7 @@ def convert_page(filename):
 
                 <div class="glass sidebar-card" style="border-color: var(--secondary);">
                     <h3>Join the Team</h3>
-                    <p style="margin-bottom: 1.5rem;">Interested in racing this event with Grid Up? Join our Discord to register.</p>
+                    <p style="margin-bottom: 1.5rem;">Interested in racing this event with GRiD UP? Join our Discord to register.</p>
                     <a href="https://discord.gg/gridup" class="btn" style="width: 100%; text-align: center;">Join Discord</a>
                 </div>
             </aside>
@@ -217,7 +217,7 @@ def convert_page(filename):
     </section>
 
     <footer>
-        <p>&copy; 2026 Grid Up Sim Racing. Not affiliated with iRacing.com</p>
+        <p>&copy; 2026 GRiD UP Sim Racing. Not affiliated with iRacing.com</p>
     </footer>
 
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>

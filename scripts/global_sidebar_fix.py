@@ -86,7 +86,7 @@ def clean_file(filepath):
 
                 <div class="glass sidebar-card" style="border-color: var(--secondary);">
                     <h3>Join the Team</h3>
-                    <p style="margin-bottom: 1.5rem;">Interested in racing this event with Grid Up? Join our Discord to register.</p>
+                    <p style="margin-bottom: 1.5rem;">Interested in racing this event with GRiD UP? Join our Discord to register.</p>
                     <a href="https://discord.gg/gridup" class="btn" style="width: 100%; text-align: center;">Join Discord</a>
                 </div>
             </aside>"""

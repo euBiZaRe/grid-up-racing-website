@@ -1,4 +1,4 @@
-// Grid Up - Authentication & Profile Claiming Engine
+// GRiD UP - Authentication & Profile Claiming Engine
 // Powered by Firebase
 
 const firebaseConfig = {
@@ -80,7 +80,7 @@ if (typeof document !== 'undefined' && !document.getElementById('social-styles')
 }
 
 function initAuth() {
-    console.log("Grid Up Auth: Initializing Listener...");
+    console.log("GRiD UP Auth: Initializing Listener...");
     auth.onAuthStateChanged(async (user) => {
         console.log("Auth State Changed. User:", user ? user.uid : "None");
         

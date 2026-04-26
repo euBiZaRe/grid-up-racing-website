@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Driver Roster | Grid Up Sim Racing</title>
+    <title>Driver Roster | GRiD UP Sim Racing</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/png" href="assets/logo.png">
 </head>
@@ -11,7 +11,7 @@
     <nav id="navbar" class="scrolled">
         <div class="container nav-content">
             <a href="index.html" class="logo">
-                <img src="assets/logo.png" alt="GRID UP" style="height: 40px; vertical-align: middle;">
+                <img src="assets/logo.png" alt="GRiD UP" style="height: 40px; vertical-align: middle;">
             </a>
             <div class="menu-toggle">
                 <span></span>
@@ -48,14 +48,14 @@
         </section>
 
         <section class="roster-section" id="endurance-section" style="display: none; margin-top: 6rem;">
-            <h2 class="section-title">Grid Up Endurance Team</h2>
+            <h2 class="section-title">GRiD UP Endurance Team</h2>
             <div class="driver-grid" id="endurance-grid">
                 <!-- Dynamically populated -->
             </div>
         </section>
 
         <section class="roster-section" style="margin-top: 6rem;">
-            <h2 class="section-title">Grid Up Drivers</h2>
+            <h2 class="section-title">GRiD UP Drivers</h2>
             <div class="driver-grid" id="roster-grid">
                 <p style="text-align: center; color: var(--text-muted); grid-column: 1/-1;">Loading team roster...</p>
             </div>
@@ -147,7 +147,7 @@
     <footer>
         <div class="container">
 
-            <p style="color: var(--text-muted); font-size: 0.8rem;">&copy; 2026 GRID UP SIM RACING. ALL RIGHTS RESERVED.</p>
+            <p style="color: var(--text-muted); font-size: 0.8rem;">&copy; 2026 GRiD UP SIM RACING. ALL RIGHTS RESERVED.</p>
         </div>
     </footer>
 
@@ -204,7 +204,7 @@
                     }
 
                     const isLeadership = (cat === 'Owner' || cat === 'Custom' || cat === 'Leadership');
-                    const isEndurance = (cat === 'Grid Up Endurance');
+                    const isEndurance = (cat === 'GRiD UP Endurance');
                     
                     const card = document.createElement('a');
                     card.href = d.slug ? `drivers/${d.slug}.html` : '#';

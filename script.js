@@ -707,7 +707,7 @@ async function loadRecentResults() {
                         
                         <!-- Top Left Metadata -->
                         <div class="text-overlay" style="top: 1.5rem; left: 1.5rem; text-align: left;">
-                            <div style="font-size: 0.6rem; color: var(--primary); font-weight: 900; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 0.2rem;">GRID UP // SPECIAL EVENT</div>
+                            <div style="font-size: 0.6rem; color: var(--primary); font-weight: 900; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 0.2rem;">GRiD UP // SPECIAL EVENT</div>
                             <div style="font-size: 1.4rem; font-weight: 900; line-height: 1.1; letter-spacing: -0.5px;">${(d.trackName || d.eventName || 'RACE EVENT').toUpperCase()}</div>
                             <div style="font-size: 0.7rem; opacity: 0.8; margin-top: 0.4rem; font-weight: 600;">${d.raceDate || ''}</div>
                         </div>
@@ -777,7 +777,7 @@ function openCardModal(data) {
             
             <!-- Metadata Overlay (Top Left) -->
             <div class="text-overlay" style="top: 3rem; left: 4rem; text-align: left;">
-                <div style="font-size: 1.25rem; color: var(--primary); font-weight: 900; letter-spacing: 6px; text-transform: uppercase; margin-bottom: 0.5rem;">GRID UP // SPECIAL EVENT</div>
+                <div style="font-size: 1.25rem; color: var(--primary); font-weight: 900; letter-spacing: 6px; text-transform: uppercase; margin-bottom: 0.5rem;">GRiD UP // SPECIAL EVENT</div>
                 <div style="font-size: 4rem; font-weight: 900; line-height: 1.1; letter-spacing: -1.5px;">${(data.trackName || data.eventName || 'RACE EVENT').toUpperCase()}</div>
                 <div style="font-size: 1.5rem; opacity: 0.8; margin-top: 1rem; font-weight: 600; letter-spacing: 2px;">${data.raceDate || ''}</div>
             </div>
@@ -993,7 +993,7 @@ async function downloadActiveCard() {
         // Top Left Info
         ctx.fillStyle = '#00cfff';
         ctx.font = '900 24px Montserrat, sans-serif';
-        ctx.fillText('GRID UP // SPECIAL EVENT', 80, 80);
+        ctx.fillText('GRiD UP // SPECIAL EVENT', 80, 80);
         
         ctx.fillStyle = '#fff';
         ctx.font = '900 80px Montserrat, sans-serif';
