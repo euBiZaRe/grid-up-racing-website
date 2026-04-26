@@ -537,6 +537,17 @@
                                     <option value="">-- Manual Entry or Choose Team --</option>
                                 </select>
                             </div>
+                            <div>
+                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">BRANDING / BACKGROUND (Required if no photo URL)</label>
+                                <select id="card-branding" class="btn btn-outline" style="width: 100%; text-align: left; padding: 1rem;">
+                                    <option value="">-- Auto-Detect or Manual --</option>
+                                    <option value="assets/Team Blue.png">Team Blue (PNG)</option>
+                                    <option value="assets/Team Black.jpg">Team Black (JPG)</option>
+                                    <option value="assets/Team Red.jpg">Team Red (JPG)</option>
+                                    <option value="assets/Team White.jpg">Team White (JPG)</option>
+                                    <option value="assets/Grid Up Sim Endurance.png">Endurance Special (PNG)</option>
+                                </select>
+                            </div>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                                 <div>
                                     <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">TRACK NAME</label>
@@ -1275,6 +1286,18 @@
             // Resolve UIDs
             const resolvedUids = driverNames.map(name => NAME_TO_UID_MAP[name.toLowerCase()] || null).filter(u => u);
             document.getElementById('card-drivers').dataset.uids = JSON.stringify(resolvedUids);
+
+            // 3. Set Branding
+            const brandingSelect = document.getElementById('card-branding');
+            if (brandingSelect) {
+                const nameLower = team.name.toLowerCase();
+                if (nameLower.includes('blue')) brandingSelect.value = 'assets/Team Blue.png';
+                else if (nameLower.includes('black')) brandingSelect.value = 'assets/Team Black.jpg';
+                else if (nameLower.includes('red')) brandingSelect.value = 'assets/Team Red.jpg';
+                else if (nameLower.includes('white')) brandingSelect.value = 'assets/Team White.jpg';
+                else if (nameLower.includes('endurance')) brandingSelect.value = 'assets/Grid Up Sim Endurance.png';
+                else brandingSelect.value = ''; // Reset to auto
+            }
         }
 
         async function generateRaceCard(e) {
@@ -1293,13 +1316,17 @@
             
             if (!eventId || !pos || !driversStr) return alert("Please fill required fields (Event, Finish, and Drivers).");
 
-            let teamAssetUrl = "";
-            const teamIdx = document.getElementById('card-team').value;
-            if (teamIdx !== "" && CURRENT_CARD_TEAM) {
-                const team = CURRENT_CARD_TEAM[teamIdx];
-                const teamColor = team.name.split(' ').pop().toLowerCase();
-                const ext = (teamColor === 'blue') ? 'png' : 'jpg';
-                teamAssetUrl = `assets/Team ${teamColor.charAt(0).toUpperCase() + teamColor.slice(1)}.${ext}`;
+            let teamAssetUrl = document.getElementById('card-branding').value;
+            if (!teamAssetUrl) {
+                const teamIdx = document.getElementById('card-team').value;
+                if (teamIdx !== "" && CURRENT_CARD_TEAM) {
+                    const team = CURRENT_CARD_TEAM[teamIdx];
+                    const nameLower = team.name.toLowerCase();
+                    if (nameLower.includes('blue')) teamAssetUrl = 'assets/Team Blue.png';
+                    else if (nameLower.includes('black')) teamAssetUrl = 'assets/Team Black.jpg';
+                    else if (nameLower.includes('red')) teamAssetUrl = 'assets/Team Red.jpg';
+                    else if (nameLower.includes('white')) teamAssetUrl = 'assets/Team White.jpg';
+                }
             }
 
             const finalPhotoUrl = photoUrl || teamAssetUrl;
@@ -1395,7 +1422,7 @@
                         ${fgImg ? `<img src="${fgImg}" class="fg-layer">` : ''}
                         
                         <!-- Watermark Branding (Center Background) -->
-                        <img src="assets/GridUpLogo.png" class="event-branding" onerror="this.style.display='none'">
+                        <img src="assets/logo.png" class="event-branding" onerror="this.style.display='none'">
 
                         <div class="gradient-overlay"></div>
                         
