@@ -1008,8 +1008,8 @@ async function downloadActiveCard() {
         link.click();
         
     } catch (err) {
-        console.error(err);
-        alert("DOWNLOAD NOTICE: Use a direct link (Imgur/Discord) for the car photo to enable HD downloads. Protected website links may block this feature due to browser security (CORS).");
+        console.error("Download Error:", err);
+        alert(`DOWNLOAD NOTICE: HD Export failed.\n\nReason: ${err.message}\n\nTroubleshooting:\n1. If you just updated, please hard-refresh (Ctrl + F5).\n2. Ensure the car photo is a direct link (Imgur/Discord).\n3. Some links may still block HD downloads due to CORS security.`);
     } finally {
         btn.innerHTML = originalHTML;
         btn.disabled = false;
