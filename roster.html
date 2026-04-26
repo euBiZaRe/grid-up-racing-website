@@ -47,6 +47,13 @@
             </div>
         </section>
 
+        <section class="roster-section" id="endurance-section" style="display: none; margin-top: 6rem;">
+            <h2 class="section-title">Grid Up Endurance Team</h2>
+            <div class="driver-grid" id="endurance-grid">
+                <!-- Dynamically populated -->
+            </div>
+        </section>
+
         <section class="roster-section" style="margin-top: 6rem;">
             <h2 class="section-title">Grid Up Drivers</h2>
             <div class="driver-grid" id="roster-grid">
@@ -161,6 +168,8 @@
         async function loadRoster() {
             const leadershipGrid = document.getElementById('leadership-grid');
             const leadershipSection = document.getElementById('leadership-section');
+            const enduranceGrid = document.getElementById('endurance-grid');
+            const enduranceSection = document.getElementById('endurance-section');
             const rosterGrid = document.getElementById('roster-grid');
 
             try {
@@ -168,6 +177,7 @@
                 const snap = await db.collection("drivers").orderBy("name").get();
                 
                 leadershipGrid.innerHTML = '';
+                enduranceGrid.innerHTML = '';
                 rosterGrid.innerHTML = '';
 
                 let activeDrivers = [];
@@ -182,9 +192,19 @@
                 }
 
                 let hasLeadership = false;
+                let hasEndurance = false;
 
                 activeDrivers.forEach(d => {
-                    const isLeadership = !d.role || !d.role.toLowerCase().includes('driver');
+                    let cat = d.category;
+                    
+                    // Fallback logic for old data or missing categories
+                    if (!cat) {
+                        const isDriver = d.role && d.role.toLowerCase().includes('driver');
+                        cat = isDriver ? 'Driver' : 'Leadership';
+                    }
+
+                    const isLeadership = (cat === 'Owner' || cat === 'Custom' || cat === 'Leadership');
+                    const isEndurance = (cat === 'Grid Up Endurance');
                     
                     const card = document.createElement('a');
                     card.href = d.slug ? `drivers/${d.slug}.html` : '#';
@@ -195,10 +215,19 @@
                         card.innerHTML = `
                             <div class="driver-info">
                                 <h3>${d.name}</h3>
-                                <p class="role">${d.role}</p>
+                                <p class="role">${d.role || 'Team Leadership'}</p>
                             </div>
                         `;
                         leadershipGrid.appendChild(card);
+                    } else if (isEndurance) {
+                        hasEndurance = true;
+                        card.innerHTML = `
+                            <div class="driver-info">
+                                <h3>${d.name}</h3>
+                                <p class="role">${d.role || 'Endurance Driver'}</p>
+                            </div>
+                        `;
+                        enduranceGrid.appendChild(card);
                     } else {
                         card.innerHTML = `<h3>${d.name}</h3>`;
                         rosterGrid.appendChild(card);
@@ -206,6 +235,7 @@
                 });
 
                 if (hasLeadership) leadershipSection.style.display = 'block';
+                if (hasEndurance) enduranceSection.style.display = 'block';
 
             } catch (e) {
                 console.error("Error loading roster:", e);

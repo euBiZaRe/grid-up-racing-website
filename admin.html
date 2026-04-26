@@ -452,6 +452,15 @@
                                 </div>
                             </div>
                             <div>
+                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">TEAM CATEGORY</label>
+                                <select id="roster-category" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;">
+                                    <option value="Driver">Driver (Goes to GRiD UP Drivers)</option>
+                                    <option value="Grid Up Endurance">Grid Up Endurance (Goes to Endurance Team)</option>
+                                    <option value="Owner">Owner (Goes to Leadership)</option>
+                                    <option value="Custom">Custom (Goes to Leadership)</option>
+                                </select>
+                            </div>
+                            <div>
                                 <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">URL SLUG (e.g. matty-roberts)</label>
                                 <input type="text" id="roster-slug" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;" placeholder="matty-roberts">
                                 <p style="font-size: 0.6rem; color: var(--text-muted); margin-top: 5px;">This links the roster card to their profile page.</p>
@@ -479,6 +488,7 @@
                                     <tr>
                                         <th>Name</th>
                                         <th>Role</th>
+                                        <th>Category</th>
                                         <th>ID</th>
                                         <th>Status</th>
                                         <th style="text-align: right;">Actions</th>
@@ -2488,6 +2498,7 @@
                     row.innerHTML = `
                         <td><strong>${d.name}</strong></td>
                         <td>${d.role || 'Driver'}</td>
+                        <td style="font-size: 0.7rem; color: var(--primary);">${d.category || 'Driver'}</td>
                         <td style="font-family: monospace; font-size: 0.7rem; opacity: 0.7;">${d.iracingId || '-'}</td>
                         <td><span class="status-badge ${d.active ? 'status-verified' : 'status-denied'}">${d.active ? 'ACTIVE' : 'INACTIVE'}</span></td>
                         <td style="text-align: right;">
@@ -2509,12 +2520,13 @@
             const name = document.getElementById('roster-name').value.trim();
             const iracingId = document.getElementById('roster-iracing-id').value.trim();
             const role = document.getElementById('roster-role').value.trim();
+            const category = document.getElementById('roster-category').value;
             const slug = document.getElementById('roster-slug').value.trim();
             const active = document.getElementById('roster-active').checked;
 
             if (!name) return alert("Driver name is required.");
 
-            const data = { name, iracingId, role, slug, active, lastUpdated: firebase.firestore.FieldValue.serverTimestamp() };
+            const data = { name, iracingId, role, category, slug, active, lastUpdated: firebase.firestore.FieldValue.serverTimestamp() };
 
             try {
                 if (id) {
@@ -2538,6 +2550,7 @@
             document.getElementById('roster-name').value = d.name || '';
             document.getElementById('roster-iracing-id').value = d.iracingId || '';
             document.getElementById('roster-role').value = d.role || '';
+            document.getElementById('roster-category').value = d.category || 'Driver';
             document.getElementById('roster-slug').value = d.slug || '';
             document.getElementById('roster-active').checked = d.active !== false;
             document.getElementById('driver-form-title').textContent = "Edit Team Member";
@@ -2562,6 +2575,7 @@
             document.getElementById('roster-name').value = '';
             document.getElementById('roster-iracing-id').value = '';
             document.getElementById('roster-role').value = '';
+            document.getElementById('roster-category').value = 'Driver';
             document.getElementById('roster-slug').value = '';
             document.getElementById('roster-active').checked = true;
             document.getElementById('driver-form-title').textContent = "Add Team Member";
