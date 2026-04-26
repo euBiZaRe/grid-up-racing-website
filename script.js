@@ -1041,12 +1041,7 @@ async function downloadActiveCard() {
             ctx.roundRect(canvas.width - 80 - logoW - 40, canvas.height - 80 - logoH - 20, logoW + 80, logoH + 40, 15);
             ctx.fill();
             
-            ctx.globalCompositeOperation = 'destination-out'; // This is a trick to "invert" logo if it's black
-            // Wait, actually just draw it inverted
-            ctx.globalCompositeOperation = 'source-over';
-            ctx.filter = 'brightness(0) invert(1)';
             ctx.drawImage(logo, canvas.width - 80 - logoW, canvas.height - 80 - logoH, logoW, logoH);
-            ctx.filter = 'none';
         }
 
         const link = document.createElement('a');
