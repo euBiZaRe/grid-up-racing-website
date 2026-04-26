@@ -203,8 +203,8 @@
                         cat = isDriver ? 'Driver' : 'Leadership';
                     }
 
-                    const isLeadership = (cat === 'Owner' || cat === 'Custom' || cat === 'Leadership');
-                    const isEndurance = (cat === 'GRiD UP Endurance');
+                    const isLeadership = (cat.toLowerCase() === 'owner' || cat.toLowerCase() === 'custom' || cat.toLowerCase() === 'leadership');
+                    const isEndurance = cat.toLowerCase().includes('endurance');
                     
                     const card = document.createElement('a');
                     card.href = d.slug ? `drivers/${d.slug}.html` : '#';
