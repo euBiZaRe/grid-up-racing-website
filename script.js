@@ -854,16 +854,18 @@ async function loadImageWithCORS(url, timeout = 10000) {
                 };
                 img.src = blobUrl;
                 
-            } catch (e) {
+                } catch (e) {
                 console.warn("Direct CORS fetch failed, trying proxy fallback:", url);
                 try {
-                    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+                    // Try corsproxy.io (faster and more reliable)
+                    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
                     const response = await fetch(proxyUrl);
                     if (!response.ok) throw new Error(`Proxy error! status: ${response.status}`);
                     
                     const blob = await response.blob();
-                    const blobUrl = URL.createObjectURL(blob);
+                    if (blob.size < 100) throw new Error("Invalid image data from proxy");
                     
+                    const blobUrl = URL.createObjectURL(blob);
                     const img = new Image();
                     img.crossOrigin = "anonymous";
                     
@@ -875,12 +877,13 @@ async function loadImageWithCORS(url, timeout = 10000) {
                     img.onerror = () => {
                         clearTimeout(timer);
                         URL.revokeObjectURL(blobUrl);
-                        reject(new Error("Image creation fail via proxy"));
+                        reject(new Error(`Failed to decode image from proxy: ${url.substring(0, 30)}...`));
                     };
                     img.src = blobUrl;
                     
                 } catch (proxyErr) {
                     console.error("Proxy fallback failed:", proxyErr);
+                    // Final attempt: regular Image load
                     const img = new Image();
                     img.crossOrigin = "anonymous";
                     img.onload = () => {
