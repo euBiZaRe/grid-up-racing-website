@@ -902,7 +902,7 @@ async function downloadActiveCard() {
         const [bgImg, fgImg, logo] = await Promise.all([
             loadImageWithCORS(bgUrl),
             loadImageWithCORS(fgUrl),
-            loadImageWithCORS('assets/GridUpLogo.png')
+            loadImageWithCORS('assets/logo.png')
         ]);
 
         ctx.fillStyle = '#000';
