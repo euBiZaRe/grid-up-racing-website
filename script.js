@@ -817,6 +817,45 @@ function closeCardModal() {
     }, 300);
 }
 
+/**
+ * Helper to load images with CORS support using fetch/blobs to bypass cache issues.
+ */
+async function loadImageWithCORS(url) {
+    if (!url) return null;
+    try {
+        // Add cache-buster to prevent non-CORS cached versions from being used
+        const cacheBustedUrl = url + (url.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
+        
+        const response = await fetch(cacheBustedUrl, { mode: 'cors' });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        
+        await new Promise((resolve, reject) => {
+            img.onload = () => resolve();
+            img.onerror = () => reject(new Error("Image creation fail"));
+            img.src = blobUrl;
+        });
+        
+        return img;
+    } catch (e) {
+        console.warn("CORS fetch failed, falling back to direct load:", url);
+        // Fallback to regular Image load
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.src = url;
+        await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = () => reject(new Error("Image load fail"));
+        });
+        return img;
+    }
+}
+
 async function downloadActiveCard() {
     if (!ACTIVE_CARD_DATA) return;
     const d = ACTIVE_CARD_DATA;
@@ -834,25 +873,15 @@ async function downloadActiveCard() {
     btn.disabled = true;
 
     try {
-        const bgImg = new Image();
-        bgImg.crossOrigin = "anonymous";
-        bgImg.src = d.teamAsset || d.rawUrl;
+        // 1. Load All Assets with CORS support
+        const bgUrl = d.teamAsset || d.rawUrl;
+        const fgUrl = (d.rawUrl && d.teamAsset && d.rawUrl !== d.teamAsset) ? d.rawUrl : null;
         
-        await new Promise((resolve, reject) => {
-            bgImg.onload = resolve;
-            bgImg.onerror = () => reject(new Error("BG Load fail"));
-        });
-
-        let fgImg = null;
-        if (d.rawUrl && d.teamAsset && d.rawUrl !== d.teamAsset) {
-            fgImg = new Image();
-            fgImg.crossOrigin = "anonymous";
-            fgImg.src = d.rawUrl;
-            await new Promise((resolve, reject) => {
-                fgImg.onload = resolve;
-                fgImg.onerror = () => reject(new Error("FG Load fail"));
-            });
-        }
+        const [bgImg, fgImg, logo] = await Promise.all([
+            loadImageWithCORS(bgUrl),
+            loadImageWithCORS(fgUrl),
+            loadImageWithCORS('assets/GridUpLogo.png')
+        ]);
 
         ctx.fillStyle = '#000';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -900,11 +929,7 @@ async function downloadActiveCard() {
         ctx.fillRect(0, 0, canvas.width, canvas.height * 0.4);
 
         // Watermark Logo
-        const logo = new Image();
-        logo.crossOrigin = "anonymous";
-        logo.src = 'assets/GridUpLogo.png';
-        await new Promise(r => logo.onload = r).catch(() => console.warn("Watermark logo fail"));
-        if (logo.complete) {
+        if (logo && logo.complete) {
             ctx.globalAlpha = 0.12;
             const logoH = canvas.height * 0.6;
             const logoW = (logo.width / logo.height) * logoH;
@@ -959,7 +984,7 @@ async function downloadActiveCard() {
         ctx.fillText('OFFICIAL TEAM ENTRY', 80, canvas.height - 90);
 
         // Corner Logo
-        if (logo.complete) {
+        if (logo && logo.complete) {
             const logoH = 100;
             const logoW = (logo.width / logo.height) * logoH;
             
