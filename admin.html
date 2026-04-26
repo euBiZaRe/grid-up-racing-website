@@ -541,11 +541,12 @@
                                 <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">BRANDING / BACKGROUND (Required if no photo URL)</label>
                                 <select id="card-branding" class="btn btn-outline" style="width: 100%; text-align: left; padding: 1rem;">
                                     <option value="">-- Auto-Detect or Manual --</option>
-                                    <option value="assets/Team Blue.png">Team Blue (PNG)</option>
-                                    <option value="assets/Team Black.jpg">Team Black (JPG)</option>
-                                    <option value="assets/Team Red.jpg">Team Red (JPG)</option>
-                                    <option value="assets/Team White.jpg">Team White (JPG)</option>
-                                    <option value="assets/Grid Up Sim Endurance.png">Endurance Special (PNG)</option>
+                                    <option value="assets/GRiD UP Sim Racing.png">GRiD UP Sim Racing</option>
+                                    <option value="assets/GRiD UP Blue.png">GRiD UP Blue</option>
+                                    <option value="assets/GRiD UP Black.jpg">GRiD UP Black</option>
+                                    <option value="assets/GRiD UP Red.jpg">GRiD UP Red</option>
+                                    <option value="assets/GRiD UP White.jpg">GRiD UP White</option>
+                                    <option value="assets/Endurance Team.jpg">Endurance Team</option>
                                 </select>
                             </div>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
@@ -1290,13 +1291,14 @@
             // 3. Set Branding
             const brandingSelect = document.getElementById('card-branding');
             if (brandingSelect) {
-                const nameLower = team.name.toLowerCase();
-                if (nameLower.includes('blue')) brandingSelect.value = 'assets/Team Blue.png';
-                else if (nameLower.includes('black')) brandingSelect.value = 'assets/Team Black.jpg';
-                else if (nameLower.includes('red')) brandingSelect.value = 'assets/Team Red.jpg';
-                else if (nameLower.includes('white')) brandingSelect.value = 'assets/Team White.jpg';
-                else if (nameLower.includes('endurance')) brandingSelect.value = 'assets/Grid Up Sim Endurance.png';
-                else brandingSelect.value = ''; // Reset to auto
+                const name = team.name;
+                // Look for an option that matches the team name
+                for (let i = 0; i < brandingSelect.options.length; i++) {
+                    if (brandingSelect.options[i].text === name) {
+                        brandingSelect.selectedIndex = i;
+                        break;
+                    }
+                }
             }
         }
 
@@ -1321,11 +1323,10 @@
                 const teamIdx = document.getElementById('card-team').value;
                 if (teamIdx !== "" && CURRENT_CARD_TEAM) {
                     const team = CURRENT_CARD_TEAM[teamIdx];
-                    const nameLower = team.name.toLowerCase();
-                    if (nameLower.includes('blue')) teamAssetUrl = 'assets/Team Blue.png';
-                    else if (nameLower.includes('black')) teamAssetUrl = 'assets/Team Black.jpg';
-                    else if (nameLower.includes('red')) teamAssetUrl = 'assets/Team Red.jpg';
-                    else if (nameLower.includes('white')) teamAssetUrl = 'assets/Team White.jpg';
+                    const name = team.name;
+                    // Auto-resolve extension
+                    const ext = (name.includes('Blue') || name.includes('Racing')) ? 'png' : 'jpg';
+                    teamAssetUrl = `assets/${name}.${ext}`;
                 }
             }
 
