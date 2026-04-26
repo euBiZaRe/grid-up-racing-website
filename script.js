@@ -843,16 +843,38 @@ async function loadImageWithCORS(url) {
         
         return img;
     } catch (e) {
-        console.warn("CORS fetch failed, falling back to direct load:", url);
-        // Fallback to regular Image load
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        img.src = url;
-        await new Promise((resolve, reject) => {
-            img.onload = resolve;
-            img.onerror = () => reject(new Error("Image load fail"));
-        });
-        return img;
+        console.warn("Direct CORS fetch failed, trying proxy fallback:", url);
+        try {
+            // Last resort: Use a CORS proxy (AllOrigins)
+            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+            const response = await fetch(proxyUrl);
+            if (!response.ok) throw new Error(`Proxy error! status: ${response.status}`);
+            
+            const blob = await response.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            
+            await new Promise((resolve, reject) => {
+                img.onload = () => resolve();
+                img.onerror = () => reject(new Error("Image creation fail via proxy"));
+                img.src = blobUrl;
+            });
+            
+            return img;
+        } catch (proxyErr) {
+            console.error("Proxy fallback failed:", proxyErr);
+            // Final attempt: regular Image load (will likely fail canvas but might work for display)
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            img.src = url;
+            await new Promise((resolve, reject) => {
+                img.onload = resolve;
+                img.onerror = () => reject(new Error(`Image load fail: ${url.substring(0, 50)}...`));
+            });
+            return img;
+        }
     }
 }
 
