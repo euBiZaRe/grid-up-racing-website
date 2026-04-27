@@ -509,7 +509,7 @@ function getEventLink(id, isStatic = false) {
 // Hidden Download Handler for Team App
 function downloadTeamApp() {
     const link = document.createElement('a');
-    link.href = 'https://github.com/euBiZaRe/GRiD-UP-Center/releases/download/v1.4.4/GRiD-UP.exe';
+    link.href = 'https://github.com/euBiZaRe/GRiD-UP-Center/releases/download/v1.5.4/GRiD-UP.exe';
     link.download = 'GRiD-UP.exe';
     document.body.appendChild(link);
     link.click();
