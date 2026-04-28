@@ -922,7 +922,7 @@ async function downloadActiveCard() {
     try {
         // 1. Load All Assets with CORS support
         const bgUrl = "assets/poster-placeholder.png"; // Hardcoded override as requested
-        const fgUrl = (d.rawUrl && d.teamAsset && d.rawUrl !== d.teamAsset) ? d.rawUrl : null;
+        const fgUrl = null; // Override to null to prevent export failures from broken external links
         
         const [bgImg, fgImg, logo] = await Promise.all([
             loadImageWithCORS(bgUrl),
