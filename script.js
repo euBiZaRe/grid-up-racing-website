@@ -796,7 +796,7 @@ function openCardModal(data) {
                     <div style="font-size: 1.25rem; color: var(--primary); font-weight: 700; margin-top: 0.5rem; letter-spacing: 4px;">OFFICIAL TEAM ENTRY</div>
                 </div>
                 <div style="background: rgba(255,255,255,0.08); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(12px);">
-                    <img src="assets/logo.png" style="height: 60px; filter: brightness(0) invert(1);" onerror="this.style.display='none'">
+                    <img src="assets/logo.png" style="height: 60px;" onerror="this.style.display='none'">
                 </div>
             </div>
         </div>
