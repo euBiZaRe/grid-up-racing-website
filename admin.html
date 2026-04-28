@@ -1425,7 +1425,7 @@
                     card.className = 'card cinematic-poster animate-fade-in';
                     card.style.padding = '0'; // Ensure no padding interferes with absolute children
                     
-                    const bgImg = d.teamAsset || d.rawUrl;
+                    const bgImg = "assets/poster-placeholder.png"; // Hardcoded override as requested
                     const fgImg = d.rawUrl && d.teamAsset && d.rawUrl !== d.teamAsset ? d.rawUrl : null;
 
                     card.innerHTML = `

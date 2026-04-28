@@ -760,7 +760,7 @@ function openCardModal(data) {
     const container = document.getElementById('modal-container');
     if (!modal || !container) return;
 
-    const bgImg = data.teamAsset || data.rawUrl;
+    const bgImg = "assets/poster-placeholder.png"; // Hardcoded override as requested
     const fgImg = data.rawUrl && data.teamAsset && data.rawUrl !== data.teamAsset ? data.rawUrl : null;
 
     // Render standardized high-fidelity version for the modal
