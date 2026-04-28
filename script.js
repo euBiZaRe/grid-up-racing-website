@@ -509,7 +509,7 @@ function getEventLink(id, isStatic = false) {
 // Hidden Download Handler for Team App
 function downloadTeamApp() {
     const link = document.createElement('a');
-    link.href = 'https://github.com/euBiZaRe/GRiD-UP-Center/releases/download/v1.5.4/GRiD-UP.exe';
+    link.href = 'https://github.com/euBiZaRe/GRiD-UP-Center/releases/download/v1.5.7/GRiD-UP.exe';
     link.download = 'GRiD-UP.exe';
     document.body.appendChild(link);
     link.click();
@@ -692,7 +692,7 @@ async function loadRecentResults() {
                     card.style.cursor = 'pointer';
                     card.onclick = () => openCardModal(d);
 
-                    const bgImg = d.teamAsset || d.rawUrl;
+                    const bgImg = "assets/poster-placeholder.png"; // Hardcoded override as requested
                     const fgImg = d.rawUrl && d.teamAsset && d.rawUrl !== d.teamAsset ? d.rawUrl : null;
 
                     card.innerHTML = `
@@ -701,14 +701,14 @@ async function loadRecentResults() {
                         ${fgImg ? `<img src="${fgImg}" class="fg-layer">` : ''}
                         
                         <!-- Watermark Branding (Center Background) -->
-                        <img src="assets/GridUpLogo.png" class="event-branding" onerror="this.style.display='none'">
+                        <img src="assets/logo.png" class="event-branding" onerror="this.style.display='none'">
 
                         <div class="gradient-overlay"></div>
                         
                         <!-- Top Left Metadata -->
                         <div class="text-overlay" style="top: 1.5rem; left: 1.5rem; text-align: left;">
                             <div style="font-size: 0.6rem; color: var(--primary); font-weight: 900; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 0.2rem;">GRiD UP // SPECIAL EVENT</div>
-                            <div style="font-size: 1.4rem; font-weight: 900; line-height: 1.1; letter-spacing: -0.5px;">${(d.trackName || d.eventName || 'RACE EVENT').toUpperCase()}</div>
+                            <div style="font-size: 1.6rem; font-weight: 900; line-height: 1.1; letter-spacing: -0.5px;">${(d.trackName || d.eventName || 'RACE EVENT').toUpperCase()}</div>
                             <div style="font-size: 0.7rem; opacity: 0.8; margin-top: 0.4rem; font-weight: 600;">${d.raceDate || ''}</div>
                         </div>
 
@@ -721,7 +721,7 @@ async function loadRecentResults() {
                         <!-- Bottom Banner -->
                         <div class="text-overlay" style="bottom: 1.5rem; left: 1.5rem; right: 1.5rem; display: flex; justify-content: space-between; align-items: flex-end;">
                             <div style="text-align: left;">
-                                <div style="font-size: 1.1rem; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase;">${Array.isArray(d.drivers) ? d.drivers.join(' - ') : d.drivers}</div>
+                                <div style="font-size: 1.1rem; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">${Array.isArray(d.drivers) ? d.drivers.join(' - ') : d.drivers}</div>
                                 <div style="font-size: 0.6rem; color: var(--primary); font-weight: 700; margin-top: 0.2rem; letter-spacing: 2px;">CONFIRMED TEAM ENTRY</div>
                             </div>
                         </div>
@@ -771,7 +771,7 @@ function openCardModal(data) {
             ${fgImg ? `<img src="${fgImg}" class="fg-layer" style="filter: drop-shadow(0 20px 40px rgba(0,0,0,0.9));">` : ''}
             
             <!-- Watermark Branding -->
-            <img src="assets/GridUpLogo.png" class="event-branding" style="opacity: 0.12;" onerror="this.style.display='none'">
+            <img src="assets/logo.png" class="event-branding" style="opacity: 0.12;" onerror="this.style.display='none'">
 
             <div class="gradient-overlay"></div>
             
@@ -796,7 +796,7 @@ function openCardModal(data) {
                     <div style="font-size: 1.25rem; color: var(--primary); font-weight: 700; margin-top: 0.5rem; letter-spacing: 4px;">OFFICIAL TEAM ENTRY</div>
                 </div>
                 <div style="background: rgba(255,255,255,0.08); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(12px);">
-                    <img src="assets/GridUpLogo.png" style="height: 60px; filter: brightness(0) invert(1);" onerror="this.style.display='none'">
+                    <img src="assets/logo.png" style="height: 60px; filter: brightness(0) invert(1);" onerror="this.style.display='none'">
                 </div>
             </div>
         </div>
