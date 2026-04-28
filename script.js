@@ -921,7 +921,7 @@ async function downloadActiveCard() {
 
     try {
         // 1. Load All Assets with CORS support
-        const bgUrl = d.teamAsset || d.rawUrl;
+        const bgUrl = "assets/poster-placeholder.png"; // Hardcoded override as requested
         const fgUrl = (d.rawUrl && d.teamAsset && d.rawUrl !== d.teamAsset) ? d.rawUrl : null;
         
         const [bgImg, fgImg, logo] = await Promise.all([
