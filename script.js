@@ -692,46 +692,58 @@ async function loadRecentResults() {
                     card.style.cursor = 'pointer';
                     card.onclick = () => openCardModal(d);
 
-                    // Use the custom poster if available, otherwise fall back to placeholder
+                    // Detect dedicated poster (rawUrl same as teamAsset = clean poster display)
+                    const isPoster = d.rawUrl && d.teamAsset && d.rawUrl === d.teamAsset;
                     const bgImg = d.teamAsset || d.rawUrl || "assets/poster-placeholder.png";
-                    const fgImg = d.rawUrl && d.teamAsset && d.rawUrl !== d.teamAsset ? d.rawUrl : null;
+                    const fgImg = !isPoster && d.rawUrl && d.teamAsset && d.rawUrl !== d.teamAsset ? d.rawUrl : null;
 
-                    card.innerHTML = `
-                        <!-- Layers -->
-                        <img src="${bgImg}" class="bg-layer">
-                        ${fgImg ? `<img src="${fgImg}" class="fg-layer">` : ''}
-                        
-                        <!-- Watermark Branding (Center Background) -->
-                        <img src="assets/logo.png" class="event-branding" onerror="this.style.display='none'">
-
-                        <div class="gradient-overlay"></div>
-                        
-                        <!-- Top Left Metadata -->
-                        <div class="text-overlay" style="top: 1.5rem; left: 1.5rem; text-align: left;">
-                            <div style="font-size: 0.6rem; color: var(--primary); font-weight: 900; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 0.2rem;">GRiD UP // SPECIAL EVENT</div>
-                            <div style="font-size: 1.6rem; font-weight: 900; line-height: 1.1; letter-spacing: -0.5px;">${(d.trackName || d.eventName || 'RACE EVENT').toUpperCase()}</div>
-                            <div style="font-size: 0.7rem; opacity: 0.8; margin-top: 0.4rem; font-weight: 600;">${d.raceDate || ''}</div>
-                        </div>
-
-                        <!-- Top Right Stats -->
-                        <div class="text-overlay" style="top: 1.5rem; right: 1.5rem; text-align: right;">
-                            <div style="font-size: 0.75rem; font-weight: 800; opacity: 0.9; color: var(--primary);">${d.carUsed || 'GT3'}</div>
-                            <div style="font-size: 1.2rem; font-weight: 900; margin-top: 0.2rem;">FINISH: ${d.position}</div>
-                        </div>
-
-                        <!-- Bottom Banner -->
-                        <div class="text-overlay" style="bottom: 1.5rem; left: 1.5rem; right: 1.5rem; display: flex; justify-content: space-between; align-items: flex-end;">
-                            <div style="text-align: left;">
-                                <div style="font-size: 1.1rem; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">${Array.isArray(d.drivers) ? d.drivers.join(' - ') : d.drivers}</div>
-                                <div style="font-size: 0.6rem; color: var(--primary); font-weight: 700; margin-top: 0.2rem; letter-spacing: 2px;">CONFIRMED TEAM ENTRY</div>
+                    if (isPoster) {
+                        // Clean full-bleed poster — no text overlays
+                        card.innerHTML = `
+                            <img src="${bgImg}" style="width:100%; height:100%; object-fit:cover; border-radius: inherit; display:block;">
+                            <!-- Interaction Overlay -->
+                            <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,207,255,0.08); opacity:0; transition:opacity 0.3s; z-index:6; border-radius:inherit;" class="hover-overlay">
+                                <div style="padding:0.75rem 1.5rem; border:2px solid var(--primary); color:var(--primary); font-weight:800; font-size:0.8rem; letter-spacing:2px; border-radius:4px; backdrop-filter:blur(5px);">VIEW POSTER</div>
                             </div>
-                        </div>
+                        `;
+                    } else {
+                        card.innerHTML = `
+                            <!-- Layers -->
+                            <img src="${bgImg}" class="bg-layer">
+                            ${fgImg ? `<img src="${fgImg}" class="fg-layer">` : ''}
+                            
+                            <!-- Watermark Branding (Center Background) -->
+                            <img src="assets/logo.png" class="event-branding" onerror="this.style.display='none'">
 
-                        <!-- Interaction Overlay -->
-                        <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,207,255,0.1); opacity: 0; transition: opacity 0.3s; z-index: 6;" class="hover-overlay">
-                             <div style="padding: 0.75rem 1.5rem; border: 2px solid var(--primary); color: var(--primary); font-weight: 800; font-size: 0.8rem; letter-spacing: 2px; border-radius: 4px; backdrop-filter: blur(5px);">EXPAND</div>
-                        </div>
-                    `;
+                            <div class="gradient-overlay"></div>
+                            
+                            <!-- Top Left Metadata -->
+                            <div class="text-overlay" style="top: 1.5rem; left: 1.5rem; text-align: left;">
+                                <div style="font-size: 0.6rem; color: var(--primary); font-weight: 900; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 0.2rem;">GRiD UP // SPECIAL EVENT</div>
+                                <div style="font-size: 1.6rem; font-weight: 900; line-height: 1.1; letter-spacing: -0.5px;">${(d.trackName || d.eventName || 'RACE EVENT').toUpperCase()}</div>
+                                <div style="font-size: 0.7rem; opacity: 0.8; margin-top: 0.4rem; font-weight: 600;">${d.raceDate || ''}</div>
+                            </div>
+
+                            <!-- Top Right Stats -->
+                            <div class="text-overlay" style="top: 1.5rem; right: 1.5rem; text-align: right;">
+                                <div style="font-size: 0.75rem; font-weight: 800; opacity: 0.9; color: var(--primary);">${d.carUsed || 'GT3'}</div>
+                                <div style="font-size: 1.2rem; font-weight: 900; margin-top: 0.2rem;">FINISH: ${d.position}</div>
+                            </div>
+
+                            <!-- Bottom Banner -->
+                            <div class="text-overlay" style="bottom: 1.5rem; left: 1.5rem; right: 1.5rem; display: flex; justify-content: space-between; align-items: flex-end;">
+                                <div style="text-align: left;">
+                                    <div style="font-size: 1.1rem; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">${Array.isArray(d.drivers) ? d.drivers.join(' - ') : d.drivers}</div>
+                                    <div style="font-size: 0.6rem; color: var(--primary); font-weight: 700; margin-top: 0.2rem; letter-spacing: 2px;">CONFIRMED TEAM ENTRY</div>
+                                </div>
+                            </div>
+
+                            <!-- Interaction Overlay -->
+                            <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,207,255,0.1); opacity: 0; transition: opacity 0.3s; z-index: 6;" class="hover-overlay">
+                                 <div style="padding: 0.75rem 1.5rem; border: 2px solid var(--primary); color: var(--primary); font-weight: 800; font-size: 0.8rem; letter-spacing: 2px; border-radius: 4px; backdrop-filter: blur(5px);">EXPAND</div>
+                            </div>
+                        `;
+                    }
 
                     card.onmouseenter = () => {
                         card.style.transform = 'translateY(-5px)';
@@ -761,47 +773,56 @@ function openCardModal(data) {
     const container = document.getElementById('modal-container');
     if (!modal || !container) return;
 
+    const isPoster = data.rawUrl && data.teamAsset && data.rawUrl === data.teamAsset;
     const bgImg = data.teamAsset || data.rawUrl || "assets/poster-placeholder.png";
-    const fgImg = data.rawUrl && data.teamAsset && data.rawUrl !== data.teamAsset ? data.rawUrl : null;
+    const fgImg = !isPoster && data.rawUrl && data.teamAsset && data.rawUrl !== data.teamAsset ? data.rawUrl : null;
 
-    // Render standardized high-fidelity version for the modal
-    container.innerHTML = `
-        <div class="card cinematic-poster" style="width: 100%; height: 100%; border-radius: 20px; box-shadow: 0 40px 80px rgba(0,0,0,0.9);">
-            <!-- Layers -->
-            <img src="${bgImg}" class="bg-layer">
-            ${fgImg ? `<img src="${fgImg}" class="fg-layer" style="filter: drop-shadow(0 20px 40px rgba(0,0,0,0.9));">` : ''}
-            
-            <!-- Watermark Branding -->
-            <img src="assets/logo.png" class="event-branding" style="opacity: 0.12;" onerror="this.style.display='none'">
-
-            <div class="gradient-overlay"></div>
-            
-            <!-- Metadata Overlay (Top Left) -->
-            <div class="text-overlay" style="top: 3rem; left: 4rem; text-align: left;">
-                <div style="font-size: 1.25rem; color: var(--primary); font-weight: 900; letter-spacing: 6px; text-transform: uppercase; margin-bottom: 0.5rem;">GRiD UP // SPECIAL EVENT</div>
-                <div style="font-size: 4rem; font-weight: 900; line-height: 1.1; letter-spacing: -1.5px;">${(data.trackName || data.eventName || 'RACE EVENT').toUpperCase()}</div>
-                <div style="font-size: 1.5rem; opacity: 0.8; margin-top: 1rem; font-weight: 600; letter-spacing: 2px;">${data.raceDate || ''}</div>
+    // Render modal — clean poster or standard race card
+    if (isPoster) {
+        container.innerHTML = `
+            <div style="width:100%; height:100%; border-radius:20px; box-shadow:0 40px 80px rgba(0,0,0,0.9); overflow:hidden; position:relative;">
+                <img src="${bgImg}" style="width:100%; height:100%; object-fit:contain; display:block; background:#000;">
             </div>
+        `;
+    } else {
+        container.innerHTML = `
+            <div class="card cinematic-poster" style="width: 100%; height: 100%; border-radius: 20px; box-shadow: 0 40px 80px rgba(0,0,0,0.9);">
+                <!-- Layers -->
+                <img src="${bgImg}" class="bg-layer">
+                ${fgImg ? `<img src="${fgImg}" class="fg-layer" style="filter: drop-shadow(0 20px 40px rgba(0,0,0,0.9));">` : ''}
+                
+                <!-- Watermark Branding -->
+                <img src="assets/logo.png" class="event-branding" style="opacity: 0.12;" onerror="this.style.display='none'">
 
-            <!-- Stats Overlay (Top Right) -->
-            <div class="text-overlay" style="top: 3rem; right: 4rem; text-align: right;">
-                <div style="font-size: 1.5rem; font-weight: 800; opacity: 0.9; color: var(--primary); letter-spacing: 1px;">${data.carUsed || 'GT3'}</div>
-                <div style="font-size: 3rem; font-weight: 900; margin-top: 0.5rem; text-shadow: 0 0 30px rgba(0,207,255,0.4);">FINISH: ${data.position}</div>
-                ${data.startPos ? `<div style="font-size: 1.5rem; opacity: 0.8; margin-top: 0.2rem; font-weight: 600;">STARTED: ${data.startPos}</div>` : ''}
-            </div>
-
-            <!-- Bottom Entry Details -->
-            <div class="text-overlay" style="bottom: 4rem; left: 4rem; right: 4rem; display: flex; justify-content: space-between; align-items: flex-end;">
-                <div style="text-align: left;">
-                    <div style="font-size: 2.5rem; font-weight: 900; letter-spacing: 2px; text-transform: uppercase;">${Array.isArray(data.drivers) ? data.drivers.join(' - ') : data.drivers}</div>
-                    <div style="font-size: 1.25rem; color: var(--primary); font-weight: 700; margin-top: 0.5rem; letter-spacing: 4px;">OFFICIAL TEAM ENTRY</div>
+                <div class="gradient-overlay"></div>
+                
+                <!-- Metadata Overlay (Top Left) -->
+                <div class="text-overlay" style="top: 3rem; left: 4rem; text-align: left;">
+                    <div style="font-size: 1.25rem; color: var(--primary); font-weight: 900; letter-spacing: 6px; text-transform: uppercase; margin-bottom: 0.5rem;">GRiD UP // SPECIAL EVENT</div>
+                    <div style="font-size: 4rem; font-weight: 900; line-height: 1.1; letter-spacing: -1.5px;">${(data.trackName || data.eventName || 'RACE EVENT').toUpperCase()}</div>
+                    <div style="font-size: 1.5rem; opacity: 0.8; margin-top: 1rem; font-weight: 600; letter-spacing: 2px;">${data.raceDate || ''}</div>
                 </div>
-                <div style="background: rgba(255,255,255,0.08); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(12px);">
-                    <img src="assets/logo.png" style="height: 60px;" onerror="this.style.display='none'">
+
+                <!-- Stats Overlay (Top Right) -->
+                <div class="text-overlay" style="top: 3rem; right: 4rem; text-align: right;">
+                    <div style="font-size: 1.5rem; font-weight: 800; opacity: 0.9; color: var(--primary); letter-spacing: 1px;">${data.carUsed || 'GT3'}</div>
+                    <div style="font-size: 3rem; font-weight: 900; margin-top: 0.5rem; text-shadow: 0 0 30px rgba(0,207,255,0.4);">FINISH: ${data.position}</div>
+                    ${data.startPos ? `<div style="font-size: 1.5rem; opacity: 0.8; margin-top: 0.2rem; font-weight: 600;">STARTED: ${data.startPos}</div>` : ''}
+                </div>
+
+                <!-- Bottom Entry Details -->
+                <div class="text-overlay" style="bottom: 4rem; left: 4rem; right: 4rem; display: flex; justify-content: space-between; align-items: flex-end;">
+                    <div style="text-align: left;">
+                        <div style="font-size: 2.5rem; font-weight: 900; letter-spacing: 2px; text-transform: uppercase;">${Array.isArray(data.drivers) ? data.drivers.join(' - ') : data.drivers}</div>
+                        <div style="font-size: 1.25rem; color: var(--primary); font-weight: 700; margin-top: 0.5rem; letter-spacing: 4px;">OFFICIAL TEAM ENTRY</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.08); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(12px);">
+                        <img src="assets/logo.png" style="height: 60px;" onerror="this.style.display='none'">
+                    </div>
                 </div>
             </div>
-        </div>
-    `;
+        `;
+    }
     
     modal.style.display = 'flex';
     setTimeout(() => { container.style.transform = 'scale(1)'; }, 10);
