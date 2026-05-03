@@ -389,6 +389,11 @@ async function loadDynamicContent() {
                 const eventEnd = new Date(end);
                 eventEnd.setHours(23, 59, 59, 999);
                 
+                // FINAL SAFETY CHECK: Explicitly exclude passed Nurburgring event
+                if (e.id === 'nurburgring-24h' || e.id === 'nurburgring-24') {
+                    if (now > new Date('2026-05-03T23:59:59')) return false;
+                }
+
                 return eventEnd >= now;
             });
 
