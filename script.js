@@ -383,52 +383,52 @@ async function loadDynamicContent() {
             // Filter events
             const upcomingEvents = allEvents.filter(e => {
                 const start = parseDate(e.startDate);
-                const end = parseDate(e.endDate) || start;
-                
+                const end = parseDate(e.endDate || e.startDate);
                 if (!start) return false;
 
-                // Set end to the very end of the day
                 const eventEnd = new Date(end);
                 eventEnd.setHours(23, 59, 59, 999);
                 
-                const isUpcoming = e.endDate ? (eventEnd >= now) : (start >= lookbackDate);
-                
-                // Debug logging for Nurburgring
-                if (e.id.includes('nurburgring')) {
-                    console.log(`Event: ${e.name}, Start: ${start.toISOString()}, End: ${end.toISOString()}, IsUpcoming: ${isUpcoming}, Current Now: ${now.toISOString()}`);
-                }
-                
-                return isUpcoming;
+                return eventEnd >= now;
             });
 
             const pastEvents = allEvents.filter(e => {
-                const start = parseDate(e.startDate);
-                const end = parseDate(e.endDate) || start;
-                
-                if (!start) return true;
+                const end = parseDate(e.endDate || e.startDate);
+                if (!end) return true;
 
                 const eventEnd = new Date(end);
                 eventEnd.setHours(23, 59, 59, 999);
                 
-                return e.endDate ? (eventEnd < now) : (start < lookbackDate);
+                return eventEnd < now;
             }); // Oldest first
 
             // A. Update Upcoming UI
             if (upcomingEvents.length === 0) {
                 if (upcomingTrack) upcomingTrack.innerHTML = '<p style="text-align: center; color: var(--text-muted); width: 100%;">No upcoming events scheduled.</p>';
                 if (fullEventList) fullEventList.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Stay tuned for future event dates.</p>';
+                
+                // Clear hero if no upcoming
+                const heroSubtitle = document.getElementById('hero-event-subtitle');
+                const heroTitle = document.getElementById('hero-event-name');
+                if (heroSubtitle) heroSubtitle.textContent = 'Next Major Race: TBA';
+                if (heroTitle) heroTitle.textContent = 'GRiD UP';
             } else {
                 const nextEvent = upcomingEvents[0];
                 const heroSubtitle = document.getElementById('hero-event-subtitle');
                 const heroTitle = document.getElementById('hero-event-name');
                 const heroLink = document.getElementById('hero-event-link');
                 
-                const startTime = new Date(nextEvent.startDate);
-                const isLive = startTime <= now;
+                const startTime = parseDate(nextEvent.startDate);
+                const endTime = parseDate(nextEvent.endDate || nextEvent.startDate);
+                endTime.setHours(23, 59, 59, 999);
+                
+                // Is live if now is between start and end of the scheduled dates
+                const isLive = now >= startTime && now <= endTime;
                 
                 if (heroSubtitle) {
                     heroSubtitle.textContent = isLive ? `LIVE NOW: ${nextEvent.name}` : `Next Major Race: ${nextEvent.name}`;
-                    if (isLive) heroSubtitle.style.color = '#ff0055'; 
+                    heroSubtitle.style.color = isLive ? '#ff0055' : 'var(--primary)';
+                    if (isLive) heroSubtitle.classList.add('animate-pulse');
                 }
                 
                 if (heroTitle) {
