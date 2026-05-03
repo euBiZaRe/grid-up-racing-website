@@ -692,7 +692,8 @@ async function loadRecentResults() {
                     card.style.cursor = 'pointer';
                     card.onclick = () => openCardModal(d);
 
-                    const bgImg = "assets/poster-placeholder.png"; // Hardcoded override as requested
+                    // Use the custom poster if available, otherwise fall back to placeholder
+                    const bgImg = d.teamAsset || d.rawUrl || "assets/poster-placeholder.png";
                     const fgImg = d.rawUrl && d.teamAsset && d.rawUrl !== d.teamAsset ? d.rawUrl : null;
 
                     card.innerHTML = `
@@ -760,7 +761,7 @@ function openCardModal(data) {
     const container = document.getElementById('modal-container');
     if (!modal || !container) return;
 
-    const bgImg = "assets/poster-placeholder.png"; // Hardcoded override as requested
+    const bgImg = data.teamAsset || data.rawUrl || "assets/poster-placeholder.png";
     const fgImg = data.rawUrl && data.teamAsset && data.rawUrl !== data.teamAsset ? data.rawUrl : null;
 
     // Render standardized high-fidelity version for the modal
