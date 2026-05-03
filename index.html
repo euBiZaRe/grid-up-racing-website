@@ -115,9 +115,17 @@
             <h2 style="color: var(--primary); margin-bottom: 1rem; text-align: center;">Recent Results</h2>
             <p style="color: var(--text-muted); text-align: center; margin-bottom: 3rem; font-size: 0.9rem;">The latest triumphs from the GRiD UP squad</p>
             
-            <div id="results-track" class="grid" style="grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 2rem;">
-                <!-- Dynamically populated from Firestore -->
-                <p style="text-align: center; color: var(--text-muted); grid-column: 1/-1;">Loading recent finishes...</p>
+            <div class="carousel-wrapper">
+                <div class="carousel-nav">
+                    <button class="carousel-btn prev-btn">←</button>
+                    <button class="carousel-btn next-btn">→</button>
+                </div>
+                <div class="upcoming-races-container">
+                    <div class="carousel-track" id="results-track">
+                        <!-- Dynamically populated from Firestore -->
+                        <p style="text-align: center; color: var(--text-muted); width: 100%;">Loading recent finishes...</p>
+                    </div>
+                </div>
             </div>
         </div>
     </section>

@@ -1622,6 +1622,20 @@ footer {
     overflow: hidden;
     box-shadow: 0 10px 40px rgba(0,0,0,0.6);
     transition: transform 0.3s ease;
+    flex: 0 0 450px; /* Fixed width for carousel usage */
+}
+
+/* Specific adjustment for cards in the carousel track */
+.carousel-track .card {
+    flex: 0 0 450px;
+    padding: 0; /* Let the poster content fill the card */
+    background: #000;
+}
+
+@media (max-width: 768px) {
+    .carousel-track .card {
+        flex: 0 0 300px;
+    }
 }
 .cinematic-poster:hover {
     transform: translateY(-5px);

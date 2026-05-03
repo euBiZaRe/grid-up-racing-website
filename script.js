@@ -207,10 +207,12 @@ function initCarousel() {
         let isDown = false;
         let startX;
         let scrollLeft;
+        let isPaused = false;
 
         // Mouse Drag Support
         track.addEventListener('mousedown', (e) => {
             isDown = true;
+            isPaused = true;
             track.style.cursor = 'grabbing';
             startX = e.pageX - container.offsetLeft;
             scrollLeft = container.scrollLeft;
@@ -218,11 +220,17 @@ function initCarousel() {
 
         track.addEventListener('mouseleave', () => {
             isDown = false;
+            isPaused = false;
             track.style.cursor = 'grab';
+        });
+
+        track.addEventListener('mouseenter', () => {
+            isPaused = true;
         });
 
         track.addEventListener('mouseup', () => {
             isDown = false;
+            isPaused = false;
             track.style.cursor = 'grab';
         });
 
@@ -240,12 +248,33 @@ function initCarousel() {
             
             prevBtn.addEventListener('click', () => {
                 container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+                isPaused = true;
+                setTimeout(() => { if (!track.matches(':hover')) isPaused = false; }, 5000);
             });
             
             nextBtn.addEventListener('click', () => {
                 container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+                isPaused = true;
+                setTimeout(() => { if (!track.matches(':hover')) isPaused = false; }, 5000);
             });
         }
+
+        // Auto Scroll Feature
+        setInterval(() => {
+            if (!isPaused && !isDown) {
+                const firstCard = track.firstElementChild;
+                if (!firstCard) return;
+                
+                const cardWidth = firstCard.offsetWidth + 24; // width + gap (1.5rem = 24px)
+                const isAtEnd = container.scrollLeft + container.offsetWidth >= container.scrollWidth - 20;
+                
+                if (isAtEnd) {
+                    container.scrollTo({ left: 0, behavior: 'smooth' });
+                } else {
+                    container.scrollBy({ left: cardWidth, behavior: 'smooth' });
+                }
+            }
+        }, 4000); // Scroll every 4 seconds
     });
 }
 
@@ -345,12 +374,22 @@ async function loadDynamicContent() {
 
             // Filter events
             const upcomingEvents = allEvents.filter(e => {
-                if (e.endDate) return new Date(e.endDate) >= now;
+                const eventEndDate = e.endDate ? new Date(e.endDate) : new Date(e.startDate);
+                // Set to end of day (23:59:59) for the respective date
+                eventEndDate.setHours(23, 59, 59, 999);
+                
+                // If it's a multi-day event, it stays upcoming until the end date has fully passed
+                if (e.endDate) return eventEndDate >= now;
+                
+                // For single-day events, use the 24h lookback window
                 return new Date(e.startDate) >= lookbackDate;
             });
 
             const pastEvents = allEvents.filter(e => {
-                if (e.endDate) return new Date(e.endDate) < now;
+                const eventEndDate = e.endDate ? new Date(e.endDate) : new Date(e.startDate);
+                eventEndDate.setHours(23, 59, 59, 999);
+                
+                if (e.endDate) return eventEndDate < now;
                 return new Date(e.startDate) < lookbackDate;
             }); // Oldest first
 
@@ -678,7 +717,7 @@ async function loadRecentResults() {
         try {
             const snap = await db.collection("race_results")
                 .orderBy("timestamp", "desc")
-                .limit(6)
+                .limit(10) // Increased limit for carousel
                 .get();
 
             if (snap.empty) {
@@ -1088,8 +1127,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const dbCheckInterval = setInterval(() => {
         if (typeof db !== 'undefined') {
             loadDynamicContent();
-            loadRecentResults(); // Added this call
-            checkLiveStreams(); // Watch Live feature
+            loadRecentResults();
+            checkLiveStreams();
+            // Re-initialize carousel logic after a short delay to catch dynamic elements
+            setTimeout(initCarousel, 1000);
             clearInterval(dbCheckInterval);
         }
     }, 100);
