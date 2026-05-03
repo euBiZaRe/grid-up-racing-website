@@ -372,25 +372,45 @@ async function loadDynamicContent() {
             const lookbackDate = new Date();
             lookbackDate.setHours(lookbackDate.getHours() - 24);
 
+            // Helper to parse dates from Firestore (handles strings and Timestamps)
+            const parseDate = (d) => {
+                if (!d) return null;
+                if (typeof d.toDate === 'function') return d.toDate();
+                if (d.seconds) return new Date(d.seconds * 1000);
+                return new Date(d);
+            };
+
             // Filter events
             const upcomingEvents = allEvents.filter(e => {
-                const eventEndDate = e.endDate ? new Date(e.endDate) : new Date(e.startDate);
-                // Set to end of day (23:59:59) for the respective date
-                eventEndDate.setHours(23, 59, 59, 999);
+                const start = parseDate(e.startDate);
+                const end = parseDate(e.endDate) || start;
                 
-                // If it's a multi-day event, it stays upcoming until the end date has fully passed
-                if (e.endDate) return eventEndDate >= now;
+                if (!start) return false;
+
+                // Set end to the very end of the day
+                const eventEnd = new Date(end);
+                eventEnd.setHours(23, 59, 59, 999);
                 
-                // For single-day events, use the 24h lookback window
-                return new Date(e.startDate) >= lookbackDate;
+                const isUpcoming = e.endDate ? (eventEnd >= now) : (start >= lookbackDate);
+                
+                // Debug logging for Nurburgring
+                if (e.id.includes('nurburgring')) {
+                    console.log(`Event: ${e.name}, Start: ${start.toISOString()}, End: ${end.toISOString()}, IsUpcoming: ${isUpcoming}, Current Now: ${now.toISOString()}`);
+                }
+                
+                return isUpcoming;
             });
 
             const pastEvents = allEvents.filter(e => {
-                const eventEndDate = e.endDate ? new Date(e.endDate) : new Date(e.startDate);
-                eventEndDate.setHours(23, 59, 59, 999);
+                const start = parseDate(e.startDate);
+                const end = parseDate(e.endDate) || start;
                 
-                if (e.endDate) return eventEndDate < now;
-                return new Date(e.startDate) < lookbackDate;
+                if (!start) return true;
+
+                const eventEnd = new Date(end);
+                eventEnd.setHours(23, 59, 59, 999);
+                
+                return e.endDate ? (eventEnd < now) : (start < lookbackDate);
             }); // Oldest first
 
             // A. Update Upcoming UI
