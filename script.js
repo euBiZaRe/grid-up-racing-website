@@ -368,6 +368,13 @@ async function loadDynamicContent() {
             const allEvents = [];
             snap.forEach(doc => allEvents.push({ id: doc.id, ...doc.data() }));
 
+            // Force explicit chronological sort to handle mix of manual and custom events
+            allEvents.sort((a, b) => {
+                const dateA = a.startDate || "";
+                const dateB = b.startDate || "";
+                return dateA.localeCompare(dateB);
+            });
+
             const now = new Date();
             const lookbackDate = new Date();
             lookbackDate.setHours(lookbackDate.getHours() - 24);
