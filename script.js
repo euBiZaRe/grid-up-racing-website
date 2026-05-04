@@ -301,7 +301,7 @@ async function loadDynamicContent() {
     const prefix = isSubdir ? '../' : '';
     const staticIds = [
         // Upcoming events with static pages
-        'imsa-classic-500', 'nurburgring-24h', 'indy-500', 'world-600',
+        'imsa-classic-500', 'indy-500', 'world-600',
         'thruxton-4h', 'watkins-glen-6h', 'spa-24hr', 'firecracker-400',
         'road-america-6h', 'brickyard-400', 'suzuka-1000km', 'petit-le-mans',
         'bathurst-1000', 'indy-8h', 'knoxville-nationals', 'portimao-1000',
@@ -309,7 +309,7 @@ async function loadDynamicContent() {
         'homestead-championship', 'sfl-mountain-showdown', 'scca-runoffs',
         '992-endurance-cup', 'winter-derby', 'chili-bowl', 'production-car-challenge',
         // Completed events with static pages
-        'iracing-roar', 'daytona-24', 'daytona-500', 'bathurst-12', 'sebring-12hr'
+        'iracing-roar', 'daytona-24', 'daytona-500', 'bathurst-12', 'sebring-12hr', 'nurburgring-24h'
     ];
     
     // Official Special Event Banners (sourced from iracing.com/special-events/)
@@ -321,9 +321,9 @@ async function loadDynamicContent() {
         'daytona-500':          `${BASE}/2025/12/iRSE-2026-Daytona-500.png`,
         'bathurst-12':          `${BASE}/2025/12/iRSE-2026-Bathurst-12.png`,
         'sebring-12hr':         `${BASE}/2025/12/iRSE-2026-Sebring-12-VCO.png`,
+        'nurburgring-24h':      `${BASE}/2025/12/iRSE-2026-Nurburgring-24H.png`,
         // Upcoming Events
         'imsa-classic-500':     `${BASE}/2026/03/iRSE-2026-IMSA-Classic-500.png`,
-        'nurburgring-24h':      `${BASE}/2025/12/iRSE-2026-Nurburgring-24H.png`,
         'indy-500':             `${BASE}/2025/12/iRSE-2026-Indy-500.png`,
         'world-600':            `${BASE}/2025/12/iRSE-2026-World-600.png`,
         'thruxton-4h':          `${BASE}/2025/12/iRSE-2026-4-Hours-at-Thruxton.png`,
@@ -404,6 +404,11 @@ async function loadDynamicContent() {
                 const eventEnd = new Date(end);
                 eventEnd.setHours(23, 59, 59, 999);
                 
+                // Consistency check for Nurburgring (matches the safety check in upcomingEvents)
+                if (e.id === 'nurburgring-24h' || e.id === 'nurburgring-24') {
+                    if (now > new Date('2026-05-03T23:59:59')) return true;
+                }
+
                 return eventEnd < now;
             }); // Oldest first
 
@@ -520,7 +525,7 @@ async function loadDynamicContent() {
             // D. Populate Past List
             const pastList = document.getElementById('dynamic-past-list');
             if (pastList) {
-                const hardcodedIds = ['iracing-roar', 'daytona-24', 'daytona-500', 'bathurst-12', 'sebring-12hr'];
+                const hardcodedIds = ['iracing-roar', 'daytona-24', 'daytona-500', 'bathurst-12', 'sebring-12hr', 'nurburgring-24h'];
                 const eventColors = ['var(--primary)', 'var(--secondary)', '#00ff88'];
                 pastList.innerHTML = '';
                 pastEvents.forEach((e, i) => {
