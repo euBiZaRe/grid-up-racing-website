@@ -525,7 +525,7 @@ async function loadDynamicContent() {
             // D. Populate Past List
             const pastList = document.getElementById('dynamic-past-list');
             if (pastList) {
-                const hardcodedIds = ['iracing-roar', 'daytona-24', 'daytona-500', 'bathurst-12', 'sebring-12hr', 'nurburgring-24h'];
+                const hardcodedIds = ['iracing-roar', 'daytona-24', 'daytona-500', 'bathurst-12', 'sebring-12hr', 'nurburgring-24h', 'imsa-classic-500'];
                 const eventColors = ['var(--primary)', 'var(--secondary)', '#00ff88'];
                 pastList.innerHTML = '';
                 pastEvents.forEach((e, i) => {
