@@ -249,7 +249,19 @@
                 // 2. Check for existing application
                 if (!db) return;
                 try {
-                    const snap = await db.collection('applications').where('discordUid', '==', user.uid).get();
+                    let snap = await db.collection('applications').where('discordUid', '==', user.uid).get();
+                    
+                    // Fallback cross-reference: If they applied while logged out, match their Discord Username.
+                    if (snap.empty && user.displayName) {
+                        snap = await db.collection('applications').where('discordUsername', '==', user.displayName).get();
+                        
+                        // Link their secure UID to the application for future checks
+                        if (!snap.empty) {
+                            const docId = snap.docs[0].id;
+                            db.collection('applications').doc(docId).update({ discordUid: user.uid });
+                        }
+                    }
+
                     if (!snap.empty) {
                         const doc = snap.docs[0];
                         CURRENT_APP_ID = doc.id;
