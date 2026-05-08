@@ -1681,3 +1681,156 @@ footer {
     z-index: 1;
     pointer-events: none;
 }
+
+/* Form Styles for Team Application */
+.form-container {
+    text-align: left;
+}
+
+.form-group {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.form-group:last-of-type {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 800;
+    font-size: 1.05rem;
+    margin-bottom: 0.25rem;
+    color: var(--text-main);
+}
+
+.required {
+    color: #e83e8c; /* Red asterisk */
+    margin-left: 0.25rem;
+}
+
+.form-help {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 1rem;
+    background: rgba(30, 34, 42, 0.6);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 6px;
+    color: var(--text-main);
+    font-family: inherit;
+    font-size: 0.95rem;
+    transition: var(--transition);
+}
+
+input[type="text"]:focus {
+    outline: none;
+    border-color: rgba(255,255,255,0.2);
+    box-shadow: 0 0 10px rgba(255,255,255,0.05);
+}
+
+/* Custom Radios & Checkboxes */
+.radio-group, .checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.radio-label, .checkbox-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 400;
+    color: #d1d5db;
+    font-size: 0.95rem;
+    position: relative;
+    padding-left: 2rem;
+    user-select: none;
+}
+
+.radio-label input, .checkbox-label input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.radio-custom, .checkbox-custom {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    height: 18px;
+    width: 18px;
+    background-color: transparent;
+    border: 1px solid rgba(255,255,255,0.2);
+    transition: var(--transition);
+}
+
+.radio-custom {
+    border-radius: 50%;
+}
+
+.checkbox-custom {
+    border-radius: 3px;
+}
+
+.radio-label:hover input ~ .radio-custom, 
+.checkbox-label:hover input ~ .checkbox-custom {
+    border-color: var(--primary);
+}
+
+.radio-label input:checked ~ .radio-custom,
+.checkbox-label input:checked ~ .checkbox-custom {
+    border-color: var(--primary);
+}
+
+.radio-custom:after, .checkbox-custom:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.radio-label input:checked ~ .radio-custom:after,
+.checkbox-label input:checked ~ .checkbox-custom:after {
+    display: block;
+}
+
+.radio-label .radio-custom:after {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--primary);
+}
+
+.checkbox-label .checkbox-custom:after {
+    left: 5px;
+    top: 1px;
+    width: 4px;
+    height: 9px;
+    border: solid var(--primary);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.submit-btn {
+    background: #db2777 !important; /* Pink/Red color from screenshot */
+    color: #fff !important;
+    padding: 0.8rem 2rem;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.submit-btn:hover {
+    background: #be185d !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(219, 39, 119, 0.4) !important;
+}

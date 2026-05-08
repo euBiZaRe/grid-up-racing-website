@@ -152,6 +152,7 @@
             </header>
 
             <nav class="admin-nav animate-fade-in" style="display: flex; gap: 1rem; margin-bottom: 3rem; background: rgba(255,255,255,0.02); padding: 0.75rem; border-radius: 12px; border: 1px solid var(--glass-border); position: relative; z-index: 100; overflow-x: auto;">
+                <button onclick="switchTab('applications')" class="btn btn-outline" id="tab-applications" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px; color: #ff3399;">APPLICATIONS</button>
                 <button onclick="switchTab('claims')" class="btn btn-outline" id="tab-claims" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">DRIVER CLAIMS</button>
                 <button onclick="switchTab('races')" class="btn btn-outline" id="tab-races" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">LINEUP MANAGER</button>
                 <button onclick="switchTab('availability')" class="btn btn-outline" id="tab-availability" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">AVAILABILITY</button>
@@ -163,6 +164,29 @@
                 <button onclick="switchTab('admins')" class="btn btn-outline" id="tab-admins" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">TEAM PERMISSIONS</button>
                 <button onclick="switchTab('system')" class="btn btn-outline" id="tab-system" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">SYSTEM SYNC</button>
             </nav>
+
+            <!-- Applications Section -->
+            <div id="section-applications" class="tab-content" style="display: none;">
+                <div class="glass" style="padding: 1.5rem; overflow-x: auto;">
+                <table class="claims-table mobile-table">
+                    <thead>
+                        <tr>
+                            <th>Applicant</th>
+                            <th>Experience</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="applications-list">
+                        <!-- Loaded dynamically -->
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: var(--text-muted);">Loading applications...</td>
+                        </tr>
+                    </tbody>
+                </table>
+                </div>
+            </div>
 
             <!-- Claims Section -->
             <div id="section-claims" class="tab-content" style="display: none;">
@@ -755,6 +779,19 @@
         </div>
     </main>
 
+    <!-- Application Details Modal -->
+    <div id="application-modal" class="modal-glass" style="display: none; z-index: 10001; background: #0a0a0c;">
+        <h2 class="glow-text" style="margin-bottom: 2rem;">Application Details</h2>
+        <div id="app-modal-content" style="display: grid; gap: 1.5rem; color: var(--text-main);">
+            <!-- Populated by JS -->
+        </div>
+        <div style="margin-top: 3rem; display: flex; gap: 1rem;">
+            <button onclick="hideApplicationModal()" class="btn btn-outline" style="flex: 1;">Close</button>
+            <button id="app-delete-btn" class="btn btn-primary" style="flex: 1; background: #ff3333; border: none;">Archive / Delete</button>
+        </div>
+    </div>
+    <div id="app-modal-backdrop" onclick="hideApplicationModal()" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000;"></div>
+
     <!-- Cinematic Card Modal (Expansion Overlay) -->
     <div id="card-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 10000; padding: 2rem; align-items: center; justify-content: center; backdrop-filter: blur(15px); transition: all 0.3s ease;">
         <div style="position: relative; max-width: 1100px; width: 100%; aspect-ratio: 16/9; transform: scale(0.9); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);" id="modal-container">
@@ -901,13 +938,14 @@
             }
         }
         function switchTab(tab) {
-            const sections = ['claims', 'races', 'admins', 'availability', 'roster', 'events', 'race-results', 'posters', 'streams', 'system'];
+            const sections = ['applications', 'claims', 'races', 'admins', 'availability', 'roster', 'events', 'race-results', 'posters', 'streams', 'system'];
             sections.forEach(s => {
                 const el = document.getElementById(`section-${s}`);
                 if (el) el.style.display = (tab === s) ? 'block' : 'none';
             });
 
             const titleMap = { 
+                'applications': 'Team Applications',
                 'claims': 'Driver Claims', 
                 'races': 'Lineup Manager', 
                 'admins': 'Team Permissions',
@@ -921,7 +959,7 @@
             };
             document.getElementById('admin-title').textContent = titleMap[tab];
             
-            const tabs = ['claims', 'races', 'admins', 'availability', 'roster', 'events', 'race-results', 'posters', 'streams', 'system'];
+            const tabs = ['applications', 'claims', 'races', 'admins', 'availability', 'roster', 'events', 'race-results', 'posters', 'streams', 'system'];
             tabs.forEach(t => {
                 const btn = document.getElementById(`tab-${t}`);
                 if (btn) {
@@ -930,6 +968,7 @@
                 }
             });
 
+            if (tab === 'applications') loadApplications();
             if (tab === 'roster') loadRoster();
 
             if (tab === 'admins') {
@@ -2580,6 +2619,131 @@
             document.getElementById('roster-slug').value = '';
             document.getElementById('roster-active').checked = true;
             document.getElementById('driver-form-title').textContent = "Add Team Member";
+        }
+
+        // --- Applications Management ---
+        async function loadApplications() {
+            const list = document.getElementById('applications-list');
+            if (!list) return;
+
+            if (!db) {
+                list.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #ff0099;">Error: Database connection failed.</td></tr>';
+                return;
+            }
+
+            try {
+                const snapshot = await db.collection("applications").orderBy("timestamp", "desc").get();
+                if (snapshot.empty) {
+                    list.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No applications found.</td></tr>';
+                    return;
+                }
+
+                let html = '';
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const date = data.timestamp ? data.timestamp.toDate().toLocaleDateString() : 'Unknown';
+                    const exp = data.experience ? data.experience.toUpperCase() : 'N/A';
+                    const loc = data.location ? data.location.toUpperCase() : 'N/A';
+                    const status = data.status || 'pending';
+                    
+                    let statusColor = 'var(--text-muted)';
+                    if (status === 'pending') statusColor = 'orange';
+                    if (status === 'accepted') statusColor = 'var(--primary)';
+
+                    html += `
+                        <tr>
+                            <td>
+                                <strong>${data.iracingName || 'Unknown'}</strong><br>
+                                <span style="font-size: 0.7rem; color: var(--text-muted);">${date}</span>
+                            </td>
+                            <td>${exp}</td>
+                            <td>${loc}</td>
+                            <td style="color: ${statusColor}; text-transform: uppercase; font-size: 0.8rem; font-weight: bold;">${status}</td>
+                            <td>
+                                <button onclick="viewApplication('${doc.id}')" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; margin-right: 5px;">View Details</button>
+                                <button onclick="deleteApplication('${doc.id}')" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; border-color: #ff3333; color: #ff3333;">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                list.innerHTML = html;
+            } catch (error) {
+                console.error("Error loading applications:", error);
+                list.innerHTML = `<tr><td colspan="5" style="text-align: center; color: red;">Error loading data: ${error.message}</td></tr>`;
+            }
+        }
+
+        async function viewApplication(id) {
+            try {
+                const doc = await db.collection("applications").doc(id).get();
+                if (!doc.exists) {
+                    alert('Application not found.');
+                    return;
+                }
+                const data = doc.data();
+                
+                const avail = Array.isArray(data.availability) ? data.availability.join(', ') : (data.availability || 'None');
+                const classes = Array.isArray(data.classes) ? data.classes.join(', ') : (data.classes || 'None');
+                
+                let html = `
+                    <div style="margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem;">
+                        <h3 style="color: var(--primary); margin-bottom: 0.5rem;">${data.iracingName || 'Unknown'}</h3>
+                        <p style="font-size: 0.8rem; color: var(--text-muted);">Applied on: ${data.timestamp ? data.timestamp.toDate().toLocaleString() : 'Unknown'}</p>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <p style="font-size: 0.7rem; color: var(--primary); margin-bottom: 0.2rem;">EXPERIENCE</p>
+                            <p style="font-size: 0.9rem;">${data.experience || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p style="font-size: 0.7rem; color: var(--primary); margin-bottom: 0.2rem;">LOCATION</p>
+                            <p style="font-size: 0.9rem;">${data.location || 'N/A'}</p>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 1rem;">
+                        <p style="font-size: 0.7rem; color: var(--primary); margin-bottom: 0.2rem;">AVAILABILITY</p>
+                        <p style="font-size: 0.9rem;">${avail}</p>
+                    </div>
+                    
+                    <div style="margin-top: 1rem;">
+                        <p style="font-size: 0.7rem; color: var(--primary); margin-bottom: 0.2rem;">PREFERRED CAR CLASSES</p>
+                        <p style="font-size: 0.9rem;">${classes}</p>
+                    </div>
+                    
+                    <div style="margin-top: 1rem; padding: 1rem; background: rgba(0,207,255,0.05); border-left: 2px solid var(--primary);">
+                        <p style="font-size: 0.7rem; color: var(--primary); margin-bottom: 0.2rem;">MATURITY CHECK</p>
+                        <p style="font-size: 0.9rem;">${data.maturity === 'understand' ? 'Accepted' : 'N/A'}</p>
+                    </div>
+                `;
+                
+                document.getElementById('app-modal-content').innerHTML = html;
+                document.getElementById('app-delete-btn').onclick = () => { deleteApplication(id); hideApplicationModal(); };
+                
+                document.getElementById('application-modal').style.display = 'block';
+                document.getElementById('app-modal-backdrop').style.display = 'block';
+            } catch (error) {
+                console.error("Error viewing application:", error);
+                alert('Error loading application details.');
+            }
+        }
+
+        function hideApplicationModal() {
+            document.getElementById('application-modal').style.display = 'none';
+            document.getElementById('app-modal-backdrop').style.display = 'none';
+        }
+
+        async function deleteApplication(id) {
+            if (!confirm('Are you sure you want to delete this application? This action cannot be undone.')) return;
+            try {
+                await db.collection("applications").doc(id).delete();
+                loadApplications();
+                hideApplicationModal();
+            } catch (error) {
+                console.error("Error deleting application:", error);
+                alert("Error deleting application: " + error.message);
+            }
         }
 
     </script>

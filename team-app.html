@@ -3,329 +3,241 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Team App | GRiD UP Sim Racing</title>
+    <title>Team Application | GRiD UP Sim Racing</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" type="image/png" href="assets/G_2.png">
-    <style>
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 2.5rem;
-            margin-top: 3rem;
-        }
-
-        .feature-card {
-            background: rgba(22, 27, 34, 0.4);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            overflow: hidden;
-            transition: var(--transition);
-        }
-
-        .feature-card:hover {
-            transform: translateY(-10px);
-            border-color: var(--primary);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px var(--primary-glow);
-        }
-
-        .feature-img-wrapper {
-            width: 100%;
-            aspect-ratio: 16/9;
-            overflow: hidden;
-            border-bottom: 1px solid var(--glass-border);
-        }
-
-        .feature-img-wrapper img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.5s ease;
-        }
-
-        .feature-card:hover .feature-img-wrapper img {
-            transform: scale(1.05);
-        }
-
-        .feature-info {
-            padding: 2rem;
-        }
-
-        .feature-info h3 {
-            color: var(--primary);
-            font-size: 1.25rem;
-            margin-bottom: 0.75rem;
-            letter-spacing: 1px;
-        }
-
-        .feature-info p {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-            line-height: 1.6;
-        }
-
-        .use-cases {
-            background: rgba(0, 207, 255, 0.02);
-            border-radius: 20px;
-            padding: 4rem;
-            margin-top: 6rem;
-            border: 1px solid rgba(0, 207, 255, 0.1);
-        }
-
-        .use-case-item {
-            margin-bottom: 2.5rem;
-        }
-
-        .use-case-item h4 {
-            color: #fff;
-            margin-bottom: 0.5rem;
-            font-size: 1.1rem;
-        }
-
-        .download-banner {
-            text-align: center;
-            padding: 6rem 2rem;
-            background: linear-gradient(rgba(10, 12, 16, 0.8), rgba(10, 12, 16, 0.8)), url('assets/team-app/Showcase.png');
-            background-size: cover;
-            background-position: center;
-            border-radius: 20px;
-            margin-top: 6rem;
-            border: 1px solid var(--glass-border);
-        }
-
-        @media (max-width: 768px) {
-            .feature-grid {
-                grid-template-columns: 1fr;
-            }
-            .use-cases {
-                padding: 2rem;
-            }
-        }
-    </style>
+    <link rel="icon" type="image/png" href="assets/logo.png">
 </head>
-<body class="team-app-page">
+<body class="event-detail-page">
     <nav id="navbar" class="scrolled">
         <div class="container nav-content">
             <a href="index.html" class="logo">
                 <img src="assets/logo.png" alt="GRiD UP" style="height: 40px; vertical-align: middle;">
             </a>
+            
             <div class="menu-toggle">
                 <span></span>
                 <span></span>
                 <span></span>
             </div>
-            <div class="nav-links">
-                <a href="index.html#home">Home</a>
-                <a href="index.html#about">About</a>
-                <a href="team-app.html" class="active" style="color: var(--primary);">Team App</a>
-                <a href="roster.html">Roster</a>
-                <a href="events.html">Events</a>
-                <a href="shop.html">Shop</a>
-                <a href="https://discord.gg/gridup" target="_blank"><img src="assets/discord_header.png" alt="Discord" style="height: 25px; vertical-align: middle;"></a>
-                <a href="login.html" id="login-link" class="btn btn-outline" style="padding: 0.5rem 1.25rem; font-size: 0.8rem; margin-left: 1rem;">Login</a>
-            </div>
+
+            <ul class="nav-links">
+                <li><a href="index.html#home">Home</a></li>
+                <li><a href="index.html#about">About</a></li>
+                <li><a href="team-app.html" class="active">Team App</a></li>
+                <li><a href="roster.html">Roster</a></li>
+                <li><a href="events.html">Events</a></li>
+                <li><a href="shop.html">Shop</a></li>
+                <li><a href="https://discord.gg/gridup" target="_blank"><img src="assets/discord_header.png" alt="Discord" style="height: 25px; vertical-align: middle;"></a></li>
+                <li><a href="login.html" id="login-link" class="btn btn-outline" style="padding: 0.5rem 1.25rem; font-size: 0.8rem; margin-left: 1rem;">Login</a></li>
+            </ul>
         </div>
     </nav>
 
     <header class="hero hero-small">
-        <img src="assets/team-app/Showcase.png" alt="GRiD UP Team App" class="hero-img" style="opacity: 0.2; filter: blur(5px);">
+        <img src="assets/bg-banner.png" alt="Team Application" class="hero-img" style="opacity: 0.2;">
         <div class="hero-overlay"></div>
         <div class="hero-content">
-            <p style="color: var(--primary); font-weight: 800; letter-spacing: 5px; text-transform: uppercase; margin-bottom: 1rem;">Performance Center</p>
-            <h1 class="glow-text" style="font-size: 4rem;">The Team App</h1>
-            <p style="color: var(--text-muted); font-weight: 400; text-transform: uppercase; letter-spacing: 4px; font-size: 0.8rem; max-width: 600px; margin: 1rem auto 0;">Next-Gen Telemetry & Team Management for Elite Endurance Racing</p>
+            <h1 class="glow-text">JOIN THE GRID</h1>
+            <p style="color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 2px;">Endurance Team Application</p>
         </div>
     </header>
 
-    <main class="container section">
-        <div style="text-align: center; max-width: 800px; margin: 0 auto 5rem;">
-            <h2 style="color: #fff; margin-bottom: 1.5rem;">Engineered for Victory</h2>
-            <p style="color: var(--text-muted); font-size: 1.1rem; line-height: 1.8;">
-                The GRiD UP Team App is more than just a telemetry tool—it's a comprehensive performance ecosystem. 
-                Built by racers for racers, it bridges the gap between raw data and actionable strategy, 
-                giving our team the edge needed to dominate the world's most demanding endurance events.
-            </p>
-        </div>
-
-        <section id="features">
-            <h2 class="section-title">Core Features</h2>
-            <div class="feature-grid">
-                <!-- Team Select -->
-                <div class="feature-card reveal">
-                    <div class="feature-img-wrapper">
-                        <img src="assets/team-app/1.Team Select.png" alt="Team Select">
-                    </div>
-                    <div class="feature-info">
-                        <h3>Team Hub</h3>
-                        <p>Effortlessly manage and switch between your racing teams. A professional entry point that synchronizes your identity across the entire GRiD UP ecosystem.</p>
-                    </div>
+    <main class="container" style="padding: 4rem 1rem;">
+        <div class="glass form-container" style="max-width: 800px; margin: 0 auto; padding: 2.5rem;">
+            <h2 style="margin-bottom: 0.5rem;">GRiD UP Endurance Team Application</h2>
+            <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 2.5rem; line-height: 1.6; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 2rem;">If you'd like to join our efforts to tackle some of the most difficult races in all of sim racing, then take a minute and fill out the form below so we can help get you on board!</p>
+            
+            <form id="application-form">
+                
+                <!-- Q1 -->
+                <div class="form-group">
+                    <label>1. What is your full name as it appears on your iRacing account and/or your iRacing account number?<span class="required">*</span></label>
+                    <p class="form-help">This information is only used to find you and send invites to our teams.</p>
+                    <input type="text" name="iracingName" placeholder="Answer here.." required>
                 </div>
 
-                <!-- Race Monitor -->
-                <div class="feature-card reveal">
-                    <div class="feature-img-wrapper">
-                        <img src="assets/team-app/2.Race Monitor.png" alt="Race Monitor">
-                    </div>
-                    <div class="feature-info">
-                        <h3>Race Monitor</h3>
-                        <p>Stay ahead of the competition with real-time race tracking. Monitor gaps, lap times, and track positions for every car on the grid with glassmorphic clarity.</p>
-                    </div>
-                </div>
-
-                <!-- Data Hub -->
-                <div class="feature-card reveal">
-                    <div class="feature-img-wrapper">
-                        <img src="assets/team-app/3. Data Hub.png" alt="Data Hub">
-                    </div>
-                    <div class="feature-info">
-                        <h3>Data Hub</h3>
-                        <p>The ultimate telemetry archive. Reconstruct GPS signatures, analyze throttle/brake traces, and compare historical laps to find every last tenth of a second.</p>
+                <!-- Q2 -->
+                <div class="form-group">
+                    <label>2. What is your experience level with official iRacing endurance events?<span class="required">*</span></label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="experience" value="expert" required>
+                            <span class="radio-custom"></span>
+                            I know iRacing endurance events like the back of my hand
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="experience" value="intermediate">
+                            <span class="radio-custom"></span>
+                            I have participated before.
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="experience" value="beginner">
+                            <span class="radio-custom"></span>
+                            I am new and/or learning.
+                        </label>
                     </div>
                 </div>
 
-                <!-- Team Lobby -->
-                <div class="feature-card reveal">
-                    <div class="feature-img-wrapper">
-                        <img src="assets/team-app/4.Team Lobby.png" alt="Team Lobby">
-                    </div>
-                    <div class="feature-info">
-                        <h3>Team Lobby</h3>
-                        <p>The social heart of the application. Synchronize with your teammates, see real-time presence, and coordinate your racing efforts before hitting the track.</p>
-                    </div>
-                </div>
-
-                <!-- Fuel Strategy -->
-                <div class="feature-card reveal">
-                    <div class="feature-img-wrapper">
-                        <img src="assets/team-app/5.Fuel Strategy.png" alt="Fuel Strategy">
-                    </div>
-                    <div class="feature-info">
-                        <h3>Fuel Strategy</h3>
-                        <p>Precision fuel calculations that adapt to live track conditions. Optimize your pit stops and ensure you finish every race with the perfect fuel margin.</p>
-                    </div>
-                </div>
-
-                <!-- Stint Manager -->
-                <div class="feature-card reveal">
-                    <div class="feature-img-wrapper">
-                        <img src="assets/team-app/6.Stint Manager.png" alt="Stint Manager">
-                    </div>
-                    <div class="feature-info">
-                        <h3>Stint Manager</h3>
-                        <p>Track driver swaps and stint lengths with pinpoint accuracy. Know exactly when your next driver needs to be ready and manage rotations effortlessly.</p>
-                    </div>
-                </div>
-
-                <!-- Car Health -->
-                <div class="feature-card reveal">
-                    <div class="feature-img-wrapper">
-                        <img src="assets/team-app/7.Car Health.png" alt="Car Health">
-                    </div>
-                    <div class="feature-info">
-                        <h3>Car Health</h3>
-                        <p>Monitor critical vehicle data in real-time. Track engine status, tire wear, and aerodynamic damage to make informed decisions during long stints.</p>
+                <!-- Q3 -->
+                <div class="form-group">
+                    <label>3. Where are you located?<span class="required">*</span></label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="location" value="pacific" required>
+                            <span class="radio-custom"></span>
+                            Pacific Region
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="location" value="western-na">
+                            <span class="radio-custom"></span>
+                            Western North America
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="location" value="central-na">
+                            <span class="radio-custom"></span>
+                            Central North America
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="location" value="eastern-na">
+                            <span class="radio-custom"></span>
+                            Eastern North America
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="location" value="uk-europe">
+                            <span class="radio-custom"></span>
+                            U.K. / Europe
+                        </label>
                     </div>
                 </div>
 
-                <!-- Race Control -->
-                <div class="feature-card reveal">
-                    <div class="feature-img-wrapper">
-                        <img src="assets/team-app/8.Race Control.png" alt="Race Control">
-                    </div>
-                    <div class="feature-info">
-                        <h3>Race Control</h3>
-                        <p>The tactical command center. Monitor the entire field, track incident patterns, and coordinate with your driver from a high-impact diagnostic dashboard.</p>
+                <!-- Q4 -->
+                <div class="form-group">
+                    <label>4. On a race weekend, what is your usual availability for iRacing?<span class="required">*</span></label>
+                    <p class="form-help">You may pick more than one</p>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="availability" value="early-morning">
+                            <span class="checkbox-custom"></span>
+                            Early morning
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="availability" value="mid-day">
+                            <span class="checkbox-custom"></span>
+                            Mid day
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="availability" value="afternoon">
+                            <span class="checkbox-custom"></span>
+                            Afternoon
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="availability" value="evening">
+                            <span class="checkbox-custom"></span>
+                            Evening
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="availability" value="late-night">
+                            <span class="checkbox-custom"></span>
+                            Late night
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="availability" value="midnight-oil">
+                            <span class="checkbox-custom"></span>
+                            Burning the midnight oil
+                        </label>
                     </div>
                 </div>
 
-                <!-- Setup Centre -->
-                <div class="feature-card reveal">
-                    <div class="feature-img-wrapper">
-                        <img src="assets/team-app/9.Setup Centre.png" alt="Setup Centre">
+                <!-- Q5 -->
+                <div class="form-group">
+                    <label>5. What types of car classes do you prefer to compete in?</label>
+                    <p class="form-help">You may pick more than one.</p>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="classes" value="prototypes">
+                            <span class="checkbox-custom"></span>
+                            Prototypes
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="classes" value="gt-cars">
+                            <span class="checkbox-custom"></span>
+                            GT Cars
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="classes" value="single-make">
+                            <span class="checkbox-custom"></span>
+                            Single Make / Cup Racing
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="classes" value="oval">
+                            <span class="checkbox-custom"></span>
+                            Oval Racing
+                        </label>
                     </div>
-                    <div class="feature-info">
-                        <h3>Setup Centre</h3>
-                        <p>A centralized hub for car setups. Create, share, and version car setups across the entire team to ensure everyone is running at peak performance.</p>
+                </div>
+
+                <!-- Q6 -->
+                <div class="form-group">
+                    <label>6. I understand that GRiD UP is a social experience just as much as it's a competitive environment, and that I will be held to a high standard of maturity in all aspects of my behavior.<span class="required">*</span></label>
+                    <div class="radio-group" style="margin-top: 1rem;">
+                        <label class="radio-label">
+                            <input type="radio" name="maturity" value="understand" required>
+                            <span class="radio-custom"></span>
+                            I understand
+                        </label>
                     </div>
                 </div>
 
-                <!-- Settings & Theming -->
-                <div class="feature-card reveal">
-                    <div class="feature-img-wrapper">
-                        <img src="assets/team-app/11.Settings.png" alt="Settings">
-                    </div>
-                    <div class="feature-info">
-                        <h3>Dynamic Theming</h3>
-                        <p>Make it yours. The built-in theming engine allows for full customization of colors, sidebars, and badges with custom hex code support.</p>
-                    </div>
+                <div class="form-submit" style="margin-top: 3rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 2rem;">
+                    <button type="submit" class="btn submit-btn">Submit</button>
                 </div>
-            </div>
-        </section>
-
-        <section id="use-cases" class="use-cases reveal">
-            <h2 style="color: var(--primary); margin-bottom: 3rem; text-align: center;">Strategic Use Cases</h2>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 3rem;">
-                <div class="use-case-item">
-                    <h4>Endurance Strategy</h4>
-                    <p style="color: var(--text-muted); font-size: 0.9rem;">
-                        Coordinate multi-hour stints by tracking fuel consumption and tire wear. Use the Stint Manager to ensure seamless driver transitions under pressure.
-                    </p>
-                </div>
-                <div class="use-case-item">
-                    <h4>Collaborative Setup Dev</h4>
-                    <p style="color: var(--text-muted); font-size: 0.9rem;">
-                        Iterate on car setups during practice sessions. Drivers can push setup changes to the Setup Centre for instant feedback and testing by teammates.
-                    </p>
-                </div>
-                <div class="use-case-item">
-                    <h4>Race Management</h4>
-                    <p style="color: var(--text-muted); font-size: 0.9rem;">
-                        Spotters and Team Managers use Race Control to monitor the field, track incidents, and provide critical information to the driver in real-time.
-                    </p>
-                </div>
-            </div>
-        </section>
-
-        <section id="technical-specs" style="margin-top: 6rem;">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
-                <div class="glass" style="padding: 2rem; text-align: center;">
-                    <h3 style="color: var(--primary); margin-bottom: 1rem; font-size: 1rem;">Telemetry Sync</h3>
-                    <p style="color: var(--text-muted); font-size: 0.85rem;">Ultra-low latency telemetry bridge for real-time driver feedback.</p>
-                </div>
-                <div class="glass" style="padding: 2rem; text-align: center;">
-                    <h3 style="color: var(--primary); margin-bottom: 1rem; font-size: 1rem;">Dynamic Theming</h3>
-                    <p style="color: var(--text-muted); font-size: 0.85rem;">Fully customizable UI with custom hex code support for team branding.</p>
-                </div>
-                <div class="glass" style="padding: 2rem; text-align: center;">
-                    <h3 style="color: var(--primary); margin-bottom: 1rem; font-size: 1rem;">Secure Identity</h3>
-                    <p style="color: var(--text-muted); font-size: 0.85rem;">Hardware-locked identification via Machine ID for secure team access.</p>
-                </div>
-            </div>
-        </section>
-
-        <div class="download-banner reveal">
-            <h2 style="font-size: 2.5rem; margin-bottom: 1.5rem;">Ready to Level Up?</h2>
-            <p style="color: var(--text-main); margin-bottom: 2.5rem; max-width: 600px; margin-left: auto; margin-right: auto; opacity: 0.8;">
-                The GRiD UP Team App is currently in exclusive distribution for team members and partners. 
-                Experience the next generation of sim racing management today.
-            </p>
-            <button onclick="downloadTeamApp()" class="btn" style="padding: 1.25rem 3.5rem;">Access Performance Center (Beta)</button>
-        </div>
-
-        <div style="text-align: center; margin-top: 4rem;">
-            <a href="index.html" class="btn btn-outline" style="padding: 1rem 3rem;">← Back to Home</a>
+            </form>
         </div>
     </main>
 
     <footer>
         <div class="container">
-            <p style="color: var(--text-muted); font-size: 0.8rem;">&copy; 2026 GRiD UP SIM RACING. ALL RIGHTS RESERVED.</p>
+            <p style="color: var(--text-muted); font-size: 0.8rem; text-align: center;">&copy; 2026 GRiD UP SIM RACING. ALL RIGHTS RESERVED.</p>
         </div>
     </footer>
 
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-    <script src="script.js?v=2"></script>
-    <script src="js/auth.js"></script>
+    <script src="script.js"></script>
+    
+    <script>
+        document.getElementById('application-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerText;
+            submitBtn.innerText = 'Submitting...';
+            submitBtn.disabled = true;
+
+            // Collect data
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            data.availability = formData.getAll('availability');
+            data.classes = formData.getAll('classes');
+            data.timestamp = firebase.firestore.FieldValue.serverTimestamp();
+            data.status = 'pending';
+            
+            try {
+                if (!db) throw new Error('Database connection not established.');
+                
+                await db.collection('applications').add(data);
+                
+                alert('Success! Your application has been submitted to GRiD UP.');
+                e.target.reset();
+            } catch (error) {
+                console.error("Error submitting application: ", error);
+                alert('There was an error submitting your application. Please try again or contact an admin on Discord.');
+            } finally {
+                submitBtn.innerText = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
 </body>
 </html>
