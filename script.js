@@ -843,77 +843,100 @@ async function loadRecentResults() {
 
 // 3. Load ALL Results (for results.html)
 async function loadAllResults() {
-    const allResultsGrid = document.getElementById('all-results-grid');
+    const allResultsGrid = document.getElementById('text-results-container');
     if (!allResultsGrid) return;
     
     try {
-        const snap = await db.collection("race_results")
+        allResultsGrid.innerHTML = '<p style="text-align: center; color: var(--text-muted); width: 100%;">Loading text results data...</p>';
+        
+        // 1. Fetch all event_results (the text data)
+        const resultsSnap = await db.collection("event_results")
             .orderBy("timestamp", "desc")
             .get();
 
-        if (snap.empty) {
-            allResultsGrid.innerHTML = '<p style="text-align: center; color: var(--text-muted); grid-column: 1/-1;">No results found.</p>';
-        } else {
-            allResultsGrid.innerHTML = '';
-            snap.forEach(doc => {
-                const d = doc.data();
-                const card = document.createElement('div');
-                card.className = 'card cinematic-poster reveal active';
-                card.style.cursor = 'pointer';
-                card.onclick = () => openCardModal(d);
-
-                const isPoster = d.rawUrl && d.teamAsset && d.rawUrl === d.teamAsset;
-                const bgImg = d.teamAsset || d.rawUrl || "assets/poster-placeholder.png";
-                const fgImg = !isPoster && d.rawUrl && d.teamAsset && d.rawUrl !== d.teamAsset ? d.rawUrl : null;
-
-                if (isPoster) {
-                    card.innerHTML = `
-                        <img src="${bgImg}" style="width:100%; height:100%; object-fit:cover; border-radius: inherit; display:block;">
-                        <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,207,255,0.08); opacity:0; transition:opacity 0.3s; z-index:6; border-radius:inherit;" class="hover-overlay">
-                            <div style="padding:0.75rem 1.5rem; border:2px solid var(--primary); color:var(--primary); font-weight:800; font-size:0.8rem; letter-spacing:2px; border-radius:4px; backdrop-filter:blur(5px);">VIEW POSTER</div>
-                        </div>
-                    `;
-                } else {
-                    card.innerHTML = `
-                        <img src="${bgImg}" class="bg-layer">
-                        ${fgImg ? `<img src="${fgImg}" class="fg-layer">` : ''}
-                        <img src="assets/logo.png" class="event-branding" onerror="this.style.display='none'">
-                        <div class="gradient-overlay"></div>
-                        <div class="text-overlay" style="top: 1.5rem; left: 1.5rem; text-align: left;">
-                            <div style="font-size: 0.6rem; color: var(--primary); font-weight: 900; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 0.2rem;">GRiD UP // SPECIAL EVENT</div>
-                            <div style="font-size: 1.6rem; font-weight: 900; line-height: 1.1; letter-spacing: -0.5px;">${(d.trackName || d.eventName || 'RACE EVENT').toUpperCase()}</div>
-                            <div style="font-size: 0.7rem; opacity: 0.8; margin-top: 0.4rem; font-weight: 600;">${d.raceDate || ''}</div>
-                        </div>
-                        <div class="text-overlay" style="top: 1.5rem; right: 1.5rem; text-align: right;">
-                            <div style="font-size: 0.75rem; font-weight: 800; opacity: 0.9; color: var(--primary);">${d.carUsed || 'GT3'}</div>
-                            <div style="font-size: 1.2rem; font-weight: 900; margin-top: 0.2rem;">FINISH: ${d.position}</div>
-                        </div>
-                        <div class="text-overlay" style="bottom: 1.5rem; left: 1.5rem; right: 1.5rem; display: flex; justify-content: space-between; align-items: flex-end;">
-                            <div style="text-align: left;">
-                                <div style="font-size: 1.1rem; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">${Array.isArray(d.drivers) ? d.drivers.join(' - ') : d.drivers}</div>
-                                <div style="font-size: 0.6rem; color: var(--primary); font-weight: 700; margin-top: 0.2rem; letter-spacing: 2px;">CONFIRMED TEAM ENTRY</div>
-                            </div>
-                        </div>
-                        <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,207,255,0.1); opacity: 0; transition: opacity 0.3s; z-index: 6;" class="hover-overlay">
-                             <div style="padding: 0.75rem 1.5rem; border: 2px solid var(--primary); color: var(--primary); font-weight: 800; font-size: 0.8rem; letter-spacing: 2px; border-radius: 4px; backdrop-filter: blur(5px);">EXPAND</div>
-                        </div>
-                    `;
-                }
-
-                card.onmouseenter = () => {
-                    card.style.transform = 'translateY(-5px)';
-                    card.querySelector('.hover-overlay').style.opacity = '1';
-                };
-                card.onmouseleave = () => {
-                    card.style.transform = 'translateY(0)';
-                    card.querySelector('.hover-overlay').style.opacity = '0';
-                };
-                allResultsGrid.appendChild(card);
-            });
+        if (resultsSnap.empty) {
+            allResultsGrid.innerHTML = '<p style="text-align: center; color: var(--text-muted); width: 100%;">No results found.</p>';
+            return;
         }
+
+        // 2. Fetch all events to map eventId -> event details
+        const eventsSnap = await db.collection("events").get();
+        const eventsMap = {};
+        eventsSnap.forEach(doc => {
+            eventsMap[doc.id] = doc.data();
+        });
+
+        // 3. Group results by eventId
+        const groupedResults = {};
+        const orderedEventIds = []; // To keep chronological order based on timestamp of first result
+        
+        resultsSnap.forEach(doc => {
+            const data = doc.data();
+            const eId = data.eventId;
+            if (!groupedResults[eId]) {
+                groupedResults[eId] = [];
+                orderedEventIds.push(eId);
+            }
+            groupedResults[eId].push(data);
+        });
+
+        allResultsGrid.innerHTML = '';
+
+        // 4. Render each group
+        orderedEventIds.forEach(eId => {
+            const eventData = eventsMap[eId] || { name: eId.replace(/-/g, ' ').toUpperCase(), date: '' };
+            const results = groupedResults[eId];
+            
+            // Build rows
+            let rowsHtml = '';
+            results.forEach(d => {
+                const drivers = Array.isArray(d.drivers) ? d.drivers.join(', ') : (d.drivers || 'TBA');
+                rowsHtml += `
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <td style="padding: 1.5rem 1rem;">
+                            <strong style="color: var(--text); font-size: 1.1rem; letter-spacing: 1px;">${d.teamName || 'GRiD UP'}</strong><br>
+                            <span style="font-size: 0.85rem; color: var(--primary);">${d.car || 'TBA'}</span><br>
+                            <span style="font-size: 0.8rem; color: var(--text-muted); opacity: 0.8; display: inline-block; margin-top: 0.3rem;">${drivers}</span>
+                        </td>
+                        <td style="padding: 1.5rem 1rem;">
+                            <span style="color: var(--text-muted);">${d.qualy || '-'}</span>
+                        </td>
+                        <td style="padding: 1.5rem 1rem;">
+                            <strong style="color: var(--primary); font-weight: 900; font-size: 1.2rem;">${d.finish || '-'}</strong>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            // Build section
+            const section = document.createElement('section');
+            section.className = 'glass card reveal active event-result-block';
+            section.innerHTML = `
+                <div style="margin-bottom: 2rem; border-bottom: 1px solid rgba(0, 207, 255, 0.2); padding-bottom: 1rem;">
+                    <h2 style="color: var(--primary); font-size: 1.8rem; letter-spacing: 1px; margin-bottom: 0.5rem;">${eventData.name || eId}</h2>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 2px;">${eventData.date || ''}</p>
+                </div>
+                <div class="results-table-container" style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; color: var(--text-muted); font-size: 0.95rem;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid var(--glass-border); text-align: left;">
+                                <th style="padding: 1rem;">Team / Car</th>
+                                <th style="padding: 1rem;">Qualifying</th>
+                                <th style="padding: 1rem;">Final Position</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rowsHtml}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            allResultsGrid.appendChild(section);
+        });
+
     } catch (error) {
-        console.error("Error loading all results:", error);
-        allResultsGrid.innerHTML = '<p style="color: #ff0055; grid-column: 1/-1;">Failed to load results.</p>';
+        console.error("Error loading text results:", error);
+        allResultsGrid.innerHTML = '<p style="color: #ff0055; width: 100%; text-align: center;">Failed to load data.</p>';
     }
 }
 
