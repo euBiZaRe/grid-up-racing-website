@@ -580,8 +580,15 @@ window.addEventListener('DOMContentLoaded', beautifyCurrentURL);
 
 // Helper for clean event links
 function getEventLink(id, isStatic = false) {
-    if (isStatic) return `events/${id}.html`;
-    return `events/details.html#${id}`;
+    const isSubdir = window.location.pathname.includes('/events/') || window.location.pathname.includes('/drivers/');
+    const prefix = isSubdir ? '../' : '';
+    
+    if (isStatic) {
+        const pastStatic = ['iracing-roar', 'daytona-24', 'daytona-500', 'bathurst-12', 'sebring-12hr'];
+        if (pastStatic.includes(id)) return `${prefix}events/past/${id}.html`;
+        return `${prefix}events/${id}.html`;
+    }
+    return `${prefix}events/details.html#${id}`;
 }
 
 // Hidden Download Handler for Team App
