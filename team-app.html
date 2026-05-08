@@ -58,7 +58,15 @@
 
                 <!-- Q2 -->
                 <div class="form-group">
-                    <label>2. What is your experience level with official iRacing endurance events?<span class="required">*</span></label>
+                    <label>2. What is your Discord Username?<span class="required">*</span></label>
+                    <p class="form-help" id="discord-help-text">We need this to contact you! If you are logged in, this will auto-fill.</p>
+                    <input type="text" id="discordIdInput" name="discordUsername" placeholder="e.g. gridup_driver" required>
+                    <input type="hidden" id="discordUidInput" name="discordUid">
+                </div>
+
+                <!-- Q3 -->
+                <div class="form-group">
+                    <label>3. What is your experience level with official iRacing endurance events?<span class="required">*</span></label>
                     <div class="radio-group">
                         <label class="radio-label">
                             <input type="radio" name="experience" value="expert" required>
@@ -78,9 +86,9 @@
                     </div>
                 </div>
 
-                <!-- Q3 -->
+                <!-- Q4 -->
                 <div class="form-group">
-                    <label>3. Where are you located?<span class="required">*</span></label>
+                    <label>4. Where are you located?<span class="required">*</span></label>
                     <div class="radio-group">
                         <label class="radio-label">
                             <input type="radio" name="location" value="pacific" required>
@@ -110,9 +118,9 @@
                     </div>
                 </div>
 
-                <!-- Q4 -->
+                <!-- Q5 -->
                 <div class="form-group">
-                    <label>4. On a race weekend, what is your usual availability for iRacing?<span class="required">*</span></label>
+                    <label>5. On a race weekend, what is your usual availability for iRacing?<span class="required">*</span></label>
                     <p class="form-help">You may pick more than one</p>
                     <div class="checkbox-group">
                         <label class="checkbox-label">
@@ -148,9 +156,9 @@
                     </div>
                 </div>
 
-                <!-- Q5 -->
+                <!-- Q6 -->
                 <div class="form-group">
-                    <label>5. What types of car classes do you prefer to compete in?</label>
+                    <label>6. What types of car classes do you prefer to compete in?</label>
                     <p class="form-help">You may pick more than one.</p>
                     <div class="checkbox-group">
                         <label class="checkbox-label">
@@ -176,9 +184,9 @@
                     </div>
                 </div>
 
-                <!-- Q6 -->
+                <!-- Q7 -->
                 <div class="form-group">
-                    <label>6. I understand that GRiD UP is a social experience just as much as it's a competitive environment, and that I will be held to a high standard of maturity in all aspects of my behavior.<span class="required">*</span></label>
+                    <label>7. I understand that GRiD UP is a social experience just as much as it's a competitive environment, and that I will be held to a high standard of maturity in all aspects of my behavior.<span class="required">*</span></label>
                     <div class="radio-group" style="margin-top: 1rem;">
                         <label class="radio-label">
                             <input type="radio" name="maturity" value="understand" required>
@@ -208,6 +216,26 @@
     <script src="script.js"></script>
     
     <script>
+        // Auto-fill Discord info if logged in
+        function onAuthReady(user) {
+            const discordInput = document.getElementById('discordIdInput');
+            const uidInput = document.getElementById('discordUidInput');
+            const helpText = document.getElementById('discord-help-text');
+            
+            if (user && discordInput) {
+                discordInput.value = user.displayName || 'Discord User';
+                discordInput.readOnly = true;
+                discordInput.style.backgroundColor = 'rgba(0, 207, 255, 0.1)';
+                discordInput.style.borderColor = 'var(--primary)';
+                
+                if (uidInput) uidInput.value = user.uid;
+                
+                if (helpText) {
+                    helpText.innerHTML = '<span style="color: var(--primary);">✓ Auto-filled from your Discord login.</span>';
+                }
+            }
+        }
+
         document.getElementById('application-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             

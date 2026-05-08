@@ -2688,6 +2688,7 @@
                 let html = `
                     <div style="margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem;">
                         <h3 style="color: var(--primary); margin-bottom: 0.5rem;">${data.iracingName || 'Unknown'}</h3>
+                        <p style="font-size: 0.85rem; color: #5865F2; margin-bottom: 0.5rem;"><strong>Discord:</strong> ${data.discordUsername || 'Not provided'} ${data.discordUid ? `<span style="color: var(--text-muted); font-size: 0.7rem;">(UID: ${data.discordUid})</span>` : ''}</p>
                         <p style="font-size: 0.8rem; color: var(--text-muted);">Applied on: ${data.timestamp ? data.timestamp.toDate().toLocaleString() : 'Unknown'}</p>
                     </div>
                     
