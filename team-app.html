@@ -47,6 +47,15 @@
             <h2 style="margin-bottom: 0.5rem;">GRiD UP Endurance Team Application</h2>
             <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 2.5rem; line-height: 1.6; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 2rem;">If you'd like to join our efforts to tackle some of the most difficult races in all of sim racing, then take a minute and fill out the form below so we can help get you on board!</p>
             
+            <div id="application-status-tracker" style="display: none; text-align: center; padding: 2rem 0; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid var(--glass-border);">
+                <h3 style="margin-bottom: 1.5rem; color: var(--primary);">Your Application Status</h3>
+                <div id="app-status-badge" style="display: inline-block; padding: 1rem 3rem; border-radius: 4px; font-weight: 800; font-size: 1.5rem; margin-bottom: 1.5rem; letter-spacing: 3px; text-transform: uppercase; background: rgba(255,255,255,0.05); border: 2px solid var(--text-muted); color: var(--text-muted);">
+                    LOADING...
+                </div>
+                <p id="app-status-message" style="color: var(--text-main); margin-bottom: 2rem; font-size: 0.95rem; line-height: 1.5; max-width: 500px; margin-left: auto; margin-right: auto;">Please wait while we securely check your application status in the system.</p>
+                <button id="withdraw-app-btn" onclick="withdrawApplication()" class="btn btn-outline" style="border-color: #ff3333; color: #ff3333; display: none;">Withdraw Application</button>
+            </div>
+
             <form id="application-form">
                 
                 <!-- Q1 -->
@@ -216,13 +225,16 @@
     <script src="script.js"></script>
     
     <script>
-        // Auto-fill Discord info if logged in
-        function onAuthReady(user) {
+        // Auto-fill Discord info and check application status if logged in
+        let CURRENT_APP_ID = null;
+
+        async function onAuthReady(user) {
             const discordInput = document.getElementById('discordIdInput');
             const uidInput = document.getElementById('discordUidInput');
             const helpText = document.getElementById('discord-help-text');
             
             if (user && discordInput) {
+                // 1. Auto-fill Form
                 discordInput.value = user.displayName || 'Discord User';
                 discordInput.readOnly = true;
                 discordInput.style.backgroundColor = 'rgba(0, 207, 255, 0.1)';
@@ -233,6 +245,67 @@
                 if (helpText) {
                     helpText.innerHTML = '<span style="color: var(--primary);">✓ Auto-filled from your Discord login.</span>';
                 }
+
+                // 2. Check for existing application
+                if (!db) return;
+                try {
+                    const snap = await db.collection('applications').where('discordUid', '==', user.uid).get();
+                    if (!snap.empty) {
+                        const doc = snap.docs[0];
+                        CURRENT_APP_ID = doc.id;
+                        const status = doc.data().status || 'pending';
+                        
+                        document.getElementById('application-form').style.display = 'none';
+                        document.getElementById('application-status-tracker').style.display = 'block';
+                        
+                        const badge = document.getElementById('app-status-badge');
+                        const msg = document.getElementById('app-status-message');
+                        const withdrawBtn = document.getElementById('withdraw-app-btn');
+                        
+                        badge.innerText = status;
+                        
+                        if (status === 'pending') {
+                            badge.style.borderColor = 'orange';
+                            badge.style.color = 'orange';
+                            badge.style.background = 'rgba(255, 165, 0, 0.1)';
+                            msg.innerText = "Your application has been received and is waiting for an admin to review it. Thank you for your patience!";
+                            withdrawBtn.style.display = 'inline-block';
+                        } else if (status === 'processing') {
+                            badge.style.borderColor = '#00CFFF';
+                            badge.style.color = '#00CFFF';
+                            badge.style.background = 'rgba(0, 207, 255, 0.1)';
+                            msg.innerText = "An admin is currently reviewing your application. Keep an eye on your Discord DMs!";
+                            withdrawBtn.style.display = 'none';
+                        } else if (status === 'approved') {
+                            badge.style.borderColor = '#00ff88';
+                            badge.style.color = '#00ff88';
+                            badge.style.background = 'rgba(0, 255, 136, 0.1)';
+                            msg.innerText = "Congratulations! Your application has been approved. Welcome to the GRiD UP Endurance team!";
+                            withdrawBtn.style.display = 'none';
+                        } else if (status === 'denied') {
+                            badge.style.borderColor = '#ff3333';
+                            badge.style.color = '#ff3333';
+                            badge.style.background = 'rgba(255, 51, 51, 0.1)';
+                            msg.innerText = "Unfortunately, your application has been denied at this time. Thank you for your interest in GRiD UP.";
+                            withdrawBtn.style.display = 'none';
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error checking application status:", e);
+                }
+            }
+        }
+
+        async function withdrawApplication() {
+            if (!CURRENT_APP_ID) return;
+            if (!confirm('Are you sure you want to withdraw your application? This cannot be undone.')) return;
+            
+            try {
+                await db.collection('applications').doc(CURRENT_APP_ID).delete();
+                alert('Your application has been withdrawn.');
+                location.reload();
+            } catch (e) {
+                alert('Error withdrawing application: ' + e.message);
             }
         }
 
@@ -258,7 +331,7 @@
                 await db.collection('applications').add(data);
                 
                 alert('Success! Your application has been submitted to GRiD UP.');
-                e.target.reset();
+                location.reload();
             } catch (error) {
                 console.error("Error submitting application: ", error);
                 alert('There was an error submitting your application. Please try again or contact an admin on Discord.');

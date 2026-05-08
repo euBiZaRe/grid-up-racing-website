@@ -2648,7 +2648,9 @@
                     
                     let statusColor = 'var(--text-muted)';
                     if (status === 'pending') statusColor = 'orange';
-                    if (status === 'accepted') statusColor = 'var(--primary)';
+                    if (status === 'processing') statusColor = '#00CFFF';
+                    if (status === 'approved') statusColor = '#00ff88';
+                    if (status === 'denied') statusColor = '#ff3333';
 
                     html += `
                         <tr>
@@ -2717,6 +2719,15 @@
                         <p style="font-size: 0.7rem; color: var(--primary); margin-bottom: 0.2rem;">MATURITY CHECK</p>
                         <p style="font-size: 0.9rem;">${data.maturity === 'understand' ? 'Accepted' : 'N/A'}</p>
                     </div>
+
+                    <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <p style="font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">UPDATE APPLICATION STATUS</p>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button onclick="updateApplicationStatus('${id}', 'processing')" class="btn btn-outline" style="flex: 1; font-size: 0.75rem; padding: 0.6rem; border-color: #00CFFF; color: #00CFFF;">Processing</button>
+                            <button onclick="updateApplicationStatus('${id}', 'approved')" class="btn btn-outline" style="flex: 1; font-size: 0.75rem; padding: 0.6rem; border-color: #00ff88; color: #00ff88;">Approve</button>
+                            <button onclick="updateApplicationStatus('${id}', 'denied')" class="btn btn-outline" style="flex: 1; font-size: 0.75rem; padding: 0.6rem; border-color: #ff3333; color: #ff3333;">Deny</button>
+                        </div>
+                    </div>
                 `;
                 
                 document.getElementById('app-modal-content').innerHTML = html;
@@ -2733,6 +2744,20 @@
         function hideApplicationModal() {
             document.getElementById('application-modal').style.display = 'none';
             document.getElementById('app-modal-backdrop').style.display = 'none';
+        }
+
+        async function updateApplicationStatus(id, newStatus) {
+            try {
+                await db.collection("applications").doc(id).update({
+                    status: newStatus
+                });
+                alert(`Application status updated to: ${newStatus.toUpperCase()}`);
+                loadApplications();
+                hideApplicationModal();
+            } catch (error) {
+                console.error("Error updating application status:", error);
+                alert("Error updating status: " + error.message);
+            }
         }
 
         async function deleteApplication(id) {

@@ -619,7 +619,7 @@ function downloadTeamApp() {
             }
 
             // Don't auto-load for generic names that aren't real event IDs
-            const genericNames = ['details', 'events', 'index', 'admin', 'roster'];
+            const genericNames = ['details', 'events', 'index', 'admin', 'roster', 'team-app'];
             if (pageName && !genericNames.includes(pageName) && mainSection) {
                 console.log("Event Page Detected:", pageName, "Loading result data...");
                 const anchor = document.getElementById('results-anchor') || 
