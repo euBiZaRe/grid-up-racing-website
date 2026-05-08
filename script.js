@@ -562,7 +562,7 @@ async function loadDynamicContent() {
         }
     } catch (error) {
         console.error("Error loading events:", error);
-        if (upcomingTrack) upcomingTrack.innerHTML = '<p style="color: #ff0055;">Failed to load schedule.</p>';
+        if (upcomingTrack) upcomingTrack.innerHTML = `<p style="color: #ff0055;">Failed to load schedule: ${error.message || error.toString()}</p>`;
     }
 }
 
