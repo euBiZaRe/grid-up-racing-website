@@ -841,6 +841,82 @@ async function loadRecentResults() {
     }
 }
 
+// 3. Load ALL Results (for results.html)
+async function loadAllResults() {
+    const allResultsGrid = document.getElementById('all-results-grid');
+    if (!allResultsGrid) return;
+    
+    try {
+        const snap = await db.collection("race_results")
+            .orderBy("timestamp", "desc")
+            .get();
+
+        if (snap.empty) {
+            allResultsGrid.innerHTML = '<p style="text-align: center; color: var(--text-muted); grid-column: 1/-1;">No results found.</p>';
+        } else {
+            allResultsGrid.innerHTML = '';
+            snap.forEach(doc => {
+                const d = doc.data();
+                const card = document.createElement('div');
+                card.className = 'card cinematic-poster reveal active';
+                card.style.cursor = 'pointer';
+                card.onclick = () => openCardModal(d);
+
+                const isPoster = d.rawUrl && d.teamAsset && d.rawUrl === d.teamAsset;
+                const bgImg = d.teamAsset || d.rawUrl || "assets/poster-placeholder.png";
+                const fgImg = !isPoster && d.rawUrl && d.teamAsset && d.rawUrl !== d.teamAsset ? d.rawUrl : null;
+
+                if (isPoster) {
+                    card.innerHTML = `
+                        <img src="${bgImg}" style="width:100%; height:100%; object-fit:cover; border-radius: inherit; display:block;">
+                        <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,207,255,0.08); opacity:0; transition:opacity 0.3s; z-index:6; border-radius:inherit;" class="hover-overlay">
+                            <div style="padding:0.75rem 1.5rem; border:2px solid var(--primary); color:var(--primary); font-weight:800; font-size:0.8rem; letter-spacing:2px; border-radius:4px; backdrop-filter:blur(5px);">VIEW POSTER</div>
+                        </div>
+                    `;
+                } else {
+                    card.innerHTML = `
+                        <img src="${bgImg}" class="bg-layer">
+                        ${fgImg ? `<img src="${fgImg}" class="fg-layer">` : ''}
+                        <img src="assets/logo.png" class="event-branding" onerror="this.style.display='none'">
+                        <div class="gradient-overlay"></div>
+                        <div class="text-overlay" style="top: 1.5rem; left: 1.5rem; text-align: left;">
+                            <div style="font-size: 0.6rem; color: var(--primary); font-weight: 900; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 0.2rem;">GRiD UP // SPECIAL EVENT</div>
+                            <div style="font-size: 1.6rem; font-weight: 900; line-height: 1.1; letter-spacing: -0.5px;">${(d.trackName || d.eventName || 'RACE EVENT').toUpperCase()}</div>
+                            <div style="font-size: 0.7rem; opacity: 0.8; margin-top: 0.4rem; font-weight: 600;">${d.raceDate || ''}</div>
+                        </div>
+                        <div class="text-overlay" style="top: 1.5rem; right: 1.5rem; text-align: right;">
+                            <div style="font-size: 0.75rem; font-weight: 800; opacity: 0.9; color: var(--primary);">${d.carUsed || 'GT3'}</div>
+                            <div style="font-size: 1.2rem; font-weight: 900; margin-top: 0.2rem;">FINISH: ${d.position}</div>
+                        </div>
+                        <div class="text-overlay" style="bottom: 1.5rem; left: 1.5rem; right: 1.5rem; display: flex; justify-content: space-between; align-items: flex-end;">
+                            <div style="text-align: left;">
+                                <div style="font-size: 1.1rem; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">${Array.isArray(d.drivers) ? d.drivers.join(' - ') : d.drivers}</div>
+                                <div style="font-size: 0.6rem; color: var(--primary); font-weight: 700; margin-top: 0.2rem; letter-spacing: 2px;">CONFIRMED TEAM ENTRY</div>
+                            </div>
+                        </div>
+                        <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,207,255,0.1); opacity: 0; transition: opacity 0.3s; z-index: 6;" class="hover-overlay">
+                             <div style="padding: 0.75rem 1.5rem; border: 2px solid var(--primary); color: var(--primary); font-weight: 800; font-size: 0.8rem; letter-spacing: 2px; border-radius: 4px; backdrop-filter: blur(5px);">EXPAND</div>
+                        </div>
+                    `;
+                }
+
+                card.onmouseenter = () => {
+                    card.style.transform = 'translateY(-5px)';
+                    card.querySelector('.hover-overlay').style.opacity = '1';
+                };
+                card.onmouseleave = () => {
+                    card.style.transform = 'translateY(0)';
+                    card.querySelector('.hover-overlay').style.opacity = '0';
+                };
+                allResultsGrid.appendChild(card);
+            });
+        }
+    } catch (error) {
+        console.error("Error loading all results:", error);
+        allResultsGrid.innerHTML = '<p style="color: #ff0055; grid-column: 1/-1;">Failed to load results.</p>';
+    }
+}
+
 
 // --- GLOBAL CINEMATIC POSTER ENGINE ---
 let ACTIVE_CARD_DATA = null;
@@ -1167,6 +1243,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof db !== 'undefined') {
             loadDynamicContent();
             loadRecentResults();
+            loadAllResults();
             checkLiveStreams();
             // Re-initialize carousel logic after a short delay to catch dynamic elements
             setTimeout(initCarousel, 1000);
