@@ -1,14 +1,14 @@
 import json
 import os
 import re
-import requests
 import sys
+import time
+from playwright.sync_api import sync_playwright
 
 # Configuration
 DRIVERS_JSON = os.path.join(os.path.dirname(__file__), "drivers.json")
 TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), "../drivers/driver-template.html")
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "../drivers")
-G61_PAT = os.environ.get("G61_PAT")
 
 def generate_filename(name):
     # Sanitize name for filename
@@ -21,69 +21,89 @@ def get_license_class(license_str):
     first_char = license_str[0].upper()
     return "license-" + first_char.lower()
 
-def fetch_driver_data_api(slug):
-    """Fetch driver data using the Garage 61 API."""
-    if not G61_PAT:
-        print("G61_PAT not set, skipping API fetch.")
-        return None
+def fetch_driver_data_scrape(slug):
+    """Fetch driver data by scraping the public Garage 61 profile."""
+    url = f"https://garage61.net/app/drivers/{slug}"
+    
+    data = {
+        "nickname": "", 
+        "memberSince": "N/A", 
+        "iRatings": {}, 
+        "licenseLevels": {}, 
+        "iRatingPercentages": {}, 
+        "totalLaps": "0", 
+        "cleanPercentage": "0", 
+        "timeOnTrack": "N/A"
+    }
 
-    headers = {"Authorization": f"Bearer {G61_PAT}"}
-    
-    # Garage61 API Endpoints (estimated from community wrappers)
-    # 1. Driver Info
-    # 2. Driver Stats
-    
-    data = {"nickname": "", "memberSince": "N/A", "iRatings": {}, "licenseLevels": {}, "iRatingPercentages": {}, "totalLaps": "0", "cleanPercentage": "0", "timeOnTrack": "N/A"}
-    
     try:
-        # Fetch basic profile
-        profile_url = f"https://api.garage61.net/v1/drivers/{slug}"
-        resp = requests.get(profile_url, headers=headers)
-        if resp.status_code == 200:
-            profile = resp.json()
-            data["nickname"] = profile.get("nickname", "")
-            data["memberSince"] = profile.get("createdAt", "N/A").split("T")[0]
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            context = browser.new_context(user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+            page = context.new_page()
             
-            # Connected accounts for iRacing stats
-            for account in profile.get("connectedAccounts", []):
-                if account.get("provider") == "iracing":
-                    # iRacing data is often nested
-                    # Note: API structure might vary, this is a best-guess based on public wrappers
-                    stats = account.get("statistics", {})
-                    
-                    disciplines = {
-                        "sports": "SPORTS",
-                        "formula": "FORMULA",
-                        "oval": "OVAL",
-                        "dirt_oval": "DIRT"
-                    }
-                    
-                    for api_key, internal_key in disciplines.items():
-                        ir_data = stats.get(api_key, {})
-                        ir_val = ir_data.get("iRating", 0)
-                        lic_text = ir_data.get("license", {}).get("groupName", "R") + " " + str(ir_data.get("license", {}).get("safetyRating", "2.50"))
+            page.goto(url, wait_until="networkidle", timeout=30000)
+            
+            # Wait for the statistics table to load
+            page.wait_for_selector(".statistics", timeout=15000)
+            
+            # 1. Scrape Nickname
+            nickname_element = page.locator("h1").first
+            if nickname_element.count() > 0:
+                data["nickname"] = nickname_element.text_content().strip()
+
+            # 2. Scrape Member Since
+            mem_since = page.locator("dt:has-text('Member since') + dd").first
+            if mem_since.count() > 0:
+                data["memberSince"] = mem_since.text_content().strip()
+
+            # 3. Scrape iRatings and Licenses
+            disciplines = {
+                "Sports Car": "SPORTS",
+                "Formula": "FORMULA",
+                "Formula Car": "FORMULA", # fallback
+                "Oval": "OVAL",
+                "Dirt Oval": "DIRT"
+            }
+            
+            for display_name, internal_key in disciplines.items():
+                row = page.locator(f"tr:has-text('{display_name}')").first
+                if row.count() > 0:
+                    cols = row.locator("td").all_text_contents()
+                    if len(cols) >= 3:
+                        lic_text = cols[1].strip() # e.g. "A 4.99"
+                        ir_val_str = cols[2].replace(',', '').strip() # e.g. "3863"
                         
-                        data["iRatings"][internal_key] = ir_val
-                        data["licenseLevels"][internal_key] = lic_text
-                        data["iRatingPercentages"][internal_key] = min(100, round((ir_val / 6000) * 100, 2))
+                        try:
+                            ir_val = int(ir_val_str)
+                            # Only set if not already set (handles Formula vs Formula Car)
+                            if internal_key not in data["iRatings"] or data["iRatings"][internal_key] == 0:
+                                data["iRatings"][internal_key] = ir_val
+                                data["licenseLevels"][internal_key] = lic_text
+                                data["iRatingPercentages"][internal_key] = min(100, round((ir_val / 6000) * 100, 2))
+                        except ValueError:
+                            pass
 
-        # Fetch detailed stats
-        stats_url = f"https://api.garage61.net/v1/drivers/{slug}/statistics"
-        resp = requests.get(stats_url, headers=headers)
-        if resp.status_code == 200:
-            stats = resp.json()
-            data["totalLaps"] = f"{stats.get('totalLaps', 0):,}"
-            data["cleanPercentage"] = str(round(stats.get('cleanLapsPercentage', 0)))
+            # 4. Scrape Total Laps / Time
+            try:
+                laps_val = page.locator("div:has-text('Total Laps')").locator("..").locator("div").first.text_content()
+                if laps_val: data["totalLaps"] = laps_val.strip()
+            except: pass
             
-            # Format time on track (seconds to h m s)
-            seconds = stats.get('timeOnTrack', 0)
-            h = seconds // 3600
-            m = (seconds % 3600) // 60
-            data["timeOnTrack"] = f"{h}h {m}m"
+            try:
+                clean_val = page.locator("div:has-text('Clean laps')").locator("..").locator("div").first.text_content()
+                if clean_val: data["cleanPercentage"] = clean_val.replace('%', '').strip()
+            except: pass
+            
+            try:
+                time_val = page.locator("div:has-text('Time on track')").locator("..").locator("div").first.text_content()
+                if time_val: data["timeOnTrack"] = time_val.strip()
+            except: pass
 
-        return data
+            browser.close()
+            return data
     except Exception as e:
-        print(f"API Error for {slug}: {e}")
+        print(f"Scraping failed for {slug}: {e}")
         return None
 
 def update_profiles():
@@ -110,8 +130,11 @@ def update_profiles():
         
         print(f"Processing {name} ({slug})...")
         
-        # Try API first
-        stats = fetch_driver_data_api(slug)
+        # Scrape data via Playwright
+        stats = fetch_driver_data_scrape(slug)
+        
+        # Avoid rate limiting
+        time.sleep(3)
         
         if not stats:
             print(f"Skipping {name} due to missing data.")
