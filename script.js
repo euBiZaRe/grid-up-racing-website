@@ -696,10 +696,18 @@ async function renderEventResults(eventId, targetElement) {
             return;
         }
 
-        // Sort manually by timestamp if available, otherwise preserve order
+        // Sort by team name based on priority list
         const docs = [];
         snap.forEach(doc => docs.push(doc.data()));
-        docs.sort((a, b) => (a.timestamp?.seconds || 0) - (b.timestamp?.seconds || 0));
+        
+        const teamOrder = ["GRiD UP Sim Racing", "GRiD UP White", "GRiD UP Black", "GRiD UP Blue", "GRiD UP Red"];
+        docs.sort((a, b) => {
+            const orderA = teamOrder.indexOf(a.teamName);
+            const orderB = teamOrder.indexOf(b.teamName);
+            const valA = orderA === -1 ? 99 : orderA;
+            const valB = orderB === -1 ? 99 : orderB;
+            return valA - valB;
+        });
 
         console.log(`Rendering ${docs.length} results for ${eventId}`);
         const resultsContainer = document.createElement('section');
@@ -894,6 +902,16 @@ async function loadAllResults() {
             const eventData = eventsMap[eId] || { name: eId.replace(/-/g, ' ').toUpperCase(), date: '' };
             const results = groupedResults[eId];
             
+            // Sort results by specified team priority order
+            const teamOrder = ["GRiD UP Sim Racing", "GRiD UP White", "GRiD UP Black", "GRiD UP Blue", "GRiD UP Red"];
+            results.sort((a, b) => {
+                const orderA = teamOrder.indexOf(a.teamName);
+                const orderB = teamOrder.indexOf(b.teamName);
+                const valA = orderA === -1 ? 99 : orderA;
+                const valB = orderB === -1 ? 99 : orderB;
+                return valA - valB;
+            });
+
             // Build rows
             let rowsHtml = '';
             results.forEach(d => {
