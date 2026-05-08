@@ -19,8 +19,9 @@
 </head>
 <body>
     <h1>Seed Race Results Posters</h1>
-    <p>Click the button below to push the 15 race result posters into the Firestore database.</p>
-    <button onclick="seedResultsDatabase()">Seed Results</button>
+    <p>Click the button below to cleanly push the 15 race result posters into the Firestore database.</p>
+    <p style="color: orange; font-size: 0.9rem;">(This will automatically clear out any duplicates from previous attempts before inserting the new ones)</p>
+    <button onclick="seedResultsDatabase()" id="seed-btn">Clear & Seed Results</button>
     <div id="log"></div>
 
     <script>
@@ -52,33 +53,61 @@
                 return;
             }
 
-            log("Starting seed process for " + RESULTS_TO_ADD.length + " results...");
-            const batch = db.batch();
+            const btn = document.getElementById('seed-btn');
+            btn.disabled = true;
+            btn.innerText = "Processing...";
 
             try {
+                log("Step 1: Cleaning up any old duplicated posters...");
+                
+                // Fetch all current results
+                const snap = await db.collection("race_results").get();
+                const deleteBatch = db.batch();
+                let deletedCount = 0;
+                
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    // If it is one of our seeded posters (rawUrl matches assets/results/)
+                    if (data.rawUrl && data.rawUrl.startsWith("assets/results/")) {
+                        deleteBatch.delete(doc.ref);
+                        deletedCount++;
+                    }
+                });
+
+                if (deletedCount > 0) {
+                    await deleteBatch.commit();
+                    log(`Deleted ${deletedCount} old/duplicate entries.`);
+                } else {
+                    log("No old entries to delete. Proceeding.");
+                }
+
+                log("\nStep 2: Starting seed process for " + RESULTS_TO_ADD.length + " unique results...");
+                const addBatch = db.batch();
+
                 RESULTS_TO_ADD.forEach(res => {
                     const docRef = db.collection('race_results').doc();
                     
-                    // Convert ISO string to Firestore Timestamp
                     const dateObj = new Date(res.date);
                     const firestoreTimestamp = firebase.firestore.Timestamp.fromDate(dateObj);
                     
-                    // We set teamAsset and rawUrl equal to trigger the "isPoster" logic in script.js
-                    batch.set(docRef, {
+                    addBatch.set(docRef, {
                         timestamp: firestoreTimestamp,
                         teamAsset: "assets/results/" + res.file,
                         rawUrl: "assets/results/" + res.file,
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                     
-                    log(`Added to batch: ${res.file} with date ${res.date}`);
+                    log(`Added to batch: ${res.file} with exact date ${res.date}`);
                 });
 
-                await batch.commit();
-                log("\nSUCCESS! All results have been seeded to Firestore.");
+                await addBatch.commit();
+                log("\nSUCCESS! All 15 unique results have been cleanly seeded to Firestore.");
             } catch (error) {
-                log("\nERROR during seeding: " + error.message);
+                log("\nERROR during process: " + error.message);
                 console.error(error);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Clear & Seed Results";
             }
         }
     </script>

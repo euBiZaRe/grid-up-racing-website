@@ -756,7 +756,7 @@ async function loadRecentResults() {
         try {
             const snap = await db.collection("race_results")
                 .orderBy("timestamp", "desc")
-                .limit(10) // Increased limit for carousel
+                .limit(30) // Increased limit for carousel to fit all entries
                 .get();
 
             if (snap.empty) {
