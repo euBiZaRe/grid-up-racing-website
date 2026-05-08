@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <div id="out">Loading...</div>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAomPdMD_IrBw52m0Nc2l-cuDKNmH_qqAk",
+            authDomain: "grid-up.firebaseapp.com",
+            projectId: "grid-up",
+            storageBucket: "grid-up.firebasestorage.app"
+        };
+        firebase.initializeApp(firebaseConfig);
+        var db = firebase.firestore();
+
+        async function fetchDocs() {
+            try {
+                const snap = await db.collection("race_results").orderBy("timestamp", "desc").limit(10).get();
+                let html = "";
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    html += `<div>ID: ${doc.id} | Event: ${d.eventName} | Drivers: ${d.drivers ? d.drivers.length : 0} | rawUrl: ${d.rawUrl} | teamAsset: ${d.teamAsset} | position: ${d.position} | timestamp: ${d.timestamp}</div>`;
+                });
+                document.getElementById('out').innerHTML = html || "No docs found.";
+                // Send an HTTP request to local server so we can capture the output
+                fetch("http://localhost:9999/log", { method: "POST", body: html });
+            } catch(e) {
+                document.getElementById('out').innerHTML = e.message;
+                fetch("http://localhost:9999/log", { method: "POST", body: "ERROR: " + e.message });
+            }
+            window.close();
+        }
+        fetchDocs();
+    </script>
+</body>
+</html>

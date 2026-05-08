@@ -368,13 +368,6 @@ async function loadDynamicContent() {
             const allEvents = [];
             snap.forEach(doc => allEvents.push({ id: doc.id, ...doc.data() }));
 
-            // Force explicit chronological sort to handle mix of manual and custom events
-            allEvents.sort((a, b) => {
-                const dateA = a.startDate || "";
-                const dateB = b.startDate || "";
-                return dateA.localeCompare(dateB);
-            });
-
             const now = new Date();
             const lookbackDate = new Date();
             lookbackDate.setHours(lookbackDate.getHours() - 24);
@@ -386,6 +379,15 @@ async function loadDynamicContent() {
                 if (d.seconds) return new Date(d.seconds * 1000);
                 return new Date(d);
             };
+
+            // Force explicit chronological sort to handle mix of manual and custom events
+            allEvents.sort((a, b) => {
+                const dateA = parseDate(a.startDate);
+                const dateB = parseDate(b.startDate);
+                if (!dateA) return 1;
+                if (!dateB) return -1;
+                return dateA.getTime() - dateB.getTime();
+            });
 
             // Filter events
             const upcomingEvents = allEvents.filter(e => {
