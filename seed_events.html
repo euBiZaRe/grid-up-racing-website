@@ -32,29 +32,34 @@
         ];
 
         const EVENTS_TO_ADD = [
-            { id: 'knoxville-nationals', name: 'Knoxville Nationals', date: 'August 4-9', startDate: '2026-08-04T22:00:00Z', slots: IMSA_SLOTS, classes: ['Sprint Car'] },
-            { id: 'portimao-1000', name: 'Portimao 1000', date: 'August 14-15', startDate: '2026-08-14T22:00:00Z', slots: IMSA_SLOTS, classes: ['GTP', 'LMP2', 'GT3'] },
-            { id: 'crandon-championship', name: 'Crandon Championship', date: 'August 25-30', startDate: '2026-08-25T22:00:00Z', slots: IMSA_SLOTS, classes: ['Pro 4'] },
-            { id: 'southern-500', name: 'Southern 500', date: 'September 2-7', startDate: '2026-09-02T22:00:00Z', slots: IMSA_SLOTS, classes: ['NASCAR Next Gen'] },
+            { id: 'knoxville-nationals', name: 'Knoxville Nationals', date: 'August 4-9', startDate: '2026-08-04T22:00:00Z', slots: IMSA_SLOTS, classes: ['410 Winged Sprint Car'] },
+            { id: 'portimao-1000', name: 'Portimao 1000', date: 'August 14-15', startDate: '2026-08-14T22:00:00Z', slots: IMSA_SLOTS, classes: ['HPD', 'GT1', 'GT2'] },
             { id: 'suzuka-1000km', name: 'Suzuka 1000km', date: 'Sept 10-15', startDate: '2026-09-10T22:00:00Z', slots: IMSA_SLOTS, classes: ['GT3'] },
-            { id: 'britcar-24hr', name: 'Britcar 24HR', date: 'September 18-20', startDate: '2026-09-18T22:00:00Z', slots: IMSA_SLOTS, classes: ['GT3', 'GT4', 'TCR'] },
-            { id: 'petit-le-mans', name: 'Petit Le Mans', date: 'Sept 25-27', startDate: '2026-09-25T22:00:00Z', slots: IMSA_SLOTS, classes: ['GTP', 'LMP2', 'GT3'] },
-            { id: 'bathurst-1000', name: 'Bathurst 1000', date: 'Oct 2-4', startDate: '2026-10-02T22:00:00Z', slots: IMSA_SLOTS, classes: ['V8 Supercar'] },
-            { id: 'indy-8h', name: '8 Hours of Indianapolis', date: 'Oct 16-18', startDate: '2026-10-16T22:00:00Z', slots: IMSA_SLOTS, classes: ['GT3'] },
-            { id: 'ff1600-festival', name: 'iRacing FF1600 Festival', date: 'Oct 30-31', startDate: '2026-10-30T22:00:00Z', slots: IMSA_SLOTS, classes: ['Ray FF1600'] },
-            { id: 'homestead-championship', name: 'Homestead Championship', date: 'November 4-9', startDate: '2026-11-04T22:00:00Z', slots: IMSA_SLOTS, classes: ['NASCAR Next Gen'] },
-            { id: 'sfl-mountain-showdown', name: 'SFL Mountain Showdown', date: 'November 13-15', startDate: '2026-11-13T22:00:00Z', slots: IMSA_SLOTS, classes: ['Super Formula Lights'] },
-            { id: 'scca-runoffs', name: 'SCCA Runoffs', date: 'November 17-21', startDate: '2026-11-17T22:00:00Z', slots: IMSA_SLOTS, classes: ['Multiclass'] },
+            { id: 'crandon-championship', name: 'Crandon Championship (Super Session)', date: 'August 25-30', startDate: '2026-08-25T22:00:00Z', slots: IMSA_SLOTS, classes: ['Pro 4 Truck'] },
+            { id: 'southern-500', name: 'Southern 500 (Darlington Raceway)', date: 'September 2-7', startDate: '2026-09-02T22:00:00Z', slots: IMSA_SLOTS, classes: ['NASCAR Cup'] },
+
+            { id: 'britcar-24hr', name: 'Britcar 24 (Silverstone)', date: 'September 18-20', startDate: '2026-09-18T22:00:00Z', slots: IMSA_SLOTS, classes: ['GT3', 'GT4'] },
+            { id: 'petit-le-mans', name: 'Petit Le Mans (Road Atlanta)', date: 'Sept 25-27', startDate: '2026-09-25T22:00:00Z', slots: IMSA_SLOTS, classes: ['GTP', 'LMP2', 'GT3'] },
+            { id: 'bathurst-1000', name: 'Bathurst 1000', date: 'October 2-4', startDate: '2026-10-02T22:00:00Z', slots: IMSA_SLOTS, classes: ['Supercars'] },
+            { id: 'indy-8h', name: '8 Hours of Indianapolis', date: 'October 16-18', startDate: '2026-10-16T22:00:00Z', slots: IMSA_SLOTS, classes: ['GT3'] },
+            { id: 'ff1600-festival', name: 'iRacing FF1600 Festival', date: 'October 30-31', startDate: '2026-10-30T22:00:00Z', slots: IMSA_SLOTS, classes: ['FF1600'] },
+            { id: 'homestead-championship', name: 'Homestead Championship', date: 'November 4-9', startDate: '2026-11-04T22:00:00Z', slots: IMSA_SLOTS, classes: ['NASCAR Cup'] },
+            { id: 'sfl-mountain-showdown', name: 'SFL Mountain Showdown', date: 'November 13-15', startDate: '2026-11-13T22:00:00Z', slots: IMSA_SLOTS, classes: ['Super Formula Light'] },
+            { id: 'scca-runoffs', name: 'SCCA Runoffs', date: 'November 22', startDate: '2026-11-22T22:00:00Z', slots: IMSA_SLOTS, classes: ['Multiclass'] },
             { id: '992-endurance-cup', name: '992 Endurance Cup', date: 'November 27-29', startDate: '2026-11-27T22:00:00Z', slots: IMSA_SLOTS, classes: ['Porsche 911 GT3 Cup (992)'] },
             { id: 'winter-derby', name: 'Winter Derby', date: 'December 2-7', startDate: '2026-12-02T22:00:00Z', slots: IMSA_SLOTS, classes: ['Super Late Model'] },
             { id: 'chili-bowl', name: 'Chili Bowl', date: 'December 15-20', startDate: '2026-12-15T22:00:00Z', slots: IMSA_SLOTS, classes: ['Dirt Midget'] },
-            { id: 'production-car-challenge', name: 'Production Car Challenge', date: 'December 18-19', startDate: '2026-12-18T22:00:00Z', slots: IMSA_SLOTS, classes: ['GR86', 'MX-5', 'Clio', 'Mustang FR500S'] }
+            { id: 'production-car-challenge', name: 'THE Production Car Challenge', date: 'December 18-19', startDate: '2026-12-18T22:00:00Z', slots: IMSA_SLOTS, classes: ['Mazda MX-5 Cup', 'Renault Clio R.S.', 'BMW M2 CS Racing', 'Toyota GR86'] }
         ];
 
         async function seedDatabase() {
             const logDiv = document.getElementById('log');
             logDiv.innerHTML = "Starting batch insert...\n";
             try {
+                // Remove the rogue Knockhill event from Firestore
+                await db.collection('events').doc('knockhill-500').delete();
+                logDiv.innerHTML += "Deleted Rogue Knockhill Event from Firestore...\n";
+
                 const batch = db.batch();
                 EVENTS_TO_ADD.forEach(ev => {
                     const docRef = db.collection('events').doc(ev.id);
