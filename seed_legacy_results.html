@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seed Legacy Event Results</title>
+    <style>
+        body { background: #0b0c10; color: #c5c6c7; font-family: monospace; padding: 2rem; }
+        .btn { padding: 1rem 2rem; background: #00ff88; color: #000; border: none; font-weight: bold; cursor: pointer; }
+        #log { margin-top: 2rem; background: #111; padding: 1rem; border: 1px solid #333; height: 300px; overflow-y: auto; }
+        .success { color: #00ff88; }
+        .error { color: #ff0055; }
+    </style>
+</head>
+<body>
+    <h1>Seed Legacy Event Results</h1>
+    <p>This script will insert the missing hardcoded legacy event results into the Firestore `event_results` collection.</p>
+    <button class="btn" onclick="seedLegacyResults()">SEED LEGACY RESULTS NOW</button>
+    
+    <div id="log"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="js/auth.js"></script> <!-- Ensure this initializes db -->
+
+    <script>
+        function log(msg, type = 'normal') {
+            const div = document.createElement('div');
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            if (type === 'success') div.className = 'success';
+            if (type === 'error') div.className = 'error';
+            document.getElementById('log').appendChild(div);
+            div.scrollIntoView();
+        }
+
+        const legacyResults = [
+            // iRacing ROAR (Jan 9-10, 2026)
+            {
+                eventId: "iracing-roar",
+                teamName: "GRiD UP Sim Racing",
+                car: "BMW M4 GT3",
+                drivers: ["Bill McClain", "Alex Cortez", "Jacob Reid"],
+                qualy: "P5",
+                finish: "P3",
+                timestamp: new Date("2026-01-10T20:00:00Z")
+            },
+            {
+                eventId: "iracing-roar",
+                teamName: "GRiD UP Black",
+                car: "Acura NSX GT3",
+                drivers: ["Andrew Fabian", "Martyn Cook"],
+                qualy: "P12",
+                finish: "P8",
+                timestamp: new Date("2026-01-10T20:00:00Z")
+            },
+            {
+                eventId: "iracing-roar",
+                teamName: "GRiD UP White",
+                car: "Porsche 911 GT3 R",
+                drivers: ["Aten-Wa Theba", "Keith Todd"],
+                qualy: "P15",
+                finish: "P11",
+                timestamp: new Date("2026-01-10T20:00:00Z")
+            },
+            {
+                eventId: "iracing-roar",
+                teamName: "GRiD UP Blue",
+                car: "Porsche 911 GT3 R",
+                drivers: ["Terry Cantwell", "Levi Wolfe"],
+                qualy: "P22",
+                finish: "P19",
+                timestamp: new Date("2026-01-10T20:00:00Z")
+            },
+
+            // Daytona 24 (Jan 16-18, 2026)
+            {
+                eventId: "daytona-24",
+                teamName: "GRiD UP Sim Racing",
+                car: "Dallara P217 (LMP2)",
+                drivers: ["Andrew Fabian", "Martyn Cook", "Jacob Reid", "Alex Cortez", "Hector Hernandez"],
+                qualy: "P4",
+                finish: "P2",
+                timestamp: new Date("2026-01-18T20:00:00Z")
+            },
+            {
+                eventId: "daytona-24",
+                teamName: "GRiD UP Black",
+                car: "Cadillac V-Series.R (GTP)",
+                drivers: ["Faraz Ebrahim", "Connor Hatfield", "Isaac Shore", "Aten-Wa Theba", "Keith Todd"],
+                qualy: "P2",
+                finish: "P4",
+                timestamp: new Date("2026-01-18T20:00:00Z")
+            },
+            {
+                eventId: "daytona-24",
+                teamName: "GRiD UP White",
+                car: "Porsche 911 GT3 R",
+                drivers: ["Levi Wolfe", "Marko Skrnjug", "Gabe Wilmoth", "Terry Cantwell", "Jacob Roberts"],
+                qualy: "P20",
+                finish: "P15",
+                timestamp: new Date("2026-01-18T20:00:00Z")
+            },
+            {
+                eventId: "daytona-24",
+                teamName: "GRiD UP Blue",
+                car: "Ferrari 296 GT3",
+                drivers: ["Daniel Tamminga", "Mason Howington", "David Shreve", "Tanner Hupp", "Xavier Williams"],
+                qualy: "P15",
+                finish: "P19",
+                timestamp: new Date("2026-01-18T20:00:00Z")
+            },
+
+            // Daytona 500 (Feb 11-18, 2026)
+            {
+                eventId: "daytona-500",
+                teamName: "GRiD UP Sim Racing",
+                car: "NASCAR Next Gen Toyota Camry",
+                drivers: ["Andrew Fabian"],
+                qualy: "P22",
+                finish: "P14",
+                timestamp: new Date("2026-02-18T20:00:00Z")
+            },
+
+            // Bathurst 12 (Feb 20-22, 2026)
+            {
+                eventId: "bathurst-12",
+                teamName: "GRiD UP Sim Racing",
+                car: "BMW M4 GT3",
+                drivers: ["Bill McClain", "Hector Hernandez", "Alex Cortez"],
+                qualy: "P10",
+                finish: "P24",
+                timestamp: new Date("2026-02-22T20:00:00Z")
+            },
+            {
+                eventId: "bathurst-12",
+                teamName: "GRiD UP Black",
+                car: "Aston Martin Vantage GT3",
+                drivers: ["Andrew Fabian", "Jacob Reid", "Levi Wolfe"],
+                qualy: "P31",
+                finish: "P5",
+                timestamp: new Date("2026-02-22T20:00:00Z")
+            },
+            {
+                eventId: "bathurst-12",
+                teamName: "GRiD UP White",
+                car: "Porsche 911 GT3 R",
+                drivers: ["Aten-Wa Theba", "Johnathan Shampine"],
+                qualy: "P12",
+                finish: "P19",
+                timestamp: new Date("2026-02-22T20:00:00Z")
+            },
+            {
+                eventId: "bathurst-12",
+                teamName: "GRiD UP Blue",
+                car: "Porsche 911 GT3 R",
+                drivers: ["Terry Cantwell", "Faraz Ebrahim", "Gabe Wilmoth"],
+                qualy: "P36",
+                finish: "P4",
+                timestamp: new Date("2026-02-22T20:00:00Z")
+            },
+
+            // Sebring 12HR (Mar 27-29, 2026)
+            {
+                eventId: "sebring-12hr",
+                teamName: "GRiD UP Sim Racing",
+                car: "Dallara P217 (LMP2)",
+                drivers: ["Martyn Cook", "Alex Cortez", "Bill McClain", "Jacob Reid"],
+                qualy: "P1",
+                finish: "P4",
+                timestamp: new Date("2026-03-29T20:00:00Z")
+            },
+            {
+                eventId: "sebring-12hr",
+                teamName: "GRiD UP White",
+                car: "Dallara P217 (LMP2)",
+                drivers: ["Andrew Fabian", "Keith Todd", "Héctor Hernández"],
+                qualy: "P5",
+                finish: "P6",
+                timestamp: new Date("2026-03-29T20:00:00Z")
+            },
+            {
+                eventId: "sebring-12hr",
+                teamName: "GRiD UP Blue",
+                car: "Porsche 911 GT3 R",
+                drivers: ["Terry Cantwell", "Gabe Wilmoth", "Levi Wolfe"],
+                qualy: "P8",
+                finish: "P12",
+                timestamp: new Date("2026-03-29T20:00:00Z")
+            }
+        ];
+
+        async function seedLegacyResults() {
+            log("Starting legacy results seeding...");
+
+            if (typeof db === 'undefined') {
+                log("Firestore 'db' is not initialized. Make sure auth.js loaded correctly.", 'error');
+                return;
+            }
+
+            try {
+                // First, delete any existing results for these events to prevent duplicates
+                const eventIdsToClear = [...new Set(legacyResults.map(r => r.eventId))];
+                log(`Clearing existing results for: ${eventIdsToClear.join(', ')}`);
+                
+                for (let eventId of eventIdsToClear) {
+                    const snap = await db.collection("event_results").where("eventId", "==", eventId).get();
+                    if (!snap.empty) {
+                        const batch = db.batch();
+                        snap.forEach(doc => {
+                            batch.delete(doc.ref);
+                        });
+                        await batch.commit();
+                        log(`Cleared ${snap.size} old records for ${eventId}`);
+                    }
+                }
+
+                // Now insert the new ones
+                log("Inserting new records...");
+                const batch = db.batch();
+                
+                legacyResults.forEach(result => {
+                    const docRef = db.collection("event_results").doc(); // auto-ID
+                    batch.set(docRef, result);
+                });
+
+                await batch.commit();
+                log("Successfully seeded all legacy results!", 'success');
+
+            } catch (error) {
+                console.error(error);
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

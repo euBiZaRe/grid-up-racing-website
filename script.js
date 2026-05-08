@@ -900,16 +900,16 @@ async function loadAllResults() {
                 const drivers = Array.isArray(d.drivers) ? d.drivers.join(', ') : (d.drivers || 'TBA');
                 rowsHtml += `
                     <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                        <td style="padding: 1.5rem 1rem;">
-                            <strong style="color: var(--text); font-size: 1.1rem; letter-spacing: 1px;">${d.teamName || 'GRiD UP'}</strong><br>
-                            <span style="font-size: 0.85rem; color: var(--primary);">${d.car || 'TBA'}</span><br>
-                            <span style="font-size: 0.8rem; color: var(--text-muted); opacity: 0.8; display: inline-block; margin-top: 0.3rem;">${drivers}</span>
+                        <td style="padding: 0.75rem 1rem;">
+                            <strong style="color: var(--text); font-size: 1rem; letter-spacing: 1px;">${d.teamName || 'GRiD UP'}</strong><br>
+                            <span style="font-size: 0.8rem; color: var(--primary);">${d.car || 'TBA'}</span><br>
+                            <span style="font-size: 0.75rem; color: var(--text-muted); opacity: 0.7; display: inline-block; margin-top: 0.2rem;">${drivers}</span>
                         </td>
-                        <td style="padding: 1.5rem 1rem;">
-                            <span style="color: var(--text-muted);">${d.qualy || '-'}</span>
+                        <td style="padding: 0.75rem 1rem;">
+                            <span style="color: var(--text-muted); font-size: 0.85rem;">${d.qualy || '-'}</span>
                         </td>
-                        <td style="padding: 1.5rem 1rem;">
-                            <strong style="color: var(--primary); font-weight: 900; font-size: 1.2rem;">${d.finish || '-'}</strong>
+                        <td style="padding: 0.75rem 1rem;">
+                            <strong style="color: var(--primary); font-weight: 900; font-size: 1.1rem;">${d.finish || '-'}</strong>
                         </td>
                     </tr>
                 `;
@@ -918,18 +918,19 @@ async function loadAllResults() {
             // Build section
             const section = document.createElement('section');
             section.className = 'glass card reveal active event-result-block';
+            section.style.padding = '1.5rem 2rem'; // Compact the outer block padding
             section.innerHTML = `
-                <div style="margin-bottom: 2rem; border-bottom: 1px solid rgba(0, 207, 255, 0.2); padding-bottom: 1rem;">
-                    <h2 style="color: var(--primary); font-size: 1.8rem; letter-spacing: 1px; margin-bottom: 0.5rem;">${eventData.name || eId}</h2>
-                    <p style="color: var(--text-muted); font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 2px;">${eventData.date || ''}</p>
+                <div style="margin-bottom: 1rem; border-bottom: 1px solid rgba(0, 207, 255, 0.2); padding-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: baseline;">
+                    <h2 style="color: var(--primary); font-size: 1.4rem; letter-spacing: 1px; margin-bottom: 0;">${eventData.name || eId}</h2>
+                    <p style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0;">${eventData.date || ''}</p>
                 </div>
                 <div class="results-table-container" style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; color: var(--text-muted); font-size: 0.95rem;">
+                    <table style="width: 100%; border-collapse: collapse; color: var(--text-muted); font-size: 0.9rem;">
                         <thead>
                             <tr style="border-bottom: 1px solid var(--glass-border); text-align: left;">
-                                <th style="padding: 1rem;">Team / Car</th>
-                                <th style="padding: 1rem;">Qualifying</th>
-                                <th style="padding: 1rem;">Final Position</th>
+                                <th style="padding: 0.75rem 1rem; font-size: 0.75rem;">Team / Car</th>
+                                <th style="padding: 0.75rem 1rem; font-size: 0.75rem;">Qualifying</th>
+                                <th style="padding: 0.75rem 1rem; font-size: 0.75rem;">Final Position</th>
                             </tr>
                         </thead>
                         <tbody>
