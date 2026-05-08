@@ -19,13 +19,24 @@
 </head>
 <body>
     <h1>Seed Race Results Posters</h1>
-    <p>Click the button below to cleanly push the 15 race result posters into the Firestore database.</p>
+    <p>Click the button below to cleanly push the 26 race result posters into the Firestore database.</p>
     <p style="color: orange; font-size: 0.9rem;">(This will automatically clear out any duplicates from previous attempts before inserting the new ones)</p>
     <button onclick="seedResultsDatabase()" id="seed-btn">Clear & Seed Results</button>
     <div id="log"></div>
 
     <script>
         const RESULTS_TO_ADD = [
+            { file: "Aug1625.png", date: "2025-08-16T12:00:00Z" },
+            { file: "Sep625.png", date: "2025-09-06T12:00:00Z" },
+            { file: "Sep2025.png", date: "2025-09-20T12:00:00Z" },
+            { file: "Sept2725.png", date: "2025-09-27T12:00:00Z" },
+            { file: "Oct425.png", date: "2025-10-04T12:00:00Z" },
+            { file: "Oct2525.png", date: "2025-10-25T12:00:00Z" },
+            { file: "Oct2525(1).png", date: "2025-10-25T12:00:01Z" },
+            { file: "Nov1525.png", date: "2025-11-15T12:00:00Z" },
+            { file: "Nov1525(1).png", date: "2025-11-15T12:00:01Z" },
+            { file: "Nov1525(2).png", date: "2025-11-15T12:00:02Z" },
+            { file: "Dec1925.png", date: "2025-12-19T12:00:00Z" },
             { file: "Dec2725.png", date: "2025-12-27T12:00:00Z" },
             { file: "Jan1026.png", date: "2026-01-10T12:00:00Z" },
             { file: "Jan1726.png", date: "2026-01-17T12:00:00Z" },
@@ -101,7 +112,7 @@
                 });
 
                 await addBatch.commit();
-                log("\nSUCCESS! All 15 unique results have been cleanly seeded to Firestore.");
+                log("\nSUCCESS! All " + RESULTS_TO_ADD.length + " unique results have been cleanly seeded to Firestore.");
             } catch (error) {
                 log("\nERROR during process: " + error.message);
                 console.error(error);
