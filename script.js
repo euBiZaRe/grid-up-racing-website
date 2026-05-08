@@ -445,13 +445,13 @@ async function loadDynamicContent() {
                 const isLive = now >= startTime && now <= endTime;
                 
                 if (heroSubtitle) {
-                    heroSubtitle.textContent = isLive ? `LIVE NOW: ${nextEvent.name}` : `Next Major Race: ${nextEvent.name}`;
+                    heroSubtitle.textContent = isLive ? `LIVE NOW: ${nextEvent.name || 'TBA'}` : `Next Major Race: ${nextEvent.name || 'TBA'}`;
                     heroSubtitle.style.color = isLive ? '#ff0055' : 'var(--primary)';
                     if (isLive) heroSubtitle.classList.add('animate-pulse');
                 }
                 
                 if (heroTitle) {
-                    heroTitle.textContent = nextEvent.name.toUpperCase();
+                    heroTitle.textContent = (nextEvent.name || 'TBA').toUpperCase();
                 }
                 
                 if (heroLink) {
@@ -472,7 +472,7 @@ async function loadDynamicContent() {
                         const bannerUrl = eventBanners[e.id];
                         tile.innerHTML = `
                             ${bannerUrl ? `<div class="tile-banner" style="background-image: url('${bannerUrl}')"></div>` : ''}
-                            <h3>${e.name.toUpperCase()}</h3>
+                            <h3>${(e.name || 'TBA').toUpperCase()}</h3>
                             <div class="race-meta">${e.date}</div>
                         `;
                         upcomingTrack.appendChild(tile);
@@ -493,9 +493,9 @@ async function loadDynamicContent() {
                         card.innerHTML = `
                             ${bannerUrl ? `<div class="event-card-banner" style="background-image: url('${bannerUrl}')"></div>` : ''}
                             <div class="event-info">
-                                <h3>${e.name}</h3>
+                                <h3>${e.name || 'TBA'}</h3>
                                 <p class="event-meta">${e.date}</p>
-                                <p class="event-desc">${e.classes ? 'Classes: ' + e.classes.join(', ') : 'Details coming soon.'}</p>
+                                <p class="event-desc">${Array.isArray(e.classes) ? 'Classes: ' + e.classes.join(', ') : (e.classes ? 'Classes: ' + e.classes : 'Details coming soon.')}</p>
                             </div>
                             <div class="event-action">
                                 <a href="${linkUrl}" class="btn btn-outline">Details</a>
@@ -548,9 +548,9 @@ async function loadDynamicContent() {
                     card.innerHTML = `
                         ${bannerUrl ? `<div class="event-card-banner" style="background-image: url('${bannerUrl}')"></div>` : ''}
                         <div class="event-info">
-                            <h3>${e.name}</h3>
+                            <h3>${e.name || 'TBA'}</h3>
                             <p class="event-meta">${e.date}</p>
-                            <p class="event-desc">${e.classes ? 'Classes: ' + e.classes.join(', ') : 'Race event completed.'}</p>
+                            <p class="event-desc">${Array.isArray(e.classes) ? 'Classes: ' + e.classes.join(', ') : (e.classes ? 'Classes: ' + e.classes : 'Race event completed.')}</p>
                         </div>
                         <div class="event-action">
                             <a href="${linkUrl}" class="btn btn-outline">Details</a>
