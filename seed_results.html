@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Seed Race Results to Firestore</title>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <!-- Our Auth Config -->
+    <script src="js/auth.js"></script>
+    
+    <style>
+        body { font-family: sans-serif; padding: 2rem; background: #0a0a0c; color: white; }
+        button { padding: 1rem 2rem; background: #00cfff; border: none; color: black; font-weight: bold; cursor: pointer; border-radius: 4px; }
+        #log { margin-top: 1rem; color: #00ff88; white-space: pre; font-family: monospace; }
+    </style>
+    <link rel="icon" type="image/png" href="assets/G_2.png">
+</head>
+<body>
+    <h1>Seed Race Results Posters</h1>
+    <p>Click the button below to push the 15 race result posters into the Firestore database.</p>
+    <button onclick="seedResultsDatabase()">Seed Results</button>
+    <div id="log"></div>
+
+    <script>
+        const RESULTS_TO_ADD = [
+            { file: "Dec2725.png", date: "2025-12-27T12:00:00Z" },
+            { file: "Jan1026.png", date: "2026-01-10T12:00:00Z" },
+            { file: "Jan1726.png", date: "2026-01-17T12:00:00Z" },
+            { file: "Jan1726(1).png", date: "2026-01-17T12:00:01Z" },
+            { file: "Jan1726(2).png", date: "2026-01-17T12:00:02Z" },
+            { file: "Jan1726(3).png", date: "2026-01-17T12:00:03Z" },
+            { file: "Feb2026.png", date: "2026-02-20T12:00:00Z" },
+            { file: "Feb2126.png", date: "2026-02-21T12:00:00Z" },
+            { file: "Feb2126(1).png", date: "2026-02-21T12:00:01Z" },
+            { file: "Feb2126(2).png", date: "2026-02-21T12:00:02Z" },
+            { file: "Feb2826.png", date: "2026-02-28T12:00:00Z" },
+            { file: "Mar2826.png", date: "2026-03-28T12:00:00Z" },
+            { file: "Mar2826(1).png", date: "2026-03-28T12:00:01Z" },
+            { file: "Mar2826(2).png", date: "2026-03-28T12:00:02Z" },
+            { file: "Apr1226.png", date: "2026-04-12T12:00:00Z" }
+        ];
+
+        function log(msg) {
+            document.getElementById('log').textContent += msg + '\n';
+        }
+
+        async function seedResultsDatabase() {
+            if (!db) {
+                log("Error: Database not initialized.");
+                return;
+            }
+
+            log("Starting seed process for " + RESULTS_TO_ADD.length + " results...");
+            const batch = db.batch();
+
+            try {
+                RESULTS_TO_ADD.forEach(res => {
+                    const docRef = db.collection('race_results').doc();
+                    
+                    // Convert ISO string to Firestore Timestamp
+                    const dateObj = new Date(res.date);
+                    const firestoreTimestamp = firebase.firestore.Timestamp.fromDate(dateObj);
+                    
+                    // We set teamAsset and rawUrl equal to trigger the "isPoster" logic in script.js
+                    batch.set(docRef, {
+                        timestamp: firestoreTimestamp,
+                        teamAsset: "assets/results/" + res.file,
+                        rawUrl: "assets/results/" + res.file,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
+                    log(`Added to batch: ${res.file} with date ${res.date}`);
+                });
+
+                await batch.commit();
+                log("\nSUCCESS! All results have been seeded to Firestore.");
+            } catch (error) {
+                log("\nERROR during seeding: " + error.message);
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>
