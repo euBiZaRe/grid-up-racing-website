@@ -785,8 +785,8 @@ async function loadRecentResults() {
                     card.style.cursor = 'pointer';
                     card.onclick = () => openCardModal(d);
 
-                    // Detect dedicated poster (rawUrl same as teamAsset = clean poster display)
-                    const isPoster = d.rawUrl && d.teamAsset && d.rawUrl === d.teamAsset;
+                    // Detect dedicated poster (rawUrl same as teamAsset OR explicit type)
+                    const isPoster = (d.rawUrl && d.teamAsset && d.rawUrl === d.teamAsset) || d.type === "cinematic-poster";
                     const bgImg = d.teamAsset || d.rawUrl || "assets/poster-placeholder.png";
                     const fgImg = !isPoster && d.rawUrl && d.teamAsset && d.rawUrl !== d.teamAsset ? d.rawUrl : null;
 

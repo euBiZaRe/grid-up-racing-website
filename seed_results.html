@@ -126,8 +126,10 @@
 
                 log("\nSeeding posters (" + POSTERS_TO_ADD.length + ")...");
                 for (const item of POSTERS_TO_ADD) {
+                    const assetPath = "F:/Grid Up/Race Results/" + item.file;
                     await db.collection("race_results").add({
-                        teamAsset: "F:/Grid Up/Race Results/" + item.file,
+                        teamAsset: assetPath,
+                        rawUrl: assetPath,
                         timestamp: item.date,
                         type: "cinematic-poster"
                     });
