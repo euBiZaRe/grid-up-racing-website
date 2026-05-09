@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Endurance Manager | GRiD UP</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="endurance.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="dark-theme">
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="brand">
+                <h2>GRiD UP</h2>
+                <span>Endurance</span>
+            </div>
+            <ul class="nav-links">
+                <li class="active" data-target="dashboard-view"><i class="fas fa-chart-pie"></i> Dashboard</li>
+                <li data-target="config-view"><i class="fas fa-cogs"></i> Config</li>
+                <li data-target="roster-view"><i class="fas fa-users"></i> Roster</li>
+                <li data-target="availability-view"><i class="fas fa-calendar-alt"></i> Availability</li>
+                <li data-target="strategy-view"><i class="fas fa-route"></i> Strategy</li>
+            </ul>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="content">
+            <!-- Dashboard View -->
+            <section id="dashboard-view" class="view-section active">
+                <header class="view-header">
+                    <h1>Dashboard</h1>
+                    <p>Live overview of strategy and stints.</p>
+                </header>
+                <div class="cards-grid">
+                    <div class="glass-card">
+                        <h3>Driving Time Distribution</h3>
+                        <div id="fairness-chart" class="chart-container">
+                            <!-- Chart will be injected here -->
+                        </div>
+                    </div>
+                    <div class="glass-card">
+                        <h3>Next Stint Checklist</h3>
+                        <div class="checklist" id="next-stint-checklist">
+                            <!-- Checklists injected here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Config View -->
+            <section id="config-view" class="view-section">
+                <header class="view-header">
+                    <h1>Event Configuration</h1>
+                    <p>Set race parameters and fuel settings.</p>
+                </header>
+                <div class="glass-card form-container">
+                    <div class="form-group">
+                        <label>Race Duration (Hours)</label>
+                        <input type="number" id="race-duration" value="24" step="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Tank Size (Liters)</label>
+                        <input type="number" id="tank-size" value="110" step="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Fuel Consumption (L/lap)</label>
+                        <input type="number" id="fuel-consumption" value="3.2" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>Base Lap Time (Seconds)</label>
+                        <input type="number" id="base-lap-time" value="120" step="0.1">
+                    </div>
+                    <button class="btn primary-btn" id="save-config">Save Configuration</button>
+                </div>
+            </section>
+
+            <!-- Roster View -->
+            <section id="roster-view" class="view-section">
+                <header class="view-header">
+                    <h1>Driver Roster</h1>
+                    <p>Manage your drivers, iRating, and colors.</p>
+                </header>
+                <div class="glass-card">
+                    <table class="data-table" id="roster-table">
+                        <thead>
+                            <tr>
+                                <th>Driver Name</th>
+                                <th>iRating</th>
+                                <th>Timezone (GMT Offset)</th>
+                                <th>Color</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Roster rows -->
+                        </tbody>
+                    </table>
+                    <button class="btn secondary-btn" id="add-driver-btn" style="margin-top: 15px;"><i class="fas fa-plus"></i> Add Driver</button>
+                </div>
+            </section>
+
+            <!-- Availability View -->
+            <section id="availability-view" class="view-section">
+                <header class="view-header">
+                    <h1>Driver Availability</h1>
+                    <p>Map out driver schedules.</p>
+                </header>
+                <div class="glass-card availability-container">
+                    <div class="legend">
+                        <span class="legend-item"><span class="box open"></span> Open</span>
+                        <span class="legend-item"><span class="box tentative"></span> Tentative</span>
+                        <span class="legend-item"><span class="box blocked"></span> Blocked</span>
+                    </div>
+                    <div class="availability-grid" id="availability-grid">
+                        <!-- Grid injected here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Strategy View -->
+            <section id="strategy-view" class="view-section">
+                <header class="view-header">
+                    <h1>Strategy & Schedule</h1>
+                    <p>Plan fuel stints and driver assignments.</p>
+                </header>
+                <div class="glass-card">
+                    <div class="strategy-summary">
+                        <div class="stat"><span class="label">Total Stints:</span> <span id="total-stints-val">0</span></div>
+                        <div class="stat"><span class="label">Total Laps:</span> <span id="total-laps-val">0</span></div>
+                    </div>
+                    <table class="data-table" id="schedule-table">
+                        <thead>
+                            <tr>
+                                <th>Stint #</th>
+                                <th>Start Time</th>
+                                <th>Laps</th>
+                                <th>Driver</th>
+                                <th>End Time</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Schedule rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="js/endurance.js"></script>
+</body>
+</html>
