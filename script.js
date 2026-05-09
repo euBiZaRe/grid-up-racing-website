@@ -208,6 +208,17 @@ function initCarousel() {
         let startX;
         let scrollLeft;
         let isPaused = false;
+        let pauseTimer = null;
+
+        const requestPause = (duration = 8000) => {
+            isPaused = true;
+            if (pauseTimer) clearTimeout(pauseTimer);
+            pauseTimer = setTimeout(() => {
+                if (!track.matches(':hover') && !isDown) {
+                    isPaused = false;
+                }
+            }, duration);
+        };
 
         // Mouse Drag Support
         track.addEventListener('mousedown', (e) => {
@@ -220,8 +231,8 @@ function initCarousel() {
 
         track.addEventListener('mouseleave', () => {
             isDown = false;
-            isPaused = false;
             track.style.cursor = 'grab';
+            if (!isPaused) isPaused = false; 
         });
 
         track.addEventListener('mouseenter', () => {
@@ -230,32 +241,41 @@ function initCarousel() {
 
         track.addEventListener('mouseup', () => {
             isDown = false;
-            isPaused = false;
             track.style.cursor = 'grab';
+            requestPause(5000); // Keep paused for a bit after drag
         });
 
         track.addEventListener('mousemove', (e) => {
             if (!isDown) return;
             e.preventDefault();
             const x = e.pageX - container.offsetLeft;
-            const walk = (x - startX) * 2; // scroll-fast factor
+            const walk = (x - startX) * 2;
             container.scrollLeft = scrollLeft - walk;
         });
 
+        // Trackpad / Mouse Wheel Scroll Detection
+        container.addEventListener('scroll', () => {
+            if (!isDown) {
+                requestPause(10000); // Pause for 10s if user scrolls manually
+            }
+        }, { passive: true });
+
+        // Touch Support
+        track.addEventListener('touchstart', () => { isPaused = true; }, { passive: true });
+        track.addEventListener('touchend', () => { requestPause(8000); }, { passive: true });
+
         // Button Navigation
         if (prevBtn && nextBtn) {
-            const scrollAmount = 350; // Approximates one card + gap
+            const scrollAmount = 350;
             
             prevBtn.addEventListener('click', () => {
                 container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
-                isPaused = true;
-                setTimeout(() => { if (!track.matches(':hover')) isPaused = false; }, 5000);
+                requestPause(10000);
             });
             
             nextBtn.addEventListener('click', () => {
                 container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-                isPaused = true;
-                setTimeout(() => { if (!track.matches(':hover')) isPaused = false; }, 5000);
+                requestPause(10000);
             });
         }
 
@@ -265,7 +285,7 @@ function initCarousel() {
                 const firstCard = track.firstElementChild;
                 if (!firstCard) return;
                 
-                const cardWidth = firstCard.offsetWidth + 24; // width + gap (1.5rem = 24px)
+                const cardWidth = firstCard.offsetWidth + 24; 
                 const isAtEnd = container.scrollLeft + container.offsetWidth >= container.scrollWidth - 20;
                 
                 if (isAtEnd) {
@@ -274,7 +294,7 @@ function initCarousel() {
                     container.scrollBy({ left: cardWidth, behavior: 'smooth' });
                 }
             }
-        }, 4000); // Scroll every 4 seconds
+        }, 4000); 
     });
 }
 
