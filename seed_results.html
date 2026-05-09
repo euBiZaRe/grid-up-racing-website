@@ -2,30 +2,36 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Seed Race Results to Firestore</title>
-    <!-- Firebase SDKs -->
+    <title>Seed Master Database | GRiD UP</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <!-- Our Auth Config -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="js/auth.js"></script>
-    
     <style>
-        body { font-family: sans-serif; padding: 2rem; background: #0a0a0c; color: white; }
-        button { padding: 1rem 2rem; background: #00cfff; border: none; color: black; font-weight: bold; cursor: pointer; border-radius: 4px; }
-        #log { margin-top: 1rem; color: #00ff88; white-space: pre; font-family: monospace; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 2rem; background: #0a0a0c; color: white; line-height: 1.6; }
+        .container { max-width: 800px; margin: 0 auto; background: rgba(255,255,255,0.03); padding: 2rem; border-radius: 12px; border: 1px solid rgba(0, 207, 255, 0.2); }
+        h1 { color: #00cfff; margin-top: 0; }
+        button { padding: 1rem 2rem; background: #00cfff; border: none; color: black; font-weight: bold; cursor: pointer; border-radius: 4px; font-size: 1.1rem; transition: 0.3s; }
+        button:hover { background: #0099bb; transform: translateY(-2px); }
+        button:disabled { background: #444; cursor: not-allowed; }
+        #log { margin-top: 2rem; color: #00ff88; white-space: pre-wrap; font-family: 'Consolas', monospace; font-size: 0.85rem; background: #000; padding: 1rem; border-radius: 8px; max-height: 400px; overflow-y: auto; }
     </style>
-    <link rel="icon" type="image/png" href="assets/G_2.png">
 </head>
 <body>
-    <h1>Seed Race Results Posters</h1>
-    <p>Click the button below to cleanly push the 26 race result posters into the Firestore database.</p>
-    <p style="color: orange; font-size: 0.9rem;">(This will automatically clear out any duplicates from previous attempts before inserting the new ones)</p>
-    <button onclick="seedResultsDatabase()" id="seed-btn">Clear & Seed Results</button>
-    <div id="log"></div>
+    <div class="container">
+        <h1>Master Database Seed v2.0</h1>
+        <p>This utility will synchronize the entire GRiD UP race history database. It seeds both the <strong>Visual Posters</strong> (for the homepage carousel) and the <strong>Text Data</strong> (for the Results Portal).</p>
+        
+        <div style="margin: 2rem 0; padding: 1rem; background: rgba(255, 165, 0, 0.1); border-left: 4px solid orange;">
+            <strong>IMPORTANT:</strong> This will clear existing <code>race_results</code> and <code>event_results</code> to ensure a clean sync with the latest photo updates.
+        </div>
+
+        <button onclick="seedDatabase()" id="seed-btn">Wipe & Seed Master Database</button>
+        <div id="log">Waiting for action...</div>
+    </div>
 
     <script>
-        const RESULTS_TO_ADD = [
+        const POSTERS_TO_ADD = [
             { file: "Aug1625.png", date: "2025-08-16T12:00:00Z" },
             { file: "Sep625.png", date: "2025-09-06T12:00:00Z" },
             { file: "Sep2025.png", date: "2025-09-20T12:00:00Z" },
@@ -51,74 +57,100 @@
             { file: "Mar2826.png", date: "2026-03-28T12:00:00Z" },
             { file: "Mar2826(1).png", date: "2026-03-28T12:00:01Z" },
             { file: "Mar2826(2).png", date: "2026-03-28T12:00:02Z" },
-            { file: "Apr1226.png", date: "2026-04-12T12:00:00Z" }
+            { file: "Apr1226.png", date: "2026-04-12T12:00:00Z" },
+            { file: "May226.png", date: "2026-05-02T12:00:00Z" }
+        ];
+
+        const TEXT_DATA_TO_ADD = [
+            // 2025
+            { eventId: "bathurst-1000-25", teamName: "GRiD UP Sim Racing", car: "BMW M4 GT3", qualy: "P12", finish: "P5", drivers: ["Skrnjug", "Wolfe"], timestamp: "2025-08-16T12:00:00Z" },
+            { eventId: "indy-8h-25", teamName: "GRiD UP Sim Racing", car: "BMW M4 GT3", qualy: "P1", finish: "P1", drivers: ["Skrnjug", "Wolfe"], timestamp: "2025-09-06T12:00:00Z" },
+            { eventId: "watkins-glen-6h-25", teamName: "GRiD UP Sim Racing", car: "BMW M4 GT3", qualy: "P5", finish: "P4", drivers: ["Skrnjug", "Wolfe"], timestamp: "2025-09-20T12:00:00Z" },
+            { eventId: "petit-le-mans-25", teamName: "GRiD UP Sim Racing", car: "BMW M4 GT3", qualy: "P4", finish: "P1", drivers: ["Skrnjug", "Wolfe"], timestamp: "2025-09-27T12:00:00Z" },
+            { eventId: "fuji-8h-25", teamName: "GRiD UP Sim Racing", car: "BMW M4 GT3", qualy: "P18", finish: "P6", drivers: ["Skrnjug", "Wolfe"], timestamp: "2025-10-04T12:00:00Z" },
+            { eventId: "spa-24h-25", teamName: "GRiD UP White", car: "BMW M4 GT3", qualy: "P5", finish: "P12", drivers: ["Fabian", "Hernandez", "McClain", "Reid"], timestamp: "2025-10-25T12:00:00Z" },
+            { eventId: "spa-24h-25", teamName: "GRiD UP Black", car: "BMW M4 GT3", qualy: "P30", finish: "P25", drivers: ["Cantwell", "Skrnjug", "Wolfe"], timestamp: "2025-10-25T12:00:01Z" },
+            { eventId: "suzuka-1000km-25", teamName: "GRiD UP Sim Racing", car: "Ferrari 296 GT3", qualy: "P14", finish: "P22", drivers: ["Cantwell", "Skrnjug"], timestamp: "2025-11-15T12:00:00Z" },
+            { eventId: "suzuka-1000km-25", teamName: "GRiD UP White", car: "Ferrari 296 GT3", qualy: "P56", finish: "P37", drivers: ["Fabian", "Wolfe", "Williams"], timestamp: "2025-11-15T12:00:01Z" },
+            { eventId: "suzuka-1000km-25", teamName: "GRiD UP Black", car: "Ferrari 296 GT3", qualy: "P53", finish: "P25", drivers: ["Cortez", "Saunders", "Reid"], timestamp: "2025-11-15T12:00:02Z" },
+            { eventId: "production-car-challenge-25", teamName: "GRiD UP Sim Racing", car: "Mazda MX-5 Cup", qualy: "P11", finish: "P4", drivers: ["Skrnjug", "Wolfe"], timestamp: "2025-12-19T12:00:00Z" },
+            { eventId: "sebring-6h-25", teamName: "GRiD UP Sim Racing", car: "Corvette Z06 GT3.R", qualy: "P30", finish: "P10", drivers: ["Skrnjug", "Wolfe"], timestamp: "2025-12-27T12:00:00Z" },
+            
+            // 2026
+            { eventId: "daytona-6h-26", teamName: "GRiD UP Sim Racing", car: "Porsche 992 GT3", qualy: "P25", finish: "P9", drivers: ["Cantwell", "Skrnjug", "Wolfe"], timestamp: "2026-01-10T12:00:00Z" },
+            { eventId: "daytona-24h-26", teamName: "GRiD UP Sim Racing", car: "Dallara P217", qualy: "P4", finish: "P2", drivers: ["Cook", "Cortez", "Fabian", "Hernandez", "Reid"], timestamp: "2026-01-17T12:00:00Z" },
+            { eventId: "daytona-24h-26", teamName: "GRiD UP White", car: "Cadillac V-Series.R", qualy: "P2", finish: "P4", drivers: ["Ebrahim", "Hatfield", "Shore", "Theba", "Todd"], timestamp: "2026-01-17T12:00:01Z" },
+            { eventId: "daytona-24h-26", teamName: "GRiD UP Black", car: "Porsche 992 GT3", qualy: "P20", finish: "P15", drivers: ["Cantwell", "Roberts", "Skrnjug", "Wilmoth", "Wolfe"], timestamp: "2026-01-17T12:00:02Z" },
+            { eventId: "daytona-24h-26", teamName: "GRiD UP Blue", car: "Ferrari 296 GT3", qualy: "P15", finish: "P19", drivers: ["Howington", "Hupp", "Shreve", "Tamminga", "Williams"], timestamp: "2026-01-17T12:00:03Z" },
+            { eventId: "bathurst-12h-26", teamName: "GRiD UP Sim Racing", car: "BMW M4 GT3 EVO", qualy: "P10", finish: "P24", drivers: ["Cortez", "Hernandez", "McClain"], timestamp: "2026-02-20T12:00:00Z" },
+            { eventId: "bathurst-12h-26", teamName: "GRiD UP White", car: "Aston Martin Vantage GT3 EVO", qualy: "P31", finish: "P5", drivers: ["Fabian", "Reid", "Wolfe"], timestamp: "2026-02-21T12:00:00Z" },
+            { eventId: "bathurst-12h-26", teamName: "GRiD UP Black", car: "Porsche 911 GT3 R", qualy: "P12", finish: "P19", drivers: ["Shampine", "Theba"], timestamp: "2026-02-21T12:00:01Z" },
+            { eventId: "bathurst-12h-26", teamName: "GRiD UP Blue", car: "Porsche 911 GT3 R", qualy: "P36", finish: "P4", drivers: ["Cantwell", "Ebrahim", "Wilmoth"], timestamp: "2026-02-21T12:00:02Z" },
+            
+            // Charity Event (Feb 28)
+            { eventId: "drive-for-wishes-26", teamName: "GRiD UP White", car: "Mazda MX-5", qualy: "-", finish: "$1,345 Raised", drivers: ["McClain", "Roberts", "Wolfe"], timestamp: "2026-02-28T12:00:00Z" },
+            { eventId: "drive-for-wishes-26", teamName: "GRiD UP Black", car: "Porsche 963", qualy: "-", finish: "$1,345 Raised", drivers: ["Ebrahim", "Reid", "Theba"], timestamp: "2026-02-28T12:00:01Z" },
+            { eventId: "drive-for-wishes-26", teamName: "GRiD UP Blue", car: "BMW M4 GT4", qualy: "-", finish: "$1,345 Raised", drivers: ["Cortez", "Fabian", "Jones", "Sadowski"], timestamp: "2026-02-28T12:00:02Z" },
+            { eventId: "drive-for-wishes-26", teamName: "GRiD UP Red", car: "BMW M4 GT3", qualy: "-", finish: "$1,345 Raised", drivers: ["Cantwell", "Hupp", "Tamminga", "Williams"], timestamp: "2026-02-28T12:00:03Z" },
+
+            { eventId: "sebring-12h-26", teamName: "GRiD UP Sim Racing", car: "Dallara P217", qualy: "P1", finish: "P4", drivers: ["Cook", "Cortez", "McClain", "Reid"], timestamp: "2026-03-28T12:00:00Z" },
+            { eventId: "sebring-12h-26", teamName: "GRiD UP White", car: "Dallara P217", qualy: "P5", finish: "P6", drivers: ["Fabian", "Hernandez", "Todd"], timestamp: "2026-03-28T12:00:01Z" },
+            { eventId: "sebring-12h-26", teamName: "GRiD UP Black", car: "Porsche 911 GT3 R", qualy: "P8", finish: "P12", drivers: ["Cantwell", "Wilmoth", "Wolfe"], timestamp: "2026-03-28T12:00:02Z" },
+            { eventId: "imsa-classic-500-26", teamName: "GRiD UP Sim Racing", car: "Nissan GTP ZX-T", qualy: "P6", finish: "P8", drivers: ["Cortez", "Reid"], timestamp: "2026-04-12T12:00:00Z" },
+            { eventId: "nurburgring-24h-26", teamName: "GRiD UP Sim Racing", car: "Aston Martin Vantage GT3 EVO", qualy: "P6", finish: "P2", drivers: ["Cortez", "Deasey", "Reid", "Wilt"], timestamp: "2026-05-02T12:00:00Z" }
         ];
 
         function log(msg) {
-            document.getElementById('log').textContent += msg + '\n';
+            const l = document.getElementById('log');
+            l.textContent += msg + '\n';
+            l.scrollTop = l.scrollHeight;
         }
 
-        async function seedResultsDatabase() {
-            if (!db) {
-                log("Error: Database not initialized.");
-                return;
-            }
-
+        async function seedDatabase() {
             const btn = document.getElementById('seed-btn');
             btn.disabled = true;
-            btn.innerText = "Processing...";
-
+            document.getElementById('log').textContent = '';
+            
             try {
-                log("Step 1: Cleaning up any old duplicated posters...");
-                
-                // Fetch all current results
-                const snap = await db.collection("race_results").get();
-                const deleteBatch = db.batch();
-                let deletedCount = 0;
-                
-                snap.forEach(doc => {
-                    const data = doc.data();
-                    // If it is one of our seeded posters (rawUrl matches assets/results/)
-                    if (data.rawUrl && data.rawUrl.startsWith("assets/results/")) {
-                        deleteBatch.delete(doc.ref);
-                        deletedCount++;
-                    }
-                });
+                if (typeof db === 'undefined') throw new Error("Firestore not initialized. Check auth.js");
 
-                if (deletedCount > 0) {
-                    await deleteBatch.commit();
-                    log(`Deleted ${deletedCount} old/duplicate entries.`);
-                } else {
-                    log("No old entries to delete. Proceeding.");
+                log("Wiping existing race_results...");
+                const postersSnap = await db.collection("race_results").get();
+                for (const doc of postersSnap.docs) { await doc.ref.delete(); }
+                log("✓ race_results cleared.");
+
+                log("Wiping existing event_results...");
+                const textSnap = await db.collection("event_results").get();
+                for (const doc of textSnap.docs) { await doc.ref.delete(); }
+                log("✓ event_results cleared.");
+
+                log("\nSeeding posters (" + POSTERS_TO_ADD.length + ")...");
+                for (const item of POSTERS_TO_ADD) {
+                    await db.collection("race_results").add({
+                        teamAsset: "F:/Grid Up/Race Results/" + item.file,
+                        timestamp: item.date,
+                        type: "cinematic-poster"
+                    });
+                    log("  + Added: " + item.file);
                 }
 
-                log("\nStep 2: Starting seed process for " + RESULTS_TO_ADD.length + " unique results...");
-                const addBatch = db.batch();
-
-                RESULTS_TO_ADD.forEach(res => {
-                    const docRef = db.collection('race_results').doc();
-                    
-                    const dateObj = new Date(res.date);
-                    const firestoreTimestamp = firebase.firestore.Timestamp.fromDate(dateObj);
-                    
-                    addBatch.set(docRef, {
-                        timestamp: firestoreTimestamp,
-                        teamAsset: "assets/results/" + res.file,
-                        rawUrl: "assets/results/" + res.file,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                log("\nSeeding text results (" + TEXT_DATA_TO_ADD.length + ")...");
+                for (const item of TEXT_DATA_TO_ADD) {
+                    await db.collection("event_results").add({
+                        ...item,
+                        timestamp: firebase.firestore.Timestamp.fromDate(new Date(item.timestamp))
                     });
-                    
-                    log(`Added to batch: ${res.file} with exact date ${res.date}`);
-                });
+                    log("  + Added Text: " + item.teamName + " at " + item.eventId);
+                }
 
-                await addBatch.commit();
-                log("\nSUCCESS! All " + RESULTS_TO_ADD.length + " unique results have been cleanly seeded to Firestore.");
-            } catch (error) {
-                log("\nERROR during process: " + error.message);
-                console.error(error);
+                log("\n🎉 MASTER SEED COMPLETE! All legacy data is now synchronized.");
+                log("Check the homepage carousel and the Results page to verify.");
+
+            } catch (err) {
+                log("\n❌ SEED FAILED: " + err.message);
+                console.error(err);
             } finally {
                 btn.disabled = false;
-                btn.innerText = "Clear & Seed Results";
             }
         }
     </script>

@@ -821,6 +821,7 @@ async function loadRecentResults() {
                             <div class="text-overlay" style="top: 1.5rem; right: 1.5rem; text-align: right;">
                                 <div style="font-size: 0.75rem; font-weight: 800; opacity: 0.9; color: var(--primary);">${d.carUsed || 'GT3'}</div>
                                 <div style="font-size: 1.2rem; font-weight: 900; margin-top: 0.2rem;">FINISH: ${d.position}</div>
+                                ${d.startPos ? `<div style="font-size: 0.7rem; opacity: 0.8; margin-top: 0.1rem;">STARTED: ${d.startPos}</div>` : ''}
                             </div>
 
                             <!-- Bottom Banner -->
@@ -828,6 +829,9 @@ async function loadRecentResults() {
                                 <div style="text-align: left;">
                                     <div style="font-size: 1.1rem; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">${Array.isArray(d.drivers) ? d.drivers.join(' - ') : d.drivers}</div>
                                     <div style="font-size: 0.6rem; color: var(--primary); font-weight: 700; margin-top: 0.2rem; letter-spacing: 2px;">CONFIRMED TEAM ENTRY</div>
+                                </div>
+                                <div style="background: rgba(255,255,255,0.1); padding: 0.6rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(8px);">
+                                    <img src="assets/logo.png" style="height: 25px;" onerror="this.style.display='none'">
                                 </div>
                             </div>
 
@@ -917,17 +921,17 @@ async function loadAllResults() {
             results.forEach(d => {
                 const drivers = Array.isArray(d.drivers) ? d.drivers.join(', ') : (d.drivers || 'TBA');
                 rowsHtml += `
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                        <td style="padding: 0.75rem 1rem;">
-                            <strong style="color: var(--text); font-size: 1rem; letter-spacing: 1px;">${d.teamName || 'GRiD UP'}</strong><br>
-                            <span style="font-size: 0.8rem; color: var(--primary);">${d.car || 'TBA'}</span><br>
-                            <span style="font-size: 0.75rem; color: var(--text-muted); opacity: 0.7; display: inline-block; margin-top: 0.2rem;">${drivers}</span>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                        <td style="padding: 0.5rem 0.75rem;">
+                            <strong style="color: var(--text); font-size: 0.9rem; letter-spacing: 0.5px;">${d.teamName || 'GRiD UP'}</strong>
+                            <span style="font-size: 0.75rem; color: var(--primary); margin-left: 0.5rem;">${d.car || 'TBA'}</span><br>
+                            <span style="font-size: 0.7rem; color: var(--text-muted); opacity: 0.6; display: block; margin-top: 0.1rem;">${drivers}</span>
                         </td>
-                        <td style="padding: 0.75rem 1rem;">
-                            <span style="color: var(--text-muted); font-size: 0.85rem;">${d.qualy || '-'}</span>
+                        <td style="padding: 0.5rem 0.75rem; text-align: center;">
+                            <span style="color: var(--text-muted); font-size: 0.8rem;">${d.qualy || '-'}</span>
                         </td>
-                        <td style="padding: 0.75rem 1rem;">
-                            <strong style="color: var(--primary); font-weight: 900; font-size: 1.1rem;">${d.finish || '-'}</strong>
+                        <td style="padding: 0.5rem 0.75rem; text-align: center;">
+                            <strong style="color: var(--primary); font-weight: 900; font-size: 1rem;">${d.finish || '-'}</strong>
                         </td>
                     </tr>
                 `;
@@ -943,12 +947,12 @@ async function loadAllResults() {
                     <p style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0;">${eventData.date || ''}</p>
                 </div>
                 <div class="results-table-container" style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; color: var(--text-muted); font-size: 0.9rem;">
+                    <table style="width: 100%; border-collapse: collapse; color: var(--text-muted); font-size: 0.85rem;">
                         <thead>
                             <tr style="border-bottom: 1px solid var(--glass-border); text-align: left;">
-                                <th style="padding: 0.75rem 1rem; font-size: 0.75rem;">Team / Car</th>
-                                <th style="padding: 0.75rem 1rem; font-size: 0.75rem;">Qualifying</th>
-                                <th style="padding: 0.75rem 1rem; font-size: 0.75rem;">Final Position</th>
+                                <th style="padding: 0.5rem 0.75rem; font-size: 0.7rem;">Team / Car / Drivers</th>
+                                <th style="padding: 0.5rem 0.75rem; font-size: 0.7rem; text-align: center;">Qualy</th>
+                                <th style="padding: 0.5rem 0.75rem; font-size: 0.7rem; text-align: center;">Finish</th>
                             </tr>
                         </thead>
                         <tbody>
