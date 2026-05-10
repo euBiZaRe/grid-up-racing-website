@@ -596,14 +596,12 @@
                             <p style="color: var(--text-muted); text-align: center;">No cards generated yet.</p>
                         </div>
                     </div>
-                    </div>
                 </div>
             </div>
 
             <!-- Live Streams Management Section -->
             <div id="section-streams" class="tab-content" style="display: none;">
                 <div class="grid" style="grid-template-columns: 1fr 2fr; gap: 2rem; align-items: start;">
-                    <!-- Add Stream Form -->
                     <div class="glass" style="padding: 2.5rem; border: 1px solid rgba(255,0,0,0.2);">
                         <h3 style="color: #ff4444; margin-bottom: 2rem; display: flex; align-items: center; gap: 10px;">
                             <span style="display: inline-block; width: 10px; height: 10px; background: #ff4444; border-radius: 50%; animation: liveDot 1s infinite;"></span>
@@ -622,7 +620,6 @@
                         </div>
                     </div>
 
-                    <!-- Streams List -->
                     <div class="glass" style="padding: 2.5rem;">
                         <h3 style="color: var(--primary); margin-bottom: 2rem;">Active Streams List</h3>
                         <div id="admin-streams-list" class="grid" style="grid-template-columns: 1fr; gap: 1rem;">
@@ -635,43 +632,31 @@
             <!-- System Sync Section -->
             <div id="section-system" class="tab-content" style="display: none;">
                 <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 2rem;">
-                    <!-- Status & Documentation -->
                     <div class="glass" style="padding: 2.5rem;">
                         <h3 style="color: var(--primary); margin-bottom: 2rem;">Background Sync Status</h3>
                         <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.6;">
                             Syncs are managed automatically. Triggering a button schedules a task that typically completes within <strong>15-30 minutes</strong>.
                         </p>
-                        
                         <div id="sync-active-indicator" style="display: none; padding: 1.5rem; background: rgba(0, 207, 255, 0.05); border: 1px solid var(--primary); border-radius: 12px; margin-bottom: 1.5rem;">
                             <div style="display: flex; align-items: center; gap: 15px;">
                                 <div class="sync-spinner" style="width: 20px; height: 20px; border: 2px solid rgba(0,207,255,0.2); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite;"></div>
                                 <div>
                                     <p style="color: var(--primary); font-weight: 700; font-size: 0.9rem;">SYNC IN PROGRESS</p>
                                     <p id="sync-active-msg" style="font-size: 0.7rem; color: var(--text-muted); margin-top: 5px;">A sync task is currently pending or running in GitHub Actions.</p>
-                                    
-                                    <div id="sync-progress-container" style="margin-top: 1rem; width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; display: none; border: 1px solid rgba(255,255,255,0.1);">
-                                        <div id="sync-progress-bar" style="height: 100%; width: 0%; background: linear-gradient(90deg, var(--secondary), var(--primary)); transition: width 0.5s ease; box-shadow: 0 0 15px rgba(0, 207, 255, 0.4);"></div>
-                                    </div>
-                                    <p id="sync-progress-text" style="font-size: 0.6rem; color: var(--text-muted); margin-top: 10px; display: none; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;"></p>
                                 </div>
                             </div>
-                        </div>
-
-                        <div id="sync-status" style="margin-top: 1rem; padding: 1rem; border-radius: 4px; font-size: 0.8rem; display: none;"></div>
-                    </div>
-
-                    <!-- Sync Controls -->
-                    <div class="glass" style="padding: 2.5rem;">
-                        <h3 style="color: var(--primary); margin-bottom: 2rem;">Manual Sync Triggers</h3>
-                        <div style="display: grid; gap: 1.5rem;">
-                            <!-- Garage 61 Sync -->
-                            <div style="padding: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 12px;">
-                                <h4 style="margin-bottom: 0.5rem; font-size: 0.9rem;">Driver Stats (Garage 61)</h4>
-                                <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.5rem;">Updates driver iRating, License, and Career stats.</p>
-                                <button onclick="triggerWorkflow('update-profiles.yml')" class="btn btn-primary" style="width: 100%; font-size: 0.8rem;">🚀 Schedule Driver Sync</button>
+                            <div id="sync-progress-container" style="margin-top: 1rem; background: rgba(255,255,255,0.05); height: 6px; border-radius: 3px; overflow: hidden;">
+                                <div id="sync-progress-bar" style="width: 0%; height: 100%; background: var(--primary); transition: width 0.5s;"></div>
                             </div>
-
-                            <!-- Events & Lineups Sync -->
+                        </div>
+                        <div id="sync-status-msg" style="padding: 1rem; border-radius: 8px; font-size: 0.75rem; display: none; margin-bottom: 1.5rem;"></div>
+                        <h4 style="font-size: 0.8rem; color: var(--primary); margin-bottom: 1rem;">Manual Sync Triggers</h4>
+                        <div style="display: grid; gap: 1.5rem;">
+                            <div style="padding: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 12px;">
+                                <h4 style="margin-bottom: 0.5rem; font-size: 0.9rem;">Garage 61 Telemetry</h4>
+                                <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.5rem;">Syncs driver stats, consistency, and laps.</p>
+                                <button onclick="triggerWorkflow('update-telemetry.yml')" class="btn btn-outline" style="width: 100%; font-size: 0.8rem; color: var(--primary); border-color: var(--primary);">📥 Schedule Telemetry Sync</button>
+                            </div>
                             <div style="padding: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 12px;">
                                 <h4 style="margin-bottom: 0.5rem; font-size: 0.9rem;">Event Lineups</h4>
                                 <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.5rem;">Syncs race entries from Official Sheets.</p>
@@ -682,53 +667,64 @@
                 </div>
             </div>
 
-        <!-- Race Results Portal Section -->
-        <div id="section-race-results" class="tab-content" style="display: none;">
-            <div class="grid" style="grid-template-columns: 1fr 2fr; gap: 2rem; align-items: start;">
-                <!-- Result Entry Form -->
-                <div class="glass" style="padding: 2.5rem;">
-                    <h3 style="color: var(--primary); margin-bottom: 2rem; font-size: 0.9rem; letter-spacing: 2px;">ADD RACE RESULT</h3>
-                    <div style="display: grid; gap: 1.5rem;">
-                        <div>
-                            <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">EVENT</label>
-                            <select id="result-event-selector" class="btn btn-outline" style="width: 100%; text-align: left; padding: 1rem;" onchange="loadEventResults()">
-                                <option value="">-- Choose Event --</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">TEAM NAME</label>
-                            <input type="text" id="result-team-name" class="btn btn-outline" style="width: 100%; text-align: left;" placeholder="e.g. GRiD UP Sim Racing">
-                        </div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <!-- Race Results Portal Section -->
+            <div id="section-race-results" class="tab-content" style="display: none;">
+                <div class="grid" style="grid-template-columns: 1fr 2fr; gap: 2rem; align-items: start;">
+                    <div class="glass" style="padding: 2.5rem;">
+                        <h3 style="color: var(--primary); margin-bottom: 2rem; font-size: 0.9rem; letter-spacing: 2px;">ADD RACE RESULT</h3>
+                        <div style="display: grid; gap: 1.5rem;">
                             <div>
-                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">CAR</label>
-                                <input type="text" id="result-car" class="btn btn-outline" style="width: 100%; text-align: left;" placeholder="e.g. Dallara P217">
+                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">EVENT</label>
+                                <select id="result-event-selector" class="btn btn-outline" style="width: 100%; text-align: left; padding: 1rem;" onchange="loadEventResults()">
+                                    <option value="">-- Choose Event --</option>
+                                    <option value="thruxton-4h">4 Hours at Thruxton</option>
+                                    <option value="indy-500">Indy 500</option>
+                                    <option value="world-600">World 600</option>
+                                    <option value="watkins-glen-6h">Watkins Glen 6 Hour</option>
+                                    <option value="firecracker-400">Firecracker 400</option>
+                                    <option value="spa-24hr">Spa 24hr</option>
+                                    <option value="brickyard-400">Brickyard 400</option>
+                                    <option value="road-america-6h">Road America 6h</option>
+                                    <option value="suzuka-1000km">Suzuka 1000km</option>
+                                    <option value="petit-le-mans">Petit Le Mans</option>
+                                    <option value="bathurst-1000">Bathurst 1000</option>
+                                    <option value="indy-8h">Indy 8h</option>
+                                </select>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div>
+                                    <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">CAR #</label>
+                                    <input type="text" id="result-car-num" placeholder="e.g. 77" class="btn btn-outline" style="width: 100%; text-align: left;">
+                                </div>
+                                <div>
+                                    <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">CAR CLASS</label>
+                                    <input type="text" id="result-car-class" placeholder="e.g. GT3" class="btn btn-outline" style="width: 100%; text-align: left;">
+                                </div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div>
+                                    <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">SPLIT</label>
+                                    <input type="number" id="result-split" class="btn btn-outline" style="width: 100%; text-align: left;">
+                                </div>
+                                <div>
+                                    <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">SOF</label>
+                                    <input type="number" id="result-sof" class="btn btn-outline" style="width: 100%; text-align: left;">
+                                </div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div>
+                                    <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">QUALY</label>
+                                    <input type="text" id="result-qualy" class="btn btn-outline" style="width: 100%; text-align: left;" placeholder="e.g. P1">
+                                </div>
+                                <div>
+                                    <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">FINISH</label>
+                                    <input type="text" id="result-finish" class="btn btn-outline" style="width: 100%; text-align: left;" placeholder="e.g. P4">
+                                </div>
                             </div>
                             <div>
-                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">DRIVERS (Comma separated)</label>
-                                <input type="text" id="result-drivers" class="btn btn-outline" style="width: 100%; text-align: left;" placeholder="Driver 1, Driver 2...">
+                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">DRIVERS (Comma separated)</label>
+                                <input type="text" id="result-drivers" placeholder="Driver 1, Driver 2..." class="btn btn-outline" style="width: 100%; text-align: left;">
                             </div>
-                        </div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                            <div>
-                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">SPLIT</label>
-                                <input type="number" id="result-split" class="btn btn-outline" style="width: 100%; text-align: left;">
-                            </div>
-                            <div>
-                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">SOF</label>
-                                <input type="number" id="result-sof" class="btn btn-outline" style="width: 100%; text-align: left;">
-                            </div>
-                        </div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                            <div>
-                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">QUALY</label>
-                                <input type="text" id="result-qualy" class="btn btn-outline" style="width: 100%; text-align: left;" placeholder="e.g. P1">
-                            </div>
-                            <div>
-                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">FINISH</label>
-                                <input type="text" id="result-finish" class="btn btn-outline" style="width: 100%; text-align: left;" placeholder="e.g. P4">
-                            </div>
-                        </div>
                         <button onclick="saveRaceResult()" class="btn btn-primary" style="margin-top: 1rem;">SAVE TEAM RESULT</button>
                     </div>
                 </div>
@@ -1900,7 +1896,7 @@
             const teamOptionsHtml = TEAM_OPTIONS.map(opt => `<option value="${opt}" ${teamName === opt ? 'selected' : ''}>${opt}</option>`).join('');
             
             teamDiv.innerHTML = `
-                <button onclick="this.parentElement.remove()" style="position:absolute; top:1rem; right:1rem; background:none; border:none; color:#ff0099; cursor:pointer;">Ãƒâ€”</button>
+                <button onclick="this.parentElement.remove()" style="position:absolute; top:1rem; right:1rem; background:none; border:none; color:#ff0099; cursor:pointer; font-size: 1.2rem;">&times;</button>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                     <div>
                         <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">TEAM NAME</label>
@@ -2074,7 +2070,7 @@
 
             // Simple Car to Class Mapper
             const CLASS_MAP = {
-                'porsche 911 gt3 r': 'GT3', 'ferrari 296 gt3': 'GT3', 'lamborghini huracÃƒÂ¡n gt3': 'GT3', 
+                'porsche 911 gt3 r': 'GT3', 'ferrari 296 gt3': 'GT3', 'lamborghini huracán gt3': 'GT3', 
                 'bmw m4 gt3': 'GT3', 'mercedes-amg gt3': 'GT3', 'audi r8 lms gt3': 'GT3', 'mclaren 720s gt3': 'GT3',
                 'cadillac v-series.r': 'GTP', 'acura arx-06': 'GTP', 'bmw m hybrid v8': 'GTP', 'porsche 963': 'GTP',
                 'dallara p217': 'LMP2',
@@ -2201,7 +2197,7 @@
                 // We'll treat "Average (9k iRating)" as a 'Driver' for now to show community speed.
                 
                 const CLASS_MAP = {
-                    'porsche 911 gt3 r': 'GT3', 'ferrari 296 gt3': 'GT3', 'lamborghini huracÃƒÂ¡n gt3': 'GT3', 
+                    'porsche 911 gt3 r': 'GT3', 'ferrari 296 gt3': 'GT3', 'lamborghini huracán gt3': 'GT3', 
                     'bmw m4 gt3': 'GT3', 'mercedes-amg gt3': 'GT3', 'audi r8 lms gt3': 'GT3', 'mclaren 720s gt3': 'GT3',
                     'cadillac v-series.r': 'GTP', 'acura arx-06': 'GTP', 'bmw m hybrid v8': 'GTP', 'porsche 963': 'GTP',
                     'dallara p217': 'LMP2',
