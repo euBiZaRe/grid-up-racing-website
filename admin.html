@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -218,7 +218,7 @@
                     <select id="lineup-event-selector" class="btn btn-outline" style="width: 100%; text-align: left; padding: 1rem;" onchange="loadRaceData()">
                         <option value="">-- Choose an Event --</option>
                         <option value="imsa-classic-500">IMSA Classic 500</option>
-                        <option value="nurburgring-24h">NÃƒÂ¼rburgring 24h</option>
+                        <option value="nurburgring-24h">Nürburgring 24h</option>
                         <option value="thruxton-4h">4 Hours at Thruxton</option>
                         <option value="indy-500">Indy 500</option>
                         <option value="world-600">World 600</option>
@@ -279,7 +279,7 @@
                             <input id="iracing-series-name" class="btn btn-outline" style="flex: 2; text-align: left;" list="common-series" placeholder="Enter Series Name (e.g. IMSA iRacing Series - 2026 Season 2)">
                             <datalist id="common-series">
                                 <option value="IMSA iRacing Series - 2026 Season 2">
-                                <option value="iRacing NÃƒÂ¼rburgring 24h - 2026">
+                                <option value="iRacing Nürburgring 24h - 2026">
                                 <option value="Indy 500 - 2026">
                             </datalist>
                             <button onclick="fetchIRacingData()" class="btn btn-primary" style="flex: 1;">Fetch & Sync</button>
@@ -349,7 +349,7 @@
                             <div>
                                 <h4 style="color: #fff; margin-bottom: 0.5rem;">Garage 61 Profiles</h4>
                                 <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem;">Scrapes latest stats and license data for all drivers. (Takes ~2-3 mins)</p>
-                                <button id="sync-g61-btn" onclick="triggerWorkflow('update-profiles.yml')" class="btn btn-primary" style="width: 100%;">Ã°Å¸Å¡â‚¬ Start Garage 61 Sync</button>
+                                <button id="sync-g61-btn" onclick="triggerWorkflow('update-profiles.yml')" class="btn btn-primary" style="width: 100%;">🚀 Start Garage 61 Sync</button>
                             </div>
                             
                             <hr style="border:0; border-top: 1px solid rgba(255,255,255,0.05);">
@@ -357,7 +357,7 @@
                             <div>
                                 <h4 style="color: #fff; margin-bottom: 0.5rem;">Event Lineups</h4>
                                 <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem;">Syncs the latest race entries from Google Sheets. (Takes ~30 secs)</p>
-                                <button id="sync-events-btn" onclick="triggerWorkflow('update-events.yml')" class="btn btn-outline" style="width: 100%; color: var(--primary); border-color: var(--primary);">Ã°Å¸â€œÂ¥ Start Event Sync</button>
+                                <button id="sync-events-btn" onclick="triggerWorkflow('update-events.yml')" class="btn btn-outline" style="width: 100%; color: var(--primary); border-color: var(--primary);">📥 Start Event Sync</button>
                             </div>
                         </div>
                     </div>
@@ -371,7 +371,7 @@
                             <p style="font-size: 0.7rem; color: var(--text-muted); line-height: 1.4;">
                                 <strong>Required:</strong> A Github token with <code>actions:write</code> permissions is needed to trigger the sync.
                                 <br><br>
-                                <a href="https://github.com/settings/tokens/new?scopes=repo&description=Grid%20Up%20Admin%20Sync" target="_blank" style="color: var(--primary); text-decoration: underline;">Generate Token Ã¢â€ â€™</a>
+                                <a href="https://github.com/settings/tokens/new?scopes=repo&description=Grid%20Up%20Admin%20Sync" target="_blank" style="color: var(--primary); text-decoration: underline;">Generate Token →</a>
                             </p>
                             <div id="sync-status" style="margin-top: 1rem; padding: 1rem; border-radius: 4px; font-size: 0.8rem; display: none;"></div>
                         </div>
@@ -1080,7 +1080,7 @@
             ];
             const defaults = [
                 { id: 'imsa-classic-500', name: 'IMSA Classic 500', track: 'Laguna Seca', date: 'April 10-11', startDate: '2026-04-10T22:00:00Z', endDate: '2026-04-12T04:00:00Z', slots: IMSA_SLOTS, classes: ['GTP', 'GTO'] },
-                { id: 'nurburgring-24h', name: 'NÃƒÂ¼rburgring 24h', track: 'NÃƒÂ¼rburgring', date: 'May 1-3', startDate: '2026-05-01T22:00:00Z', endDate: '2026-05-04T04:00:00Z', slots: IMSA_SLOTS, classes: ['GT3', '992 Cup', 'GT4', 'TCR', 'BMW M2 CS'] },
+                { id: 'nurburgring-24h', name: 'Nürburgring 24h', track: 'Nürburgring', date: 'May 1-3', startDate: '2026-05-01T22:00:00Z', endDate: '2026-05-04T04:00:00Z', slots: IMSA_SLOTS, classes: ['GT3', '992 Cup', 'GT4', 'TCR', 'BMW M2 CS'] },
                 { id: 'indy-500', name: 'INDY 500', track: 'Indianapolis', date: 'May 5-18', startDate: '2026-05-05T18:00:00Z', endDate: '2026-05-19T04:00:00Z', slots: IMSA_SLOTS, classes: ['IndyCar'] },
                 { id: 'world-600', name: 'World 600', track: 'Charlotte', date: 'May 20-25', startDate: '2026-05-20T22:00:00Z', endDate: '2026-05-26T04:00:00Z', slots: IMSA_SLOTS, classes: ['NASCAR'] },
                 { id: 'thruxton-4h', name: '4 Hours at Thruxton', track: 'Thruxton', date: 'May 29-31', startDate: '2026-05-29T22:00:00Z', endDate: '2026-06-01T04:00:00Z', slots: IMSA_SLOTS, classes: ['TCR'] },
@@ -1282,7 +1282,7 @@
                 // NEW: Auto-fill track and date for the card
                 const FALLBACK_TRACKS = {
                     'imsa-classic-500': 'Laguna Seca',
-                    'nurburgring-24h': 'NÃƒÂ¼rburgring',
+                    'nurburgring-24h': 'Nürburgring',
                     'indy-500': 'Indianapolis',
                     'world-600': 'Charlotte',
                     'thruxton-4h': 'Thruxton',
