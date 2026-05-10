@@ -139,14 +139,14 @@
         <!-- Admin Content -->
         <div id="admin-hub" class="admin-content" style="position: relative; overflow: hidden; padding-bottom: 2rem;">
             <div class="tread-overlay" style="opacity: 0.05;"></div>
-            <header style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 1rem;">
+            <header style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
                 <div>
-                    <p style="color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 4px; font-size: 0.7rem; margin-bottom: 0.5rem; opacity: 0.8;">GRiD UP // ADMIN</p>
-                    <h1 class="glow-text" style="font-size: 4rem; font-weight: 800; letter-spacing: -2px; margin: 0;" id="admin-title">Dashboard</h1>
+                    <p style="color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 4px; font-size: 0.6rem; margin-bottom: 0.25rem; opacity: 0.8;">GRiD UP // ADMIN</p>
+                    <h1 class="glow-text" style="font-size: 2.2rem; font-weight: 800; letter-spacing: -1px; margin: 0;" id="admin-title">Dashboard</h1>
                 </div>
                 <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;">
                     <div style="display: flex; align-items: center; gap: 10px;">
-                        <span id="admin-user-info" style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600;">...</span>
+                        <span id="admin-user-info" style="color: var(--text-muted); font-size: 0.7rem; font-weight: 600;">...</span>
                         <div style="width: 8px; height: 8px; background: #00ff88; border-radius: 50%; box-shadow: 0 0 10px #00ff88;"></div>
                     </div>
                 </div>
@@ -168,9 +168,8 @@
                 </aside>
 
                 <div class="admin-main">
-
-            <!-- Applications Section -->
-            <div id="section-applications" class="tab-content" style="display: none;">
+                    <!-- Applications Section -->
+                    <div id="section-applications" class="tab-content" style="display: none;">
                 <div class="glass" style="padding: 1.5rem; overflow-x: auto;">
                 <table class="claims-table mobile-table">
                     <thead>
@@ -680,7 +679,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
                 </div>
             </div>
 
@@ -1574,13 +1572,13 @@
                                             style="background: none; border: none; cursor: pointer; font-size: 0.8rem; opacity: 0.4; transition: opacity 0.2s;" 
                                             onmouseenter="this.style.opacity='1'" 
                                             onmouseleave="this.style.opacity='0.4'"
-                                            title="Remove all responses for this driver">Ã°Å¸â€”â€˜Ã¯Â¸Â</button>
+                                            title="Remove all responses for this driver">🗑️</button>
                                 </div>
                             </td>
                         `;
                         UPCOMING_EVENTS.forEach(event => {
                             const resp = allResponses[event.id] ? allResponses[event.id][uid] : null;
-                            let statusHtml = "Ã¢â‚¬â€œ";
+                            let statusHtml = "&mdash;";
                             if (resp) {
                                 if (resp.status === 'signed_up') {
                                     statusHtml = `<div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
@@ -1766,7 +1764,7 @@
             const originalText = btn.textContent;
             
             btn.disabled = true;
-            btn.textContent = "Ã¢Å’â€º Scheduling...";
+            btn.textContent = "⌛ Scheduling...";
 
             try {
                 // Instead of calling GitHub API, we write a request to Firestore
@@ -1777,10 +1775,10 @@
                     workflowId: workflowId
                 });
 
-                showSyncStatus("Ã¢Å“â€¦ Sync Scheduled! The task will start shortly.", "rgba(0,255,136,0.1)", "#00ff88");
+                showSyncStatus("✅ Sync Scheduled! The task will start shortly.", "rgba(0,255,136,0.1)", "#00ff88");
             } catch (e) {
                 console.error("Sync Error:", e);
-                showSyncStatus("Ã¢ÂÅ’ Error scheduling sync: " + e.message, "rgba(255,0,85,0.1)", "#ff0055");
+                showSyncStatus("❌ Error scheduling sync: " + e.message, "rgba(255,0,85,0.1)", "#ff0055");
             } finally {
                 btn.disabled = false;
                 btn.textContent = originalText;
