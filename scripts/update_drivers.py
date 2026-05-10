@@ -71,8 +71,8 @@ def fetch_driver_data_scrape(slug):
                 if row.count() > 0:
                     cols = row.locator("td").all_text_contents()
                     if len(cols) >= 3:
-                        lic_text = cols[1].strip() # e.g. "A 4.99"
-                        ir_val_str = cols[2].replace(',', '').strip() # e.g. "3863"
+                        ir_val_str = cols[1].replace(',', '').strip() # e.g. "3863"
+                        lic_text = cols[2].strip() # e.g. "A 4.99"
                         
                         try:
                             ir_val = int(ir_val_str)
@@ -84,20 +84,24 @@ def fetch_driver_data_scrape(slug):
                         except ValueError:
                             pass
 
-            # 4. Scrape Total Laps / Time
+            # 4. Scrape Career Stats (Table rows)
             try:
-                laps_val = page.locator("div:has-text('Total Laps')").locator("..").locator("div").first.text_content()
-                if laps_val: data["totalLaps"] = laps_val.strip()
+                laps_row = page.locator("tr:has-text('Laps driven')").first
+                if laps_row.count() > 0:
+                    laps_text = laps_row.locator("td").text_content().strip()
+                    # Pattern: "328 (58% clean)"
+                    match = re.search(r"(\d+)\s*\(([\d.]+)%\s*clean\)", laps_text)
+                    if match:
+                        data["totalLaps"] = match.group(1)
+                        data["cleanPercentage"] = match.group(2)
+                    else:
+                        data["totalLaps"] = laps_text.split()[0]
             except: pass
             
             try:
-                clean_val = page.locator("div:has-text('Clean laps')").locator("..").locator("div").first.text_content()
-                if clean_val: data["cleanPercentage"] = clean_val.replace('%', '').strip()
-            except: pass
-            
-            try:
-                time_val = page.locator("div:has-text('Time on track')").locator("..").locator("div").first.text_content()
-                if time_val: data["timeOnTrack"] = time_val.strip()
+                time_row = page.locator("tr:has-text('Time on track')").first
+                if time_row.count() > 0:
+                    data["timeOnTrack"] = time_row.locator("td").text_content().strip()
             except: pass
 
             browser.close()
