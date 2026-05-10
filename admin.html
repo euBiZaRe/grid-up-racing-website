@@ -152,19 +152,22 @@
                 </div>
             </header>
 
-            <nav class="admin-nav animate-fade-in" style="display: flex; gap: 1rem; margin-bottom: 3rem; background: rgba(255,255,255,0.02); padding: 0.75rem; border-radius: 12px; border: 1px solid var(--glass-border); position: relative; z-index: 100; overflow-x: auto;">
-                <button onclick="switchTab('applications')" class="btn btn-outline" id="tab-applications" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px; color: #ff3399;">APPLICATIONS</button>
-                <button onclick="switchTab('claims')" class="btn btn-outline" id="tab-claims" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">DRIVER CLAIMS</button>
-                <button onclick="switchTab('races')" class="btn btn-outline" id="tab-races" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">LINEUP MANAGER</button>
-                <button onclick="switchTab('availability')" class="btn btn-outline" id="tab-availability" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">AVAILABILITY</button>
-                <button onclick="switchTab('roster')" class="btn btn-outline" id="tab-roster" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">TEAM ROSTER</button>
-                <button onclick="switchTab('events')" class="btn btn-outline" id="tab-events" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">SEASON SCHEDULE</button>
-                <button onclick="switchTab('race-results')" class="btn btn-outline" id="tab-race-results" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">RACE RESULTS</button>
-                <button onclick="switchTab('posters')" class="btn btn-outline" id="tab-posters" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">POSTER LAB</button>
-                <button onclick="switchTab('streams')" class="btn btn-outline" id="tab-streams" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px; color: #ff4444;">LIVE STREAMS</button>
-                <button onclick="switchTab('admins')" class="btn btn-outline" id="tab-admins" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">TEAM PERMISSIONS</button>
-                <button onclick="switchTab('system')" class="btn btn-outline" id="tab-system" style="flex: 1; padding: 0.8rem; font-size: 0.8rem; border: none; letter-spacing: 1px;">SYSTEM SYNC</button>
-            </nav>
+            <div class="admin-layout">
+                <aside class="admin-sidebar animate-fade-in">
+                    <button onclick="switchTab('applications')" class="btn btn-outline" id="tab-applications">APPLICATIONS</button>
+                    <button onclick="switchTab('claims')" class="btn btn-outline" id="tab-claims">DRIVER CLAIMS</button>
+                    <button onclick="switchTab('races')" class="btn btn-outline" id="tab-races">LINEUP MANAGER</button>
+                    <button onclick="switchTab('availability')" class="btn btn-outline" id="tab-availability">AVAILABILITY</button>
+                    <button onclick="switchTab('roster')" class="btn btn-outline" id="tab-roster">TEAM ROSTER</button>
+                    <button onclick="switchTab('events')" class="btn btn-outline" id="tab-events">SEASON SCHEDULE</button>
+                    <button onclick="switchTab('race-results')" class="btn btn-outline" id="tab-race-results">RACE RESULTS</button>
+                    <button onclick="switchTab('posters')" class="btn btn-outline" id="tab-posters">POSTER LAB</button>
+                    <button onclick="switchTab('streams')" class="btn btn-outline" id="tab-streams">LIVE STREAMS</button>
+                    <button onclick="switchTab('admins')" class="btn btn-outline" id="tab-admins">TEAM PERMISSIONS</button>
+                    <button onclick="switchTab('system')" class="btn btn-outline" id="tab-system">SYSTEM SYNC</button>
+                </aside>
+
+                <div class="admin-main">
 
             <!-- Applications Section -->
             <div id="section-applications" class="tab-content" style="display: none;">
@@ -339,45 +342,6 @@
                 </div>
             </div>
  
-            <!-- System Sync Section -->
-            <div id="section-system" class="tab-content" style="display: none;">
-                <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 2rem;">
-                    <!-- Actions -->
-                    <div class="glass" style="padding: 2.5rem;">
-                        <h3 style="color: var(--primary); margin-bottom: 2rem;">Manual Data Resync</h3>
-                        <div style="display: grid; gap: 1.5rem;">
-                            <div>
-                                <h4 style="color: #fff; margin-bottom: 0.5rem;">Garage 61 Profiles</h4>
-                                <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem;">Scrapes latest stats and license data for all drivers. (Takes ~2-3 mins)</p>
-                                <button id="sync-g61-btn" onclick="triggerWorkflow('update-profiles.yml')" class="btn btn-primary" style="width: 100%;">🚀 Start Garage 61 Sync</button>
-                            </div>
-                            
-                            <hr style="border:0; border-top: 1px solid rgba(255,255,255,0.05);">
- 
-                            <div>
-                                <h4 style="color: #fff; margin-bottom: 0.5rem;">Event Lineups</h4>
-                                <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem;">Syncs the latest race entries from Google Sheets. (Takes ~30 secs)</p>
-                                <button id="sync-events-btn" onclick="triggerWorkflow('update-events.yml')" class="btn btn-outline" style="width: 100%; color: var(--primary); border-color: var(--primary);">📥 Start Event Sync</button>
-                            </div>
-                        </div>
-                    </div>
- 
-                    <!-- Config -->
-                    <div class="glass" style="padding: 2.5rem;">
-                        <h3 style="color: var(--primary); margin-bottom: 2rem;">GitHub Configuration</h3>
-                        <div style="display: grid; gap: 1rem;">
-                            <label style="font-size: 0.7rem; color: var(--primary);">PERSONAL ACCESS TOKEN (PAT)</label>
-                            <input type="password" id="github-pat" class="btn btn-outline" style="width: 100%; text-align: left;" placeholder="Paste ghp_... token here" onchange="savePat(this.value)">
-                            <p style="font-size: 0.7rem; color: var(--text-muted); line-height: 1.4;">
-                                <strong>Required:</strong> A Github token with <code>actions:write</code> permissions is needed to trigger the sync.
-                                <br><br>
-                                <a href="https://github.com/settings/tokens/new?scopes=repo&description=Grid%20Up%20Admin%20Sync" target="_blank" style="color: var(--primary); text-decoration: underline;">Generate Token →</a>
-                            </p>
-                            <div id="sync-status" style="margin-top: 1rem; padding: 1rem; border-radius: 4px; font-size: 0.8rem; display: none;"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
             <!-- Events Management Section -->
             <div id="section-events" class="tab-content" style="display: none;">
@@ -671,12 +635,12 @@
 
             <!-- System Sync Section -->
             <div id="section-system" class="tab-content" style="display: none;">
-                <div class="grid" style="grid-template-columns: 1fr 2fr; gap: 2rem;">
+                <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 2rem;">
                     <!-- Status & Documentation -->
                     <div class="glass" style="padding: 2.5rem;">
                         <h3 style="color: var(--primary); margin-bottom: 2rem;">Background Sync Status</h3>
                         <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.6;">
-                            Syncs are now managed automatically. Clicking a trigger button will schedule a background task that completes within <strong>15-30 minutes</strong>.
+                            Syncs are managed automatically. Triggering a button schedules a task that typically completes within <strong>15-30 minutes</strong>.
                         </p>
                         
                         <div id="sync-active-indicator" style="display: none; padding: 1.5rem; background: rgba(0, 207, 255, 0.05); border: 1px solid var(--primary); border-radius: 12px; margin-bottom: 1.5rem;">
@@ -686,40 +650,39 @@
                                     <p style="color: var(--primary); font-weight: 700; font-size: 0.9rem;">SYNC IN PROGRESS</p>
                                     <p id="sync-active-msg" style="font-size: 0.7rem; color: var(--text-muted); margin-top: 5px;">A sync task is currently pending or running in GitHub Actions.</p>
                                     
-                                    <div id="sync-progress-container" style="margin-top: 1rem; width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; display: none;">
+                                    <div id="sync-progress-container" style="margin-top: 1rem; width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; display: none; border: 1px solid rgba(255,255,255,0.1);">
                                         <div id="sync-progress-bar" style="height: 100%; width: 0%; background: linear-gradient(90deg, var(--secondary), var(--primary)); transition: width 0.5s ease; box-shadow: 0 0 15px rgba(0, 207, 255, 0.4);"></div>
                                     </div>
-                                    <p id="sync-progress-text" style="font-size: 0.6rem; color: var(--text-muted); margin-top: 8px; display: none; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;"></p>
+                                    <p id="sync-progress-text" style="font-size: 0.6rem; color: var(--text-muted); margin-top: 10px; display: none; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;"></p>
                                 </div>
                             </div>
                         </div>
+
+                        <div id="sync-status" style="margin-top: 1rem; padding: 1rem; border-radius: 4px; font-size: 0.8rem; display: none;"></div>
                     </div>
 
                     <!-- Sync Controls -->
                     <div class="glass" style="padding: 2.5rem;">
                         <h3 style="color: var(--primary); margin-bottom: 2rem;">Manual Sync Triggers</h3>
-                        <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                        <div style="display: grid; gap: 1.5rem;">
                             <!-- Garage 61 Sync -->
                             <div style="padding: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 12px;">
-                                <h4 style="margin-bottom: 0.5rem; font-size: 0.9rem;">Driver Stats (G61)</h4>
+                                <h4 style="margin-bottom: 0.5rem; font-size: 0.9rem;">Driver Stats (Garage 61)</h4>
                                 <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.5rem;">Updates driver iRating, License, and Career stats.</p>
-                                <button onclick="triggerWorkflow('update-profiles.yml')" class="btn btn-primary" style="width: 100%; font-size: 0.8rem;">Schedule Driver Sync</button>
+                                <button onclick="triggerWorkflow('update-profiles.yml')" class="btn btn-primary" style="width: 100%; font-size: 0.8rem;">🚀 Schedule Driver Sync</button>
                             </div>
 
                             <!-- Events & Lineups Sync -->
-                            <div style="padding: 1.25rem; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 12px;">
+                            <div style="padding: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 12px;">
                                 <h4 style="margin-bottom: 0.5rem; font-size: 0.9rem;">Event Lineups</h4>
                                 <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.5rem;">Syncs race entries from Official Sheets.</p>
-                                <button onclick="triggerWorkflow('update-events.yml')" class="btn btn-primary" style="width: 100%; font-size: 0.8rem;">Schedule Lineup Sync</button>
+                                <button onclick="triggerWorkflow('update-events.yml')" class="btn btn-outline" style="width: 100%; font-size: 0.8rem; color: var(--primary); border-color: var(--primary);">📥 Schedule Lineup Sync</button>
                             </div>
                         </div>
                     </div>
-                    </div>
+                </div>
                 </div>
             </div>
-                </div>
-            </div>
-        </div>
 
         <!-- Race Results Portal Section -->
         <div id="section-race-results" class="tab-content" style="display: none;">
@@ -779,9 +742,12 @@
                         <p style="text-align: center; color: var(--text-muted);">Select an event to view/edit results.</p>
                     </div>
                 </div>
+                </div>
             </div>
         </div>
-    </main>
+        </div>
+    </div>
+</main>
 
     <!-- Application Details Modal -->
     <div id="application-modal" class="modal-glass" style="display: none; z-index: 10001; background: #0a0a0c;">

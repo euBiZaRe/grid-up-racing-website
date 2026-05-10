@@ -74,10 +74,11 @@
                 <p id="team-title" style="color: var(--primary); font-size: 1.2rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px;">Team Name</p>
             </div>
 
-            <div class="portal-tabs">
-                <div class="portal-tab active" onclick="switchTab('wall')">Communications</div>
-                <div class="portal-tab" onclick="switchTab('setups')">Setups</div>
-                <div class="portal-tab" onclick="switchTab('telemetry')">Lap Times</div>
+            <div class="portal-layout">
+                <div class="portal-tabs vertical-tabs">
+                <div class="portal-tab active" onclick="switchTab('wall')"><i class="fas fa-comments"></i> Communications</div>
+                <div class="portal-tab" onclick="switchTab('setups')"><i class="fas fa-file-export"></i> Setups</div>
+                <div class="portal-tab" onclick="switchTab('telemetry')"><i class="fas fa-stopwatch"></i> Lap Times</div>
             </div>
 
             <div class="portal-grid">
@@ -149,6 +150,8 @@
                 </div>
             </div>
         </div>
+
+                    </div>
 
         <!-- Access Denied View -->
         <div id="denied-view" style="display: none; text-align: center; padding: 5rem 0;">

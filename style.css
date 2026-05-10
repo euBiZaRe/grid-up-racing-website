@@ -797,6 +797,96 @@ select:focus {
     animation: fadeIn 0.4s ease-out forwards;
 }
 
+/* Admin Dashboard Sidebar Layout */
+.admin-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 3rem;
+    align-items: start;
+    margin-top: 2rem;
+}
+
+.admin-sidebar {
+    position: sticky;
+    top: 7rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    padding: 1.5rem;
+    border-radius: 16px;
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(20px);
+    z-index: 100;
+}
+
+.admin-sidebar .btn-outline, .admin-sidebar .btn-primary {
+    width: 100%;
+    text-align: left;
+    padding: 1rem 1.5rem;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    border: 1px solid transparent;
+    transition: var(--transition);
+    justify-content: flex-start;
+}
+
+.admin-sidebar .btn-outline {
+    background: transparent;
+    border-color: rgba(255, 255, 255, 0.05);
+    color: var(--text-muted);
+}
+
+.admin-sidebar .btn-outline:hover {
+    background: rgba(0, 207, 255, 0.05);
+    border-color: var(--primary);
+    color: var(--primary);
+    transform: translateX(5px);
+}
+
+.admin-sidebar .btn-primary {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: #000;
+    box-shadow: 0 0 20px var(--primary-glow);
+}
+
+/* Progress Bar Enhancement */
+#sync-progress-bar {
+    position: relative;
+}
+
+#sync-progress-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    animation: progress-shimmer 2s infinite;
+}
+
+@keyframes progress-shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+@media (max-width: 1100px) {
+    .admin-layout {
+        grid-template-columns: 1fr;
+    }
+    .admin-sidebar {
+        position: static;
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 0.75rem;
+    }
+    .admin-sidebar .btn-outline, .admin-sidebar .btn-primary {
+        white-space: nowrap;
+        width: auto;
+    }
+}
+
 /* Footer */
 footer {
     padding: 2rem 5%;
