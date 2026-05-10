@@ -1,3 +1,6 @@
+import json
+import firebase_admin
+from firebase_admin import credentials, firestore
 import requests
 import csv
 import os
@@ -15,6 +18,33 @@ GIDS = {
 }
 
 EVENT_DIR = os.path.join(os.path.dirname(__file__), "../events")
+
+# Initialize Firebase
+def init_firebase():
+    sa_json = os.environ.get('FIREBASE_SERVICE_ACCOUNT')
+    if sa_json:
+        try:
+            if not firebase_admin._apps:
+                cred = credentials.Certificate(json.loads(sa_json))
+                firebase_admin.initialize_app(cred)
+            return firestore.client()
+        except Exception as e:
+            print(f"Firebase init failed: {e}")
+    return None
+
+db = init_firebase()
+
+def report_progress(current, total, event_name):
+    if db:
+        try:
+            db.collection('sync_requests').doc('update-events.yml').update({
+                'currentStep': current,
+                'totalSteps': total,
+                'currentEvent': event_name,
+                'status': 'running'
+            })
+        except Exception as e:
+            print(f"Failed to report progress: {e}")
 
 def fetch_csv(gid):
     url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&gid={gid}"
@@ -87,8 +117,11 @@ def generate_html(teams):
     return html
 
 def update_event_files():
-    for filename, gid in GIDS.items():
-        print(f"Syncing {filename} (GID {gid})...")
+    items = list(GIDS.items())
+    total = len(items)
+    for i, (filename, gid) in enumerate(items):
+        print(f"Syncing {filename} (GID {gid})... ({i+1}/{total})")
+        report_progress(i + 1, total, filename)
         try:
             rows = fetch_csv(gid)
             teams = parse_registrations(rows)

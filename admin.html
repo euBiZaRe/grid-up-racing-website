@@ -640,14 +640,18 @@
                         <div id="sync-active-indicator" style="display: none; padding: 1.5rem; background: rgba(0, 207, 255, 0.05); border: 1px solid var(--primary); border-radius: 12px; margin-bottom: 1.5rem;">
                             <div style="display: flex; align-items: center; gap: 15px;">
                                 <div class="sync-spinner" style="width: 20px; height: 20px; border: 2px solid rgba(0,207,255,0.2); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite;"></div>
-                                <div>
-                                    <p style="color: var(--primary); font-weight: 700; font-size: 0.9rem;">SYNC IN PROGRESS</p>
+                                <div style="flex: 1;">
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                        <p style="color: var(--primary); font-weight: 700; font-size: 0.9rem;">SYNC IN PROGRESS</p>
+                                        <button onclick="clearSyncStatus()" style="background: none; border: 1px solid rgba(255,0,0,0.3); color: #ff4444; font-size: 0.6rem; padding: 2px 8px; border-radius: 4px; cursor: pointer; text-transform: uppercase; transition: all 0.2s;">Force Clear</button>
+                                    </div>
                                     <p id="sync-active-msg" style="font-size: 0.7rem; color: var(--text-muted); margin-top: 5px;">A sync task is currently pending or running in GitHub Actions.</p>
                                 </div>
                             </div>
-                            <div id="sync-progress-container" style="margin-top: 1rem; background: rgba(255,255,255,0.05); height: 6px; border-radius: 3px; overflow: hidden;">
+                            <div id="sync-progress-container" style="margin-top: 1rem; background: rgba(255,255,255,0.05); height: 6px; border-radius: 3px; overflow: hidden; display: none;">
                                 <div id="sync-progress-bar" style="width: 0%; height: 100%; background: var(--primary); transition: width 0.5s;"></div>
                             </div>
+                            <p id="sync-progress-text" style="font-size: 0.65rem; color: var(--primary); margin-top: 8px; display: none; font-family: monospace;"></p>
                         </div>
                         <div id="sync-status-msg" style="padding: 1rem; border-radius: 8px; font-size: 0.75rem; display: none; margin-bottom: 1.5rem;"></div>
                         <h4 style="font-size: 0.8rem; color: var(--primary); margin-bottom: 1rem;">Manual Sync Triggers</h4>
@@ -1780,6 +1784,23 @@
                 btn.textContent = originalText;
             }
         }
+        async function clearSyncStatus() {
+            if (!confirm("Are you sure you want to force clear the sync status? Only do this if the sync has been stuck for more than 30 minutes.")) return;
+            
+            try {
+                const snapshot = await db.collection("sync_requests").get();
+                const batch = db.batch();
+                snapshot.docs.forEach(doc => {
+                    batch.delete(doc.ref);
+                });
+                await batch.commit();
+                showSyncStatus("🧹 Sync status cleared!", "rgba(0,207,255,0.1)", "var(--primary)");
+            } catch (e) {
+                console.error("Clear Sync Error:", e);
+                alert("Error clearing sync: " + e.message);
+            }
+        }
+
         function listenToSyncStatus() {
             db.collection("sync_requests").onSnapshot(snapshot => {
                 const activeIndicator = document.getElementById('sync-active-indicator');
@@ -1795,21 +1816,19 @@
                     const list = activeDocs.map(d => d.id === 'update-profiles.yml' ? 'Driver Stats' : 'Lineups').join(' & ');
                     activeMsg.textContent = `Currently syncing: ${list}. This may take up to 20 mins.`;
                     
-                    // Specific progress for Profile Sync
-                    const profileDoc = activeDocs.find(d => d.id === 'update-profiles.yml');
-                    if (profileDoc) {
-                        const data = profileDoc.data();
-                        if (data.status === 'running' && data.totalSteps) {
-                            progressContainer.style.display = 'block';
-                            progressText.style.display = 'block';
-                            
-                            const pc = Math.min(100, Math.round((data.currentStep / data.totalSteps) * 100));
-                            progressBar.style.width = `${pc}%`;
-                            progressText.textContent = `Processing: ${data.currentDriver || 'Initializing...'} (${data.currentStep}/${data.totalSteps})`;
-                        } else {
-                            progressContainer.style.display = 'none';
-                            progressText.style.display = 'none';
-                        }
+                    // Show progress for the first 'running' doc that has steps
+                    const runningDoc = activeDocs.find(d => d.data().status === 'running' && d.data().totalSteps);
+                    
+                    if (runningDoc) {
+                        const data = runningDoc.data();
+                        progressContainer.style.display = 'block';
+                        progressText.style.display = 'block';
+                        
+                        const pc = Math.min(100, Math.round((data.currentStep / data.totalSteps) * 100));
+                        progressBar.style.width = `${pc}%`;
+                        
+                        const context = data.currentDriver || data.currentEvent || 'Syncing...';
+                        progressText.textContent = `${context} (${data.currentStep}/${data.totalSteps}) - ${pc}%`;
                     } else {
                         progressContainer.style.display = 'none';
                         progressText.style.display = 'none';
