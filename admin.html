@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -218,7 +218,7 @@
                     <select id="lineup-event-selector" class="btn btn-outline" style="width: 100%; text-align: left; padding: 1rem;" onchange="loadRaceData()">
                         <option value="">-- Choose an Event --</option>
                         <option value="imsa-classic-500">IMSA Classic 500</option>
-                        <option value="nurburgring-24h">Nürburgring 24h</option>
+                        <option value="nurburgring-24h">NÃƒÂ¼rburgring 24h</option>
                         <option value="thruxton-4h">4 Hours at Thruxton</option>
                         <option value="indy-500">Indy 500</option>
                         <option value="world-600">World 600</option>
@@ -279,7 +279,7 @@
                             <input id="iracing-series-name" class="btn btn-outline" style="flex: 2; text-align: left;" list="common-series" placeholder="Enter Series Name (e.g. IMSA iRacing Series - 2026 Season 2)">
                             <datalist id="common-series">
                                 <option value="IMSA iRacing Series - 2026 Season 2">
-                                <option value="iRacing Nürburgring 24h - 2026">
+                                <option value="iRacing NÃƒÂ¼rburgring 24h - 2026">
                                 <option value="Indy 500 - 2026">
                             </datalist>
                             <button onclick="fetchIRacingData()" class="btn btn-primary" style="flex: 1;">Fetch & Sync</button>
@@ -349,7 +349,7 @@
                             <div>
                                 <h4 style="color: #fff; margin-bottom: 0.5rem;">Garage 61 Profiles</h4>
                                 <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem;">Scrapes latest stats and license data for all drivers. (Takes ~2-3 mins)</p>
-                                <button id="sync-g61-btn" onclick="triggerWorkflow('update-profiles.yml')" class="btn btn-primary" style="width: 100%;">🚀 Start Garage 61 Sync</button>
+                                <button id="sync-g61-btn" onclick="triggerWorkflow('update-profiles.yml')" class="btn btn-primary" style="width: 100%;">Ã°Å¸Å¡â‚¬ Start Garage 61 Sync</button>
                             </div>
                             
                             <hr style="border:0; border-top: 1px solid rgba(255,255,255,0.05);">
@@ -357,7 +357,7 @@
                             <div>
                                 <h4 style="color: #fff; margin-bottom: 0.5rem;">Event Lineups</h4>
                                 <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem;">Syncs the latest race entries from Google Sheets. (Takes ~30 secs)</p>
-                                <button id="sync-events-btn" onclick="triggerWorkflow('update-events.yml')" class="btn btn-outline" style="width: 100%; color: var(--primary); border-color: var(--primary);">📥 Start Event Sync</button>
+                                <button id="sync-events-btn" onclick="triggerWorkflow('update-events.yml')" class="btn btn-outline" style="width: 100%; color: var(--primary); border-color: var(--primary);">Ã°Å¸â€œÂ¥ Start Event Sync</button>
                             </div>
                         </div>
                     </div>
@@ -371,7 +371,7 @@
                             <p style="font-size: 0.7rem; color: var(--text-muted); line-height: 1.4;">
                                 <strong>Required:</strong> A Github token with <code>actions:write</code> permissions is needed to trigger the sync.
                                 <br><br>
-                                <a href="https://github.com/settings/tokens/new?scopes=repo&description=Grid%20Up%20Admin%20Sync" target="_blank" style="color: var(--primary); text-decoration: underline;">Generate Token →</a>
+                                <a href="https://github.com/settings/tokens/new?scopes=repo&description=Grid%20Up%20Admin%20Sync" target="_blank" style="color: var(--primary); text-decoration: underline;">Generate Token Ã¢â€ â€™</a>
                             </p>
                             <div id="sync-status" style="margin-top: 1rem; padding: 1rem; border-radius: 4px; font-size: 0.8rem; display: none;"></div>
                         </div>
@@ -685,11 +685,14 @@
                                 <div>
                                     <p style="color: var(--primary); font-weight: 700; font-size: 0.9rem;">SYNC IN PROGRESS</p>
                                     <p id="sync-active-msg" style="font-size: 0.7rem; color: var(--text-muted); margin-top: 5px;">A sync task is currently pending or running in GitHub Actions.</p>
+                                    
+                                    <div id="sync-progress-container" style="margin-top: 1rem; width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; display: none;">
+                                        <div id="sync-progress-bar" style="height: 100%; width: 0%; background: linear-gradient(90deg, var(--secondary), var(--primary)); transition: width 0.5s ease; box-shadow: 0 0 15px rgba(0, 207, 255, 0.4);"></div>
+                                    </div>
+                                    <p id="sync-progress-text" style="font-size: 0.6rem; color: var(--text-muted); margin-top: 8px; display: none; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;"></p>
                                 </div>
                             </div>
                         </div>
-
-                        <div id="sync-status" style="padding: 1rem; border-radius: 8px; font-size: 0.8rem; display: none;"></div>
                     </div>
 
                     <!-- Sync Controls -->
@@ -1077,7 +1080,7 @@
             ];
             const defaults = [
                 { id: 'imsa-classic-500', name: 'IMSA Classic 500', track: 'Laguna Seca', date: 'April 10-11', startDate: '2026-04-10T22:00:00Z', endDate: '2026-04-12T04:00:00Z', slots: IMSA_SLOTS, classes: ['GTP', 'GTO'] },
-                { id: 'nurburgring-24h', name: 'Nürburgring 24h', track: 'Nürburgring', date: 'May 1-3', startDate: '2026-05-01T22:00:00Z', endDate: '2026-05-04T04:00:00Z', slots: IMSA_SLOTS, classes: ['GT3', '992 Cup', 'GT4', 'TCR', 'BMW M2 CS'] },
+                { id: 'nurburgring-24h', name: 'NÃƒÂ¼rburgring 24h', track: 'NÃƒÂ¼rburgring', date: 'May 1-3', startDate: '2026-05-01T22:00:00Z', endDate: '2026-05-04T04:00:00Z', slots: IMSA_SLOTS, classes: ['GT3', '992 Cup', 'GT4', 'TCR', 'BMW M2 CS'] },
                 { id: 'indy-500', name: 'INDY 500', track: 'Indianapolis', date: 'May 5-18', startDate: '2026-05-05T18:00:00Z', endDate: '2026-05-19T04:00:00Z', slots: IMSA_SLOTS, classes: ['IndyCar'] },
                 { id: 'world-600', name: 'World 600', track: 'Charlotte', date: 'May 20-25', startDate: '2026-05-20T22:00:00Z', endDate: '2026-05-26T04:00:00Z', slots: IMSA_SLOTS, classes: ['NASCAR'] },
                 { id: 'thruxton-4h', name: '4 Hours at Thruxton', track: 'Thruxton', date: 'May 29-31', startDate: '2026-05-29T22:00:00Z', endDate: '2026-06-01T04:00:00Z', slots: IMSA_SLOTS, classes: ['TCR'] },
@@ -1279,7 +1282,7 @@
                 // NEW: Auto-fill track and date for the card
                 const FALLBACK_TRACKS = {
                     'imsa-classic-500': 'Laguna Seca',
-                    'nurburgring-24h': 'Nürburgring',
+                    'nurburgring-24h': 'NÃƒÂ¼rburgring',
                     'indy-500': 'Indianapolis',
                     'world-600': 'Charlotte',
                     'thruxton-4h': 'Thruxton',
@@ -1605,13 +1608,13 @@
                                             style="background: none; border: none; cursor: pointer; font-size: 0.8rem; opacity: 0.4; transition: opacity 0.2s;" 
                                             onmouseenter="this.style.opacity='1'" 
                                             onmouseleave="this.style.opacity='0.4'"
-                                            title="Remove all responses for this driver">🗑️</button>
+                                            title="Remove all responses for this driver">Ã°Å¸â€”â€˜Ã¯Â¸Â</button>
                                 </div>
                             </td>
                         `;
                         UPCOMING_EVENTS.forEach(event => {
                             const resp = allResponses[event.id] ? allResponses[event.id][uid] : null;
-                            let statusHtml = "–";
+                            let statusHtml = "Ã¢â‚¬â€œ";
                             if (resp) {
                                 if (resp.status === 'signed_up') {
                                     statusHtml = `<div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
@@ -1797,7 +1800,7 @@
             const originalText = btn.textContent;
             
             btn.disabled = true;
-            btn.textContent = "⌛ Scheduling...";
+            btn.textContent = "Ã¢Å’â€º Scheduling...";
 
             try {
                 // Instead of calling GitHub API, we write a request to Firestore
@@ -1808,31 +1811,56 @@
                     workflowId: workflowId
                 });
 
-                showSyncStatus("✅ Sync Scheduled! The task will start shortly.", "rgba(0,255,136,0.1)", "#00ff88");
+                showSyncStatus("Ã¢Å“â€¦ Sync Scheduled! The task will start shortly.", "rgba(0,255,136,0.1)", "#00ff88");
             } catch (e) {
                 console.error("Sync Error:", e);
-                showSyncStatus("❌ Error scheduling sync: " + e.message, "rgba(255,0,85,0.1)", "#ff0055");
+                showSyncStatus("Ã¢ÂÅ’ Error scheduling sync: " + e.message, "rgba(255,0,85,0.1)", "#ff0055");
             } finally {
                 btn.disabled = false;
                 btn.textContent = originalText;
             }
         }
-
         function listenToSyncStatus() {
             db.collection("sync_requests").onSnapshot(snapshot => {
                 const activeIndicator = document.getElementById('sync-active-indicator');
                 const activeMsg = document.getElementById('sync-active-msg');
-                const pending = snapshot.docs.filter(doc => doc.data().status === 'pending' || doc.data().status === 'running');
+                const progressContainer = document.getElementById('sync-progress-container');
+                const progressBar = document.getElementById('sync-progress-bar');
+                const progressText = document.getElementById('sync-progress-text');
                 
-                if (pending.length > 0) {
+                const activeDocs = snapshot.docs.filter(doc => doc.data().status === 'pending' || doc.data().status === 'running');
+                
+                if (activeDocs.length > 0) {
                     activeIndicator.style.display = 'block';
-                    const list = pending.map(d => d.id === 'update-profiles.yml' ? 'Driver Stats' : 'Lineups').join(' & ');
+                    const list = activeDocs.map(d => d.id === 'update-profiles.yml' ? 'Driver Stats' : 'Lineups').join(' & ');
                     activeMsg.textContent = `Currently syncing: ${list}. This may take up to 20 mins.`;
+                    
+                    // Specific progress for Profile Sync
+                    const profileDoc = activeDocs.find(d => d.id === 'update-profiles.yml');
+                    if (profileDoc) {
+                        const data = profileDoc.data();
+                        if (data.status === 'running' && data.totalSteps) {
+                            progressContainer.style.display = 'block';
+                            progressText.style.display = 'block';
+                            
+                            const pc = Math.min(100, Math.round((data.currentStep / data.totalSteps) * 100));
+                            progressBar.style.width = `${pc}%`;
+                            progressText.textContent = `Processing: ${data.currentDriver || 'Initializing...'} (${data.currentStep}/${data.totalSteps})`;
+                        } else {
+                            progressContainer.style.display = 'none';
+                            progressText.style.display = 'none';
+                        }
+                    } else {
+                        progressContainer.style.display = 'none';
+                        progressText.style.display = 'none';
+                    }
                 } else {
                     activeIndicator.style.display = 'none';
                 }
             });
         }
+
+
 
         async function loadRaceData() {
             const eventId = document.getElementById('lineup-event-selector').value;
@@ -1908,7 +1936,7 @@
             const teamOptionsHtml = TEAM_OPTIONS.map(opt => `<option value="${opt}" ${teamName === opt ? 'selected' : ''}>${opt}</option>`).join('');
             
             teamDiv.innerHTML = `
-                <button onclick="this.parentElement.remove()" style="position:absolute; top:1rem; right:1rem; background:none; border:none; color:#ff0099; cursor:pointer;">×</button>
+                <button onclick="this.parentElement.remove()" style="position:absolute; top:1rem; right:1rem; background:none; border:none; color:#ff0099; cursor:pointer;">Ãƒâ€”</button>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                     <div>
                         <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">TEAM NAME</label>
@@ -2082,7 +2110,7 @@
 
             // Simple Car to Class Mapper
             const CLASS_MAP = {
-                'porsche 911 gt3 r': 'GT3', 'ferrari 296 gt3': 'GT3', 'lamborghini huracán gt3': 'GT3', 
+                'porsche 911 gt3 r': 'GT3', 'ferrari 296 gt3': 'GT3', 'lamborghini huracÃƒÂ¡n gt3': 'GT3', 
                 'bmw m4 gt3': 'GT3', 'mercedes-amg gt3': 'GT3', 'audi r8 lms gt3': 'GT3', 'mclaren 720s gt3': 'GT3',
                 'cadillac v-series.r': 'GTP', 'acura arx-06': 'GTP', 'bmw m hybrid v8': 'GTP', 'porsche 963': 'GTP',
                 'dallara p217': 'LMP2',
@@ -2209,7 +2237,7 @@
                 // We'll treat "Average (9k iRating)" as a 'Driver' for now to show community speed.
                 
                 const CLASS_MAP = {
-                    'porsche 911 gt3 r': 'GT3', 'ferrari 296 gt3': 'GT3', 'lamborghini huracán gt3': 'GT3', 
+                    'porsche 911 gt3 r': 'GT3', 'ferrari 296 gt3': 'GT3', 'lamborghini huracÃƒÂ¡n gt3': 'GT3', 
                     'bmw m4 gt3': 'GT3', 'mercedes-amg gt3': 'GT3', 'audi r8 lms gt3': 'GT3', 'mclaren 720s gt3': 'GT3',
                     'cadillac v-series.r': 'GTP', 'acura arx-06': 'GTP', 'bmw m hybrid v8': 'GTP', 'porsche 963': 'GTP',
                     'dallara p217': 'LMP2',

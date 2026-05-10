@@ -33,6 +33,7 @@ jobs:
         run: python scripts/update_drivers.py
         env:
           G61_PAT: ${{ secrets.G61_PAT }}
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
 
       - name: Commit and Push Changes
         run: |

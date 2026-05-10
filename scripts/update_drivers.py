@@ -4,11 +4,39 @@ import re
 import sys
 import time
 from playwright.sync_api import sync_playwright
+import firebase_admin
+from firebase_admin import credentials, firestore
 
 # Configuration
 DRIVERS_JSON = os.path.join(os.path.dirname(__file__), "drivers.json")
 TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), "../drivers/driver-template.html")
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "../drivers")
+
+# Initialize Firebase
+def init_firebase():
+    sa_json = os.environ.get('FIREBASE_SERVICE_ACCOUNT')
+    if sa_json:
+        try:
+            cred = credentials.Certificate(json.loads(sa_json))
+            firebase_admin.initialize_app(cred)
+            return firestore.client()
+        except Exception as e:
+            print(f"Firebase init failed: {e}")
+    return None
+
+db = init_firebase()
+
+def report_progress(current, total, driver_name):
+    if db:
+        try:
+            db.collection('sync_requests').doc('update-profiles.yml').update({
+                'currentStep': current,
+                'totalSteps': total,
+                'currentDriver': driver_name,
+                'status': 'running'
+            })
+        except Exception as e:
+            print(f"Failed to report progress: {e}")
 
 def generate_filename(name):
     # Sanitize name for filename
@@ -127,12 +155,14 @@ def update_profiles():
     with open(TEMPLATE_PATH, "r", encoding="utf-8") as f:
         template = f.read()
 
-    for driver in drivers:
+    total_drivers = len(drivers)
+    for i, driver in enumerate(drivers):
         name = driver["name"]
         url = driver["url"]
         slug = url.split("/")[-1]
         
-        print(f"Processing {name} ({slug})...")
+        print(f"Processing {name} ({slug})... ({i+1}/{total_drivers})")
+        report_progress(i + 1, total_drivers, name)
         
         # Scrape data via Playwright
         stats = fetch_driver_data_scrape(slug)
