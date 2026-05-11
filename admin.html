@@ -2522,6 +2522,7 @@
         }
 
         async function saveDriver() {
+            console.log("Saving driver data...");
             const id = document.getElementById('edit-driver-id').value;
             const name = document.getElementById('roster-name').value.trim();
             const iracingId = document.getElementById('roster-iracing-id').value.trim();
@@ -2532,36 +2533,55 @@
 
             if (!name) return alert("Driver name is required.");
 
-            const data = { name, iracingId, role, category, slug, active, lastUpdated: firebase.firestore.FieldValue.serverTimestamp() };
+            const data = { 
+                name, 
+                iracingId, 
+                role, 
+                category, 
+                slug, 
+                active, 
+                lastUpdated: firebase.firestore.FieldValue.serverTimestamp() 
+            };
+
+            console.log("Data to save:", data, "ID:", id);
 
             try {
                 if (id) {
                     await db.collection("drivers").doc(id).update(data);
+                    console.log("Driver updated successfully");
                 } else {
                     await db.collection("drivers").add(data);
+                    console.log("New driver added successfully");
                 }
                 hideDriverModal();
                 loadRoster();
                 alert("Driver saved successfully!");
             } catch (e) {
+                console.error("Error saving driver:", e);
                 alert("Error saving driver: " + e.message);
             }
         }
 
         function showDriverModal() {
+            console.log("Opening Add Member modal...");
             resetDriverForm();
             document.getElementById('driver-modal').style.display = 'block';
             document.getElementById('driver-modal-backdrop').style.display = 'block';
         }
 
         function hideDriverModal() {
+            console.log("Closing Driver modal...");
             document.getElementById('driver-modal').style.display = 'none';
             document.getElementById('driver-modal-backdrop').style.display = 'none';
         }
 
         function prepareEdit(id) {
+            console.log("Preparing to edit driver:", id);
             const d = ROSTER_CACHE[id];
-            if (!d) return;
+            if (!d) {
+                console.error("Driver not found in cache for ID:", id);
+                return;
+            }
             
             document.getElementById('edit-driver-id').value = id;
             document.getElementById('roster-name').value = d.name || '';
@@ -2752,7 +2772,7 @@
     </script>
     <!-- Driver Modal -->
     <div id="driver-modal-backdrop" onclick="hideDriverModal()" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000; backdrop-filter: blur(5px);"></div>
-    <div id="driver-modal" class="modal-glass animate-fade-in" style="display: none; max-width: 600px; padding: 2.5rem; background: #0a0a0c; z-index: 10001; border-radius: 20px;">
+    <div id="driver-modal" class="modal-glass" style="display: none; max-width: 600px; padding: 2.5rem; background: #0a0a0c; z-index: 10001; border-radius: 20px;">
         <h3 style="color: var(--primary); margin-bottom: 2rem;" id="driver-form-title">Add Team Member</h3>
         <input type="hidden" id="edit-driver-id">
         <div style="display: grid; gap: 1.5rem;">
