@@ -1,3 +1,11 @@
+// Global Utilities
+function getSkeletonHTML(type = 'card') {
+    const shimmer = `<div class="glass loading-shimmer" style="min-height: 200px; border-radius: 20px;"></div>`;
+    const listShimmer = `<div class="glass loading-shimmer" style="height: 120px; width: 100%; border-radius: 12px; margin-bottom: 1.5rem;"></div>`;
+    if (type === 'list') return listShimmer.repeat(3);
+    return shimmer.repeat(4);
+}
+
 // Navbar Scroll Effect
 window.addEventListener('scroll', () => {
     const navbar = document.getElementById('navbar');
@@ -164,7 +172,15 @@ function updateCountdown(targetTimestamp) {
         const countdownEl = document.getElementById('countdown');
         if (distance < 0) {
             if (countdownEl) {
-                countdownEl.innerHTML = "<div class='glow-text' style='font-size: 2rem;'>RACE WEEKEND</div>";
+                // Check if the race is "Today" or "Upcoming"
+                const oneDayInMs = 24 * 60 * 60 * 1000;
+                if (Math.abs(distance) < oneDayInMs) {
+                    countdownEl.innerHTML = "<div class='glow-text animate-pulse' style='font-size: 2.5rem; font-weight: 900;'>RACE DAY</div>";
+                } else {
+                    // It's in the past, show "Event Recap" or similar
+                    document.getElementById('hero-event-subtitle').textContent = 'Event Completed';
+                    countdownEl.innerHTML = "<div style='color: var(--text-muted); font-size: 1rem; letter-spacing: 2px;'>CHECK RECENT RESULTS BELOW</div>";
+                }
             }
             return true; // Stop timer
         }
@@ -315,6 +331,9 @@ async function loadDynamicContent() {
 
     const upcomingTrack = document.getElementById('dynamic-upcoming-track');
     const fullEventList = document.getElementById('full-event-list');
+    
+    if (upcomingTrack) upcomingTrack.innerHTML = getSkeletonHTML('card');
+    if (fullEventList) fullEventList.innerHTML = getSkeletonHTML('list');
     
     // Global Constants for URL generation
     const isSubdir = window.location.pathname.includes('/events/') || window.location.pathname.includes('/drivers/');
@@ -788,6 +807,7 @@ async function renderEventResults(eventId, targetElement) {
 async function loadRecentResults() {
     const resultsTrack = document.getElementById('results-track');
     if (resultsTrack) {
+        resultsTrack.innerHTML = getSkeletonHTML('card');
         try {
             const snap = await db.collection("race_results")
                 .orderBy("timestamp", "desc")

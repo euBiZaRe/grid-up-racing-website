@@ -34,7 +34,7 @@
     <header class="hero hero-small">
         <div class="hero-overlay"></div>
         <div class="hero-content">
-            <h1 class="glow-text" style="font-size: 3.5rem;">The Roster</h1>
+            <h1 class="glow-text" style="font-size: clamp(3rem, 8vw, 5rem); font-weight: 900;">The Roster</h1>
             <p style="color: var(--text-muted); font-weight: 400; text-transform: uppercase; letter-spacing: 4px; font-size: 0.8rem;">Elite Talent Behind the Wheel</p>
         </div>
     </header>
@@ -208,7 +208,7 @@
                     
                     const card = document.createElement('a');
                     card.href = d.slug ? `drivers/${d.slug}.html` : '#';
-                    card.className = 'glass driver-card';
+                    card.className = isLeadership ? 'glass-premium driver-card' : 'glass driver-card';
                     
                     if (isLeadership) {
                         hasLeadership = true;
