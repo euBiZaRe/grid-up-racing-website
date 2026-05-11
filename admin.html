@@ -420,74 +420,31 @@
 
             <!-- Roster Management Section -->
             <div id="section-roster" class="tab-content" style="display: none;">
-                <div class="grid" style="grid-template-columns: 1fr 2fr; gap: 2rem; align-items: start;">
-                    <!-- Driver Form -->
-                    <div class="glass" style="padding: 2.5rem;">
-                        <h3 style="color: var(--primary); margin-bottom: 2rem;" id="driver-form-title">Add Team Member</h3>
-                        <input type="hidden" id="edit-driver-id">
-                        <div style="display: grid; gap: 1.5rem;">
-                            <div>
-                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">DRIVER NAME</label>
-                                <input type="text" id="roster-name" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;" placeholder="Full Name">
-                            </div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                                <div>
-                                    <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">iRACING ID</label>
-                                    <input type="text" id="roster-iracing-id" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;" placeholder="123456">
-                                </div>
-                                <div>
-                                    <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">ROLE / TITLE</label>
-                                    <input type="text" id="roster-role" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;" placeholder="Driver, Team Owner, etc.">
-                                </div>
-                            </div>
-                            <div>
-                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">TEAM CATEGORY</label>
-                                <select id="roster-category" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;">
-                                    <option value="Driver">Driver (Goes to GRiD UP Drivers)</option>
-                                    <option value="GRiD UP Endurance">GRiD UP Endurance (Goes to Endurance Team)</option>
-                                    <option value="Owner">Owner (Goes to Leadership)</option>
-                                    <option value="Custom">Custom (Goes to Leadership)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">URL SLUG (e.g. matty-roberts)</label>
-                                <input type="text" id="roster-slug" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;" placeholder="matty-roberts">
-                                <p style="font-size: 0.6rem; color: var(--text-muted); margin-top: 5px;">This links the roster card to their profile page.</p>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <input type="checkbox" id="roster-active" checked style="width: 20px; height: 20px;">
-                                <label for="roster-active" style="font-size: 0.8rem; color: var(--text-muted);">Active Member</label>
-                            </div>
-                            <div style="display: flex; gap: 1rem;">
-                                <button onclick="saveDriver()" class="btn btn-primary" style="flex: 2;">Save Member</button>
-                                <button onclick="resetDriverForm()" class="btn btn-outline" style="flex: 1;">Cancel</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Driver List -->
-                    <div class="glass" style="padding: 1.5rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <!-- Driver List -->
+                <div class="glass" style="padding: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <div style="display: flex; align-items: center; gap: 2rem;">
                             <h3 style="color: var(--primary);">Current Team Members</h3>
-                            <span id="roster-count" style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700;">0 Members</span>
+                            <button onclick="showDriverModal()" class="btn btn-primary" style="padding: 0.6rem 1.2rem; font-size: 0.75rem;">+ ADD MEMBER</button>
                         </div>
-                        <div class="glass" style="padding: 0; background: none; overflow-x: auto;">
-                            <table class="claims-table mobile-table">
-                                <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Role</th>
-                                        <th>Category</th>
-                                        <th>ID</th>
-                                        <th>Status</th>
-                                        <th style="text-align: right;">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="admin-roster-list">
-                                    <!-- Populated by JS -->
-                                </tbody>
-                            </table>
-                        </div>
+                        <span id="roster-count" style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700;">0 Members</span>
+                    </div>
+                    <div class="glass" style="padding: 0; background: none; overflow-x: auto;">
+                        <table class="claims-table mobile-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Role</th>
+                                    <th>Category</th>
+                                    <th>ID</th>
+                                    <th>Status</th>
+                                    <th style="text-align: right;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-roster-list">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -2583,12 +2540,23 @@
                 } else {
                     await db.collection("drivers").add(data);
                 }
-                resetDriverForm();
+                hideDriverModal();
                 loadRoster();
                 alert("Driver saved successfully!");
             } catch (e) {
                 alert("Error saving driver: " + e.message);
             }
+        }
+
+        function showDriverModal() {
+            resetDriverForm();
+            document.getElementById('driver-modal').style.display = 'block';
+            document.getElementById('driver-modal-backdrop').style.display = 'block';
+        }
+
+        function hideDriverModal() {
+            document.getElementById('driver-modal').style.display = 'none';
+            document.getElementById('driver-modal-backdrop').style.display = 'none';
         }
 
         function prepareEdit(id) {
@@ -2604,8 +2572,8 @@
             document.getElementById('roster-active').checked = d.active !== false;
             document.getElementById('driver-form-title').textContent = "Edit Team Member";
             
-            // Scroll to form
-            document.getElementById('driver-form-title').scrollIntoView({ behavior: 'smooth' });
+            document.getElementById('driver-modal').style.display = 'block';
+            document.getElementById('driver-modal-backdrop').style.display = 'block';
         }
 
         async function deleteDriver(id) {
@@ -2782,6 +2750,51 @@
         }
 
     </script>
+    <!-- Driver Modal -->
+    <div id="driver-modal-backdrop" onclick="hideDriverModal()" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000; backdrop-filter: blur(5px);"></div>
+    <div id="driver-modal" class="modal-glass animate-fade-in" style="display: none; max-width: 600px; padding: 2.5rem; background: #0a0a0c; z-index: 10001; border-radius: 20px;">
+        <h3 style="color: var(--primary); margin-bottom: 2rem;" id="driver-form-title">Add Team Member</h3>
+        <input type="hidden" id="edit-driver-id">
+        <div style="display: grid; gap: 1.5rem;">
+            <div>
+                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">DRIVER NAME</label>
+                <input type="text" id="roster-name" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;" placeholder="Full Name">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                    <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">iRACING ID</label>
+                    <input type="text" id="roster-iracing-id" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;" placeholder="123456">
+                </div>
+                <div>
+                    <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">ROLE / TITLE</label>
+                    <input type="text" id="roster-role" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;" placeholder="Driver, Team Owner, etc.">
+                </div>
+            </div>
+            <div>
+                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">TEAM CATEGORY</label>
+                <select id="roster-category" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;">
+                    <option value="Driver">Driver (Goes to GRiD UP Drivers)</option>
+                    <option value="GRiD UP Endurance">GRiD UP Endurance (Goes to Endurance Team)</option>
+                    <option value="Owner">Owner (Goes to Leadership)</option>
+                    <option value="Custom">Custom (Goes to Leadership)</option>
+                </select>
+            </div>
+            <div>
+                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">URL SLUG (e.g. matty-roberts)</label>
+                <input type="text" id="roster-slug" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;" placeholder="matty-roberts">
+                <p style="font-size: 0.6rem; color: var(--text-muted); margin-top: 5px;">This links the roster card to their profile page.</p>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <input type="checkbox" id="roster-active" checked style="width: 20px; height: 20px;">
+                <label for="roster-active" style="font-size: 0.8rem; color: var(--text-muted);">Active Member</label>
+            </div>
+            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                <button onclick="saveDriver()" class="btn btn-primary" style="flex: 2;">Save Member</button>
+                <button onclick="hideDriverModal()" class="btn btn-outline" style="flex: 1;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <div id="autocomplete-overlay"></div>
     <datalist id="signed-up-drivers-list"></datalist>
 </body>
