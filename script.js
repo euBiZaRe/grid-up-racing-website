@@ -317,7 +317,30 @@ function initCarousel() {
 
 // Firestore Data Integration
 async function loadDynamicContent() {
-    console.log("Loading dynamic site content...");
+    const upcomingTrack = document.getElementById('dynamic-upcoming-track');
+    const fullEventList = document.getElementById('full-event-list');
+    
+    // Attempt to load from cache first for instant UI
+    const cachedEvents = localStorage.getItem('gridup_upcoming_events');
+    let cacheLoaded = false;
+    if (cachedEvents && !window.dynamicContentLoaded) {
+        try {
+            console.log("Loading events from cache...");
+            const data = JSON.parse(cachedEvents);
+            const now = new Date();
+            // Only use cache if the first event isn't ancient (allow 24h lookback)
+            const firstEventEnd = new Date(data[0].endDate || data[0].startDate);
+            firstEventEnd.setHours(23, 59, 59, 999);
+            
+            if (firstEventEnd >= now) {
+                renderEventsUI(data);
+                cacheLoaded = true;
+            }
+        } catch (e) {
+            console.warn("Failed to load events from cache:", e);
+        }
+    }
+
     if (typeof db === 'undefined') {
         console.warn("Firestore 'db' not initialized yet. Waiting...");
         return;
@@ -328,12 +351,9 @@ async function loadDynamicContent() {
     const lookbackDate = new Date();
     lookbackDate.setHours(lookbackDate.getHours() - 24);
     const filterTimestamp = lookbackDate.toISOString();
-
-    const upcomingTrack = document.getElementById('dynamic-upcoming-track');
-    const fullEventList = document.getElementById('full-event-list');
     
-    if (upcomingTrack) upcomingTrack.innerHTML = getSkeletonHTML('card');
-    if (fullEventList) fullEventList.innerHTML = getSkeletonHTML('list');
+    if (upcomingTrack && !cacheLoaded) upcomingTrack.innerHTML = getSkeletonHTML('card');
+    if (fullEventList && !cacheLoaded) fullEventList.innerHTML = getSkeletonHTML('list');
     
     // Global Constants for URL generation
     const isSubdir = window.location.pathname.includes('/events/') || window.location.pathname.includes('/drivers/');
@@ -437,11 +457,18 @@ async function loadDynamicContent() {
                 const eventEnd = new Date(end);
                 eventEnd.setHours(23, 59, 59, 999);
                 
-                // FINAL SAFETY CHECK: Explicitly exclude passed Nurburgring event
-                if (e.id === 'nurburgring-24h' || e.id === 'nurburgring-24') {
-                    if (now > new Date('2026-05-03T23:59:59')) return false;
-                }
+            // FINAL SAFETY CHECK: Explicitly exclude passed Nurburgring event
+            const nurburgringPast = now > new Date('2026-05-03T23:59:59');
+            
+            const upcomingEvents = allEvents.filter(e => {
+                const start = parseDate(e.startDate);
+                const end = parseDate(e.endDate || e.startDate);
+                if (!start) return false;
 
+                const eventEnd = new Date(end);
+                eventEnd.setHours(23, 59, 59, 999);
+                
+                if ((e.id === 'nurburgring-24h' || e.id === 'nurburgring-24') && nurburgringPast) return false;
                 return eventEnd >= now;
             });
 
@@ -452,152 +479,186 @@ async function loadDynamicContent() {
                 const eventEnd = new Date(end);
                 eventEnd.setHours(23, 59, 59, 999);
                 
-                // Consistency check for Nurburgring (matches the safety check in upcomingEvents)
-                if (e.id === 'nurburgring-24h' || e.id === 'nurburgring-24') {
-                    if (now > new Date('2026-05-03T23:59:59')) return true;
-                }
-
+                if ((e.id === 'nurburgring-24h' || e.id === 'nurburgring-24') && nurburgringPast) return true;
                 return eventEnd < now;
-            }); // Oldest first
+            });
 
-            // A. Update Upcoming UI
-            if (upcomingEvents.length === 0) {
-                if (upcomingTrack) upcomingTrack.innerHTML = '<p style="text-align: center; color: var(--text-muted); width: 100%;">No upcoming events scheduled.</p>';
-                if (fullEventList) fullEventList.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Stay tuned for future event dates.</p>';
-                
-                // Clear hero if no upcoming
-                const heroSubtitle = document.getElementById('hero-event-subtitle');
-                const heroTitle = document.getElementById('hero-event-name');
-                if (heroSubtitle) heroSubtitle.textContent = 'Next Major Race: TBA';
-                if (heroTitle) heroTitle.textContent = 'GRiD UP';
-            } else {
-                const nextEvent = upcomingEvents[0];
-                const heroSubtitle = document.getElementById('hero-event-subtitle');
-                const heroTitle = document.getElementById('hero-event-name');
-                const heroLink = document.getElementById('hero-event-link');
-                
-                const startTime = parseDate(nextEvent.startDate);
-                const endTime = parseDate(nextEvent.endDate || nextEvent.startDate);
-                endTime.setHours(23, 59, 59, 999);
-                
-                // Is live if now is between start and end of the scheduled dates
-                const isLive = now >= startTime && now <= endTime;
-                
-                if (heroSubtitle) {
-                    heroSubtitle.textContent = isLive ? `LIVE NOW: ${nextEvent.name || 'TBA'}` : `Next Major Race: ${nextEvent.name || 'TBA'}`;
-                    heroSubtitle.style.color = isLive ? '#ff0055' : 'var(--primary)';
-                    if (isLive) heroSubtitle.classList.add('animate-pulse');
-                }
-                
-                if (heroTitle) {
-                    heroTitle.textContent = (nextEvent.name || 'TBA').toUpperCase();
-                }
-                
-                if (heroLink) {
-                    heroLink.href = staticIds.includes(nextEvent.id) ? getEventLink(nextEvent.id, true) : getEventLink(nextEvent.id);
-                }
-                
-                updateCountdown(nextEvent.startDate);
-
-                // B. Populate Carousel Track (shared)
-                if (upcomingTrack) {
-                    upcomingTrack.innerHTML = '';
-                    const colors = ['blue', 'pink', 'green'];
-                    upcomingEvents.slice(0, 10).forEach((e, i) => {
-                        const tile = document.createElement('a');
-                        const linkUrl = staticIds.includes(e.id) ? getEventLink(e.id, true) : getEventLink(e.id);
-                        tile.href = linkUrl;
-                        tile.className = `race-tile tile-${colors[i % 3]}`;
-                        const bannerUrl = eventBanners[e.id];
-                        tile.innerHTML = `
-                            ${bannerUrl ? `<div class="tile-banner" style="background-image: url('${bannerUrl}')"></div>` : ''}
-                            <h3>${(e.name || 'TBA').toUpperCase()}</h3>
-                            <div class="race-meta">${e.date}</div>
-                        `;
-                        upcomingTrack.appendChild(tile);
-                    });
-                }
-
-                // C. Populate Full List (if on events.html)
-                if (fullEventList) {
-                    fullEventList.innerHTML = '';
-                    const eventColors = ['var(--primary)', 'var(--secondary)', '#00ff88'];
-                    upcomingEvents.forEach((e, i) => {
-                        const card = document.createElement('div');
-                        card.id = `event-${e.id}`;
-                        card.className = 'glass event-horizontal-card reveal active';
-                        card.style.borderLeft = `4px solid ${eventColors[i % 3]}`;
-                        const linkUrl = staticIds.includes(e.id) ? getEventLink(e.id, true) : getEventLink(e.id);
-                        const bannerUrl = eventBanners[e.id];
-                        card.innerHTML = `
-                            ${bannerUrl ? `<div class="event-card-banner" style="background-image: url('${bannerUrl}')"></div>` : ''}
-                            <div class="event-info">
-                                <h3>${e.name || 'TBA'}</h3>
-                                <p class="event-meta">${e.date}</p>
-                                <p class="event-desc">${Array.isArray(e.classes) ? 'Classes: ' + e.classes.join(', ') : (e.classes ? 'Classes: ' + e.classes : 'Details coming soon.')}</p>
-                            </div>
-                            <div class="event-action">
-                                <a href="${linkUrl}" class="btn btn-outline">Details</a>
-                            </div>
-                        `;
-                        fullEventList.appendChild(card);
-                    });
-
-                    // Handle Deep Linking & Results
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const eventId = urlParams.get('id');
-                    if (eventId) {
-                        setTimeout(() => {
-                            const target = document.getElementById(`event-${eventId}`);
-                            if (target) {
-                                // If inside past section, expand it
-                                const pastSection = document.getElementById('pastEventsSection');
-                                const toggleBtn = document.getElementById('togglePastEvents');
-                                if (pastSection && pastSection.contains(target) && pastSection.style.display === 'none') {
-                                    pastSection.style.display = 'block';
-                                    if (toggleBtn) toggleBtn.textContent = 'Hide Past Events';
-                                }
-
-                                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                target.style.boxShadow = '0 0 30px rgba(0,207,255,0.3)';
-                                target.style.borderColor = 'var(--primary)';
-                                
-                                // Load Results for this event
-                                renderEventResults(eventId, target);
-                            }
-                        }, 500);
-                    }
-                }
+            // Cache upcoming events for next load
+            if (upcomingEvents.length > 0) {
+                localStorage.setItem('gridup_upcoming_events', JSON.stringify(upcomingEvents));
             }
 
-            // D. Populate Past List
-            const pastList = document.getElementById('dynamic-past-list');
-            if (pastList) {
-                const hardcodedIds = [];
-                const eventColors = ['var(--primary)', 'var(--secondary)', '#00ff88'];
-                pastList.innerHTML = '';
-                pastEvents.forEach((e, i) => {
-                    if (hardcodedIds.includes(e.id)) return;
-                    const card = document.createElement('div');
-                    card.id = `event-${e.id}`;
-                    card.className = 'glass event-horizontal-card reveal active';
-                    card.style.borderLeft = `4px solid ${eventColors[(i + hardcodedIds.length) % 3]}`;
-                    const linkUrl = staticIds.includes(e.id) ? getEventLink(e.id, true) : getEventLink(e.id);
-                    const bannerUrl = eventBanners[e.id];
-                    card.innerHTML = `
-                        ${bannerUrl ? `<div class="event-card-banner" style="background-image: url('${bannerUrl}')"></div>` : ''}
-                        <div class="event-info">
-                            <h3>${e.name || 'TBA'}</h3>
-                            <p class="event-meta">${e.date}</p>
-                            <p class="event-desc">${Array.isArray(e.classes) ? 'Classes: ' + e.classes.join(', ') : (e.classes ? 'Classes: ' + e.classes : 'Race event completed.')}</p>
-                        </div>
-                        <div class="event-action">
-                            <a href="${linkUrl}" class="btn btn-outline">Details</a>
-                        </div>
-                    `;
-                    pastList.appendChild(card);
-                });
-            }
+            renderEventsUI(upcomingEvents, pastEvents);
+            window.dynamicContentLoaded = true;
+        }
+    } catch (error) {
+        console.error("Error loading dynamic content:", error);
+    }
+}
+
+// Extracted UI rendering logic to allow calling from cache or Firestore
+function renderEventsUI(upcomingEvents, pastEvents = null) {
+    const upcomingTrack = document.getElementById('dynamic-upcoming-track');
+    const fullEventList = document.getElementById('full-event-list');
+    const heroSubtitle = document.getElementById('hero-event-subtitle');
+    const heroTitle = document.getElementById('hero-event-name');
+    const heroLink = document.getElementById('hero-event-link');
+    const now = new Date();
+
+    const staticIds = [
+        'imsa-classic-500', 'indy-500', 'world-600',
+        'thruxton-4h', 'watkins-glen-6h', 'spa-24hr', 'firecracker-400',
+        'road-america-6h', 'brickyard-400', 'suzuka-1000km', 'petit-le-mans',
+        'bathurst-1000', 'indy-8h', 'knoxville-nationals', 'portimao-1000',
+        'crandon-championship', 'southern-500', 'britcar-24hr', 'ff1600-festival',
+        'homestead-championship', 'sfl-mountain-showdown', 'scca-runoffs',
+        '992-endurance-cup', 'winter-derby', 'chili-bowl', 'production-car-challenge',
+        'iracing-roar', 'daytona-24', 'daytona-500', 'bathurst-12', 'sebring-12hr', 'nurburgring-24h'
+    ];
+
+    const BASE = 'https://s100.iracing.com/wp-content/uploads';
+    const eventBanners = {
+        'iracing-roar':         `${BASE}/2025/12/iRSE-2026-ROAR-960x576.png`,
+        'daytona-24':           `${BASE}/2025/12/iRSE-2026-Daytona-24-VCO-960x576.png`,
+        'daytona-500':          `${BASE}/2025/12/iRSE-2026-Daytona-500.png`,
+        'bathurst-12':          `${BASE}/2025/12/iRSE-2026-Bathurst-12.png`,
+        'sebring-12hr':         `${BASE}/2025/12/iRSE-2026-Sebring-12-VCO.png`,
+        'nurburgring-24h':      `${BASE}/2025/12/iRSE-2026-Nurburgring-24H.png`,
+        'imsa-classic-500':     `${BASE}/2026/03/iRSE-2026-IMSA-Classic-500.png`,
+        'indy-500':             `${BASE}/2025/12/iRSE-2026-Indy-500.png`,
+        'world-600':            `${BASE}/2025/12/iRSE-2026-World-600.png`,
+        'thruxton-4h':          `${BASE}/2025/12/iRSE-2026-4-Hours-at-Thruxton.png`,
+        'watkins-glen-6h':      `${BASE}/2025/12/iRSE-2026-Watkis-Glen-6H-VCO.png`,
+        'spa-24hr':             `${BASE}/2025/12/iRSE-2026-SPA-24HR.png`,
+        'brickyard-400':        'https://s100.iracing.com/wp-content/uploads/2025/04/iRSE-2025-Brickyard-400-v2.png',
+        'road-america-6h':      `${BASE}/2025/12/iRSE-2026-6HRS-Road-America.png`,
+        'firecracker-400':      `${BASE}/2025/12/iRSE-2026-Firecracker-400.png`,
+        'knoxville-nationals':  `${BASE}/2025/12/iRSE-2026-Knoxville-Nationals.png`,
+        'portimao-1000':        `${BASE}/2025/12/iRSE-2026-Portimao-1000.png`,
+        'crandon-championship': `${BASE}/2025/12/iRSE-2026-Crandon.png`,
+        'southern-500':         `${BASE}/2025/12/iRSE-2026-Southern-500.png`,
+        'suzuka-1000km':        `${BASE}/2026/01/iRSE-2026-PiMax-Suzuka-1000km.png`,
+        'britcar-24hr':         `${BASE}/2025/12/iRSE-2026-Britcar-24.png`,
+        'petit-le-mans':        `${BASE}/2025/12/iRSE-2026-Petit-Le-Mans-VCO.png`,
+        'bathurst-1000':        `${BASE}/2025/12/iRSE-2026-Bathurst-1000.png`,
+        'indy-8h':              `${BASE}/2025/12/iRSE-2026-Indianapolis-8H.png`,
+        'ff1600-festival':      `${BASE}/2026/01/iRSE-2026-iRacing-Conspit-FF1600-Festival.png`,
+        'homestead-championship': `${BASE}/2025/12/iRSE-2026-Homestead-Championship.png`,
+        'sfl-mountain-showdown': `${BASE}/2025/12/iRSE-2026-SFL-Mountain-Challenge.png`,
+        'scca-runoffs':         `${BASE}/2024/12/iRSE-2025-Scca-Runoffs.png`,
+        '992-endurance-cup':    `${BASE}/2026/04/iRSE-2026-Creventic-992-Endurance-Cup.png`,
+        'winter-derby':         `${BASE}/2025/12/iRSE-2026-Winter-Derby.png`,
+        'chili-bowl':           `${BASE}/2025/12/iRSE-2026-Chili-Bowl.png`,
+        'production-car-challenge': `${BASE}/2025/12/iRSE-2026-Production-Car-Challenge.png`,
+    };
+
+    const parseDate = (d) => {
+        if (!d) return null;
+        if (typeof d.toDate === 'function') return d.toDate();
+        if (d.seconds) return new Date(d.seconds * 1000);
+        return new Date(d);
+    };
+
+    // A. Update Upcoming UI
+    if (upcomingEvents.length === 0) {
+        if (upcomingTrack) upcomingTrack.innerHTML = '<p style="text-align: center; color: var(--text-muted); width: 100%;">No upcoming events scheduled.</p>';
+        if (fullEventList) fullEventList.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Stay tuned for future event dates.</p>';
+        if (heroSubtitle) heroSubtitle.textContent = 'Next Major Race: TBA';
+        if (heroTitle) heroTitle.textContent = 'GRiD UP';
+    } else {
+        const nextEvent = upcomingEvents[0];
+        const startTime = parseDate(nextEvent.startDate);
+        const endTime = parseDate(nextEvent.endDate || nextEvent.startDate);
+        if (endTime) endTime.setHours(23, 59, 59, 999);
+        
+        const isLive = now >= startTime && now <= endTime;
+        
+        if (heroSubtitle) {
+            heroSubtitle.textContent = isLive ? `LIVE NOW: ${nextEvent.name || 'TBA'}` : `Next Major Race: ${nextEvent.name || 'TBA'}`;
+            heroSubtitle.style.color = isLive ? '#ff0055' : 'var(--primary)';
+            if (isLive) heroSubtitle.classList.add('animate-pulse');
+        }
+        
+        if (heroTitle) {
+            heroTitle.textContent = (nextEvent.name || 'TBA').toUpperCase();
+        }
+        
+        if (heroLink) {
+            heroLink.href = staticIds.includes(nextEvent.id) ? getEventLink(nextEvent.id, true) : getEventLink(nextEvent.id);
+        }
+        
+        updateCountdown(nextEvent.startDate);
+
+        if (upcomingTrack) {
+            upcomingTrack.innerHTML = '';
+            const colors = ['blue', 'pink', 'green'];
+            upcomingEvents.slice(0, 10).forEach((e, i) => {
+                const tile = document.createElement('a');
+                tile.href = staticIds.includes(e.id) ? getEventLink(e.id, true) : getEventLink(e.id);
+                tile.className = `race-tile tile-${colors[i % 3]}`;
+                const bannerUrl = eventBanners[e.id];
+                tile.innerHTML = `
+                    ${bannerUrl ? `<div class="tile-banner" style="background-image: url('${bannerUrl}')"></div>` : ''}
+                    <h3>${(e.name || 'TBA').toUpperCase()}</h3>
+                    <div class="race-meta">${e.date}</div>
+                `;
+                upcomingTrack.appendChild(tile);
+            });
+        }
+
+        if (fullEventList) {
+            fullEventList.innerHTML = '';
+            const eventColors = ['var(--primary)', 'var(--secondary)', '#00ff88'];
+            upcomingEvents.forEach((e, i) => {
+                const card = document.createElement('div');
+                card.id = `event-${e.id}`;
+                card.className = 'glass event-horizontal-card reveal active';
+                card.style.borderLeft = `4px solid ${eventColors[i % 3]}`;
+                const bannerUrl = eventBanners[e.id];
+                card.innerHTML = `
+                    ${bannerUrl ? `<div class="event-card-banner" style="background-image: url('${bannerUrl}')"></div>` : ''}
+                    <div class="event-info">
+                        <h3>${e.name || 'TBA'}</h3>
+                        <p class="event-meta">${e.date}</p>
+                        <p class="event-desc">${Array.isArray(e.classes) ? 'Classes: ' + e.classes.join(', ') : (e.classes ? 'Classes: ' + e.classes : 'Details coming soon.')}</p>
+                    </div>
+                    <div class="event-action">
+                        <a href="${staticIds.includes(e.id) ? getEventLink(e.id, true) : getEventLink(e.id)}" class="btn btn-outline">Details</a>
+                    </div>
+                `;
+                fullEventList.appendChild(card);
+            });
+        }
+    }
+
+    // D. Populate Past List (Only if pastEvents is provided from Firestore)
+    const pastList = document.getElementById('dynamic-past-list');
+    if (pastList && pastEvents) {
+        const hardcodedIds = [];
+        const eventColors = ['var(--primary)', 'var(--secondary)', '#00ff88'];
+        pastList.innerHTML = '';
+        pastEvents.forEach((e, i) => {
+            if (hardcodedIds.includes(e.id)) return;
+            const card = document.createElement('div');
+            card.id = `event-${e.id}`;
+            card.className = 'glass event-horizontal-card reveal active';
+            card.style.borderLeft = `4px solid ${eventColors[(i + hardcodedIds.length) % 3]}`;
+            const bannerUrl = eventBanners[e.id];
+            card.innerHTML = `
+                ${bannerUrl ? `<div class="event-card-banner" style="background-image: url('${bannerUrl}')"></div>` : ''}
+                <div class="event-info">
+                    <h3>${e.name || 'TBA'}</h3>
+                    <p class="event-meta">${e.date}</p>
+                    <p class="event-desc">${Array.isArray(e.classes) ? 'Classes: ' + e.classes.join(', ') : (e.classes ? 'Classes: ' + e.classes : 'Race event completed.')}</p>
+                </div>
+                <div class="event-action">
+                    <a href="${staticIds.includes(e.id) ? getEventLink(e.id, true) : getEventLink(e.id)}" class="btn btn-outline">Details</a>
+                </div>
+            `;
+            pastList.appendChild(card);
+        });
+    }
+}
         }
     } catch (error) {
         console.error("Error loading events:", error);
@@ -806,98 +867,109 @@ async function renderEventResults(eventId, targetElement) {
 // 2. Load Recent Results (Race Cards)
 async function loadRecentResults() {
     const resultsTrack = document.getElementById('results-track');
-    if (resultsTrack) {
-        resultsTrack.innerHTML = getSkeletonHTML('card');
+    if (!resultsTrack) return;
+
+    // Attempt to load from cache first
+    const cachedResults = localStorage.getItem('gridup_recent_results');
+    let cacheLoaded = false;
+    if (cachedResults && !window.recentResultsLoaded) {
         try {
-            const snap = await db.collection("race_results")
-                .orderBy("timestamp", "desc")
-                .limit(30) // Increased limit for carousel to fit all entries
-                .get();
-
-            if (snap.empty) {
-                resultsTrack.innerHTML = '<p style="text-align: center; color: var(--text-muted); grid-column: 1/-1;">No recent results to show.</p>';
-            } else {
-                resultsTrack.innerHTML = '';
-                snap.forEach(doc => {
-                    const d = doc.data();
-                    const card = document.createElement('div');
-                    card.className = 'card cinematic-poster reveal active';
-                    card.style.cursor = 'pointer';
-                    card.onclick = () => openCardModal(d);
-
-                    // Detect dedicated poster (rawUrl same as teamAsset OR explicit type)
-                    const isPoster = (d.rawUrl && d.teamAsset && d.rawUrl === d.teamAsset) || d.type === "cinematic-poster";
-                    const bgImg = d.teamAsset || d.rawUrl || "assets/poster-placeholder.png";
-                    const fgImg = !isPoster && d.rawUrl && d.teamAsset && d.rawUrl !== d.teamAsset ? d.rawUrl : null;
-
-                    if (isPoster) {
-                        // Clean full-bleed poster — no text overlays
-                        card.innerHTML = `
-                            <img src="${bgImg}" style="width:100%; height:100%; object-fit:cover; border-radius: inherit; display:block;">
-                            <!-- Interaction Overlay -->
-                            <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,207,255,0.08); opacity:0; transition:opacity 0.3s; z-index:6; border-radius:inherit;" class="hover-overlay">
-                                <div style="padding:0.75rem 1.5rem; border:2px solid var(--primary); color:var(--primary); font-weight:800; font-size:0.8rem; letter-spacing:2px; border-radius:4px; backdrop-filter:blur(5px);">VIEW POSTER</div>
-                            </div>
-                        `;
-                    } else {
-                        card.innerHTML = `
-                            <!-- Layers -->
-                            <img src="${bgImg}" class="bg-layer">
-                            ${fgImg ? `<img src="${fgImg}" class="fg-layer">` : ''}
-                            
-                            <!-- Watermark Branding (Center Background) -->
-                            <img src="assets/logo.png" class="event-branding" onerror="this.style.display='none'">
-
-                            <div class="gradient-overlay"></div>
-                            
-                            <!-- Top Left Metadata -->
-                            <div class="text-overlay" style="top: 1.5rem; left: 1.5rem; text-align: left;">
-                                <div style="font-size: 0.6rem; color: var(--primary); font-weight: 900; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 0.2rem;">GRiD UP // SPECIAL EVENT</div>
-                                <div style="font-size: 1.6rem; font-weight: 900; line-height: 1.1; letter-spacing: -0.5px;">${(d.trackName || d.eventName || 'RACE EVENT').toUpperCase()}</div>
-                                <div style="font-size: 0.7rem; opacity: 0.8; margin-top: 0.4rem; font-weight: 600;">${d.raceDate || ''}</div>
-                            </div>
-
-                            <!-- Top Right Stats -->
-                            <div class="text-overlay" style="top: 1.5rem; right: 1.5rem; text-align: right;">
-                                <div style="font-size: 0.75rem; font-weight: 800; opacity: 0.9; color: var(--primary);">${d.carUsed || 'GT3'}</div>
-                                <div style="font-size: 1.2rem; font-weight: 900; margin-top: 0.2rem;">FINISH: ${d.position}</div>
-                                ${d.startPos ? `<div style="font-size: 0.7rem; opacity: 0.8; margin-top: 0.1rem;">STARTED: ${d.startPos}</div>` : ''}
-                            </div>
-
-                            <!-- Bottom Banner -->
-                            <div class="text-overlay" style="bottom: 1.5rem; left: 1.5rem; right: 1.5rem; display: flex; justify-content: space-between; align-items: flex-end;">
-                                <div style="text-align: left;">
-                                    <div style="font-size: 1.1rem; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">${Array.isArray(d.drivers) ? d.drivers.join(' - ') : d.drivers}</div>
-                                    <div style="font-size: 0.6rem; color: var(--primary); font-weight: 700; margin-top: 0.2rem; letter-spacing: 2px;">CONFIRMED TEAM ENTRY</div>
-                                </div>
-                                <div style="background: rgba(255,255,255,0.1); padding: 0.6rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(8px);">
-                                    <img src="assets/logo.png" style="height: 25px;" onerror="this.style.display='none'">
-                                </div>
-                            </div>
-
-                            <!-- Interaction Overlay -->
-                            <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,207,255,0.1); opacity: 0; transition: opacity 0.3s; z-index: 6;" class="hover-overlay">
-                                 <div style="padding: 0.75rem 1.5rem; border: 2px solid var(--primary); color: var(--primary); font-weight: 800; font-size: 0.8rem; letter-spacing: 2px; border-radius: 4px; backdrop-filter: blur(5px);">EXPAND</div>
-                            </div>
-                        `;
-                    }
-
-                    card.onmouseenter = () => {
-                        card.style.transform = 'translateY(-5px)';
-                        card.querySelector('.hover-overlay').style.opacity = '1';
-                    };
-                    card.onmouseleave = () => {
-                        card.style.transform = 'translateY(0)';
-                        card.querySelector('.hover-overlay').style.opacity = '0';
-                    };
-                    resultsTrack.appendChild(card);
-                });
-            }
-        } catch (error) {
-            console.error("Error loading results:", error);
-            resultsTrack.innerHTML = '<p style="color: #ff0055; grid-column: 1/-1;">Failed to load results.</p>';
+            console.log("Loading recent results from cache...");
+            renderRecentResultsUI(JSON.parse(cachedResults));
+            cacheLoaded = true;
+        } catch (e) {
+            console.warn("Failed to load results from cache:", e);
         }
     }
+
+    if (!cacheLoaded) resultsTrack.innerHTML = getSkeletonHTML('card');
+
+    if (typeof db === 'undefined') return;
+
+    try {
+        const snap = await db.collection("race_results")
+            .orderBy("timestamp", "desc")
+            .limit(30)
+            .get();
+
+        if (snap.empty) {
+            resultsTrack.innerHTML = '<p style="text-align: center; color: var(--text-muted); grid-column: 1/-1;">No recent results to show.</p>';
+        } else {
+            const results = [];
+            snap.forEach(doc => results.push(doc.data()));
+            localStorage.setItem('gridup_recent_results', JSON.stringify(results));
+            renderRecentResultsUI(results);
+            window.recentResultsLoaded = true;
+        }
+    } catch (error) {
+        console.error("Error loading results:", error);
+        if (!cacheLoaded) resultsTrack.innerHTML = '<p style="color: #ff0055; grid-column: 1/-1;">Failed to load results.</p>';
+    }
+}
+
+function renderRecentResultsUI(results) {
+    const resultsTrack = document.getElementById('results-track');
+    if (!resultsTrack) return;
+    resultsTrack.innerHTML = '';
+    
+    results.forEach(d => {
+        const card = document.createElement('div');
+        card.className = 'card cinematic-poster reveal active';
+        card.style.cursor = 'pointer';
+        card.onclick = () => openCardModal(d);
+
+        const isPoster = (d.rawUrl && d.teamAsset && d.rawUrl === d.teamAsset) || d.type === "cinematic-poster";
+        const bgImg = d.teamAsset || d.rawUrl || "assets/poster-placeholder.png";
+        const fgImg = !isPoster && d.rawUrl && d.teamAsset && d.rawUrl !== d.teamAsset ? d.rawUrl : null;
+
+        if (isPoster) {
+            card.innerHTML = `
+                <img src="${bgImg}" style="width:100%; height:100%; object-fit:cover; border-radius: inherit; display:block;">
+                <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,207,255,0.08); opacity:0; transition:opacity 0.3s; z-index:6; border-radius:inherit;" class="hover-overlay">
+                    <div style="padding:0.75rem 1.5rem; border:2px solid var(--primary); color:var(--primary); font-weight:800; font-size:0.8rem; letter-spacing:2px; border-radius:4px; backdrop-filter:blur(5px);">VIEW POSTER</div>
+                </div>
+            `;
+        } else {
+            card.innerHTML = `
+                <img src="${bgImg}" class="bg-layer">
+                ${fgImg ? `<img src="${fgImg}" class="fg-layer">` : ''}
+                <img src="assets/logo.png" class="event-branding" onerror="this.style.display='none'">
+                <div class="gradient-overlay"></div>
+                <div class="text-overlay" style="top: 1.5rem; left: 1.5rem; text-align: left;">
+                    <div style="font-size: 0.6rem; color: var(--primary); font-weight: 900; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 0.2rem;">GRiD UP // SPECIAL EVENT</div>
+                    <div style="font-size: 1.6rem; font-weight: 900; line-height: 1.1; letter-spacing: -0.5px;">${(d.trackName || d.eventName || 'RACE EVENT').toUpperCase()}</div>
+                    <div style="font-size: 0.7rem; opacity: 0.8; margin-top: 0.4rem; font-weight: 600;">${d.raceDate || ''}</div>
+                </div>
+                <div class="text-overlay" style="top: 1.5rem; right: 1.5rem; text-align: right;">
+                    <div style="font-size: 0.75rem; font-weight: 800; opacity: 0.9; color: var(--primary);">${d.carUsed || 'GT3'}</div>
+                    <div style="font-size: 1.2rem; font-weight: 900; margin-top: 0.2rem;">FINISH: ${d.position}</div>
+                    ${d.startPos ? `<div style="font-size: 0.7rem; opacity: 0.8; margin-top: 0.1rem;">STARTED: ${d.startPos}</div>` : ''}
+                </div>
+                <div class="text-overlay" style="bottom: 1.5rem; left: 1.5rem; right: 1.5rem; display: flex; justify-content: space-between; align-items: flex-end;">
+                    <div style="text-align: left;">
+                        <div style="font-size: 1.1rem; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">${Array.isArray(d.drivers) ? d.drivers.join(' - ') : d.drivers}</div>
+                        <div style="font-size: 0.6rem; color: var(--primary); font-weight: 700; margin-top: 0.2rem; letter-spacing: 2px;">CONFIRMED TEAM ENTRY</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.1); padding: 0.6rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(8px);">
+                        <img src="assets/logo.png" style="height: 25px;" onerror="this.style.display='none'">
+                    </div>
+                </div>
+                <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,207,255,0.1); opacity: 0; transition: opacity 0.3s; z-index: 6;" class="hover-overlay">
+                     <div style="padding: 0.75rem 1.5rem; border: 2px solid var(--primary); color: var(--primary); font-weight: 800; font-size: 0.8rem; letter-spacing: 2px; border-radius: 4px; backdrop-filter: blur(5px);">EXPAND</div>
+                </div>
+            `;
+        }
+
+        card.onmouseenter = () => {
+            card.style.transform = 'translateY(-5px)';
+            card.querySelector('.hover-overlay').style.opacity = '1';
+        };
+        card.onmouseleave = () => {
+            card.style.transform = 'translateY(0)';
+            card.querySelector('.hover-overlay').style.opacity = '0';
+        };
+        resultsTrack.appendChild(card);
+    });
 }
 
 // 3. Load ALL Results (for results.html)
@@ -1328,6 +1400,8 @@ async function downloadActiveCard() {
 }
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
+    loadDynamicContent(); // Load from cache immediately
+    loadRecentResults(); // Load from cache immediately
     initCarousel();
     injectCredits();
     
