@@ -449,15 +449,6 @@ async function loadDynamicContent() {
             });
 
             // Filter events
-            const upcomingEvents = allEvents.filter(e => {
-                const start = parseDate(e.startDate);
-                const end = parseDate(e.endDate || e.startDate);
-                if (!start) return false;
-
-                const eventEnd = new Date(end);
-                eventEnd.setHours(23, 59, 59, 999);
-                
-            // FINAL SAFETY CHECK: Explicitly exclude passed Nurburgring event
             const nurburgringPast = now > new Date('2026-05-03T23:59:59');
             
             const upcomingEvents = allEvents.filter(e => {
@@ -657,12 +648,6 @@ function renderEventsUI(upcomingEvents, pastEvents = null) {
             `;
             pastList.appendChild(card);
         });
-    }
-}
-        }
-    } catch (error) {
-        console.error("Error loading events:", error);
-        if (upcomingTrack) upcomingTrack.innerHTML = `<p style="color: #ff0055;">Failed to load schedule: ${error.message || error.toString()}</p>`;
     }
 }
 
