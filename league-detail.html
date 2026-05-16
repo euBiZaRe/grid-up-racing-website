@@ -321,6 +321,7 @@
         function updateUI() {
             const user = firebase.auth().currentUser;
             const unregisteredEl = document.getElementById('status-unregistered');
+            const entrySection = document.getElementById('entry-list-section');
             
             if (!user) {
                 unregisteredEl.innerHTML = `
@@ -331,24 +332,21 @@
                 unregisteredEl.style.display = 'block';
                 document.getElementById('status-provisional').style.display = 'none';
                 document.getElementById('status-confirmed').style.display = 'none';
-                document.getElementById('entry-list-section').style.display = 'none';
-                return;
+            } else {
+                // Reset unregistered UI for logged in user
+                unregisteredEl.innerHTML = `
+                    <div class="status-indicator status-not-registered">Not Registered</div>
+                    <button onclick="handleRegistration()" class="btn" style="width: 100%; box-shadow: 0 0 30px var(--primary-glow);">RESERVE GRID SLOT</button>
+                `;
+                document.getElementById('status-unregistered').style.display = currentStatus === 'unregistered' ? 'block' : 'none';
+                document.getElementById('status-provisional').style.display = currentStatus === 'provisional' ? 'block' : 'none';
+                document.getElementById('status-confirmed').style.display = currentStatus === 'confirmed' ? 'block' : 'none';
             }
-
-            // Reset unregistered UI for logged in user
-            unregisteredEl.innerHTML = `
-                <div class="status-indicator status-not-registered">Not Registered</div>
-                <button onclick="handleRegistration()" class="btn" style="width: 100%; box-shadow: 0 0 30px var(--primary-glow);">RESERVE GRID SLOT</button>
-            `;
-
-            document.getElementById('status-unregistered').style.display = currentStatus === 'unregistered' ? 'block' : 'none';
-            document.getElementById('status-provisional').style.display = currentStatus === 'provisional' ? 'block' : 'none';
-            document.getElementById('status-confirmed').style.display = currentStatus === 'confirmed' ? 'block' : 'none';
             
-            // Show entry list if there are ANY registrations
-            const entrySection = document.getElementById('entry-list-section');
+            // Show entry list to EVERYONE if there are ANY registrations
             if (registrations.length > 0) {
                 entrySection.style.display = 'block';
+                renderRoster(); // Ensure roster is rendered even if logged out
             } else {
                 entrySection.style.display = 'none';
             }
