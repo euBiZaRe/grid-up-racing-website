@@ -199,19 +199,32 @@
                 list.innerHTML = '';
                 let firstBannerUrl = null;
 
+                const LEAGUE_POSTERS = {
+                    'gtc-virginia-120':   'assets/league-posters/Virginia.png',
+                    'gtc-glen-24':        'assets/league-posters/The Glen.png',
+                    'gtc-spa-3h':         'assets/league-posters/SPA.png',
+                    'gtc-elkhart-24':     'assets/league-posters/Elkhart Lake.png',
+                    'gtc-barcelona-120':  'assets/league-posters/Barcelona.png',
+                    'gtc-suzuka-24':      'assets/league-posters/Suzuka.png',
+                    'gtc-atlanta-120':    'assets/league-posters/Atlanta.png',
+                    'gtc-indy-3h':        'assets/league-posters/Indy.png',
+                    'gtc-sonoma-120':     'assets/league-posters/Sonoma Valley.png',
+                };
+
                 snap.forEach(doc => {
                     const data = doc.data();
                     const card = document.createElement('div');
                     card.className = 'league-card reveal active';
 
                     const isOpen = data.registrationStatus === 'open';
-                    const bannerHtml = data.bannerUrl
-                        ? `<div class="league-card-banner" style="background-image: url('${data.bannerUrl}')"></div>`
+                    const posterUrl = data.bannerUrl || LEAGUE_POSTERS[doc.id];
+                    const bannerHtml = posterUrl
+                        ? `<div class="league-card-banner" style="background-image: url('${posterUrl}')"></div>`
                         : '';
 
                     // Use the first open event's banner for the hero
-                    if (!firstBannerUrl && isOpen && data.bannerUrl) {
-                        firstBannerUrl = data.bannerUrl;
+                    if (!firstBannerUrl && isOpen && posterUrl) {
+                        firstBannerUrl = posterUrl;
                     }
 
                     card.innerHTML = `

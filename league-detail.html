@@ -275,8 +275,25 @@
                     document.getElementById('confirmation-deadline').textContent = "TBD";
                 }
                 
-                if (data.bannerUrl) {
-                    document.getElementById('event-hero').style.backgroundImage = `url('${data.bannerUrl}')`;
+                // Local poster map — keyed by event ID
+                const LEAGUE_POSTERS = {
+                    'gtc-virginia-120':   'assets/league-posters/Virginia.png',
+                    'gtc-glen-24':        'assets/league-posters/The Glen.png',
+                    'gtc-spa-3h':         'assets/league-posters/SPA.png',
+                    'gtc-elkhart-24':     'assets/league-posters/Elkhart Lake.png',
+                    'gtc-barcelona-120':  'assets/league-posters/Barcelona.png',
+                    'gtc-suzuka-24':      'assets/league-posters/Suzuka.png',
+                    'gtc-atlanta-120':    'assets/league-posters/Atlanta.png',
+                    'gtc-indy-3h':        'assets/league-posters/Indy.png',
+                    'gtc-sonoma-120':     'assets/league-posters/Sonoma Valley.png',
+                };
+
+                const heroEl = document.getElementById('event-hero');
+                const posterUrl = data.bannerUrl || LEAGUE_POSTERS[eventId];
+                if (posterUrl && heroEl) {
+                    heroEl.style.backgroundImage = `linear-gradient(to bottom, rgba(10,12,16,0.45), rgba(10,12,16,0.7)), url('${posterUrl}')`;
+                    heroEl.style.backgroundSize = 'cover';
+                    heroEl.style.backgroundPosition = 'center top';
                 }
 
                 // Setup Real-time Listener for Registrations
