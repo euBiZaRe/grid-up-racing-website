@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>League Racing | GRiD UP Sim Racing</title>
+    <meta name="description" content="Join the GRiD UP League. Competitive, fair, and premium sim racing leagues open for public entry.">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="assets/G_2.png">
+    <style>
+        .league-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2.5rem;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .league-card:hover {
+            border-color: var(--primary);
+            background: rgba(0, 207, 255, 0.02);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        .league-badge {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--primary-gradient);
+            color: #000;
+            font-weight: 800;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-radius: 50px;
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+        .league-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .status-open { background: #00ff88; box-shadow: 0 0 10px #00ff88; }
+        .status-closed { background: #ff3c3c; box-shadow: 0 0 10px #ff3c3c; }
+
+        .league-hero {
+            padding: 10rem 0 6rem;
+            text-align: center;
+            background: linear-gradient(to bottom, rgba(10, 12, 16, 0.4), var(--bg-dark)), url('assets/bg-banner.png');
+            background-size: cover;
+            background-position: center;
+        }
+    </style>
+</head>
+<body class="league-page">
+    <nav id="navbar" class="scrolled">
+        <div class="container nav-content">
+            <a href="index.html" class="logo">
+                <img src="assets/logo.png" alt="GRiD UP" style="height: 40px; vertical-align: middle;">
+            </a>
+            <div class="menu-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html#home">Home</a></li>
+                <li><a href="index.html#about">About</a></li>
+                <li><a href="roster.html">Roster</a></li>
+                <li><a href="events.html">Events</a></li>
+                <li><a href="league.html" class="active">League</a></li>
+                <li><a href="shop.html">Shop</a></li>
+                <li><a href="team-app.html">Apply</a></li>
+                <li><a href="https://discord.gg/gridup" target="_blank"><img src="assets/discord_header.png" alt="Discord" style="height: 25px; vertical-align: middle;"></a></li>
+                <li><a href="login.html" id="login-link" class="btn btn-outline" style="padding: 0.5rem 1.25rem; font-size: 0.8rem; margin-left: 1rem;">Login</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <header class="league-hero">
+        <div class="container">
+            <p style="color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 4px; margin-bottom: 1rem;">Official Series</p>
+            <h1 class="glow-text" style="font-size: clamp(3rem, 10vw, 6rem); font-weight: 900; line-height: 1;">THE LEAGUE</h1>
+            <p style="max-width: 600px; margin: 2rem auto; color: var(--text-muted); font-size: 1.1rem;">Elite competition. Professional stewarding. Fair racing for everyone. Join the GRiD UP racing ecosystem.</p>
+            <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 3rem;">
+                <a href="#active-leagues" class="btn">View Seasons</a>
+                <a href="https://discord.gg/gridup" class="btn btn-outline">Discord Entry</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container section" id="active-leagues">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 4rem;">
+            <div>
+                <h2 style="color: var(--primary); margin-bottom: 0.5rem;">Active Seasons</h2>
+                <p style="color: var(--text-muted);">Current and upcoming leagues open for registration.</p>
+            </div>
+        </div>
+
+        <div id="league-list" class="grid" style="grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 2rem;">
+            <!-- Loading State -->
+            <div class="glass loading-shimmer" style="height: 400px; border-radius: 24px;"></div>
+            <div class="glass loading-shimmer" style="height: 400px; border-radius: 24px;"></div>
+            <div class="glass loading-shimmer" style="height: 400px; border-radius: 24px;"></div>
+        </div>
+
+        <section style="margin-top: 8rem; text-align: center;" class="reveal">
+            <div class="glass-premium" style="padding: 5rem 2rem; border-radius: 40px; background: linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(0, 207, 255, 0.02) 100%);">
+                <h2 style="margin-bottom: 1.5rem;">Why Race with GRiD UP?</h2>
+                <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 3rem; margin-top: 4rem; text-align: left;">
+                    <div>
+                        <h4 style="color: var(--primary); margin-bottom: 1rem;">Professional Stewarding</h4>
+                        <p style="font-size: 0.9rem; color: var(--text-muted);">Every incident is reviewed by our dedicated steward panel to ensure fair and clean racing for all participants.</p>
+                    </div>
+                    <div>
+                        <h4 style="color: var(--primary); margin-bottom: 1rem;">Broadcasting</h4>
+                        <p style="font-size: 0.9rem; color: var(--text-muted);">Major split races are broadcast live with professional commentary, giving you the full spotlight experience.</p>
+                    </div>
+                    <div>
+                        <h4 style="color: var(--primary); margin-bottom: 1rem;">Community First</h4>
+                        <p style="font-size: 0.9rem; color: var(--text-muted);">Access to private coaching sessions, setup sharing, and a community of like-minded racers.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p style="color: var(--text-muted); font-size: 0.8rem;">&copy; 2026 GRiD UP SIM RACING. ALL RIGHTS RESERVED.</p>
+        </div>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="script.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        // Custom League Loading Logic
+        async function loadLeagues() {
+            const list = document.getElementById('league-list');
+            if (!list) return;
+
+            try {
+                // We'll use a collection called 'leagues'
+                if (typeof db === 'undefined') {
+                    setTimeout(loadLeagues, 500);
+                    return;
+                }
+
+                const snap = await db.collection("leagues").orderBy("startDate", "asc").get();
+                
+                if (snap.empty) {
+                    list.innerHTML = `
+                        <div style="grid-column: 1/-1; text-align: center; padding: 4rem; color: var(--text-muted);">
+                            <p>No active league seasons found. Check back soon or join our Discord for updates!</p>
+                            <a href="https://discord.gg/gridup" class="btn btn-outline" style="margin-top: 2rem;">Join Discord</a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                list.innerHTML = '';
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    const card = document.createElement('div');
+                    card.className = 'league-card reveal active';
+                    
+                    const isOpen = data.registrationStatus === 'open';
+                    
+                    card.innerHTML = `
+                        <div class="league-badge">${data.carClass || 'GT3'}</div>
+                        <div class="league-info">
+                            <div class="league-status" style="color: ${isOpen ? '#00ff88' : '#ff3c3c'}">
+                                <span class="status-dot ${isOpen ? 'status-open' : 'status-closed'}"></span>
+                                ${isOpen ? 'Registration Open' : 'Season in Progress'}
+                            </div>
+                            <h3 style="font-size: 1.8rem; margin: 1rem 0 0.5rem; font-weight: 800;">${data.name}</h3>
+                            <p style="color: var(--primary); font-family: var(--font-heading); font-size: 0.8rem; letter-spacing: 2px;">${data.schedule || 'Weekly // Wednesdays'}</p>
+                        </div>
+                        <div style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6;">
+                            ${data.description || 'Join our premier racing series with professional stewarding and broadcasting.'}
+                        </div>
+                        <div style="display: flex; gap: 1.5rem; margin-top: auto; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05);">
+                            <div>
+                                <div style="font-size: 0.6rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px;">Starts</div>
+                                <div style="font-weight: 700;">${data.dateDisplay || 'TBA'}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.6rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px;">Format</div>
+                                <div style="font-weight: 700;">${data.format || 'Sprint'}</div>
+                            </div>
+                        </div>
+                        <a href="${data.registrationUrl || 'https://discord.gg/gridup'}" class="btn" style="width: 100%; text-align: center; ${!isOpen ? 'opacity: 0.5; pointer-events: none;' : ''}">
+                            ${isOpen ? 'Register Now' : 'Join Waiting List'}
+                        </a>
+                    `;
+                    list.appendChild(card);
+                });
+            } catch (e) {
+                console.error("Error loading leagues:", e);
+                list.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--secondary);">Failed to load leagues. Please try again later.</p>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadLeagues);
+    </script>
+</body>
+</html>
