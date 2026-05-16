@@ -261,7 +261,20 @@
             <h3 style="margin-bottom: 1rem; color: var(--primary);">Select Your Car</h3>
             <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 2rem;">Choose your vehicle for this event. You cannot change this later without withdrawing.</p>
             
-            <select id="car-select" style="width: 100%; padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: white; border-radius: 8px; margin-bottom: 2rem; font-family: sans-serif; font-size: 0.9rem;">
+            <style>
+                #car-select option {
+                    background-color: #0a0c10;
+                    color: #ffffff;
+                    padding: 10px;
+                }
+                #car-select optgroup {
+                    background-color: #050608;
+                    color: #00cfff;
+                    font-weight: 800;
+                    font-style: normal;
+                }
+            </style>
+            <select id="car-select" style="width: 100%; padding: 1rem; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); color: white; border-radius: 8px; margin-bottom: 2rem; font-family: sans-serif; font-size: 0.9rem; cursor: pointer; outline: none;">
                 <optgroup label="GT3">
                     <option value="Aston Martin Vantage GT3 Evo">Aston Martin Vantage GT3 Evo</option>
                     <option value="Acura NSX GT3 EVO">Acura NSX GT3 EVO</option>
