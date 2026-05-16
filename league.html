@@ -245,9 +245,8 @@
                         
                         scheduleText = `${dateStr} // ${raceTimeStr}`;
                         
-                        // Dynamically override any hardcoded EST text in the description
-                        descText = descText.replace(/4:00\s*(?:PM|AM)?\s*(?:EST|EDT)/gi, raceTimeStr)
-                                           .replace(/3:00\s*(?:PM|AM)?\s*(?:EST|EDT)/gi, practiceTimeStr);
+                        // Remove the redundant practice/green flag sentence from the description entirely
+                        descText = descText.replace(/Practice starts at.*?(?:EST|EDT)[,.]?\s*Green Flag at.*?(?:EST|EDT)\.?/gi, '').trim();
                     }
 
                     card.innerHTML = `
