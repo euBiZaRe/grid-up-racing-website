@@ -336,25 +336,13 @@
                 const countEl = document.getElementById(`count-${t}`);
                 btn.classList.toggle('active', currentRosterTab === t);
                 
-                // Update counts (Mocking some other drivers for realism)
-                let count = t === 'confirmed' ? 22 : (t === 'provisional' ? 5 : 3);
-                // If user is in this status, add them if not already counted? 
-                // Let's just make it simple: if user is this status, show them.
-                if (currentStatus === t) {
-                    countEl.textContent = count + 1;
-                } else {
-                    countEl.textContent = count;
-                }
+                // Real counts only (User is the only possible real entry right now)
+                let count = currentStatus === t ? 1 : 0;
+                countEl.textContent = count;
             });
 
             list.innerHTML = '';
             
-            // Mock drivers
-            let mockDrivers = [];
-            if (currentRosterTab === 'confirmed') mockDrivers = ['ApexHunter', 'IAmBiZaRe', 'TurboTodd', 'Midnight_Grip', 'Oversteer_King', 'DraftMaster', 'PodiumPioneer'];
-            if (currentRosterTab === 'provisional') mockDrivers = ['SimRacer22', 'ApexSeeker', 'GripLord'];
-            if (currentRosterTab === 'reserve') mockDrivers = ['BackupBandit', 'WaitingWarrior'];
-
             // Add user if status matches tab
             if (currentStatus === currentRosterTab) {
                 const entry = document.createElement('div');
@@ -367,18 +355,10 @@
                     <span class="metallic-text ${currentStatus === 'confirmed' ? 'gold-text' : 'silver-text'}" style="font-size: 0.6rem;">${currentStatus.toUpperCase()}</span>
                 `;
                 list.appendChild(entry);
+            } else if (list.innerHTML === '') {
+                // Show empty state if no entries in current tab
+                list.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-muted); font-size: 0.9rem; border: 1px dashed var(--glass-border); border-radius: 16px;">No drivers currently in this category.</div>`;
             }
-
-            mockDrivers.forEach((name, i) => {
-                const entry = document.createElement('div');
-                entry.className = 'roster-entry';
-                entry.innerHTML = `
-                    <span class="roster-pos">P${i + 1}</span>
-                    <span class="roster-name">${name}</span>
-                    <span class="metallic-text ${currentRosterTab === 'confirmed' ? 'gold-text' : 'bronze-text'}" style="font-size: 0.6rem;">${currentRosterTab === 'confirmed' ? 'GOLD' : 'BRONZE'}</span>
-                `;
-                list.appendChild(entry);
-            });
         }
 
         function startDeadlineTimer() {
