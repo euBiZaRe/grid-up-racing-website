@@ -130,6 +130,23 @@
                 <h1 id="event-name" class="glow-text" style="font-size: clamp(2rem, 8vw, 5rem); font-weight: 900; line-height: 1.1; margin-bottom: 1rem; opacity: 0; transition: opacity 0.4s ease 0.1s;">&nbsp;</h1>
                 <p id="event-track-sub" style="font-family: var(--font-heading); font-size: 1.1rem; letter-spacing: 4px; color: var(--text-main); opacity: 0; margin-bottom: 1rem; transition: opacity 0.4s ease 0.15s;">&nbsp;</p>
                 <div id="event-date-display" style="font-family: var(--font-heading); font-size: 0.9rem; letter-spacing: 2px; color: var(--primary); font-weight: 800; border-top: 1px solid rgba(0,207,255,0.2); padding-top: 1rem; text-transform: uppercase; opacity: 0; transition: opacity 0.4s ease 0.2s;">&nbsp;</div>
+                <div id="event-stats" style="margin-top: 1.5rem; display: flex; gap: 1rem; opacity: 0; transition: opacity 0.4s ease 0.3s; font-family: var(--font-body); flex-wrap: wrap;">
+                    <div style="background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); padding: 0.5rem 1.25rem; border-radius: 50px; display: flex; align-items: center; gap: 8px; backdrop-filter: blur(4px);">
+                        <span style="font-size: 1.2rem;">🏁</span>
+                        <span id="stat-total" style="font-weight: 800; color: #fff;">0</span>
+                        <span style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Total</span>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.6); border: 1px solid rgba(0,207,255,0.2); padding: 0.5rem 1.25rem; border-radius: 50px; display: flex; align-items: center; gap: 8px; backdrop-filter: blur(4px);">
+                        <span style="font-size: 1.2rem;">🏎️</span>
+                        <span id="stat-solo" style="font-weight: 800; color: #00cfff;">0</span>
+                        <span style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Solo</span>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.6); border: 1px solid rgba(0,255,136,0.2); padding: 0.5rem 1.25rem; border-radius: 50px; display: flex; align-items: center; gap: 8px; backdrop-filter: blur(4px);">
+                        <span style="font-size: 1.2rem;">👥</span>
+                        <span id="stat-team" style="font-weight: 800; color: #00ff88;">0</span>
+                        <span style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Teams</span>
+                    </div>
+                </div>
         </div>
     </header>
 
@@ -502,7 +519,7 @@
                 }
 
                 // Fade in all hero text now that everything is populated
-                ['event-tag', 'event-name', 'event-track-sub', 'event-date-display'].forEach(elId => {
+                ['event-tag', 'event-name', 'event-track-sub', 'event-date-display', 'event-stats'].forEach(elId => {
                     const el = document.getElementById(elId);
                     if (el) el.style.opacity = '1';
                 });
@@ -550,9 +567,24 @@
                       currentStatus = 'unregistered';
                   }
 
+                  updateStats();
                   updateUI();
                   renderRoster();
               });
+        }
+
+        function updateStats() {
+            const total = registrations.length;
+            const teams = registrations.filter(r => r.entryType === 'team').length;
+            const solo = total - teams;
+            
+            const elTotal = document.getElementById('stat-total');
+            const elSolo = document.getElementById('stat-solo');
+            const elTeam = document.getElementById('stat-team');
+            
+            if (elTotal) elTotal.textContent = total;
+            if (elSolo) elSolo.textContent = solo;
+            if (elTeam) elTeam.textContent = teams;
         }
 
         // Re-check status when auth changes
