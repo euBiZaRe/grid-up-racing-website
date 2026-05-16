@@ -258,11 +258,11 @@
     <!-- Car Selection Modal -->
     <div id="car-select-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(8px);">
         <div class="glass detail-card" style="max-width: 500px; width: 90%; padding: 2.5rem; text-align: left;">
-            <h3 style="margin-bottom: 1rem; color: var(--primary);">Select Your Car</h3>
-            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 2rem;">Choose your vehicle for this event. You cannot change this later without withdrawing.</p>
+            <h3 style="margin-bottom: 1rem; color: var(--primary);">Configure Your Entry</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 2rem;">Setup your grid slot. You cannot change these details later without withdrawing.</p>
             
             <style>
-                #car-select option {
+                #car-select option, #entry-type-select option {
                     background-color: #0a0c10;
                     color: #ffffff;
                     padding: 10px;
@@ -273,8 +273,52 @@
                     font-weight: 800;
                     font-style: normal;
                 }
+                .form-group {
+                    margin-bottom: 1.5rem;
+                }
+                .form-label {
+                    display: block;
+                    font-size: 0.75rem;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                    color: var(--text-muted);
+                    margin-bottom: 0.5rem;
+                }
+                .form-input {
+                    width: 100%;
+                    padding: 1rem;
+                    background: rgba(0,0,0,0.5);
+                    border: 1px solid var(--glass-border);
+                    color: white;
+                    border-radius: 8px;
+                    font-family: sans-serif;
+                    font-size: 0.9rem;
+                    outline: none;
+                }
             </style>
-            <select id="car-select" style="width: 100%; padding: 1rem; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); color: white; border-radius: 8px; margin-bottom: 2rem; font-family: sans-serif; font-size: 0.9rem; cursor: pointer; outline: none;">
+            
+            <div class="form-group">
+                <label class="form-label">Entry Type</label>
+                <select id="entry-type-select" class="form-input" style="cursor: pointer;" onchange="toggleTeamFields()">
+                    <option value="solo">Solo Driver</option>
+                    <option value="team">Team Entry</option>
+                </select>
+            </div>
+
+            <div id="team-fields" style="display: none;">
+                <div class="form-group">
+                    <label class="form-label">Team Name</label>
+                    <input type="text" id="team-name-input" class="form-input" placeholder="e.g. Apex Racing">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Co-Drivers (Optional)</label>
+                    <input type="text" id="co-drivers-input" class="form-input" placeholder="e.g. John Doe, Jane Smith">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Vehicle Selection</label>
+                <select id="car-select" class="form-input" style="cursor: pointer;">
                 <optgroup label="GT3">
                     <option value="Aston Martin Vantage GT3 Evo">Aston Martin Vantage GT3 Evo</option>
                     <option value="Acura NSX GT3 EVO">Acura NSX GT3 EVO</option>
@@ -467,11 +511,30 @@
             document.getElementById('car-select-modal').style.display = 'none';
         }
 
+        function toggleTeamFields() {
+            const type = document.getElementById('entry-type-select').value;
+            const teamFields = document.getElementById('team-fields');
+            if (type === 'team') {
+                teamFields.style.display = 'block';
+            } else {
+                teamFields.style.display = 'none';
+            }
+        }
+
         async function submitRegistration() {
             const user = firebase.auth().currentUser;
             if (!user) return;
 
             const selectedCar = document.getElementById('car-select').value;
+            const entryType = document.getElementById('entry-type-select').value;
+            const teamName = document.getElementById('team-name-input').value.trim();
+            const coDrivers = document.getElementById('co-drivers-input').value.trim();
+
+            if (entryType === 'team' && !teamName) {
+                alert("Please enter a Team Name.");
+                return;
+            }
+
             closeCarSelectModal();
 
             try {
@@ -480,14 +543,22 @@
                 const userData = userDoc.exists ? userDoc.data() : {};
                 const driverName = userData.driverName || user.displayName || 'Anonymous Driver';
 
-                await db.collection("leagues").doc(eventId).collection("registrations").doc(user.uid).set({
+                const regData = {
                     name: driverName,
                     avatar: user.photoURL || '',
                     status: 'provisional',
                     car: selectedCar,
+                    entryType: entryType,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                alert(`Entry Provisional! Welcome to the grid, ${driverName}. You must confirm 48h before the race.`);
+                };
+
+                if (entryType === 'team') {
+                    regData.teamName = teamName;
+                    regData.coDrivers = coDrivers;
+                }
+
+                await db.collection("leagues").doc(eventId).collection("registrations").doc(user.uid).set(regData);
+                alert(`Entry Provisional! Welcome to the grid, ${entryType === 'team' ? teamName : driverName}. You must confirm 48h before the race.`);
             } catch (e) {
                 alert("Error registering: " + e.message);
             }
@@ -563,9 +634,13 @@
                     <span class="roster-pos">${isMe ? '--' : 'P' + (i + 1)}</span>
                     <div style="display: flex; flex-direction: column;">
                         <span class="roster-name" style="${isMe ? 'color: var(--primary); font-weight: 800;' : ''}">
-                            ${isMe ? 'YOU (' + reg.name + ')' : reg.name}
+                            ${reg.entryType === 'team' ? (isMe ? 'YOU (' + reg.teamName + ')' : reg.teamName) : (isMe ? 'YOU (' + reg.name + ')' : reg.name)}
                         </span>
-                        ${reg.car ? `<span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">${reg.car}</span>` : ''}
+                        <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                            ${reg.entryType === 'team' ? `<span style="font-size: 0.65rem; color: #fff; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px;">TEAM</span>` : ''}
+                            ${reg.car ? `<span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">${reg.car}</span>` : ''}
+                        </div>
+                        ${reg.entryType === 'team' ? `<span style="font-size: 0.65rem; color: var(--text-muted); margin-top: 2px;">Manager: ${reg.name} ${reg.coDrivers ? '| Co: ' + reg.coDrivers : ''}</span>` : ''}
                     </div>
                     <span class="metallic-text ${reg.status === 'confirmed' ? 'gold-text' : 'silver-text'}" style="font-size: 0.6rem;">
                         ${reg.status.toUpperCase()}
