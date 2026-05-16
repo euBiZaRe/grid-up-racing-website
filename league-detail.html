@@ -253,7 +253,43 @@
         <section style="margin: 8rem 0; text-align: center;">
             <a href="league.html" class="btn btn-outline">Back to League Schedule</a>
         </section>
-    </main>    </main>
+    </main>
+
+    <!-- Car Selection Modal -->
+    <div id="car-select-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(8px);">
+        <div class="glass detail-card" style="max-width: 500px; width: 90%; padding: 2.5rem; text-align: left;">
+            <h3 style="margin-bottom: 1rem; color: var(--primary);">Select Your Car</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 2rem;">Choose your vehicle for this event. You cannot change this later without withdrawing.</p>
+            
+            <select id="car-select" style="width: 100%; padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: white; border-radius: 8px; margin-bottom: 2rem; font-family: sans-serif; font-size: 0.9rem;">
+                <optgroup label="GT3">
+                    <option value="Aston Martin Vantage GT3 Evo">Aston Martin Vantage GT3 Evo</option>
+                    <option value="Acura NSX GT3 EVO">Acura NSX GT3 EVO</option>
+                    <option value="BMW M4 GT3">BMW M4 GT3</option>
+                    <option value="Chevrolet Corvette Z06 GT3.R">Chevrolet Corvette Z06 GT3.R</option>
+                    <option value="Ferrari 296 GT3">Ferrari 296 GT3</option>
+                    <option value="Ford Mustang GT3">Ford Mustang GT3</option>
+                    <option value="Lamborghini Huracán GT3">Lamborghini Huracán GT3</option>
+                    <option value="McLaren 720S GT3 EVO">McLaren 720S GT3 EVO</option>
+                    <option value="Mercedes-AMG GT3">Mercedes-AMG GT3</option>
+                    <option value="Porsche 992 GT3 R">Porsche 992 GT3 R</option>
+                </optgroup>
+                <optgroup label="GT4">
+                    <option value="Aston Martin Vantage GT4">Aston Martin Vantage GT4</option>
+                    <option value="BMW M4 GT4">BMW M4 GT4</option>
+                    <option value="Ford Mustang GT4">Ford Mustang GT4</option>
+                    <option value="McLaren 570S GT4">McLaren 570S GT4</option>
+                    <option value="Mercedes-AMG GT4">Mercedes-AMG GT4</option>
+                    <option value="Porsche 718 Cayman GT4">Porsche 718 Cayman GT4</option>
+                </optgroup>
+            </select>
+            
+            <div style="display: flex; gap: 1rem;">
+                <button onclick="submitRegistration()" class="btn" style="flex: 1; box-shadow: 0 0 20px var(--primary-glow);">Confirm</button>
+                <button onclick="closeCarSelectModal()" class="btn btn-outline" style="flex: 1;">Cancel</button>
+            </div>
+        </div>
+    </div>
 
     <footer>
         <div class="container">
@@ -408,9 +444,22 @@
             }
         }
 
-        async function handleRegistration() {
+        function handleRegistration() {
             const user = firebase.auth().currentUser;
             if (!user) { window.location.href = 'login.html'; return; }
+            document.getElementById('car-select-modal').style.display = 'flex';
+        }
+
+        function closeCarSelectModal() {
+            document.getElementById('car-select-modal').style.display = 'none';
+        }
+
+        async function submitRegistration() {
+            const user = firebase.auth().currentUser;
+            if (!user) return;
+
+            const selectedCar = document.getElementById('car-select').value;
+            closeCarSelectModal();
 
             try {
                 // Fetch driver's real name from their profile
@@ -422,6 +471,7 @@
                     name: driverName,
                     avatar: user.photoURL || '',
                     status: 'provisional',
+                    car: selectedCar,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 alert(`Entry Provisional! Welcome to the grid, ${driverName}. You must confirm 48h before the race.`);
@@ -498,9 +548,12 @@
 
                 entry.innerHTML = `
                     <span class="roster-pos">${isMe ? '--' : 'P' + (i + 1)}</span>
-                    <span class="roster-name" style="${isMe ? 'color: var(--primary); font-weight: 800;' : ''}">
-                        ${isMe ? 'YOU (' + reg.name + ')' : reg.name}
-                    </span>
+                    <div style="display: flex; flex-direction: column;">
+                        <span class="roster-name" style="${isMe ? 'color: var(--primary); font-weight: 800;' : ''}">
+                            ${isMe ? 'YOU (' + reg.name + ')' : reg.name}
+                        </span>
+                        ${reg.car ? `<span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">${reg.car}</span>` : ''}
+                    </div>
                     <span class="metallic-text ${reg.status === 'confirmed' ? 'gold-text' : 'silver-text'}" style="font-size: 0.6rem;">
                         ${reg.status.toUpperCase()}
                     </span>
