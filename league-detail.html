@@ -192,15 +192,15 @@
                 <div class="schedule-list">
                     <div class="schedule-item">
                         <span style="color: var(--text-muted);">Practice Session</span>
-                        <span style="font-weight: 700;">3:00 PM EST</span>
+                        <span id="time-practice" style="font-weight: 700;">--</span>
                     </div>
                     <div class="schedule-item">
                         <span style="color: var(--text-muted);">Qualifying</span>
-                        <span style="font-weight: 700;">3:45 PM EST</span>
+                        <span id="time-qualifying" style="font-weight: 700;">--</span>
                     </div>
                     <div class="schedule-item">
                         <span style="color: var(--text-muted);">Green Flag</span>
-                        <span style="font-weight: 700;">4:00 PM EST</span>
+                        <span id="time-race" style="font-weight: 700;">--</span>
                     </div>
                 </div>
 
@@ -518,8 +518,20 @@
                 const eventDateStr = data.startDate || data.date;
                 if (eventDateStr) {
                     const dateObj = new Date(eventDateStr);
-                    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'America/New_York', timeZoneName: 'short' };
+                    // Automatically uses the user's local timezone
+                    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZoneName: 'short' };
                     document.getElementById('event-date-display').textContent = dateObj.toLocaleString('en-US', options).toUpperCase();
+                    
+                    // The eventDate is the Green Flag. Practice is 60 mins before, Qualifying is 15 mins before.
+                    const raceDate = new Date(dateObj);
+                    const qualiDate = new Date(raceDate.getTime() - (15 * 60000));
+                    const practiceDate = new Date(raceDate.getTime() - (60 * 60000));
+                    
+                    const timeOptions = { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' };
+                    document.getElementById('time-practice').textContent = practiceDate.toLocaleTimeString('en-US', timeOptions);
+                    document.getElementById('time-qualifying').textContent = qualiDate.toLocaleTimeString('en-US', timeOptions);
+                    document.getElementById('time-race').textContent = raceDate.toLocaleTimeString('en-US', timeOptions);
+
                     startDeadlineTimer(eventDateStr);
                 } else {
                     document.getElementById('event-date-display').textContent = '-- DATE TBD --';
