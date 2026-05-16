@@ -205,6 +205,25 @@
             </div>
         </div>
 
+        <!-- DYNAMIC ENTRY LIST SECTION -->
+        <section id="entry-list-section" style="margin: 8rem 0; display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem; flex-wrap: wrap; gap: 1.5rem;">
+                <div>
+                    <h2 style="color: var(--primary); margin-bottom: 0.5rem;">Official Entry List</h2>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Track your position on the grid and confirmation status.</p>
+                </div>
+                <div class="roster-tabs">
+                    <button class="tab-btn" onclick="switchTab('confirmed')" id="tab-confirmed">Confirmed (<span id="count-confirmed">0</span>)</button>
+                    <button class="tab-btn active" onclick="switchTab('provisional')" id="tab-provisional">Provisional (<span id="count-provisional">0</span>)</button>
+                    <button class="tab-btn" onclick="switchTab('reserve')" id="tab-reserve">Reserve (<span id="count-reserve">0</span>)</button>
+                </div>
+            </div>
+
+            <div id="roster-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem;">
+                <!-- Dynamically populated -->
+            </div>
+        </section>
+
         <section style="margin: 8rem 0; text-align: center;">
             <a href="league.html" class="btn btn-outline">Back to League Schedule</a>
         </section>
@@ -223,16 +242,24 @@
     <script src="js/auth.js"></script>
     <script>
         let currentStatus = 'unregistered';
+        let eventId = '';
+        let currentRosterTab = 'provisional';
 
         async function loadDetail() {
             const params = new URLSearchParams(window.location.search);
-            const id = params.get('id');
-            if (!id) { window.location.href = 'league.html'; return; }
+            eventId = params.get('id');
+            if (!eventId) { window.location.href = 'league.html'; return; }
+
+            // Load saved status from localStorage
+            const savedStatus = localStorage.getItem(`league_status_${eventId}`);
+            if (savedStatus) {
+                currentStatus = savedStatus;
+            }
 
             if (typeof db === 'undefined') { setTimeout(loadDetail, 500); return; }
 
             try {
-                const doc = await db.collection("leagues").doc(id).get();
+                const doc = await db.collection("leagues").doc(eventId).get();
                 if (!doc.exists) { window.location.href = 'league.html'; return; }
 
                 const data = doc.data();
@@ -245,6 +272,7 @@
                     document.getElementById('event-hero').style.backgroundImage = `url('${data.bannerUrl}')`;
                 }
 
+                updateUI();
                 startDeadlineTimer();
             } catch (e) {
                 console.error("Error loading detail:", e);
@@ -256,20 +284,32 @@
             document.getElementById('status-provisional').style.display = currentStatus === 'provisional' ? 'block' : 'none';
             document.getElementById('status-confirmed').style.display = currentStatus === 'confirmed' ? 'block' : 'none';
             
-            // Scroll to status panel to show changes
+            // Show entry list if registered
+            const entrySection = document.getElementById('entry-list-section');
             if (currentStatus !== 'unregistered') {
-                document.getElementById('driver-status-panel').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                entrySection.style.display = 'block';
+                renderRoster();
+            } else {
+                entrySection.style.display = 'none';
+            }
+
+            // Save status to localStorage
+            if (eventId) {
+                localStorage.setItem(`league_status_${eventId}`, currentStatus);
             }
         }
 
         function handleRegistration() {
             currentStatus = 'provisional';
+            currentRosterTab = 'provisional';
             updateUI();
             alert("Entry Provisional! You must confirm your attendance 48 hours before the race to secure your grid slot.");
+            document.getElementById('entry-list-section').scrollIntoView({ behavior: 'smooth' });
         }
 
         function handleConfirm() {
             currentStatus = 'confirmed';
+            currentRosterTab = 'confirmed';
             updateUI();
         }
 
@@ -277,7 +317,68 @@
             if (confirm("Are you sure you want to withdraw? This will free up your slot for a reserve driver.")) {
                 currentStatus = 'unregistered';
                 updateUI();
+                localStorage.removeItem(`league_status_${eventId}`);
             }
+        }
+
+        function switchTab(tab) {
+            currentRosterTab = tab;
+            renderRoster();
+        }
+
+        function renderRoster() {
+            const list = document.getElementById('roster-list');
+            const tabs = ['confirmed', 'provisional', 'reserve'];
+            
+            // Update counts and active states
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                const countEl = document.getElementById(`count-${t}`);
+                btn.classList.toggle('active', currentRosterTab === t);
+                
+                // Update counts (Mocking some other drivers for realism)
+                let count = t === 'confirmed' ? 22 : (t === 'provisional' ? 5 : 3);
+                // If user is in this status, add them if not already counted? 
+                // Let's just make it simple: if user is this status, show them.
+                if (currentStatus === t) {
+                    countEl.textContent = count + 1;
+                } else {
+                    countEl.textContent = count;
+                }
+            });
+
+            list.innerHTML = '';
+            
+            // Mock drivers
+            let mockDrivers = [];
+            if (currentRosterTab === 'confirmed') mockDrivers = ['ApexHunter', 'IAmBiZaRe', 'TurboTodd', 'Midnight_Grip', 'Oversteer_King', 'DraftMaster', 'PodiumPioneer'];
+            if (currentRosterTab === 'provisional') mockDrivers = ['SimRacer22', 'ApexSeeker', 'GripLord'];
+            if (currentRosterTab === 'reserve') mockDrivers = ['BackupBandit', 'WaitingWarrior'];
+
+            // Add user if status matches tab
+            if (currentStatus === currentRosterTab) {
+                const entry = document.createElement('div');
+                entry.className = 'roster-entry';
+                entry.style.borderColor = 'var(--primary)';
+                entry.style.background = 'rgba(0, 207, 255, 0.05)';
+                entry.innerHTML = `
+                    <span class="roster-pos">--</span>
+                    <span class="roster-name" style="color: var(--primary); font-weight: 800;">YOU (PLAYER)</span>
+                    <span class="metallic-text ${currentStatus === 'confirmed' ? 'gold-text' : 'silver-text'}" style="font-size: 0.6rem;">${currentStatus.toUpperCase()}</span>
+                `;
+                list.appendChild(entry);
+            }
+
+            mockDrivers.forEach((name, i) => {
+                const entry = document.createElement('div');
+                entry.className = 'roster-entry';
+                entry.innerHTML = `
+                    <span class="roster-pos">P${i + 1}</span>
+                    <span class="roster-name">${name}</span>
+                    <span class="metallic-text ${currentRosterTab === 'confirmed' ? 'gold-text' : 'bronze-text'}" style="font-size: 0.6rem;">${currentRosterTab === 'confirmed' ? 'GOLD' : 'BRONZE'}</span>
+                `;
+                list.appendChild(entry);
+            });
         }
 
         function startDeadlineTimer() {
