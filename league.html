@@ -227,6 +227,29 @@
                         firstBannerUrl = posterUrl;
                     }
 
+                    // Parse dynamic times for localization
+                    let scheduleText = data.schedule || 'Weekly // Wednesdays';
+                    let descText = data.description || 'Join our premier racing series with professional stewarding and broadcasting.';
+                    
+                    const eventDateStr = data.startDate || data.date;
+                    if (eventDateStr) {
+                        const raceDate = new Date(eventDateStr);
+                        const practiceDate = new Date(raceDate.getTime() - (60 * 60000)); // Practice is 1 hour before
+                        
+                        const dateOpts = { month: 'long', day: 'numeric' };
+                        const timeOpts = { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' };
+                        
+                        const dateStr = raceDate.toLocaleString('en-US', dateOpts).toUpperCase();
+                        const raceTimeStr = raceDate.toLocaleTimeString('en-US', timeOpts).toUpperCase();
+                        const practiceTimeStr = practiceDate.toLocaleTimeString('en-US', timeOpts).toUpperCase();
+                        
+                        scheduleText = `${dateStr} // ${raceTimeStr}`;
+                        
+                        // Dynamically override any hardcoded EST text in the description
+                        descText = descText.replace(/4:00\s*(?:PM|AM)?\s*(?:EST|EDT)/gi, raceTimeStr)
+                                           .replace(/3:00\s*(?:PM|AM)?\s*(?:EST|EDT)/gi, practiceTimeStr);
+                    }
+
                     card.innerHTML = `
                         ${bannerHtml}
                         <div class="league-badge">${data.carClass || 'GT3'}</div>
@@ -236,10 +259,10 @@
                                 ${isOpen ? 'Registration Open' : 'Season in Progress'}
                             </div>
                             <h3 style="font-size: 1.8rem; margin: 1rem 0 0.5rem; font-weight: 800;">${data.name}</h3>
-                            <p style="color: var(--primary); font-family: var(--font-heading); font-size: 0.8rem; letter-spacing: 2px;">${data.schedule || 'Weekly // Wednesdays'}</p>
+                            <p style="color: var(--primary); font-family: var(--font-heading); font-size: 0.8rem; letter-spacing: 2px;">${scheduleText}</p>
                         </div>
                         <div style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; margin: 1rem 0;">
-                            ${data.description || 'Join our premier racing series with professional stewarding and broadcasting.'}
+                            ${descText}
                         </div>
                         <a href="league-detail.html?id=${doc.id}" class="btn" style="width: 100%; text-align: center; margin-top: auto; ${!isOpen ? 'opacity: 0.5; pointer-events: none;' : ''}">
                             ${isOpen ? 'VIEW EVENT DETAILS' : 'JOIN WAITING LIST'}
