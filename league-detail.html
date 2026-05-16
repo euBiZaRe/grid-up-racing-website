@@ -134,17 +134,25 @@
                     <div style="background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); padding: 0.5rem 1.25rem; border-radius: 50px; display: flex; align-items: center; gap: 8px; backdrop-filter: blur(4px);">
                         <span style="font-size: 1.2rem;">🏁</span>
                         <span id="stat-total" style="font-weight: 800; color: #fff;">0</span>
-                        <span style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Total</span>
+                        <span style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Total Entries</span>
                     </div>
                     <div style="background: rgba(0,0,0,0.6); border: 1px solid rgba(0,207,255,0.2); padding: 0.5rem 1.25rem; border-radius: 50px; display: flex; align-items: center; gap: 8px; backdrop-filter: blur(4px);">
                         <span style="font-size: 1.2rem;">🏎️</span>
                         <span id="stat-solo" style="font-weight: 800; color: #00cfff;">0</span>
-                        <span style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Solo</span>
+                        <span style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Solo Entries</span>
                     </div>
                     <div style="background: rgba(0,0,0,0.6); border: 1px solid rgba(0,255,136,0.2); padding: 0.5rem 1.25rem; border-radius: 50px; display: flex; align-items: center; gap: 8px; backdrop-filter: blur(4px);">
                         <span style="font-size: 1.2rem;">👥</span>
                         <span id="stat-team" style="font-weight: 800; color: #00ff88;">0</span>
-                        <span style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Teams</span>
+                        <span style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Team Entries</span>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.6); border: 1px solid #ff3c3c33; padding: 0.5rem 1.25rem; border-radius: 50px; display: flex; align-items: center; gap: 8px; backdrop-filter: blur(4px);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff3c3c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 2px;">
+                            <path d="M12 2a9 9 0 0 0-9 9v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a9 9 0 0 0-9-9Z"></path>
+                            <rect x="5" y="10" width="14" height="4" rx="1" fill="#ff3c3c" stroke="none"></rect>
+                        </svg>
+                        <span id="stat-drivers" style="font-weight: 800; color: #ff3c3c;">0</span>
+                        <span style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Total Drivers</span>
                     </div>
                 </div>
         </div>
@@ -578,13 +586,29 @@
             const teams = registrations.filter(r => r.entryType === 'team').length;
             const solo = total - teams;
             
+            let totalDrivers = 0;
+            registrations.forEach(r => {
+                if (r.entryType === 'team') {
+                    totalDrivers += 1; // The registering manager
+                    if (r.coDrivers) {
+                        // Split by comma, filter out empty strings, and count
+                        const extras = r.coDrivers.split(',').filter(name => name.trim() !== '').length;
+                        totalDrivers += extras;
+                    }
+                } else {
+                    totalDrivers += 1; // Solo driver
+                }
+            });
+            
             const elTotal = document.getElementById('stat-total');
             const elSolo = document.getElementById('stat-solo');
             const elTeam = document.getElementById('stat-team');
+            const elDrivers = document.getElementById('stat-drivers');
             
             if (elTotal) elTotal.textContent = total;
             if (elSolo) elSolo.textContent = solo;
             if (elTeam) elTeam.textContent = teams;
+            if (elDrivers) elDrivers.textContent = totalDrivers;
         }
 
         // Re-check status when auth changes
