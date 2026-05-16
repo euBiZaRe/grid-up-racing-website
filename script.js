@@ -1,4 +1,37 @@
 // Global Utilities
+// App-like URL Tooltip Suppressor (hides the native bottom-left URL preview)
+document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('mouseover', function(e) {
+        const a = e.target.closest('a');
+        if (a && a.href && !a.href.startsWith('javascript:')) {
+            a.setAttribute('data-href', a.href);
+            a.removeAttribute('href');
+        }
+    });
+
+    document.addEventListener('mouseout', function(e) {
+        const a = e.target.closest('a[data-href]');
+        if (a) {
+            a.href = a.getAttribute('data-href');
+            a.removeAttribute('data-href');
+        }
+    });
+
+    document.addEventListener('click', function(e) {
+        const a = e.target.closest('a[data-href]');
+        if (a) {
+            e.preventDefault();
+            const url = a.getAttribute('data-href');
+            const target = a.getAttribute('target');
+            if (target === '_blank') {
+                window.open(url, '_blank');
+            } else {
+                window.location.href = url;
+            }
+        }
+    });
+});
+
 function getSkeletonHTML(type = 'card') {
     const shimmer = `<div class="glass loading-shimmer" style="min-height: 200px; border-radius: 20px;"></div>`;
     const listShimmer = `<div class="glass loading-shimmer" style="height: 120px; width: 100%; border-radius: 12px; margin-bottom: 1.5rem;"></div>`;
