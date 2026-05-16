@@ -374,6 +374,10 @@
             if (!user) {
                 unregisteredEl.innerHTML = `
                     <div class="status-indicator status-not-registered">Account Required</div>
+                    <div style="text-align: center; margin-bottom: 1.5rem;">
+                        <div style="font-size: 0.7rem; color: #00cfff; text-transform: uppercase; font-weight: 800;">Registration Closes In</div>
+                        <div style="font-size: 1.2rem; font-weight: 800;" class="reg-timer">--</div>
+                    </div>
                     <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.5rem; text-align: center;">You must be logged in to reserve a grid slot.</p>
                     <a href="login.html" class="btn" style="width: 100%; text-align: center;">LOGIN TO REGISTER</a>
                 `;
@@ -384,7 +388,11 @@
                 // Reset unregistered UI for logged in user
                 unregisteredEl.innerHTML = `
                     <div class="status-indicator status-not-registered">Not Registered</div>
-                    <button onclick="handleRegistration()" class="btn" style="width: 100%; box-shadow: 0 0 30px var(--primary-glow);">RESERVE GRID SLOT</button>
+                    <div style="text-align: center; margin-bottom: 1.5rem;">
+                        <div style="font-size: 0.7rem; color: #00cfff; text-transform: uppercase; font-weight: 800;">Registration Closes In</div>
+                        <div style="font-size: 1.2rem; font-weight: 800;" class="reg-timer">--</div>
+                    </div>
+                    <button onclick="handleRegistration()" id="reg-btn" class="btn" style="width: 100%; box-shadow: 0 0 30px var(--primary-glow);">RESERVE GRID SLOT</button>
                 `;
                 document.getElementById('status-unregistered').style.display = currentStatus === 'unregistered' ? 'block' : 'none';
                 document.getElementById('status-provisional').style.display = currentStatus === 'provisional' ? 'block' : 'none';
@@ -503,32 +511,53 @@
 
         function startDeadlineTimer(eventDateStr) {
             const deadlineEl = document.getElementById('confirmation-deadline');
-            if (!deadlineEl) return;
             
-            // Cutoff is 48 hours before race
             const raceDate = new Date(eventDateStr);
-            const cutoffDate = new Date(raceDate.getTime() - (48 * 60 * 60 * 1000));
+            const confCutoff = new Date(raceDate.getTime() - (48 * 60 * 60 * 1000)); // 48h before race
+            const regCutoff = new Date(raceDate.getTime() - (12 * 60 * 60 * 1000));  // 12h before race
 
-            function updateTimer() {
-                const now = new Date();
-                const diff = cutoffDate - now;
-
-                if (diff <= 0) {
-                    deadlineEl.textContent = "DEADLINE PASSED";
-                    deadlineEl.style.color = "#ff3c3c";
-                    return;
-                }
-
+            function formatDiff(diff) {
                 const d = Math.floor(diff / (1000 * 60 * 60 * 24));
                 const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
                 const s = Math.floor((diff % (1000 * 60)) / 1000);
-
                 let timeStr = "";
                 if (d > 0) timeStr += `${d}d `;
-                timeStr += `${h}h ${m}m ${s}s`;
-                
-                deadlineEl.textContent = timeStr;
+                return timeStr + `${h}h ${m}m ${s}s`;
+            }
+
+            function updateTimer() {
+                const now = new Date();
+
+                // Update Confirmation Timer
+                if (deadlineEl) {
+                    const diffConf = confCutoff - now;
+                    if (diffConf <= 0) {
+                        deadlineEl.textContent = "DEADLINE PASSED";
+                        deadlineEl.style.color = "#ff3c3c";
+                    } else {
+                        deadlineEl.textContent = formatDiff(diffConf);
+                    }
+                }
+
+                // Update Registration Timer
+                const regEls = document.querySelectorAll('.reg-timer');
+                const diffReg = regCutoff - now;
+                regEls.forEach(el => {
+                    if (diffReg <= 0) {
+                        el.textContent = "CLOSED";
+                        el.style.color = "#ff3c3c";
+                        const btn = document.getElementById('reg-btn');
+                        if (btn) {
+                            btn.disabled = true;
+                            btn.style.opacity = 0.5;
+                            btn.style.pointerEvents = 'none';
+                            btn.textContent = "REGISTRATION CLOSED";
+                        }
+                    } else {
+                        el.textContent = formatDiff(diffReg);
+                    }
+                });
             }
 
             updateTimer();
