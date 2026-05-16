@@ -124,14 +124,39 @@
         </div>
     </nav>
 
-    <header id="event-hero" class="detail-hero" style="background-image: url('assets/bg-banner.png');">
+    <header id="event-hero" class="detail-hero" style="background-image: url('assets/bg-banner.png'); background-size: cover; background-position: center top;">
         <div class="container" style="position: relative; z-index: 2;">
-            <div id="event-tag" style="color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 4px; margin-bottom: 1rem;">League Event</div>
-                <h1 id="event-name" class="glow-text" style="font-size: clamp(2rem, 8vw, 5rem); font-weight: 900; line-height: 1.1; margin-bottom: 1rem;">LOADING...</h1>
-                <p id="event-track-sub" style="font-family: var(--font-heading); font-size: 1.1rem; letter-spacing: 4px; color: var(--text-main); opacity: 0.8; margin-bottom: 1rem;">CHALLENGE ROUND</p>
-                <div id="event-date-display" style="font-family: var(--font-heading); font-size: 0.9rem; letter-spacing: 2px; color: var(--primary); font-weight: 800; border-top: 1px solid rgba(0,207,255,0.2); padding-top: 1rem; text-transform: uppercase;">-- DATE TBD --</div>
+            <div id="event-tag" style="color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 4px; margin-bottom: 1rem; opacity: 0; transition: opacity 0.4s ease;">League Event</div>
+                <h1 id="event-name" class="glow-text" style="font-size: clamp(2rem, 8vw, 5rem); font-weight: 900; line-height: 1.1; margin-bottom: 1rem; opacity: 0; transition: opacity 0.4s ease 0.1s;">&nbsp;</h1>
+                <p id="event-track-sub" style="font-family: var(--font-heading); font-size: 1.1rem; letter-spacing: 4px; color: var(--text-main); opacity: 0; margin-bottom: 1rem; transition: opacity 0.4s ease 0.15s;">&nbsp;</p>
+                <div id="event-date-display" style="font-family: var(--font-heading); font-size: 0.9rem; letter-spacing: 2px; color: var(--primary); font-weight: 800; border-top: 1px solid rgba(0,207,255,0.2); padding-top: 1rem; text-transform: uppercase; opacity: 0; transition: opacity 0.4s ease 0.2s;">&nbsp;</div>
         </div>
     </header>
+
+    <!-- Apply poster immediately from URL so hero never shows the default bg-banner -->
+    <script>
+    (function() {
+        const LEAGUE_POSTERS = {
+            'gtc-virginia-120':   'assets/league-posters/Virginia.png',
+            'gtc-glen-24':        'assets/league-posters/The Glen.png',
+            'gtc-spa-3h':         'assets/league-posters/SPA.png',
+            'gtc-elkhart-24':     'assets/league-posters/Elkhart Lake.png',
+            'gtc-barcelona-120':  'assets/league-posters/Barcelona.png',
+            'gtc-suzuka-24':      'assets/league-posters/Suzuka.png',
+            'gtc-atlanta-120':    'assets/league-posters/Atlanta.png',
+            'gtc-indy-3h':        'assets/league-posters/Indy.png',
+            'gtc-sonoma-120':     'assets/league-posters/Sonoma Valley.png',
+        };
+        const id = new URLSearchParams(window.location.search).get('id');
+        const poster = id && LEAGUE_POSTERS[id];
+        if (poster) {
+            const hero = document.getElementById('event-hero');
+            if (hero) {
+                hero.style.backgroundImage = `linear-gradient(to bottom, rgba(10,12,16,0.45), rgba(10,12,16,0.7)), url('${poster}')`;
+            }
+        }
+    })();
+    </script>
 
     <main class="container">
         <div class="info-grid">
@@ -262,18 +287,24 @@
                 document.title = `${data.name} | GRiD UP League`;
                 document.getElementById('event-name').textContent = (data.name || 'Event').toUpperCase();
                 document.getElementById('event-track-sub').textContent = (data.track || 'Circuit Data').toUpperCase();
-                
+
                 // Format and display the event date
                 const eventDateStr = data.startDate || data.date;
                 if (eventDateStr) {
                     const dateObj = new Date(eventDateStr);
-                    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-                    document.getElementById('event-date-display').textContent = dateObj.toLocaleDateString('en-US', options).toUpperCase();
+                    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'America/New_York', timeZoneName: 'short' };
+                    document.getElementById('event-date-display').textContent = dateObj.toLocaleString('en-US', options).toUpperCase();
                     startDeadlineTimer(eventDateStr);
                 } else {
-                    document.getElementById('event-date-display').textContent = "-- DATE TBD --";
-                    document.getElementById('confirmation-deadline').textContent = "TBD";
+                    document.getElementById('event-date-display').textContent = '-- DATE TBD --';
+                    document.getElementById('confirmation-deadline').textContent = 'TBD';
                 }
+
+                // Fade in all hero text now that everything is populated
+                ['event-tag', 'event-name', 'event-track-sub', 'event-date-display'].forEach(elId => {
+                    const el = document.getElementById(elId);
+                    if (el) el.style.opacity = '1';
+                });
                 
                 // Local poster map — keyed by event ID
                 const LEAGUE_POSTERS = {
