@@ -268,7 +268,14 @@
 
                 // Setup Real-time Listener for Registrations
                 setupRegistrationListener();
-                startDeadlineTimer();
+                
+                // Start timer based on real event date
+                const eventDate = data.startDate || data.date;
+                if (eventDate) {
+                    startDeadlineTimer(eventDate);
+                } else {
+                    document.getElementById('confirmation-deadline').textContent = "TBD";
+                }
             } catch (e) {
                 console.error("Error loading detail:", e);
             }
@@ -438,20 +445,38 @@
             });
         }
 
-        function startDeadlineTimer() {
+        function startDeadlineTimer(eventDateStr) {
             const deadlineEl = document.getElementById('confirmation-deadline');
             if (!deadlineEl) return;
             
-            let hours = 31;
-            let minutes = 22;
-            let seconds = 59;
+            // Cutoff is 48 hours before race
+            const raceDate = new Date(eventDateStr);
+            const cutoffDate = new Date(raceDate.getTime() - (48 * 60 * 60 * 1000));
 
-            setInterval(() => {
-                seconds--;
-                if (seconds < 0) { seconds = 59; minutes--; }
-                if (minutes < 0) { minutes = 59; hours--; }
-                deadlineEl.textContent = `${hours}h ${minutes}m ${seconds}s`;
-            }, 1000);
+            function updateTimer() {
+                const now = new Date();
+                const diff = cutoffDate - now;
+
+                if (diff <= 0) {
+                    deadlineEl.textContent = "DEADLINE PASSED";
+                    deadlineEl.style.color = "#ff3c3c";
+                    return;
+                }
+
+                const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+                let timeStr = "";
+                if (d > 0) timeStr += `${d}d `;
+                timeStr += `${h}h ${m}m ${s}s`;
+                
+                deadlineEl.textContent = timeStr;
+            }
+
+            updateTimer();
+            setInterval(updateTimer, 1000);
         }
 
         document.addEventListener('DOMContentLoaded', loadDetail);
