@@ -91,14 +91,18 @@
         </div>
     </nav>
 
-    <header class="league-hero">
+    <header class="league-hero" id="featured-hero">
         <div class="container">
-            <p style="color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 4px; margin-bottom: 1rem;">Official Series</p>
-            <h1 class="glow-text" style="font-size: clamp(3rem, 10vw, 6rem); font-weight: 900; line-height: 1;">THE LEAGUE</h1>
-            <p style="max-width: 600px; margin: 2rem auto; color: var(--text-muted); font-size: 1.1rem;">Elite competition. Professional stewarding. Fair racing for everyone. Join the GRiD UP racing ecosystem.</p>
-            <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 3rem;">
-                <a href="#active-leagues" class="btn">View Seasons</a>
-                <a href="https://discord.gg/gridup" class="btn btn-outline">Discord Entry</a>
+            <div style="display: flex; flex-direction: column; align-items: center; max-width: 900px; margin: 0 auto;">
+                <div style="background: rgba(0, 207, 255, 0.1); border: 1px solid var(--primary); padding: 0.5rem 1.5rem; border-radius: 50px; font-size: 0.75rem; font-weight: 800; letter-spacing: 3px; color: var(--primary); margin-bottom: 2rem; text-transform: uppercase;">Next Major Event</div>
+                
+                <h1 id="featured-name" class="glow-text" style="font-size: clamp(2.5rem, 8vw, 5.5rem); font-weight: 900; line-height: 1.1; margin-bottom: 1rem;">GT CHALLENGE: VIRGINIA 120</h1>
+                <p id="featured-track" style="font-family: var(--font-heading); font-size: 1.25rem; letter-spacing: 4px; color: var(--text-main); opacity: 0.8; margin-bottom: 3rem;">VIRGINIA INTERNATIONAL RACEWAY</p>
+                
+                <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center; margin-top: 2rem;">
+                    <a href="league-detail.html?id=gtc-virginia-120" class="btn" style="padding: 1.2rem 3rem; font-size: 1rem; box-shadow: 0 0 40px var(--primary-glow);">VIEW EVENT DETAILS</a>
+                    <a href="https://discord.gg/gridup" class="btn btn-outline" style="padding: 1.2rem 3rem; font-size: 1rem;">JOIN DISCORD</a>
+                </div>
             </div>
         </div>
     </header>
@@ -106,16 +110,16 @@
     <main class="container section" id="active-leagues">
         <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 4rem;">
             <div>
-                <h2 style="color: var(--primary); margin-bottom: 0.5rem;">Active Seasons</h2>
-                <p style="color: var(--text-muted);">Current and upcoming leagues open for registration.</p>
+                <h2 style="color: var(--primary); margin-bottom: 0.5rem;">Season Calendar</h2>
+                <p style="color: var(--text-muted);">Official entry is now open for the following championship rounds.</p>
             </div>
         </div>
 
-        <div id="league-list" class="grid" style="grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 2rem;">
+        <div id="league-list" class="grid" style="grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 2.5rem;">
             <!-- Loading State -->
-            <div class="glass loading-shimmer" style="height: 400px; border-radius: 24px;"></div>
-            <div class="glass loading-shimmer" style="height: 400px; border-radius: 24px;"></div>
-            <div class="glass loading-shimmer" style="height: 400px; border-radius: 24px;"></div>
+            <div class="glass loading-shimmer" style="height: 380px; border-radius: 24px;"></div>
+            <div class="glass loading-shimmer" style="height: 380px; border-radius: 24px;"></div>
+            <div class="glass loading-shimmer" style="height: 380px; border-radius: 24px;"></div>
         </div>
 
         <section style="margin-top: 8rem; text-align: center;" class="reveal">
@@ -193,24 +197,13 @@
                             <h3 style="font-size: 1.8rem; margin: 1rem 0 0.5rem; font-weight: 800;">${data.name}</h3>
                             <p style="color: var(--primary); font-family: var(--font-heading); font-size: 0.8rem; letter-spacing: 2px;">${data.schedule || 'Weekly // Wednesdays'}</p>
                         </div>
-                        <div style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6;">
+                        
+                        <div style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; margin: 1rem 0;">
                             ${data.description || 'Join our premier racing series with professional stewarding and broadcasting.'}
                         </div>
-                        <div style="font-size: 0.75rem; color: #ff3c3c; font-weight: 700; letter-spacing: 1px; display: flex; align-items: center; gap: 6px;">
-                            <span style="font-size: 1rem;">📺</span> LIVE ON MOTORMOUTH BROADCASTING
-                        </div>
-                        <div style="display: flex; gap: 1.5rem; margin-top: auto; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05);">
-                            <div>
-                                <div style="font-size: 0.6rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px;">Starts</div>
-                                <div style="font-weight: 700;">${data.dateDisplay || 'TBA'}</div>
-                            </div>
-                            <div>
-                                <div style="font-size: 0.6rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px;">Format</div>
-                                <div style="font-weight: 700;">${data.format || 'Sprint'}</div>
-                            </div>
-                        </div>
-                        <a href="league-detail.html?id=${doc.id}" class="btn" style="width: 100%; text-align: center; ${!isOpen ? 'opacity: 0.5; pointer-events: none;' : ''}">
-                            ${isOpen ? 'View Event Details' : 'Join Waiting List'}
+
+                        <a href="league-detail.html?id=${doc.id}" class="btn" style="width: 100%; text-align: center; margin-top: auto; ${!isOpen ? 'opacity: 0.5; pointer-events: none;' : ''}">
+                            ${isOpen ? 'VIEW EVENT DETAILS' : 'JOIN WAITING LIST'}
                         </a>
                     `;
                     list.appendChild(card);

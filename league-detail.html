@@ -59,6 +59,44 @@
         @media (max-width: 992px) {
             .info-grid { grid-template-columns: 1fr; margin-top: 2rem; }
         }
+
+        /* Roster Tabs Styling */
+        .roster-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            color: var(--text-muted);
+            padding: 0.6rem 1.25rem;
+            border-radius: 8px;
+            font-family: var(--font-heading);
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: var(--transition);
+            outline: none;
+        }
+
+        .tab-btn:hover {
+            background: rgba(0, 207, 255, 0.1);
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .tab-btn.active {
+            background: var(--primary-gradient);
+            color: #000;
+            border: 1px solid var(--primary);
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
     </style>
 </head>
 <body class="league-detail-page">
@@ -98,14 +136,7 @@
         <div class="info-grid">
             <div class="detail-card">
                 <h2 style="margin-bottom: 2rem; display: flex; align-items: center; gap: 15px;">
-                    <span style="color: var(--primary);">01</span> Event Overview
-                </h2>
-                <p id="event-description" style="font-size: 1.1rem; line-height: 1.8; color: var(--text-muted); margin-bottom: 3rem;">
-                    The GRiD UP League presents another high-stakes multiclass endurance event. Drivers will battle through intense strategy and heavy traffic to claim their place on the podium.
-                </p>
-
-                <h2 style="margin-bottom: 2rem; display: flex; align-items: center; gap: 15px;">
-                    <span style="color: var(--primary);">02</span> Full Schedule (EST)
+                    <span style="color: var(--primary);">01</span> Event Schedule
                 </h2>
                 <div class="schedule-list">
                     <div class="schedule-item">
@@ -132,23 +163,44 @@
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 2rem;">
-                <div class="detail-card" style="padding: 2rem;">
-                    <h4 style="color: var(--primary); margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 2px;">Entry Details</h4>
-                    <div style="margin-bottom: 1.5rem;">
-                        <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Car Classes</div>
-                        <div id="event-classes" style="font-weight: 700; font-size: 1.2rem;">GT3 // GT4</div>
+                <!-- DRIVER STATUS PANEL -->
+                <div class="driver-status-card" id="driver-status-panel">
+                    <div style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 1rem;">Your Driver Status</div>
+                    
+                    <!-- State 1: Not Registered (Default) -->
+                    <div id="status-unregistered">
+                        <div class="status-indicator status-not-registered">Not Registered</div>
+                        <button onclick="handleRegistration()" class="btn" style="width: 100%; box-shadow: 0 0 30px var(--primary-glow);">RESERVE GRID SLOT</button>
                     </div>
-                    <div style="margin-bottom: 2rem;">
-                        <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Format</div>
-                        <div id="event-format" style="font-weight: 700; font-size: 1.2rem;">120m Endurance</div>
+
+                    <!-- State 2: Provisional (Hidden by default) -->
+                    <div id="status-provisional" style="display: none;">
+                        <div class="status-indicator status-provisional">Provisional Entry</div>
+                        <div style="text-align: center; margin-bottom: 1.5rem;">
+                            <div style="font-size: 0.7rem; color: #ffa500; text-transform: uppercase; font-weight: 800;">Confirmation Required</div>
+                            <div style="font-size: 1.2rem; font-weight: 800;" id="confirmation-deadline">31h 22m</div>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <button onclick="handleConfirm()" class="btn" style="width: 100%; background: #00ff88; color: #000;">CONFIRM ATTENDANCE</button>
+                            <button onclick="handleWithdraw()" class="btn btn-outline" style="width: 100%; border-color: rgba(255,255,255,0.1);">WITHDRAW</button>
+                        </div>
                     </div>
-                    <a href="https://discord.gg/gridup" class="btn" style="width: 100%; text-align: center; box-shadow: 0 10px 30px var(--primary-glow);">Join Discord to Enter</a>
+
+                    <!-- State 3: Confirmed (Hidden by default) -->
+                    <div id="status-confirmed" style="display: none;">
+                        <div class="status-indicator status-confirmed">Confirmed Driver</div>
+                        <div style="text-align: center; margin-bottom: 2rem; padding: 1.5rem; background: rgba(0,255,136,0.05); border-radius: 16px; border: 1px dashed #00ff88;">
+                            <div style="font-family: var(--font-heading); font-size: 1.5rem; color: #00ff88; margin-bottom: 0.5rem;">GRID LOCKED</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">See you on the grid.</div>
+                        </div>
+                        <button onclick="handleWithdraw()" class="btn btn-outline" style="width: 100%; border-color: rgba(255,255,255,0.1);">WITHDRAW</button>
+                    </div>
                 </div>
 
                 <div class="detail-card" style="padding: 2rem; text-align: center; background: rgba(0,207,255,0.05);">
-                    <h4 style="margin-bottom: 1rem;">Need a Team?</h4>
-                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Join our #find-a-team channel to connect with other drivers for this event.</p>
-                    <a href="https://discord.gg/gridup" class="btn btn-outline" style="width: 100%;">Find Teammates</a>
+                    <h4 style="margin-bottom: 1rem;">Entry Requirements</h4>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">Join our Discord server to complete your registration and view full regulations.</p>
+                    <a href="https://discord.gg/gridup" class="btn btn-outline" style="width: 100%;">Join Official Discord</a>
                 </div>
             </div>
         </div>
@@ -156,7 +208,7 @@
         <section style="margin: 8rem 0; text-align: center;">
             <a href="league.html" class="btn btn-outline">Back to League Schedule</a>
         </section>
-    </main>
+    </main>    </main>
 
     <footer>
         <div class="container">
@@ -170,6 +222,8 @@
     <script src="script.js"></script>
     <script src="js/auth.js"></script>
     <script>
+        let currentStatus = 'unregistered';
+
         async function loadDetail() {
             const params = new URLSearchParams(window.location.search);
             const id = params.get('id');
@@ -185,21 +239,63 @@
                 document.title = `${data.name} | GRiD UP League`;
                 document.getElementById('event-name').textContent = (data.name || 'Event').toUpperCase();
                 document.getElementById('event-track-sub').textContent = (data.track || 'Circuit Data').toUpperCase();
-                document.getElementById('event-classes').textContent = data.carClass || 'GT3';
-                document.getElementById('event-format').textContent = data.format || 'Endurance';
                 
-                if (data.description) {
-                    document.getElementById('event-description').textContent = data.description;
-                }
-
                 // If there's a specific banner, use it
                 if (data.bannerUrl) {
                     document.getElementById('event-hero').style.backgroundImage = `url('${data.bannerUrl}')`;
                 }
+
+                startDeadlineTimer();
             } catch (e) {
                 console.error("Error loading detail:", e);
             }
         }
+
+        function updateUI() {
+            document.getElementById('status-unregistered').style.display = currentStatus === 'unregistered' ? 'block' : 'none';
+            document.getElementById('status-provisional').style.display = currentStatus === 'provisional' ? 'block' : 'none';
+            document.getElementById('status-confirmed').style.display = currentStatus === 'confirmed' ? 'block' : 'none';
+            
+            // Scroll to status panel to show changes
+            if (currentStatus !== 'unregistered') {
+                document.getElementById('driver-status-panel').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        function handleRegistration() {
+            currentStatus = 'provisional';
+            updateUI();
+            alert("Entry Provisional! You must confirm your attendance 48 hours before the race to secure your grid slot.");
+        }
+
+        function handleConfirm() {
+            currentStatus = 'confirmed';
+            updateUI();
+        }
+
+        function handleWithdraw() {
+            if (confirm("Are you sure you want to withdraw? This will free up your slot for a reserve driver.")) {
+                currentStatus = 'unregistered';
+                updateUI();
+            }
+        }
+
+        function startDeadlineTimer() {
+            const deadlineEl = document.getElementById('confirmation-deadline');
+            if (!deadlineEl) return;
+            
+            let hours = 31;
+            let minutes = 22;
+            let seconds = 59;
+
+            setInterval(() => {
+                seconds--;
+                if (seconds < 0) { seconds = 59; minutes--; }
+                if (minutes < 0) { minutes = 59; hours--; }
+                deadlineEl.textContent = `${hours}h ${minutes}m ${seconds}s`;
+            }, 1000);
+        }
+
         document.addEventListener('DOMContentLoaded', loadDetail);
     </script>
 </body>

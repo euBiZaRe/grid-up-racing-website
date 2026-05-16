@@ -2117,3 +2117,180 @@ input[type="text"]:focus {
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(219, 39, 119, 0.4) !important;
 }
+
+/* --- UX Redesign: Esports Pro Ecosystem --- */
+
+/* Grid Status Widget */
+.grid-status-widget {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    backdrop-filter: blur(10px);
+}
+
+.status-metric {
+    text-align: center;
+}
+
+.status-metric .label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.status-metric .value {
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--primary);
+}
+
+/* Driver Status Panel */
+.driver-status-card {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(0, 207, 255, 0.02) 100%);
+    border: 1px solid var(--glass-border-bright);
+    border-radius: 24px;
+    padding: 2rem;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+}
+
+.status-indicator {
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.status-provisional { background: rgba(255, 165, 0, 0.15); color: #ffa500; border: 1px solid rgba(255, 165, 0, 0.3); }
+.status-confirmed { background: rgba(0, 255, 136, 0.15); color: #00ff88; border: 1px solid rgba(0, 255, 136, 0.3); box-shadow: 0 0 20px rgba(0, 255, 136, 0.1); }
+.status-not-registered { background: rgba(255, 255, 255, 0.05); color: var(--text-muted); border: 1px solid var(--glass-border); }
+
+/* Attendance Rating */
+.attendance-meter {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: rgba(0,0,0,0.2);
+    border-radius: 12px;
+}
+
+.meter-bar {
+    height: 6px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+    margin-top: 0.5rem;
+    overflow: hidden;
+}
+
+.meter-fill {
+    height: 100%;
+    background: var(--primary-gradient);
+    box-shadow: 0 0 10px var(--primary-glow);
+}
+
+/* Esports Roster List */
+.roster-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.tab-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    color: var(--text-muted);
+    padding: 0.6rem 1.25rem;
+    border-radius: 8px;
+    font-family: var(--font-heading);
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: var(--transition);
+    outline: none;
+}
+
+.tab-btn:hover {
+    background: rgba(0, 207, 255, 0.1);
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+.tab-btn.active {
+    background: var(--primary-gradient);
+    color: #000;
+    border: 1px solid var(--primary);
+    box-shadow: 0 0 20px var(--primary-glow);
+}
+
+.roster-entry {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--glass-border);
+    margin-bottom: 0.5rem;
+    border-radius: 8px;
+    transition: var(--transition);
+}
+
+.roster-entry:hover {
+    background: rgba(255,255,255,0.05);
+    border-color: rgba(255,255,255,0.15);
+}
+
+.roster-pos {
+    width: 40px;
+    font-family: var(--font-heading);
+    font-weight: 900;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.roster-name {
+    flex: 1;
+    font-weight: 600;
+}
+
+/* Event Detail Specs */
+.spec-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.spec-item {
+    padding: 1rem;
+    background: rgba(0,0,0,0.2);
+    border-radius: 12px;
+    border: 1px solid var(--glass-border);
+}
+
+.spec-label {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+.spec-value {
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
