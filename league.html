@@ -209,8 +209,8 @@
                                 <div style="font-weight: 700;">${data.format || 'Sprint'}</div>
                             </div>
                         </div>
-                        <a href="${data.registrationUrl || 'https://discord.gg/gridup'}" class="btn" style="width: 100%; text-align: center; ${!isOpen ? 'opacity: 0.5; pointer-events: none;' : ''}">
-                            ${isOpen ? 'Register Now' : 'Join Waiting List'}
+                        <a href="league-detail.html?id=${doc.id}" class="btn" style="width: 100%; text-align: center; ${!isOpen ? 'opacity: 0.5; pointer-events: none;' : ''}">
+                            ${isOpen ? 'View Event Details' : 'Join Waiting List'}
                         </a>
                     `;
                     list.appendChild(card);

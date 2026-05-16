@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Details | GRiD UP League</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="assets/G_2.png">
+    <style>
+        .detail-hero {
+            height: 70vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            padding-top: 80px;
+        }
+        .detail-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, rgba(10, 12, 16, 0.4), var(--bg-dark));
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 3rem;
+            margin-top: -100px;
+            position: relative;
+            z-index: 10;
+        }
+        .detail-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            padding: 3rem;
+        }
+        .schedule-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 1.5rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .schedule-item:last-child { border: none; }
+        .broadcaster-banner {
+            background: rgba(255, 60, 60, 0.1);
+            border: 1px solid rgba(255, 60, 60, 0.3);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        @media (max-width: 992px) {
+            .info-grid { grid-template-columns: 1fr; margin-top: 2rem; }
+        }
+    </style>
+</head>
+<body class="league-detail-page">
+    <nav id="navbar" class="scrolled">
+        <div class="container nav-content">
+            <a href="index.html" class="logo">
+                <img src="assets/logo.png" alt="GRiD UP" style="height: 40px; vertical-align: middle;">
+            </a>
+            <div class="menu-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html#home">Home</a></li>
+                <li><a href="index.html#about">About</a></li>
+                <li><a href="roster.html">Roster</a></li>
+                <li><a href="events.html">Events</a></li>
+                <li><a href="league.html" class="active">League</a></li>
+                <li><a href="shop.html">Shop</a></li>
+                <li><a href="team-app.html">Apply</a></li>
+                <li><a href="https://discord.gg/gridup" target="_blank"><img src="assets/discord_header.png" alt="Discord" style="height: 25px; vertical-align: middle;"></a></li>
+                <li><a href="login.html" id="login-link" class="btn btn-outline" style="padding: 0.5rem 1.25rem; font-size: 0.8rem; margin-left: 1rem;">Login</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <header id="event-hero" class="detail-hero" style="background-image: url('assets/bg-banner.png');">
+        <div class="container" style="position: relative; z-index: 2;">
+            <div id="event-tag" style="color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 4px; margin-bottom: 1rem;">League Event</div>
+            <h1 id="event-name" class="glow-text" style="font-size: clamp(3rem, 8vw, 5.5rem); font-weight: 900; line-height: 1.1;">Loading...</h1>
+            <p id="event-track-sub" style="color: var(--text-muted); font-size: 1.2rem; margin-top: 1.5rem; font-family: var(--font-heading); letter-spacing: 2px;">CIRCUIT DATA LOADING</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="info-grid">
+            <div class="detail-card">
+                <h2 style="margin-bottom: 2rem; display: flex; align-items: center; gap: 15px;">
+                    <span style="color: var(--primary);">01</span> Event Overview
+                </h2>
+                <p id="event-description" style="font-size: 1.1rem; line-height: 1.8; color: var(--text-muted); margin-bottom: 3rem;">
+                    The GRiD UP League presents another high-stakes multiclass endurance event. Drivers will battle through intense strategy and heavy traffic to claim their place on the podium.
+                </p>
+
+                <h2 style="margin-bottom: 2rem; display: flex; align-items: center; gap: 15px;">
+                    <span style="color: var(--primary);">02</span> Full Schedule (EST)
+                </h2>
+                <div class="schedule-list">
+                    <div class="schedule-item">
+                        <span style="color: var(--text-muted);">Practice Session</span>
+                        <span style="font-weight: 700;">3:00 PM EST</span>
+                    </div>
+                    <div class="schedule-item">
+                        <span style="color: var(--text-muted);">Qualifying</span>
+                        <span style="font-weight: 700;">3:45 PM EST</span>
+                    </div>
+                    <div class="schedule-item">
+                        <span style="color: var(--text-muted);">Green Flag</span>
+                        <span style="font-weight: 700;">4:00 PM EST</span>
+                    </div>
+                </div>
+
+                <div class="broadcaster-banner">
+                    <div style="font-size: 2rem;">📺</div>
+                    <div>
+                        <div style="font-weight: 800; color: #ff3c3c; letter-spacing: 1px;">OFFICIAL BROADCAST</div>
+                        <div style="font-size: 0.9rem; color: var(--text-muted);">Live coverage by Motormouth Broadcasting</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 2rem;">
+                <div class="detail-card" style="padding: 2rem;">
+                    <h4 style="color: var(--primary); margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 2px;">Entry Details</h4>
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Car Classes</div>
+                        <div id="event-classes" style="font-weight: 700; font-size: 1.2rem;">GT3 // GT4</div>
+                    </div>
+                    <div style="margin-bottom: 2rem;">
+                        <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Format</div>
+                        <div id="event-format" style="font-weight: 700; font-size: 1.2rem;">120m Endurance</div>
+                    </div>
+                    <a href="https://discord.gg/gridup" class="btn" style="width: 100%; text-align: center; box-shadow: 0 10px 30px var(--primary-glow);">Join Discord to Enter</a>
+                </div>
+
+                <div class="detail-card" style="padding: 2rem; text-align: center; background: rgba(0,207,255,0.05);">
+                    <h4 style="margin-bottom: 1rem;">Need a Team?</h4>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Join our #find-a-team channel to connect with other drivers for this event.</p>
+                    <a href="https://discord.gg/gridup" class="btn btn-outline" style="width: 100%;">Find Teammates</a>
+                </div>
+            </div>
+        </div>
+
+        <section style="margin: 8rem 0; text-align: center;">
+            <a href="league.html" class="btn btn-outline">Back to League Schedule</a>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p style="color: var(--text-muted); font-size: 0.8rem;">&copy; 2026 GRiD UP SIM RACING. ALL RIGHTS RESERVED.</p>
+        </div>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="script.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        async function loadDetail() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+            if (!id) { window.location.href = 'league.html'; return; }
+
+            if (typeof db === 'undefined') { setTimeout(loadDetail, 500); return; }
+
+            try {
+                const doc = await db.collection("leagues").doc(id).get();
+                if (!doc.exists) { window.location.href = 'league.html'; return; }
+
+                const data = doc.data();
+                document.title = `${data.name} | GRiD UP League`;
+                document.getElementById('event-name').textContent = (data.name || 'Event').toUpperCase();
+                document.getElementById('event-track-sub').textContent = (data.track || 'Circuit Data').toUpperCase();
+                document.getElementById('event-classes').textContent = data.carClass || 'GT3';
+                document.getElementById('event-format').textContent = data.format || 'Endurance';
+                
+                if (data.description) {
+                    document.getElementById('event-description').textContent = data.description;
+                }
+
+                // If there's a specific banner, use it
+                if (data.bannerUrl) {
+                    document.getElementById('event-hero').style.backgroundImage = `url('${data.bannerUrl}')`;
+                }
+            } catch (e) {
+                console.error("Error loading detail:", e);
+            }
+        }
+        document.addEventListener('DOMContentLoaded', loadDetail);
+    </script>
+</body>
+</html>
