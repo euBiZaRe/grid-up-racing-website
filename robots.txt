@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /seed_*.html
+Disallow: /check_db.html
+Disallow: /server.py
+Disallow: /scratch/
+
+Sitemap: https://gridup.online/sitemap.xml
