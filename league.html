@@ -60,9 +60,26 @@
         .league-hero {
             padding: 10rem 0 6rem;
             text-align: center;
-            background: linear-gradient(to bottom, rgba(10, 12, 16, 0.4), var(--bg-dark)), url('assets/bg-banner.png');
+            background: linear-gradient(to bottom, rgba(10, 12, 16, 0.55), var(--bg-dark)), url('assets/bg-banner.png');
             background-size: cover;
             background-position: center;
+            transition: background-image 0.6s ease;
+        }
+        .league-card-banner {
+            width: calc(100% + 5rem);
+            height: 180px;
+            margin: -2.5rem -2.5rem 1.5rem -2.5rem;
+            background-size: cover;
+            background-position: center top;
+            border-radius: 24px 24px 0 0;
+            position: relative;
+        }
+        .league-card-banner::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, transparent 40%, rgba(10, 12, 16, 0.95));
+            border-radius: 24px 24px 0 0;
         }
     </style>
 </head>
@@ -180,14 +197,25 @@
                 }
 
                 list.innerHTML = '';
+                let firstBannerUrl = null;
+
                 snap.forEach(doc => {
                     const data = doc.data();
                     const card = document.createElement('div');
                     card.className = 'league-card reveal active';
-                    
+
                     const isOpen = data.registrationStatus === 'open';
-                    
+                    const bannerHtml = data.bannerUrl
+                        ? `<div class="league-card-banner" style="background-image: url('${data.bannerUrl}')"></div>`
+                        : '';
+
+                    // Use the first open event's banner for the hero
+                    if (!firstBannerUrl && isOpen && data.bannerUrl) {
+                        firstBannerUrl = data.bannerUrl;
+                    }
+
                     card.innerHTML = `
+                        ${bannerHtml}
                         <div class="league-badge">${data.carClass || 'GT3'}</div>
                         <div class="league-info">
                             <div class="league-status" style="color: ${isOpen ? '#00ff88' : '#ff3c3c'}">
@@ -197,17 +225,25 @@
                             <h3 style="font-size: 1.8rem; margin: 1rem 0 0.5rem; font-weight: 800;">${data.name}</h3>
                             <p style="color: var(--primary); font-family: var(--font-heading); font-size: 0.8rem; letter-spacing: 2px;">${data.schedule || 'Weekly // Wednesdays'}</p>
                         </div>
-                        
                         <div style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; margin: 1rem 0;">
                             ${data.description || 'Join our premier racing series with professional stewarding and broadcasting.'}
                         </div>
-
                         <a href="league-detail.html?id=${doc.id}" class="btn" style="width: 100%; text-align: center; margin-top: auto; ${!isOpen ? 'opacity: 0.5; pointer-events: none;' : ''}">
                             ${isOpen ? 'VIEW EVENT DETAILS' : 'JOIN WAITING LIST'}
                         </a>
                     `;
                     list.appendChild(card);
                 });
+
+                // Dynamically update hero background with first event's banner
+                if (firstBannerUrl) {
+                    const hero = document.getElementById('featured-hero');
+                    if (hero) {
+                        hero.style.background = `linear-gradient(to bottom, rgba(10,12,16,0.45), var(--bg-dark)), url('${firstBannerUrl}')`;
+                        hero.style.backgroundSize = 'cover';
+                        hero.style.backgroundPosition = 'center top';
+                    }
+                }
             } catch (e) {
                 console.error("Error loading leagues:", e);
                 list.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--secondary);">Failed to load leagues. Please try again later.</p>';

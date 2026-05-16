@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Seed League Event Banners</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="js/auth.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 2rem; background: #0a0a0c; color: white; }
+        button { padding: 1rem 2rem; background: #00cfff; border: none; color: black; font-weight: bold; cursor: pointer; border-radius: 4px; font-size: 1rem; }
+        #log { margin-top: 1.5rem; color: #00ff88; white-space: pre; font-family: monospace; line-height: 1.8; }
+        .error { color: #ff3c3c; }
+        .preview { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 2rem; }
+        .preview-card { border: 1px solid #222; border-radius: 8px; overflow: hidden; width: 280px; }
+        .preview-card img { width: 100%; height: 158px; object-fit: cover; display: block; }
+        .preview-card p { padding: 0.5rem; font-size: 0.75rem; color: #aaa; margin: 0; }
+    </style>
+</head>
+<body>
+    <h1>🏁 Seed League Event Banner Images</h1>
+    <p>This will update each league event in Firestore with its official iRacing poster image URL.<br>
+    The hero background on each event detail page will then show the real race poster.</p>
+
+    <div id="preview-section">
+        <h3>Images to be applied:</h3>
+        <div class="preview" id="preview-grid"></div>
+    </div>
+
+    <br>
+    <button onclick="seedBanners()">🚀 APPLY BANNER IMAGES TO FIRESTORE</button>
+    <div id="log">Waiting...</div>
+
+    <script>
+        const BASE = 'https://s100.iracing.com/wp-content/uploads';
+
+        // Map league event Firestore doc IDs to their official GRiD UP race poster images
+        const LEAGUE_BANNERS = {
+            'gtc-virginia-120':         'assets/league-posters/Virginia.png',
+            'gtc-glen-24':              'assets/league-posters/The Glen.png',
+            'gtc-spa-3h':               'assets/league-posters/SPA.png',
+            'gtc-elkhart-24':           'assets/league-posters/Elkhart Lake.png',
+            'gtc-barcelona-120':        'assets/league-posters/Barcelona.png',
+            'gtc-suzuka-24':            'assets/league-posters/Suzuka.png',
+            'gtc-atlanta-120':          'assets/league-posters/Atlanta.png',
+            'gtc-indy-3h':              'assets/league-posters/Indy.png',
+            'gtc-sonoma-120':           'assets/league-posters/Sonoma Valley.png',
+        };
+
+        // Full iRacing banner library for reference (same as script.js)
+        const ALL_BANNERS = {
+            'iracing-roar':             `${BASE}/2025/12/iRSE-2026-ROAR-960x576.png`,
+            'daytona-24':               `${BASE}/2025/12/iRSE-2026-Daytona-24-VCO-960x576.png`,
+            'daytona-500':              `${BASE}/2025/12/iRSE-2026-Daytona-500.png`,
+            'bathurst-12':              `${BASE}/2025/12/iRSE-2026-Bathurst-12.png`,
+            'sebring-12hr':             `${BASE}/2025/12/iRSE-2026-Sebring-12-VCO.png`,
+            'nurburgring-24h':          `${BASE}/2025/12/iRSE-2026-Nurburgring-24H.png`,
+            'imsa-classic-500':         `${BASE}/2026/03/iRSE-2026-IMSA-Classic-500.png`,
+            'indy-500':                 `${BASE}/2025/12/iRSE-2026-Indy-500.png`,
+            'world-600':                `${BASE}/2025/12/iRSE-2026-World-600.png`,
+            'thruxton-4h':              `${BASE}/2025/12/iRSE-2026-4-Hours-at-Thruxton.png`,
+            'watkins-glen-6h':          `${BASE}/2025/12/iRSE-2026-Watkis-Glen-6H-VCO.png`,
+            'spa-24hr':                 `${BASE}/2025/12/iRSE-2026-SPA-24HR.png`,
+            'brickyard-400':            `https://s100.iracing.com/wp-content/uploads/2025/04/iRSE-2025-Brickyard-400-v2.png`,
+            'road-america-6h':          `${BASE}/2025/12/iRSE-2026-6HRS-Road-America.png`,
+            'firecracker-400':          `${BASE}/2025/12/iRSE-2026-Firecracker-400.png`,
+            'knoxville-nationals':      `${BASE}/2025/12/iRSE-2026-Knoxville-Nationals.png`,
+            'portimao-1000':            `${BASE}/2025/12/iRSE-2026-Portimao-1000.png`,
+            'crandon-championship':     `${BASE}/2025/12/iRSE-2026-Crandon.png`,
+            'southern-500':             `${BASE}/2025/12/iRSE-2026-Southern-500.png`,
+            'suzuka-1000km':            `${BASE}/2026/01/iRSE-2026-PiMax-Suzuka-1000km.png`,
+            'britcar-24hr':             `${BASE}/2025/12/iRSE-2026-Britcar-24.png`,
+            'petit-le-mans':            `${BASE}/2025/12/iRSE-2026-Petit-Le-Mans-VCO.png`,
+            'bathurst-1000':            `${BASE}/2025/12/iRSE-2026-Bathurst-1000.png`,
+            'indy-8h':                  `${BASE}/2025/12/iRSE-2026-Indianapolis-8H.png`,
+            'ff1600-festival':          `${BASE}/2026/01/iRSE-2026-iRacing-Conspit-FF1600-Festival.png`,
+            'homestead-championship':   `${BASE}/2025/12/iRSE-2026-Homestead-Championship.png`,
+            'sfl-mountain-showdown':    `${BASE}/2025/12/iRSE-2026-SFL-Mountain-Challenge.png`,
+            'scca-runoffs':             `${BASE}/2024/12/iRSE-2025-Scca-Runoffs.png`,
+            '992-endurance-cup':        `${BASE}/2026/04/iRSE-2026-Creventic-992-Endurance-Cup.png`,
+            'winter-derby':             `${BASE}/2025/12/iRSE-2026-Winter-Derby.png`,
+            'chili-bowl':               `${BASE}/2025/12/iRSE-2026-Chili-Bowl.png`,
+            'production-car-challenge': `${BASE}/2025/12/iRSE-2026-Production-Car-Challenge.png`,
+        };
+
+        // Show preview cards
+        const previewGrid = document.getElementById('preview-grid');
+        Object.entries(LEAGUE_BANNERS).forEach(([id, url]) => {
+            const card = document.createElement('div');
+            card.className = 'preview-card';
+            card.innerHTML = `
+                <img src="${url}" onerror="this.src=''; this.alt='Image failed to load';">
+                <p>${id}</p>
+            `;
+            previewGrid.appendChild(card);
+        });
+
+        async function seedBanners() {
+            const log = document.getElementById('log');
+
+            // Wait for db to be ready
+            if (typeof db === 'undefined') {
+                log.textContent = 'Waiting for database connection...';
+                setTimeout(seedBanners, 800);
+                return;
+            }
+
+            log.textContent = 'Starting...\n';
+
+            // First, read all current league docs to auto-map any we can
+            try {
+                const snap = await db.collection('leagues').get();
+                const autoMapped = {};
+
+                snap.forEach(doc => {
+                    const id = doc.id;
+                    // If we have an explicit mapping, use it
+                    if (LEAGUE_BANNERS[id]) {
+                        autoMapped[id] = LEAGUE_BANNERS[id];
+                    } else {
+                        // Try to find a matching iRacing banner by partial ID match
+                        const match = Object.keys(ALL_BANNERS).find(key => id.includes(key) || key.includes(id));
+                        if (match) {
+                            autoMapped[id] = ALL_BANNERS[match];
+                            log.textContent += `Auto-matched: ${id} → ${match}\n`;
+                        } else {
+                            log.textContent += `⚠️  No image found for: ${id}\n`;
+                        }
+                    }
+                });
+
+                // Apply all banner URLs as a batch
+                const batch = db.batch();
+                let count = 0;
+
+                Object.entries(autoMapped).forEach(([docId, bannerUrl]) => {
+                    const ref = db.collection('leagues').doc(docId);
+                    batch.update(ref, { bannerUrl });
+                    log.textContent += `✓ Queued: ${docId}\n`;
+                    count++;
+                });
+
+                if (count === 0) {
+                    log.textContent += '\nNo events to update.';
+                    return;
+                }
+
+                await batch.commit();
+                log.textContent += `\n✅ SUCCESS: ${count} league events updated with banner images!\n`;
+                log.textContent += `\nRefresh your event pages to see the new hero backgrounds.`;
+
+            } catch (e) {
+                log.innerHTML += `<span class="error">\nERROR: ${e.message}</span>`;
+            }
+        }
+    </script>
+</body>
+</html>
