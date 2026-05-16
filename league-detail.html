@@ -243,18 +243,13 @@
     <script>
         let currentStatus = 'unregistered';
         let eventId = '';
-        let currentRosterTab = 'provisional';
+        let currentRosterTab = 'confirmed';
+        let registrations = [];
 
         async function loadDetail() {
             const params = new URLSearchParams(window.location.search);
             eventId = params.get('id');
             if (!eventId) { window.location.href = 'league.html'; return; }
-
-            // Load saved status from localStorage
-            const savedStatus = localStorage.getItem(`league_status_${eventId}`);
-            if (savedStatus) {
-                currentStatus = savedStatus;
-            }
 
             if (typeof db === 'undefined') { setTimeout(loadDetail, 500); return; }
 
@@ -267,57 +262,126 @@
                 document.getElementById('event-name').textContent = (data.name || 'Event').toUpperCase();
                 document.getElementById('event-track-sub').textContent = (data.track || 'Circuit Data').toUpperCase();
                 
-                // If there's a specific banner, use it
                 if (data.bannerUrl) {
                     document.getElementById('event-hero').style.backgroundImage = `url('${data.bannerUrl}')`;
                 }
 
-                updateUI();
+                // Setup Real-time Listener for Registrations
+                setupRegistrationListener();
                 startDeadlineTimer();
             } catch (e) {
                 console.error("Error loading detail:", e);
             }
         }
 
+        function setupRegistrationListener() {
+            db.collection("leagues").doc(eventId).collection("registrations")
+              .onSnapshot((snapshot) => {
+                  registrations = [];
+                  snapshot.forEach(doc => registrations.push({ id: doc.id, ...doc.data() }));
+                  
+                  // Check current user's status in this event
+                  const user = firebase.auth().currentUser;
+                  if (user) {
+                      const myReg = registrations.find(r => r.id === user.uid);
+                      currentStatus = myReg ? myReg.status : 'unregistered';
+                  } else {
+                      currentStatus = 'unregistered';
+                  }
+
+                  updateUI();
+                  renderRoster();
+              });
+        }
+
+        // Re-check status when auth changes
+        firebase.auth().onAuthStateChanged(user => {
+            if (user && eventId) {
+                const myReg = registrations.find(r => r.id === user.uid);
+                currentStatus = myReg ? myReg.status : 'unregistered';
+            } else {
+                currentStatus = 'unregistered';
+            }
+            updateUI();
+            renderRoster();
+        });
+
         function updateUI() {
+            const user = firebase.auth().currentUser;
+            const unregisteredEl = document.getElementById('status-unregistered');
+            
+            if (!user) {
+                unregisteredEl.innerHTML = `
+                    <div class="status-indicator status-not-registered">Account Required</div>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.5rem; text-align: center;">You must be logged in to reserve a grid slot.</p>
+                    <a href="login.html" class="btn" style="width: 100%; text-align: center;">LOGIN TO REGISTER</a>
+                `;
+                unregisteredEl.style.display = 'block';
+                document.getElementById('status-provisional').style.display = 'none';
+                document.getElementById('status-confirmed').style.display = 'none';
+                document.getElementById('entry-list-section').style.display = 'none';
+                return;
+            }
+
+            // Reset unregistered UI for logged in user
+            unregisteredEl.innerHTML = `
+                <div class="status-indicator status-not-registered">Not Registered</div>
+                <button onclick="handleRegistration()" class="btn" style="width: 100%; box-shadow: 0 0 30px var(--primary-glow);">RESERVE GRID SLOT</button>
+            `;
+
             document.getElementById('status-unregistered').style.display = currentStatus === 'unregistered' ? 'block' : 'none';
             document.getElementById('status-provisional').style.display = currentStatus === 'provisional' ? 'block' : 'none';
             document.getElementById('status-confirmed').style.display = currentStatus === 'confirmed' ? 'block' : 'none';
             
-            // Show entry list if registered
+            // Show entry list if there are ANY registrations
             const entrySection = document.getElementById('entry-list-section');
-            if (currentStatus !== 'unregistered') {
+            if (registrations.length > 0) {
                 entrySection.style.display = 'block';
-                renderRoster();
             } else {
                 entrySection.style.display = 'none';
             }
+        }
 
-            // Save status to localStorage
-            if (eventId) {
-                localStorage.setItem(`league_status_${eventId}`, currentStatus);
+        async function handleRegistration() {
+            const user = firebase.auth().currentUser;
+            if (!user) { window.location.href = 'login.html'; return; }
+
+            try {
+                await db.collection("leagues").doc(eventId).collection("registrations").doc(user.uid).set({
+                    name: user.displayName || 'Driver',
+                    avatar: user.photoURL || '',
+                    status: 'provisional',
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                alert("Entry Provisional! You must confirm your attendance 48 hours before the race to secure your grid slot.");
+            } catch (e) {
+                alert("Error registering: " + e.message);
             }
         }
 
-        function handleRegistration() {
-            currentStatus = 'provisional';
-            currentRosterTab = 'provisional';
-            updateUI();
-            alert("Entry Provisional! You must confirm your attendance 48 hours before the race to secure your grid slot.");
-            document.getElementById('entry-list-section').scrollIntoView({ behavior: 'smooth' });
+        async function handleConfirm() {
+            const user = firebase.auth().currentUser;
+            if (!user) return;
+
+            try {
+                await db.collection("leagues").doc(eventId).collection("registrations").doc(user.uid).update({
+                    status: 'confirmed'
+                });
+            } catch (e) {
+                alert("Error confirming: " + e.message);
+            }
         }
 
-        function handleConfirm() {
-            currentStatus = 'confirmed';
-            currentRosterTab = 'confirmed';
-            updateUI();
-        }
+        async function handleWithdraw() {
+            const user = firebase.auth().currentUser;
+            if (!user) return;
 
-        function handleWithdraw() {
-            if (confirm("Are you sure you want to withdraw? This will free up your slot for a reserve driver.")) {
-                currentStatus = 'unregistered';
-                updateUI();
-                localStorage.removeItem(`league_status_${eventId}`);
+            if (confirm("Are you sure you want to withdraw? This will free up your slot for another driver.")) {
+                try {
+                    await db.collection("leagues").doc(eventId).collection("registrations").doc(user.uid).delete();
+                } catch (e) {
+                    alert("Error withdrawing: " + e.message);
+                }
             }
         }
 
@@ -329,36 +393,49 @@
         function renderRoster() {
             const list = document.getElementById('roster-list');
             const tabs = ['confirmed', 'provisional', 'reserve'];
+            const user = firebase.auth().currentUser;
             
             // Update counts and active states
             tabs.forEach(t => {
                 const btn = document.getElementById(`tab-${t}`);
                 const countEl = document.getElementById(`count-${t}`);
-                btn.classList.toggle('active', currentRosterTab === t);
+                if (btn) btn.classList.toggle('active', currentRosterTab === t);
                 
-                // Real counts only (User is the only possible real entry right now)
-                let count = currentStatus === t ? 1 : 0;
-                countEl.textContent = count;
+                const count = registrations.filter(r => r.status === t).length;
+                if (countEl) countEl.textContent = count;
             });
 
             list.innerHTML = '';
             
-            // Add user if status matches tab
-            if (currentStatus === currentRosterTab) {
+            const filteredRegs = registrations.filter(r => r.status === currentRosterTab);
+
+            if (filteredRegs.length === 0) {
+                list.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-muted); font-size: 0.9rem; border: 1px dashed var(--glass-border); border-radius: 16px;">No drivers currently in this category.</div>`;
+                return;
+            }
+
+            filteredRegs.sort((a, b) => (a.timestamp?.seconds || 0) - (b.timestamp?.seconds || 0));
+
+            filteredRegs.forEach((reg, i) => {
+                const isMe = user && reg.id === user.uid;
                 const entry = document.createElement('div');
                 entry.className = 'roster-entry';
-                entry.style.borderColor = 'var(--primary)';
-                entry.style.background = 'rgba(0, 207, 255, 0.05)';
+                if (isMe) {
+                    entry.style.borderColor = 'var(--primary)';
+                    entry.style.background = 'rgba(0, 207, 255, 0.05)';
+                }
+
                 entry.innerHTML = `
-                    <span class="roster-pos">--</span>
-                    <span class="roster-name" style="color: var(--primary); font-weight: 800;">YOU (PLAYER)</span>
-                    <span class="metallic-text ${currentStatus === 'confirmed' ? 'gold-text' : 'silver-text'}" style="font-size: 0.6rem;">${currentStatus.toUpperCase()}</span>
+                    <span class="roster-pos">${isMe ? '--' : 'P' + (i + 1)}</span>
+                    <span class="roster-name" style="${isMe ? 'color: var(--primary); font-weight: 800;' : ''}">
+                        ${isMe ? 'YOU (' + reg.name + ')' : reg.name}
+                    </span>
+                    <span class="metallic-text ${reg.status === 'confirmed' ? 'gold-text' : 'silver-text'}" style="font-size: 0.6rem;">
+                        ${reg.status.toUpperCase()}
+                    </span>
                 `;
                 list.appendChild(entry);
-            } else if (list.innerHTML === '') {
-                // Show empty state if no entries in current tab
-                list.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-muted); font-size: 0.9rem; border: 1px dashed var(--glass-border); border-radius: 16px;">No drivers currently in this category.</div>`;
-            }
+            });
         }
 
         function startDeadlineTimer() {
