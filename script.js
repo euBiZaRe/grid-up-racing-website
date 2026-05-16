@@ -178,7 +178,8 @@ function updateCountdown(targetTimestamp) {
                     countdownEl.innerHTML = "<div class='glow-text animate-pulse' style='font-size: 2.5rem; font-weight: 900;'>RACE DAY</div>";
                 } else {
                     // It's in the past, show "Event Recap" or similar
-                    document.getElementById('hero-event-subtitle').textContent = 'Event Completed';
+                    const subtitleEl = document.getElementById('hero-event-subtitle');
+                    if (subtitleEl) subtitleEl.textContent = 'Event Completed';
                     countdownEl.innerHTML = "<div style='color: var(--text-muted); font-size: 1rem; letter-spacing: 2px;'>CHECK RECENT RESULTS BELOW</div>";
                 }
             }
