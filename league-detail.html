@@ -357,13 +357,18 @@
             if (!user) { window.location.href = 'login.html'; return; }
 
             try {
+                // Fetch driver's real name from their profile
+                const userDoc = await db.collection("users").doc(user.uid).get();
+                const userData = userDoc.exists ? userDoc.data() : {};
+                const driverName = userData.driverName || user.displayName || 'Anonymous Driver';
+
                 await db.collection("leagues").doc(eventId).collection("registrations").doc(user.uid).set({
-                    name: user.displayName || 'Driver',
+                    name: driverName,
                     avatar: user.photoURL || '',
                     status: 'provisional',
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                alert("Entry Provisional! You must confirm your attendance 48 hours before the race to secure your grid slot.");
+                alert(`Entry Provisional! Welcome to the grid, ${driverName}. You must confirm 48h before the race.`);
             } catch (e) {
                 alert("Error registering: " + e.message);
             }
