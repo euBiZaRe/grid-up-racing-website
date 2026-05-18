@@ -133,8 +133,18 @@
         if (typeof db === 'undefined') return;
 
         try {
-            const doc = await db.collection('reports').doc(id).get();
-            if (!doc.exists) { window.location.href = 'reports.html'; return; }
+            let doc;
+            const slugSnap = await db.collection('reports').where('slug', '==', id).get();
+            if (!slugSnap.empty) {
+                doc = slugSnap.docs[0];
+            } else {
+                const directDoc = await db.collection('reports').doc(id).get();
+                if (directDoc.exists) {
+                    doc = directDoc;
+                }
+            }
+
+            if (!doc) { window.location.href = 'reports.html'; return; }
             const data = doc.data();
 
             // Update page title

@@ -116,6 +116,7 @@
             snap.forEach(doc => {
                 const data = doc.data();
                 const id = doc.id;
+                const slug = data.slug || id;
                 const rawDate = data.date && data.date.toDate ? data.date.toDate() : new Date();
                 const dateStr = rawDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
                 const banner = data.bannerUrl || 'assets/bg-banner.png';
@@ -125,7 +126,7 @@
                 card.style.cssText = 'border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.4s cubic-bezier(0.23,1,0.32,1), box-shadow 0.4s ease; cursor: pointer; border: 1px solid var(--glass-border);';
                 card.onmouseover = () => { card.style.transform = 'translateY(-8px)'; card.style.boxShadow = '0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(0,207,255,0.15)'; card.style.borderColor = 'rgba(0,207,255,0.4)'; };
                 card.onmouseout = () => { card.style.transform = ''; card.style.boxShadow = ''; card.style.borderColor = 'var(--glass-border)'; };
-                card.onclick = () => window.location.href = `report-detail.html?id=${id}`;
+                card.onclick = () => window.location.href = `report-detail.html?id=${slug}`;
 
                 card.innerHTML = `
                     <div style="height: 200px; overflow: hidden; position: relative;">
