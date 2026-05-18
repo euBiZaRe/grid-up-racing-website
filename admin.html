@@ -640,31 +640,17 @@
                         <div style="display: grid; gap: 1.5rem;">
                             <div>
                                 <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">EVENT</label>
-                                <select id="result-event-selector" class="btn btn-outline" style="width: 100%; text-align: left; padding: 1rem;" onchange="loadEventResults()">
+                                <select id="result-event-selector" class="btn btn-outline" style="width: 100%; text-align: left; padding: 1rem; cursor: pointer;" onchange="loadEventResults()">
                                     <option value="">-- Choose Event --</option>
-                                    <option value="thruxton-4h">4 Hours at Thruxton</option>
-                                    <option value="indy-500">Indy 500</option>
-                                    <option value="world-600">World 600</option>
-                                    <option value="watkins-glen-6h">Watkins Glen 6 Hour</option>
-                                    <option value="firecracker-400">Firecracker 400</option>
-                                    <option value="spa-24hr">Spa 24hr</option>
-                                    <option value="brickyard-400">Brickyard 400</option>
-                                    <option value="road-america-6h">Road America 6h</option>
-                                    <option value="suzuka-1000km">Suzuka 1000km</option>
-                                    <option value="petit-le-mans">Petit Le Mans</option>
-                                    <option value="bathurst-1000">Bathurst 1000</option>
-                                    <option value="indy-8h">Indy 8h</option>
                                 </select>
                             </div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                                <div>
-                                    <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">CAR #</label>
-                                    <input type="text" id="result-car-num" placeholder="e.g. 77" class="btn btn-outline" style="width: 100%; text-align: left;">
-                                </div>
-                                <div>
-                                    <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">CAR CLASS</label>
-                                    <input type="text" id="result-car-class" placeholder="e.g. GT3" class="btn btn-outline" style="width: 100%; text-align: left;">
-                                </div>
+                            <div>
+                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">TEAM NAME</label>
+                                <input type="text" id="result-team-name" placeholder="e.g. GRiD UP #77" class="btn btn-outline" style="width: 100%; text-align: left;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">CAR</label>
+                                <input type="text" id="result-car" placeholder="e.g. Dallara IR18" class="btn btn-outline" style="width: 100%; text-align: left;">
                             </div>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                                 <div>
@@ -690,7 +676,8 @@
                                 <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">DRIVERS (Comma separated)</label>
                                 <input type="text" id="result-drivers" placeholder="Driver 1, Driver 2..." class="btn btn-outline" style="width: 100%; text-align: left;">
                             </div>
-                        <button onclick="saveRaceResult()" class="btn btn-primary" style="margin-top: 1rem;">SAVE TEAM RESULT</button>
+                        </div>
+                        <button onclick="saveRaceResult()" class="btn btn-primary" style="margin-top: 1.5rem; width: 100%;">SAVE TEAM RESULT</button>
                     </div>
                 </div>
 

@@ -221,6 +221,11 @@ body {
     padding: 0 2rem;
 }
 
+/* Ensure all links always show pointer cursor even when href is temporarily removed */
+a, a[data-href] {
+    cursor: pointer;
+}
+
 .section {
     padding: 6rem 0;
 }
@@ -436,6 +441,7 @@ nav.scrolled {
     letter-spacing: 1px;
     opacity: 0.8;
     white-space: nowrap;
+    cursor: pointer;
 }
 
 .nav-links a:hover {
