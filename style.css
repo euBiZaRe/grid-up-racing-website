@@ -414,11 +414,12 @@ nav.scrolled {
 /* Desktop Navigation */
 .nav-links {
     display: flex;
-    gap: 2.5rem;
+    gap: 1.5rem;
     list-style: none;
     margin: 0;
     padding: 0;
     align-items: center;
+    flex-wrap: nowrap;
 }
 
 .nav-links li {
@@ -430,10 +431,11 @@ nav.scrolled {
     color: var(--text-main);
     font-weight: 600;
     transition: var(--transition);
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 1px;
     opacity: 0.8;
+    white-space: nowrap;
 }
 
 .nav-links a:hover {
