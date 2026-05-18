@@ -121,6 +121,7 @@
                 <li><a href="index.html#about">About</a></li>
                 <li><a href="roster.html">Roster</a></li>
                 <li><a href="events.html">Events</a></li>
+                <li><a href="reports.html">Reports</a></li>
                 <li><a href="league.html">League</a></li>
                 <li><a href="shop.html">Shop</a></li>
                 <li><a href="team-app.html">Apply</a></li>
@@ -163,6 +164,7 @@
                     <button onclick="switchTab('roster')" class="btn btn-outline" id="tab-roster">TEAM ROSTER</button>
                     <button onclick="switchTab('events')" class="btn btn-outline" id="tab-events">SEASON SCHEDULE</button>
                     <button onclick="switchTab('race-results')" class="btn btn-outline" id="tab-race-results">RACE RESULTS</button>
+                    <button onclick="switchTab('reports')" class="btn btn-outline" id="tab-reports">RACE REPORTS</button>
                     <button onclick="switchTab('posters')" class="btn btn-outline" id="tab-posters">POSTER LAB</button>
                     <button onclick="switchTab('streams')" class="btn btn-outline" id="tab-streams">LIVE STREAMS</button>
                     <button onclick="switchTab('admins')" class="btn btn-outline" id="tab-admins">TEAM PERMISSIONS</button>
@@ -701,6 +703,53 @@
                 </div>
                 </div>
             </div>
+
+            <!-- Race Reports Section -->
+            <div id="section-reports" class="tab-content" style="display: none;">
+                <div class="grid" style="grid-template-columns: 1fr 2fr; gap: 2rem; align-items: start;">
+                    <div class="glass" style="padding: 2.5rem;">
+                        <h3 style="color: var(--primary); margin-bottom: 2rem; font-size: 0.9rem; letter-spacing: 2px;">CREATE / EDIT REPORT</h3>
+                        <div style="display: grid; gap: 1.5rem;">
+                            <input type="hidden" id="report-id">
+                            <div>
+                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">TITLE</label>
+                                <input type="text" id="report-title-input" class="btn btn-outline" style="width: 100%; text-align: left;" placeholder="e.g. Daytona 24h Victory">
+                            </div>
+                            <div>
+                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">DATE</label>
+                                <input type="date" id="report-date-input" class="btn btn-outline" style="width: 100%; text-align: left;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">AUTHOR / TEAM</label>
+                                <input type="text" id="report-author-input" class="btn btn-outline" style="width: 100%; text-align: left;" placeholder="e.g. GRiD UP Media">
+                            </div>
+                            <div>
+                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">BANNER IMAGE URL</label>
+                                <input type="text" id="report-banner-input" class="btn btn-outline" style="width: 100%; text-align: left;" placeholder="assets/bg-banner.png">
+                            </div>
+                            <div>
+                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">SUMMARY (Short excerpt)</label>
+                                <textarea id="report-summary-input" class="btn btn-outline" style="width: 100%; text-align: left; height: 80px;" placeholder="Brief description for the feed..."></textarea>
+                            </div>
+                            <div>
+                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">HTML CONTENT</label>
+                                <textarea id="report-content-input" class="btn btn-outline" style="width: 100%; text-align: left; height: 250px; font-family: monospace;" placeholder="<p>Full race report goes here...</p>"></textarea>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                            <button onclick="saveReport()" class="btn btn-primary" style="flex: 1;">SAVE REPORT</button>
+                            <button onclick="clearReportForm()" class="btn btn-outline" style="flex: 1;">CLEAR FORM</button>
+                        </div>
+                    </div>
+
+                    <div class="glass" style="padding: 2.5rem;">
+                        <h3 style="color: var(--primary); margin-bottom: 2rem; font-size: 0.9rem; letter-spacing: 2px;">PUBLISHED REPORTS</h3>
+                        <div id="admin-reports-list" class="grid" style="grid-template-columns: 1fr; gap: 1rem; max-height: 800px; overflow-y: auto; padding-right: 1rem;">
+                            <p style="text-align: center; color: var(--text-muted);">Loading reports...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         </div>
     </div>
@@ -865,7 +914,7 @@
             }
         }
         function switchTab(tab) {
-            const sections = ['applications', 'claims', 'races', 'admins', 'availability', 'roster', 'events', 'race-results', 'posters', 'streams', 'system'];
+            const sections = ['applications', 'claims', 'races', 'admins', 'availability', 'roster', 'events', 'race-results', 'reports', 'posters', 'streams', 'system'];
             sections.forEach(s => {
                 const el = document.getElementById(`section-${s}`);
                 if (el) el.style.display = (tab === s) ? 'block' : 'none';
@@ -880,13 +929,14 @@
                 'roster': 'Team Roster Management',
                 'events': 'Season Schedule',
                 'race-results': 'Race Results Portal',
+                'reports': 'Race Reports',
                 'posters': 'Poster Lab',
                 'streams': 'Live Streams',
                 'system': 'System Maintenance & Sync'
             };
-            document.getElementById('admin-title').textContent = titleMap[tab];
+            document.getElementById('admin-title').textContent = titleMap[tab] || tab;
             
-            const tabs = ['applications', 'claims', 'races', 'admins', 'availability', 'roster', 'events', 'race-results', 'posters', 'streams', 'system'];
+            const tabs = ['applications', 'claims', 'races', 'admins', 'availability', 'roster', 'events', 'race-results', 'reports', 'posters', 'streams', 'system'];
             tabs.forEach(t => {
                 const btn = document.getElementById(`tab-${t}`);
                 if (btn) {
@@ -907,6 +957,7 @@
             if (tab === 'race-results') loadEventResults();
             if (tab === 'streams') loadStreams();
             if (tab === 'posters') loadResults();
+            if (tab === 'reports') loadAdminReports();
         }
         let UPCOMING_EVENTS = [];
         let ALL_EVENTS = [];
@@ -2843,6 +2894,126 @@
     // Initialize Credits
     document.addEventListener('DOMContentLoaded', injectCredits);
     injectCredits();
+        // --- RACE REPORTS LOGIC ---
+        async function loadAdminReports() {
+            const list = document.getElementById('admin-reports-list');
+            if (!list) return;
+
+            try {
+                const snap = await db.collection("reports").orderBy("date", "desc").get();
+                if (snap.empty) {
+                    list.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No reports published.</p>';
+                    return;
+                }
+
+                list.innerHTML = '';
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    const id = doc.id;
+                    const date = data.date && data.date.toDate ? data.date.toDate().toLocaleDateString() : 'Unknown Date';
+                    
+                    const div = document.createElement('div');
+                    div.style.cssText = "background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 8px; padding: 1rem; display: flex; justify-content: space-between; align-items: center;";
+                    div.innerHTML = `
+                        <div>
+                            <strong style="color: var(--primary); display: block;">${data.title}</strong>
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">${date} - ${data.author || 'Admin'}</span>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button onclick="editReport('${id}')" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem;">EDIT</button>
+                            <button onclick="deleteReport('${id}')" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; border-color: #ff3333; color: #ff3333;">DEL</button>
+                        </div>
+                    `;
+                    list.appendChild(div);
+                });
+            } catch (e) {
+                console.error("Error loading reports:", e);
+                list.innerHTML = '<p style="color: #ff3333;">Error loading reports.</p>';
+            }
+        }
+
+        async function saveReport() {
+            const idInput = document.getElementById('report-id');
+            const titleInput = document.getElementById('report-title-input');
+            const dateInput = document.getElementById('report-date-input');
+            const authorInput = document.getElementById('report-author-input');
+            const bannerInput = document.getElementById('report-banner-input');
+            const summaryInput = document.getElementById('report-summary-input');
+            const contentInput = document.getElementById('report-content-input');
+
+            if (!titleInput.value || !dateInput.value || !contentInput.value) {
+                alert("Please fill in at least Title, Date, and Content.");
+                return;
+            }
+
+            const data = {
+                title: titleInput.value,
+                date: firebase.firestore.Timestamp.fromDate(new Date(dateInput.value)),
+                author: authorInput.value || 'GRiD UP',
+                bannerUrl: bannerInput.value || 'assets/bg-banner.png',
+                summary: summaryInput.value,
+                content: contentInput.value
+            };
+
+            try {
+                if (idInput.value) {
+                    await db.collection("reports").doc(idInput.value).update(data);
+                    alert("Report updated successfully!");
+                } else {
+                    await db.collection("reports").add(data);
+                    alert("Report published successfully!");
+                }
+                clearReportForm();
+                loadAdminReports();
+            } catch (e) {
+                console.error("Error saving report:", e);
+                alert("Error saving report.");
+            }
+        }
+
+        async function editReport(id) {
+            try {
+                const doc = await db.collection("reports").doc(id).get();
+                if (!doc.exists) return;
+                const data = doc.data();
+
+                document.getElementById('report-id').value = id;
+                document.getElementById('report-title-input').value = data.title || '';
+                
+                if (data.date && data.date.toDate) {
+                    const d = data.date.toDate();
+                    document.getElementById('report-date-input').value = d.toISOString().split('T')[0];
+                }
+                
+                document.getElementById('report-author-input').value = data.author || '';
+                document.getElementById('report-banner-input').value = data.bannerUrl || '';
+                document.getElementById('report-summary-input').value = data.summary || '';
+                document.getElementById('report-content-input').value = data.content || '';
+                
+            } catch (e) {
+                console.error("Error fetching report:", e);
+            }
+        }
+
+        async function deleteReport(id) {
+            if (!confirm("Are you sure you want to permanently delete this report?")) return;
+            try {
+                await db.collection("reports").doc(id).delete();
+                loadAdminReports();
+            } catch (e) {
+                console.error("Error deleting report:", e);
+            }
+        }
+
+        function clearReportForm() {
+            document.getElementById('report-id').value = '';
+            document.getElementById('report-title-input').value = '';
+            document.getElementById('report-date-input').value = '';
+            document.getElementById('report-author-input').value = '';
+            document.getElementById('report-banner-input').value = '';
+            document.getElementById('report-summary-input').value = '';
+            document.getElementById('report-content-input').value = '';
+        }
 </script>
 <footer style="padding: 2rem 0; border-top: 1px solid rgba(255,255,255,0.05); text-align: center; margin-top: 2rem;">
     <div style="display: flex; justify-content: center; gap: 1.5rem; margin-bottom: 1.5rem;">

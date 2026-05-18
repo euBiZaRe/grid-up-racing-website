@@ -17,9 +17,38 @@
     <meta property="og:image" content="https://raw.githubusercontent.com/gridup/gridup.github.io/main/assets/bg-banner.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upcoming Races | GRiD UP Sim Racing</title>
+    <title>Race Reports | GRiD UP Sim Racing</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/png" href="assets/G_2.png">
+    <style>
+        .report-body img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            margin: 2rem 0;
+            border: 1px solid var(--glass-border);
+        }
+        .report-body a {
+            color: var(--primary);
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+        .report-body h2, .report-body h3 {
+            margin-top: 3rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        .report-body blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 1.5rem;
+            margin: 2rem 0;
+            font-style: italic;
+            color: var(--text-muted);
+            background: rgba(255,255,255,0.02);
+            padding: 1.5rem;
+            border-radius: 0 12px 12px 0;
+        }
+    </style>
 </head>
 <body class="events-page">
     <nav id="navbar" class="scrolled">
@@ -47,60 +76,28 @@
         </div>
     </nav>
 
-    <header class="hero hero-small">
-        <img src="assets/bg-banner.png" alt="Upcoming Races" class="hero-img" style="opacity: 0.3;">
+    <header class="hero" id="report-hero" style="min-height: 60vh;">
+        <img src="assets/bg-banner.png" id="report-hero-img" alt="Race Report" class="hero-img" style="opacity: 0.5;">
         <div class="hero-overlay"></div>
-        <div class="hero-content">
-            <h1 class="glow-text" style="font-size: clamp(3rem, 8vw, 5rem); font-weight: 900;">Upcoming Races</h1>
-            <p style="color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 2px;">The 2026 iRacing Special Events Season</p>
+        <div class="hero-content container" style="text-align: left; padding-top: 5rem;">
+            <p id="report-date" style="color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.5rem;"></p>
+            <h1 id="report-title" class="glow-text" style="font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 900; margin-bottom: 1rem; text-align: left;">Loading Report...</h1>
+            <p id="report-author" style="color: var(--text-muted); font-size: 1rem; font-weight: 400;"></p>
         </div>
     </header>
 
-    <main class="container section" style="position: relative; overflow: hidden; padding-bottom: 2rem;">
-        <div class="tread-overlay" style="opacity: 0.05;"></div>
-        <div id="pastEventsSection" class="event-list custom-scrollbar" style="display: none; max-height: 500px; overflow-y: auto; margin-bottom: 3rem; opacity: 0.7; padding-right: 1.5rem; transition: all 0.3s ease;">
-            <h2 style="text-align: center; color: var(--text-muted); margin-bottom: 2rem; font-size: 1.5rem;">2026 Completed Events</h2>
-            
-            <div id="dynamic-past-list"></div>
-
-            <hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 3rem 0;">
+    <main class="container section" style="position: relative; overflow: hidden; padding-top: 3rem; padding-bottom: 5rem; max-width: 900px; margin: 0 auto;">
+        
+        <div id="report-content" class="report-body" style="font-size: 1.1rem; line-height: 1.8; color: var(--text-main);">
+            <div style="text-align: center; color: var(--text-muted); padding: 3rem;">
+                <p>Loading report content...</p>
+            </div>
         </div>
 
-
-        <div style="text-align: center; margin-bottom: 5rem;">
-            <button id="togglePastEvents" class="btn btn-outline" style="min-width: 200px;">Show Past Events</button>
-        </div>
-
-        <div id="full-event-list" class="event-list">
-            <p style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading season schedule...</p>
-        </div>
-
-        <div style="text-align: center; margin-top: 4rem;">
-            <a href="index.html" class="btn btn-outline">Back to Home</a>
+        <div style="text-align: center; margin-top: 5rem; padding-top: 3rem; border-top: 1px solid var(--glass-border);">
+            <a href="reports.html" class="btn btn-outline" style="min-width: 200px;">Back to Reports</a>
         </div>
     </main>
-
-    <section id="upcoming" class="section reveal">
-        <div class="container">
-            <h2 style="color: var(--primary); margin-bottom: 2rem; text-align: center;">Upcoming Races</h2>
-            
-            <div class="carousel-wrapper">
-                <div class="carousel-nav">
-                    <button class="carousel-btn prev-btn">←</button>
-                    <button class="carousel-btn next-btn">→</button>
-                </div>
-                <div class="upcoming-races-container">
-                    <div class="carousel-track" id="dynamic-upcoming-track">
-                        <p style="text-align: center; color: var(--text-muted); width: 100%;">Loading upcoming events...</p>
-                    </div>
-                </div>
-            </div>
-
-            <div style="text-align: center; margin-top: 2rem;">
-                <a href="index.html" class="btn btn-outline" style="padding: 0.6rem 1.2rem; font-size: 0.9rem;">Back to Home</a>
-            </div>
-        </div>
-    </section>
 
     <footer>
         <div class="container">
@@ -122,6 +119,47 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
     <script src="script.js?v=4"></script>
     <script src="js/auth.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get('id');
+        if (!id) { window.location.href = 'reports.html'; return; }
+
+        let attempts = 0;
+        while (typeof db === 'undefined' && attempts < 20) {
+            await new Promise(r => setTimeout(r, 200));
+            attempts++;
+        }
+        if (typeof db === 'undefined') return;
+
+        try {
+            const doc = await db.collection('reports').doc(id).get();
+            if (!doc.exists) { window.location.href = 'reports.html'; return; }
+            const data = doc.data();
+
+            // Update page title
+            document.title = `${data.title} | GRiD UP Race Reports`;
+
+            // Update hero
+            const heroImg = document.getElementById('report-hero-img');
+            if (heroImg && data.bannerUrl) { heroImg.src = data.bannerUrl; }
+
+            // Update meta fields
+            const rawDate = data.date && data.date.toDate ? data.date.toDate() : new Date();
+            const dateStr = rawDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+            document.getElementById('report-date').textContent = dateStr;
+            document.getElementById('report-title').textContent = data.title;
+            document.getElementById('report-author').textContent = `By ${data.author || 'GRiD UP'}`;
+
+            // Render content
+            document.getElementById('report-content').innerHTML = data.content || '<p style="color:var(--text-muted)">No content available.</p>';
+
+        } catch (e) {
+            console.error('Error loading report:', e);
+            document.getElementById('report-content').innerHTML = '<p style="color:#ff3333;">Error loading report.</p>';
+        }
+    });
+    </script>
 </body>
 </html>
 
