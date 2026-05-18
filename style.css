@@ -1857,6 +1857,7 @@ footer {
     margin-top: 4rem;
     flex-wrap: wrap;
     gap: 1rem;
+    position: relative; /* Allow absolute positioning of credits inside */
 }
 
 .bizare-credits {
@@ -1871,23 +1872,34 @@ footer {
     background: rgba(255,255,255,0.03);
     border: 1px solid rgba(255,255,255,0.05);
     border-radius: 4px;
+    position: absolute;
+    left: 5%;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 .bizare-credits:hover {
     color: var(--primary);
     background: rgba(0, 207, 255, 0.1);
     border-color: var(--primary);
-    transform: translateY(-2px);
-}
+    transform: translateY(-50%) scale(1.05);
 }
 
 @media (max-width: 768px) {
     footer {
         flex-direction: column;
         text-align: center;
+        padding: 3rem 1.5rem;
     }
     .bizare-credits {
+        position: static;
+        transform: none;
+        margin: 1.5rem auto 0 auto;
+        display: inline-block;
         order: 1; /* Move back to bottom on mobile */
+    }
+    .bizare-credits:hover {
+        transform: scale(1.05);
     }
 }
 
