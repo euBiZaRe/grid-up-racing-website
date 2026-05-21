@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seed Virginia 120 Report</title>
+    <style>
+        body { background: #0b0c10; color: #c5c6c7; font-family: monospace; padding: 2rem; }
+        .btn { padding: 1rem 2rem; background: #00ff88; color: #000; border: none; font-weight: bold; cursor: pointer; }
+        #log { margin-top: 2rem; background: #111; padding: 1rem; border: 1px solid #333; height: 300px; overflow-y: auto; }
+        .success { color: #00ff88; }
+        .error { color: #ff0055; }
+    </style>
+</head>
+<body>
+    <h1>Seed Virginia 120 Report</h1>
+    <p>This script will insert the "Virginia 120" race report into the Firestore `reports` collection.</p>
+    <button class="btn" onclick="seedReport()">PUBLISH REPORT NOW</button>
+    
+    <div id="log"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="js/auth.js"></script>
+
+    <script>
+        function log(msg, type = 'normal') {
+            const div = document.createElement('div');
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            if (type === 'success') div.className = 'success';
+            if (type === 'error') div.className = 'error';
+            document.getElementById('log').appendChild(div);
+            div.scrollIntoView();
+        }
+
+        const reportData = {
+            title: "Virginia 120: Endurance Awaits in GRiD UP GT Challenge",
+            slug: "virginia-120-endurance-awaits",
+            date: new Date("2026-05-23T12:00:00Z"),
+            author: "GRiD UP",
+            bannerUrl: "assets/bg-banner.png",
+            summary: "The next chapter of endurance racing arrives this weekend as GRiD UP prepares to host the Virginia 120, a high-stakes, in-house multiclass battle under the banner of the GT Challenge.",
+            content: `
+<p>The next chapter of endurance racing arrives this weekend as GRiD UP prepares to host the Virginia 120, a high-stakes, in-house multiclass battle under the banner of the GT Challenge. Taking place on Saturday, 23rd May 2026, teams will face a demanding 120-minute endurance contest, where strategy, consistency, and teamwork will be just as important as outright pace.</p>
+
+<p>With both GT3 and GT4 machinery sharing the circuit, drivers can expect intense traffic management, evolving race dynamics, and no shortage of drama as competitors fight for class honours.</p>
+
+<h2>A True Test of Endurance</h2>
+
+<p>The Virginia 120 isn’t simply about who can produce the fastest lap — it’s about who can survive, adapt, and execute under pressure. The multiclass nature of the event adds a crucial layer of complexity. For GT3 drivers, patience and precision when navigating slower traffic will be vital. For GT4 entries, maintaining rhythm while managing faster cars approaching from behind will dictate their success.</p>
+
+<p>With pit stops mandated, fuel strategy and tyre management will also play a decisive role. As track conditions evolve over the 120 minutes, teams that can keep a cool head and adapt their race pace will find themselves at the front of the pack when the chequered flag drops.</p>
+
+<h2>Event Schedule</h2>
+
+<p>To ensure a level playing field, all competitors must participate in a mandatory driver briefing prior to the event. The schedule for Saturday is as follows:</p>
+
+<blockquote>
+    <strong>Briefing:</strong> 16:30 Eastern<br>
+    <strong>Practice:</strong> 17:00 Eastern<br>
+    <strong>Qualifying:</strong> 17:30 Eastern<br>
+    <strong>Race Start:</strong> 17:40 Eastern
+</blockquote>
+
+<p>The circuit layout will demand respect. Known for its challenging technical sections, high-speed sweepers, and unforgiving run-off areas, the venue will test even the most experienced drivers. Mistakes here are heavily penalised, meaning consistency will ultimately triumph over raw speed.</p>
+
+<h2>Watch It Live</h2>
+
+<p>For those not behind the wheel, the action will be broadcast live. Fans, teammates, and motorsport enthusiasts can tune in to watch the drama unfold as GRiD UP’s finest go head-to-head.</p>
+            `
+        };
+
+        async function seedReport() {
+            log("Starting report publishing...");
+
+            if (typeof db === 'undefined') {
+                log("Firestore 'db' is not initialized. Make sure auth.js loaded correctly.", 'error');
+                return;
+            }
+
+            try {
+                // Check if it already exists
+                const snap = await db.collection("reports").where("slug", "==", reportData.slug).get();
+                if (!snap.empty) {
+                    log("Report already exists! Updating...", 'normal');
+                    const docId = snap.docs[0].id;
+                    await db.collection("reports").doc(docId).update(reportData);
+                    log("Successfully updated the report!", 'success');
+                } else {
+                    log("Inserting new report...");
+                    await db.collection("reports").add(reportData);
+                    log("Successfully published the Virginia 120 report!", 'success');
+                }
+
+            } catch (error) {
+                console.error(error);
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>
