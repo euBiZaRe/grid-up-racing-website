@@ -401,6 +401,27 @@
             </div>
         </section>
 
+        <!-- DYNAMIC RESULTS SECTION -->
+        <section id="league-results-section" style="margin: 8rem 0; display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem; flex-wrap: wrap; gap: 1.5rem;">
+                <div>
+                    <h2 style="color: var(--primary); margin-bottom: 0.5rem;">Official Race Results</h2>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Final standings for this event.</p>
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                <div class="results-class-group">
+                    <h3 style="color: #00cfff; font-size: 1.2rem; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(0,207,255,0.2); padding-bottom: 0.5rem; font-family: var(--font-heading); text-transform: uppercase; letter-spacing: 2px;">GT3 Class</h3>
+                    <div id="results-gt3" style="max-height: 500px; overflow-y: auto; padding-right: 1rem;" class="custom-scrollbar"></div>
+                </div>
+                <div class="results-class-group">
+                    <h3 style="color: #00ff88; font-size: 1.2rem; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(0,255,136,0.2); padding-bottom: 0.5rem; font-family: var(--font-heading); text-transform: uppercase; letter-spacing: 2px;">GT4 Class</h3>
+                    <div id="results-gt4" style="max-height: 500px; overflow-y: auto; padding-right: 1rem;" class="custom-scrollbar"></div>
+                </div>
+            </div>
+        </section>
+
         <section style="margin: 8rem 0; text-align: center;">
             <a href="league.html" class="btn btn-outline">Back to League Schedule</a>
         </section>
@@ -582,8 +603,65 @@
 
                 // Setup Real-time Listener for Registrations
                 setupRegistrationListener();
+                loadLeagueResults();
+
             } catch (e) {
                 console.error("Error loading detail:", e);
+            }
+        }
+
+        async function loadLeagueResults() {
+            try {
+                const snap = await db.collection("event_results").where("eventId", "==", eventId).get();
+                if (snap.empty) return;
+                
+                document.getElementById('league-results-section').style.display = 'block';
+                
+                let gt3 = [];
+                let gt4 = [];
+                
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    if (data.car && data.car.toUpperCase().includes("GT4")) {
+                        gt4.push(data);
+                    } else {
+                        gt3.push(data);
+                    }
+                });
+                
+                const sortByFinish = (a, b) => {
+                    const getPos = (str) => parseInt((str || '').replace(/[^0-9]/g, '')) || 999;
+                    return getPos(a.finish) - getPos(b.finish);
+                };
+                
+                gt3.sort(sortByFinish);
+                gt4.sort(sortByFinish);
+                
+                const renderRows = (arr) => {
+                    if (arr.length === 0) return '<p style="color: var(--text-muted); font-size: 0.9rem;">No results recorded.</p>';
+                    return arr.map(d => {
+                        const drivers = Array.isArray(d.drivers) ? d.drivers.join(', ') : (d.drivers || '');
+                        return `
+                            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 1rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div style="font-weight: 700; color: #fff; margin-bottom: 0.2rem;">${d.teamName}</div>
+                                    <div style="font-size: 0.75rem; color: var(--primary); margin-bottom: 0.2rem;">${d.car}</div>
+                                    <div style="font-size: 0.7rem; color: var(--text-muted); opacity: 0.7;">${drivers}</div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-weight: 900; font-size: 1.2rem; color: var(--primary);">${d.finish}</div>
+                                    <div style="font-size: 0.7rem; color: var(--text-muted);">Qualy: ${d.qualy}</div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                };
+                
+                document.getElementById('results-gt3').innerHTML = renderRows(gt3);
+                document.getElementById('results-gt4').innerHTML = renderRows(gt4);
+                
+            } catch(e) {
+                console.error("Error loading league results:", e);
             }
         }
 

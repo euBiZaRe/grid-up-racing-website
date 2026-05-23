@@ -1023,6 +1023,10 @@ async function loadAllResults() {
         resultsSnap.forEach(doc => {
             const data = doc.data();
             const eId = data.eventId;
+            
+            // Skip league event results from global view
+            if (eId && eId.startsWith('gtc-')) return;
+            
             if (!groupedResults[eId]) {
                 groupedResults[eId] = [];
                 orderedEventIds.push(eId);

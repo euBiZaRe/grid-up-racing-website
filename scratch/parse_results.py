@@ -1,0 +1,97 @@
+import json
+
+with open('C:/Users/Mattys PC/Downloads/eventresult-85961711 (1).json', 'r', encoding='utf-8') as f:
+    data = json.load(f)
+
+race_session = None
+for s in data['data']['session_results']:
+    if s['simsession_type_name'] == 'Race':
+        race_session = s
+        break
+
+if not race_session:
+    print("No Race session found")
+    exit(1)
+
+results = race_session['results']
+
+event_results = []
+for idx, r in enumerate(results):
+    car = r['car_name']
+    qualy = f"P{r['starting_position_in_class'] + 1}"
+    finish = f"P{r['finish_position_in_class'] + 1}"
+    
+    if 'driver_results' in r and len(r['driver_results']) > 0:
+        teamName = r['display_name']
+        drivers = [d['display_name'] for d in r['driver_results']]
+    else:
+        teamName = r['display_name']
+        drivers = [r['display_name']]
+
+    res = {
+        "eventId": "gtc-virginia-120",
+        "teamName": teamName,
+        "car": car,
+        "qualy": qualy,
+        "finish": finish,
+        "drivers": drivers,
+        "timestamp": "2026-05-23T16:00:00Z"
+    }
+        
+    event_results.append(res)
+
+html_content = """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Seed Virginia 120 Results</title>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <!-- Our Auth Config -->
+    <script src="js/auth.js"></script>
+    
+    <style>
+        body { font-family: sans-serif; padding: 2rem; background: #0a0a0c; color: white; }
+        button { padding: 1rem 2rem; background: #00cfff; border: none; color: black; font-weight: bold; cursor: pointer; border-radius: 4px; }
+        #log { margin-top: 1rem; color: #00ff88; white-space: pre; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>Seed Virginia 120 Results</h1>
+    <button onclick="seedDatabase()">Seed Results</button>
+    <div id="log"></div>
+
+    <script>
+        const EVENT_RESULTS = """ + json.dumps(event_results, indent=4) + """;
+
+        async function seedDatabase() {
+            const logDiv = document.getElementById('log');
+            logDiv.innerHTML = "Starting batch insert...\\n";
+            try {
+                if (typeof db === 'undefined') throw new Error("Firestore not initialized.");
+                
+                const batch = db.batch();
+                EVENT_RESULTS.forEach((res) => {
+                    const docRef = db.collection('event_results').doc();
+                    res.timestamp = firebase.firestore.Timestamp.fromDate(new Date(res.timestamp));
+                    batch.set(docRef, res);
+                    logDiv.innerHTML += `Queued: ${res.teamName} - Finish: ${res.finish}\\n`;
+                });
+                await batch.commit();
+                logDiv.innerHTML += "\\nSUCCESS: All results seeded to Firestore!";
+            } catch (e) {
+                console.error(e);
+                logDiv.innerHTML += `\\nERROR: ${e.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
+"""
+
+with open('F:/Grid Up/Website/seed_virginia_results.html', 'w', encoding='utf-8') as f:
+    f.write(html_content)
+
+print("Generated seed_virginia_results.html successfully.")
