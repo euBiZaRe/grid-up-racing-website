@@ -226,6 +226,23 @@
                         <div style="font-size: 0.9rem; color: var(--text-muted);">Live coverage by Motormouth Broadcasting</div>
                     </div>
                 </div>
+
+                <!-- INLINE RESULTS SECTION -->
+                <div id="league-results-section" style="display: none; margin-top: 2.5rem; border-top: 1px solid rgba(0,207,255,0.15); padding-top: 2rem;">
+                    <h3 style="color: var(--primary); margin-bottom: 1.5rem; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; font-family: var(--font-heading); text-transform: uppercase; letter-spacing: 2px;">
+                        <span style="font-size: 1.3rem;">🏆</span> Official Race Results
+                    </h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                        <div>
+                            <h4 style="color: #00cfff; font-size: 0.75rem; margin-bottom: 1rem; border-bottom: 1px solid rgba(0,207,255,0.2); padding-bottom: 0.4rem; font-family: var(--font-heading); text-transform: uppercase; letter-spacing: 2px;">GT3 Class</h4>
+                            <div id="results-gt3" style="max-height: 400px; overflow-y: auto; padding-right: 0.5rem;" class="custom-scrollbar"></div>
+                        </div>
+                        <div>
+                            <h4 style="color: #00ff88; font-size: 0.75rem; margin-bottom: 1rem; border-bottom: 1px solid rgba(0,255,136,0.2); padding-bottom: 0.4rem; font-family: var(--font-heading); text-transform: uppercase; letter-spacing: 2px;">GT4 Class</h4>
+                            <div id="results-gt4" style="max-height: 400px; overflow-y: auto; padding-right: 0.5rem;" class="custom-scrollbar"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 2rem;">
@@ -401,26 +418,7 @@
             </div>
         </section>
 
-        <!-- DYNAMIC RESULTS SECTION -->
-        <section id="league-results-section" style="margin: 8rem 0; display: none;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem; flex-wrap: wrap; gap: 1.5rem;">
-                <div>
-                    <h2 style="color: var(--primary); margin-bottom: 0.5rem;">Official Race Results</h2>
-                    <p style="color: var(--text-muted); font-size: 0.9rem;">Final standings for this event.</p>
-                </div>
-            </div>
-            
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
-                <div class="results-class-group">
-                    <h3 style="color: #00cfff; font-size: 1.2rem; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(0,207,255,0.2); padding-bottom: 0.5rem; font-family: var(--font-heading); text-transform: uppercase; letter-spacing: 2px;">GT3 Class</h3>
-                    <div id="results-gt3" style="max-height: 500px; overflow-y: auto; padding-right: 1rem;" class="custom-scrollbar"></div>
-                </div>
-                <div class="results-class-group">
-                    <h3 style="color: #00ff88; font-size: 1.2rem; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(0,255,136,0.2); padding-bottom: 0.5rem; font-family: var(--font-heading); text-transform: uppercase; letter-spacing: 2px;">GT4 Class</h3>
-                    <div id="results-gt4" style="max-height: 500px; overflow-y: auto; padding-right: 1rem;" class="custom-scrollbar"></div>
-                </div>
-            </div>
-        </section>
+        <!-- Results now embedded inside the Event Schedule card above -->
 
         <section style="margin: 8rem 0; text-align: center;">
             <a href="league.html" class="btn btn-outline">Back to League Schedule</a>
@@ -526,7 +524,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-    <script src="script.js"></script>
+    <script src="script.js?v=7"></script>
     <script src="js/auth.js"></script>
     <script>
         let currentStatus = 'unregistered';
