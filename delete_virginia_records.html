@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Delete Virginia 120 Records</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="js/auth.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 2rem; background: #0a0a0c; color: white; }
+        button { padding: 1rem 2rem; background: #ff3c3c; border: none; color: white; font-weight: bold; cursor: pointer; border-radius: 4px; margin: 0.5rem 0; display: block; }
+        #log { margin-top: 1rem; color: #00ff88; white-space: pre; font-family: monospace; }
+        .error { color: #ff3c3c; }
+    </style>
+</head>
+<body>
+    <h1>Delete Virginia 120 Records</h1>
+    <p>This will permanently delete:<br>
+    • Entry: <strong>Jim Cunningham</strong> from the registrations<br>
+    • Result: <strong>MotorMouth Broadcasting</strong> from event results</p>
+
+    <button onclick="deleteRecords()">Delete Records</button>
+    <div id="log"></div>
+
+    <script>
+        const EVENT_ID = 'gtc-virginia-120';
+        const log = (msg, err) => {
+            const div = document.getElementById('log');
+            div.innerHTML += `<span class="${err ? 'error' : ''}">${msg}\n</span>`;
+        };
+
+        async function deleteRecords() {
+            if (typeof db === 'undefined') {
+                log('ERROR: Firestore not initialized yet. Wait a moment and try again.', true);
+                return;
+            }
+
+            log('Starting deletion...\n');
+
+            // 1. Delete Jim Cunningham from registrations
+            try {
+                const regSnap = await db.collection('leagues').doc(EVENT_ID)
+                    .collection('registrations')
+                    .get();
+
+                let found = false;
+                for (const doc of regSnap.docs) {
+                    const data = doc.data();
+                    const nameMatch = (data.name || '').toLowerCase().includes('jim cunningham') ||
+                                      (data.teamName || '').toLowerCase().includes('jim cunningham');
+                    if (nameMatch) {
+                        await doc.ref.delete();
+                        log(`✅ Deleted registration: ${data.name || data.teamName} (doc id: ${doc.id})`);
+                        found = true;
+                    }
+                }
+                if (!found) log('⚠️ No registration found for Jim Cunningham');
+            } catch (e) {
+                log(`ERROR deleting registration: ${e.message}`, true);
+            }
+
+            // 2. Delete MotorMouth Broadcasting from event_results
+            try {
+                const resSnap = await db.collection('event_results')
+                    .where('eventId', '==', EVENT_ID)
+                    .get();
+
+                let found = false;
+                for (const doc of resSnap.docs) {
+                    const data = doc.data();
+                    if ((data.teamName || '').toLowerCase().includes('motormouth')) {
+                        await doc.ref.delete();
+                        log(`✅ Deleted result: ${data.teamName} (doc id: ${doc.id})`);
+                        found = true;
+                    }
+                }
+                if (!found) log('⚠️ No result found for MotorMouth Broadcasting');
+            } catch (e) {
+                log(`ERROR deleting result: ${e.message}`, true);
+            }
+
+            log('\nDone! Refresh the event page to confirm.');
+        }
+    </script>
+</body>
+</html>

@@ -239,7 +239,13 @@
                     const card = document.createElement('div');
                     card.className = 'league-card reveal active';
 
-                    const isOpen = data.registrationStatus === 'open';
+                    // Determine event status based on date
+                    const eventDateStr = data.startDate || data.date;
+                    const eventDate = eventDateStr ? new Date(eventDateStr) : null;
+                    const now = new Date();
+                    const isComplete = eventDate && eventDate < now;
+                    const isOpen = !isComplete && data.registrationStatus === 'open';
+
                     const posterUrl = data.bannerUrl || LEAGUE_POSTERS[doc.id];
                     const bannerHtml = posterUrl
                         ? `<div class="league-card-banner" style="background-image: url('${posterUrl}')"></div>`
@@ -254,7 +260,6 @@
                     let scheduleText = data.schedule || 'Weekly // Wednesdays';
                     let descText = data.description || 'Join our premier racing series with professional stewarding and broadcasting.';
                     
-                    const eventDateStr = data.startDate || data.date;
                     if (eventDateStr) {
                         const raceDate = new Date(eventDateStr);
                         const practiceDate = new Date(raceDate.getTime() - (60 * 60000)); // Practice is 1 hour before
@@ -272,13 +277,35 @@
                         descText = descText.replace(/Practice starts at.*?(?:EST|EDT)[,.]?\s*Green Flag at.*?(?:EST|EDT)\.?/gi, '').trim();
                     }
 
+                    // Status display logic
+                    let statusColor, statusDotClass, statusLabel, btnText, btnStyle;
+                    if (isComplete) {
+                        statusColor = '#a0a0a0';
+                        statusDotClass = 'status-closed';
+                        statusLabel = 'Event Complete';
+                        btnText = 'VIEW RESULTS';
+                        btnStyle = '';
+                    } else if (isOpen) {
+                        statusColor = '#00ff88';
+                        statusDotClass = 'status-open';
+                        statusLabel = 'Registration Open';
+                        btnText = 'VIEW EVENT DETAILS';
+                        btnStyle = '';
+                    } else {
+                        statusColor = '#ff3c3c';
+                        statusDotClass = 'status-closed';
+                        statusLabel = 'Season in Progress';
+                        btnText = 'JOIN WAITING LIST';
+                        btnStyle = 'opacity: 0.5; pointer-events: none;';
+                    }
+
                     card.innerHTML = `
                         ${bannerHtml}
                         <div class="league-badge">${data.carClass || 'GT3'}</div>
                         <div class="league-info">
-                            <div class="league-status" style="color: ${isOpen ? '#00ff88' : '#ff3c3c'}">
-                                <span class="status-dot ${isOpen ? 'status-open' : 'status-closed'}"></span>
-                                ${isOpen ? 'Registration Open' : 'Season in Progress'}
+                            <div class="league-status" style="color: ${statusColor}">
+                                <span class="status-dot ${statusDotClass}" style="${isComplete ? 'background: #a0a0a0; box-shadow: none;' : ''}"></span>
+                                ${statusLabel}
                             </div>
                             <h3 style="font-size: 1.8rem; margin: 1rem 0 0.5rem; font-weight: 800;">${data.name}</h3>
                             <p style="color: var(--primary); font-family: var(--font-heading); font-size: 0.8rem; letter-spacing: 2px;">${scheduleText}</p>
@@ -286,8 +313,8 @@
                         <div style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; margin: 1rem 0;">
                             ${descText}
                         </div>
-                        <a href="league-detail.html?id=${doc.id}" class="btn" style="width: 100%; text-align: center; margin-top: auto; ${!isOpen ? 'opacity: 0.5; pointer-events: none;' : ''}">
-                            ${isOpen ? 'VIEW EVENT DETAILS' : 'JOIN WAITING LIST'}
+                        <a href="league-detail.html?id=${doc.id}" class="btn" style="width: 100%; text-align: center; margin-top: auto; ${btnStyle}">
+                            ${btnText}
                         </a>
                     `;
                     list.appendChild(card);

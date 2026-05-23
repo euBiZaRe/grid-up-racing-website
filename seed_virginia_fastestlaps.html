@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Update Virginia 120 — Fastest Laps</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="js/auth.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 2rem; background: #0a0a0c; color: white; }
+        button { padding: 1rem 2rem; background: #00cfff; border: none; color: black; font-weight: bold; cursor: pointer; border-radius: 4px; }
+        #log { margin-top: 1rem; color: #00ff88; white-space: pre; font-family: monospace; }
+        .error { color: #ff3c3c; }
+    </style>
+</head>
+<body>
+    <h1>Update Virginia 120 — Fastest Laps</h1>
+    <p>This will update all event_results for <strong>gtc-virginia-120</strong> with fastest lap times from the iRacing export.</p>
+    <button onclick="updateFastestLaps()">Update Fastest Laps</button>
+    <div id="log"></div>
+
+    <script>
+        const EVENT_ID = 'gtc-virginia-120';
+
+        // Fastest laps extracted from iRacing JSON (best_lap_time / 10000 = seconds)
+        const FASTEST_LAPS = {
+            'juan':                        '1:45.330',
+            'Refined Motorsport':          '1:45.892',
+            '~* Dream Team *~':            '1:46.113',
+            'Team Jacob Reid5':            '1:46.335',
+            'Depend for Men Motorsports':  '1:46.577',
+            'F&F Racing':                  '1:45.526',
+            'solo dolo':                   '1:54.840',
+            'Motohaus White':              '1:56.231',
+            'Apex Junky Motorsports':      '1:56.053',
+            'Team Bayou Dust':             '1:56.205',
+            'Bee Hive Racing':             '1:54.995',
+            'Angry Rooster Racing':        '1:56.300',
+            'Rev Limit Racing':            '1:58.202',
+            'Grumpy duck racing':          '1:57.008',
+            'Razor Racing':                '1:57.214',
+            'Team Breakfast':              '1:46.040',
+            'Jayden Goslin':               'N/A',
+            'Koch Motorsports':            'N/A',
+        };
+
+        const log = (msg, err) => {
+            document.getElementById('log').innerHTML += `<span class="${err ? 'error' : ''}">${msg}\n</span>`;
+        };
+
+        async function updateFastestLaps() {
+            if (typeof db === 'undefined') {
+                log('ERROR: Firestore not initialized. Wait a moment and try again.', true);
+                return;
+            }
+            log('Fetching event results...\n');
+
+            try {
+                const snap = await db.collection('event_results')
+                    .where('eventId', '==', EVENT_ID)
+                    .get();
+
+                if (snap.empty) {
+                    log('No results found for gtc-virginia-120.', true);
+                    return;
+                }
+
+                let updated = 0, skipped = 0;
+                for (const doc of snap.docs) {
+                    const data = doc.data();
+                    const team = data.teamName || '';
+                    const fastestLap = FASTEST_LAPS[team];
+
+                    if (fastestLap !== undefined) {
+                        await doc.ref.update({ fastestLap });
+                        log(`✅ Updated: ${team} → ${fastestLap}`);
+                        updated++;
+                    } else {
+                        log(`⚠️  No match found for: "${team}"`);
+                        skipped++;
+                    }
+                }
+
+                log(`\nDone! ${updated} updated, ${skipped} skipped.`);
+                log('Refresh the event page to see fastest laps in the results.');
+            } catch (e) {
+                log(`ERROR: ${e.message}`, true);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -599,6 +599,21 @@
                     heroEl.style.backgroundPosition = 'center top';
                 }
 
+                // Check if event is complete
+                const isEventComplete = eventDateStr && new Date(eventDateStr) < new Date();
+                if (isEventComplete) {
+                    const panel = document.getElementById('driver-status-panel');
+                    if (panel) {
+                        panel.innerHTML = `
+                            <div style="text-align: center; padding: 1.5rem 0;">
+                                <div style="font-size: 2rem; margin-bottom: 0.75rem;">🏁</div>
+                                <div style="font-family: var(--font-heading); font-size: 1.2rem; color: #a0a0a0; font-weight: 800; letter-spacing: 2px; margin-bottom: 0.5rem;">EVENT COMPLETE</div>
+                                <div style="font-size: 0.8rem; color: var(--text-muted);">This event has concluded. View the results below.</div>
+                            </div>
+                        `;
+                    }
+                }
+
                 // Setup Real-time Listener for Registrations
                 setupRegistrationListener();
                 loadLeagueResults();
@@ -639,12 +654,16 @@
                     if (arr.length === 0) return '<p style="color: var(--text-muted); font-size: 0.9rem;">No results recorded.</p>';
                     return arr.map(d => {
                         const drivers = Array.isArray(d.drivers) ? d.drivers.join(', ') : (d.drivers || '');
+                        const lapDisplay = d.fastestLap && d.fastestLap !== 'N/A'
+                            ? `<div style="font-size: 0.65rem; color: #c084fc; margin-top: 0.3rem; font-weight: 700; letter-spacing: 0.5px;">⏱ ${d.fastestLap}</div>`
+                            : '';
                         return `
                             <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 1rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
                                 <div>
                                     <div style="font-weight: 700; color: #fff; margin-bottom: 0.2rem;">${d.teamName}</div>
                                     <div style="font-size: 0.75rem; color: var(--primary); margin-bottom: 0.2rem;">${d.car}</div>
                                     <div style="font-size: 0.7rem; color: var(--text-muted); opacity: 0.7;">${drivers}</div>
+                                    ${lapDisplay}
                                 </div>
                                 <div style="text-align: right;">
                                     <div style="font-weight: 900; font-size: 1.2rem; color: var(--primary);">${d.finish}</div>
