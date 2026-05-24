@@ -128,11 +128,11 @@
             <div style="display: flex; flex-direction: column; align-items: center; max-width: 900px; margin: 0 auto;">
                 <div style="background: rgba(0, 207, 255, 0.1); border: 1px solid var(--primary); padding: 0.5rem 1.5rem; border-radius: 50px; font-size: 0.75rem; font-weight: 800; letter-spacing: 3px; color: var(--primary); margin-bottom: 2rem; text-transform: uppercase;">Next Major Event</div>
                 
-                <h1 id="featured-name" class="glow-text" style="font-size: clamp(2.5rem, 8vw, 5.5rem); font-weight: 900; line-height: 1.1; margin-bottom: 1rem;">GT CHALLENGE: VIRGINIA 120</h1>
-                <p id="featured-track" style="font-family: var(--font-heading); font-size: 1.25rem; letter-spacing: 4px; color: var(--text-main); opacity: 0.8; margin-bottom: 3rem;">VIRGINIA INTERNATIONAL RACEWAY</p>
+                <h1 id="featured-name" class="glow-text" style="font-size: clamp(2.5rem, 8vw, 5.5rem); font-weight: 900; line-height: 1.1; margin-bottom: 1rem;">GT CHALLENGE: THE GLEN 24</h1>
+                <p id="featured-track" style="font-family: var(--font-heading); font-size: 1.25rem; letter-spacing: 4px; color: var(--text-main); opacity: 0.8; margin-bottom: 3rem;">WATKINS GLEN INTERNATIONAL</p>
                 
                 <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center; margin-top: 2rem;">
-                    <a href="league-detail.html?id=gtc-virginia-120" class="btn" style="padding: 1.2rem 3rem; font-size: 1rem; box-shadow: 0 0 40px var(--primary-glow);">VIEW EVENT DETAILS</a>
+                    <a href="league-detail.html?id=gtc-glen-24" id="featured-link" class="btn" style="padding: 1.2rem 3rem; font-size: 1rem; box-shadow: 0 0 40px var(--primary-glow);">VIEW EVENT DETAILS</a>
                     <a href="https://discord.gg/gridup" class="btn btn-outline" style="padding: 1.2rem 3rem; font-size: 1rem;">JOIN DISCORD</a>
                 </div>
             </div>
@@ -220,7 +220,7 @@
                 }
 
                 list.innerHTML = '';
-                let firstBannerUrl = null;
+                let firstEventData = null;
 
                 const LEAGUE_POSTERS = {
                     'gtc-virginia-120':   'assets/league-posters/Virginia.png',
@@ -232,6 +232,19 @@
                     'gtc-atlanta-120':    'assets/league-posters/Atlanta.png',
                     'gtc-indy-3h':        'assets/league-posters/Indy.png',
                     'gtc-sonoma-120':     'assets/league-posters/Sonoma Valley.png',
+                };
+
+                // Track mapping
+                const TRACK_NAMES = {
+                    'gtc-virginia-120':   'VIRGINIA INTERNATIONAL RACEWAY',
+                    'gtc-glen-24':        'WATKINS GLEN INTERNATIONAL',
+                    'gtc-spa-3h':         'CIRCUIT DE SPA-FRANCORCHAMPS',
+                    'gtc-elkhart-24':     'ROAD AMERICA',
+                    'gtc-barcelona-120':  'CIRCUIT DE BARCELONA-CATALUNYA',
+                    'gtc-suzuka-24':      'SUZUKA INTERNATIONAL RACING COURSE',
+                    'gtc-atlanta-120':    'ROAD ATLANTA',
+                    'gtc-indy-3h':        'INDIANAPOLIS MOTOR SPEEDWAY',
+                    'gtc-sonoma-120':     'SONOMA RACEWAY'
                 };
 
                 snap.forEach(doc => {
@@ -251,9 +264,14 @@
                         ? `<div class="league-card-banner" style="background-image: url('${posterUrl}')"></div>`
                         : '';
 
-                    // Use the first open event's banner for the hero
-                    if (!firstBannerUrl && isOpen && posterUrl) {
-                        firstBannerUrl = posterUrl;
+                    // Use the first open event for the hero
+                    if (!firstEventData && isOpen && posterUrl) {
+                        firstEventData = {
+                            id: doc.id,
+                            name: data.name,
+                            posterUrl: posterUrl,
+                            track: TRACK_NAMES[doc.id] || 'TBD'
+                        };
                     }
 
                     // Parse dynamic times for localization
@@ -320,14 +338,21 @@
                     list.appendChild(card);
                 });
 
-                // Dynamically update hero background with first event's banner
-                if (firstBannerUrl) {
+                // Dynamically update hero
+                if (firstEventData) {
                     const hero = document.getElementById('featured-hero');
+                    const heroName = document.getElementById('featured-name');
+                    const heroTrack = document.getElementById('featured-track');
+                    const heroLink = document.getElementById('featured-link');
+                    
                     if (hero) {
-                        hero.style.background = `linear-gradient(to bottom, rgba(10,12,16,0.45), var(--bg-dark)), url('${firstBannerUrl}')`;
+                        hero.style.background = `linear-gradient(to bottom, rgba(10,12,16,0.45), var(--bg-dark)), url('${firstEventData.posterUrl}')`;
                         hero.style.backgroundSize = 'cover';
                         hero.style.backgroundPosition = 'center top';
                     }
+                    if (heroName) heroName.textContent = firstEventData.name;
+                    if (heroTrack) heroTrack.textContent = firstEventData.track;
+                    if (heroLink) heroLink.href = `league-detail.html?id=${firstEventData.id}`;
                 }
             } catch (e) {
                 console.error("Error loading leagues:", e);
