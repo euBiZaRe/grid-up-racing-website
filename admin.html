@@ -413,6 +413,10 @@
                         <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">EVENT DESCRIPTION / OVERVIEW</label>
                         <textarea id="edit-event-description" class="btn btn-outline" style="width:100%; text-align:left; min-height: 100px; line-height: 1.4; padding: 1rem;" placeholder="Write a brief overview of the race..."></textarea>
                     </div>
+                    <div>
+                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">BROADCAST URL (Optional)</label>
+                        <input type="text" id="edit-event-broadcast" class="btn btn-outline" style="width:100%; text-align:left;" placeholder="https://youtube.com/watch?v=...">
+                    </div>
                 </div>
                 <div style="margin-top: 3rem; display: flex; gap: 1rem;">
                     <button onclick="saveEvent()" class="btn btn-primary" style="flex: 2;">Save Event</button>
@@ -1086,6 +1090,7 @@
             document.getElementById('edit-event-track').value = event ? (event.track || '') : '';
             document.getElementById('edit-event-date').value = event ? event.date : '';
             document.getElementById('edit-event-description').value = event ? (event.description || '') : '';
+            document.getElementById('edit-event-broadcast').value = event ? (event.broadcastUrl || '') : '';
             
             if (event && event.startDate) {
                 const date = new Date(event.startDate);
@@ -1130,6 +1135,7 @@
             const type = document.getElementById('edit-event-type').value.trim();
             const distance = document.getElementById('edit-event-distance').value.trim();
             const description = document.getElementById('edit-event-description').value.trim();
+            const broadcastUrl = document.getElementById('edit-event-broadcast').value.trim();
 
             if (!id || !name || !dateStr || !startStr) return alert("Please fill all required fields.");
 
@@ -1150,6 +1156,7 @@
                 type: type,
                 distance: distance,
                 description: description,
+                broadcastUrl: broadcastUrl,
                 slots: IMSA_SLOTS // For now, we use standard slots for all
             };
 
