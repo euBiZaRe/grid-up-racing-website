@@ -163,6 +163,7 @@
                     <button onclick="switchTab('availability')" class="btn btn-outline" id="tab-availability">AVAILABILITY</button>
                     <button onclick="switchTab('roster')" class="btn btn-outline" id="tab-roster">TEAM ROSTER</button>
                     <button onclick="switchTab('events')" class="btn btn-outline" id="tab-events">SEASON SCHEDULE</button>
+                    <button onclick="switchTab('leagues')" class="btn btn-outline" id="tab-leagues">LEAGUE EVENT SCHEDULE</button>
                     <button onclick="switchTab('race-results')" class="btn btn-outline" id="tab-race-results">RACE RESULTS</button>
                     <button onclick="switchTab('reports')" class="btn btn-outline" id="tab-reports">RACE REPORTS</button>
                     <button onclick="switchTab('posters')" class="btn btn-outline" id="tab-posters">POSTER LAB</button>
@@ -423,7 +424,75 @@
                     <button onclick="hideEventModal()" class="btn btn-outline" style="flex: 1;">Cancel</button>
                 </div>
             </div>
-            <div id="modal-backdrop" onclick="hideEventModal()" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999;"></div>
+            <div id="modal-backdrop" onclick="hideEventModal(); hideLeagueModal();" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999;"></div>
+
+            <!-- League Management Section -->
+            <div id="section-leagues" class="tab-content" style="display: none;">
+                <div class="glass" style="padding: 2.5rem; margin-bottom: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem;">
+                        <div>
+                            <h3 style="color: var(--primary); font-size: 1.2rem; margin-bottom: 0.5rem;">League Event Schedule</h3>
+                            <p style="color: var(--text-muted); font-size: 0.8rem;">Manage standalone league races and their details.</p>
+                        </div>
+                        <button onclick="showLeagueModal()" class="btn btn-primary" style="box-shadow: 0 0 20px rgba(0,207,255,0.3);">+ Create League Event</button>
+                    </div>
+                    
+                    <div id="leagues-manager-list" class="grid" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+                        <!-- Leagues populated here -->
+                        <p style="text-align: center; color: var(--text-muted); grid-column: 1/-1;">Loading league events...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- League Edit Modal -->
+            <div id="league-modal" class="modal-glass" style="display: none;">
+                <h2 id="league-modal-title" class="glow-text" style="margin-bottom: 2rem;">Edit League Event</h2>
+                <div style="display: grid; gap: 1.5rem;">
+                    <div>
+                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">EVENT ID (Cannot change)</label>
+                        <input type="text" id="edit-league-id" class="btn btn-outline" style="width:100%; text-align:left;" placeholder="e.g. gtc-glen-24">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">EVENT NAME</label>
+                        <input type="text" id="edit-league-name" class="btn btn-outline" style="width:100%; text-align:left;" placeholder="e.g. GT CHALLENGE: THE GLEN 24">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">CAR CLASS</label>
+                        <input type="text" id="edit-league-class" class="btn btn-outline" style="width:100%; text-align:left;" placeholder="e.g. GT3">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">DATE / SCHEDULE (Text Display)</label>
+                        <input type="text" id="edit-league-schedule" class="btn btn-outline" style="width:100%; text-align:left;" placeholder="e.g. Wednesdays // 8:00PM EST">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">START DATE (Used to show Completion Status)</label>
+                        <input type="datetime-local" id="edit-league-start" class="btn btn-outline" style="width:100%; text-align:left; color-scheme: dark;">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">REGISTRATION STATUS</label>
+                        <select id="edit-league-status" class="btn btn-outline" style="width: 100%; text-align: left; padding: 1rem;">
+                            <option value="open">Open</option>
+                            <option value="closed">Closed / In Progress</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">BANNER URL (Optional Poster)</label>
+                        <input type="text" id="edit-league-banner" class="btn btn-outline" style="width:100%; text-align:left;" placeholder="https://imgur.com/...">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">BROADCAST URL (Optional)</label>
+                        <input type="text" id="edit-league-broadcast" class="btn btn-outline" style="width:100%; text-align:left;" placeholder="https://youtube.com/watch?v=...">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">EVENT DESCRIPTION</label>
+                        <textarea id="edit-league-description" class="btn btn-outline" style="width:100%; text-align:left; min-height: 100px; line-height: 1.4; padding: 1rem;" placeholder="Description of the league event..."></textarea>
+                    </div>
+                </div>
+                <div style="margin-top: 3rem; display: flex; gap: 1rem;">
+                    <button onclick="saveLeague()" class="btn btn-primary" style="flex: 2;">Save League Event</button>
+                    <button onclick="hideLeagueModal()" class="btn btn-outline" style="flex: 1;">Cancel</button>
+                </div>
+            </div>
 
             <!-- Roster Management Section -->
             <div id="section-roster" class="tab-content" style="display: none;">
@@ -904,7 +973,7 @@
             }
         }
         function switchTab(tab) {
-            const sections = ['applications', 'claims', 'races', 'admins', 'availability', 'roster', 'events', 'race-results', 'reports', 'posters', 'streams', 'system'];
+            const sections = ['applications', 'claims', 'races', 'admins', 'availability', 'roster', 'events', 'leagues', 'race-results', 'reports', 'posters', 'streams', 'system'];
             sections.forEach(s => {
                 const el = document.getElementById(`section-${s}`);
                 if (el) el.style.display = (tab === s) ? 'block' : 'none';
@@ -918,6 +987,7 @@
                 'availability': 'Availability Matrix',
                 'roster': 'Team Roster Management',
                 'events': 'Season Schedule',
+                'leagues': 'League Event Schedule',
                 'race-results': 'Race Results Portal',
                 'reports': 'Race Reports',
                 'posters': 'Poster Lab',
@@ -926,7 +996,7 @@
             };
             document.getElementById('admin-title').textContent = titleMap[tab] || tab;
             
-            const tabs = ['applications', 'claims', 'races', 'admins', 'availability', 'roster', 'events', 'race-results', 'reports', 'posters', 'streams', 'system'];
+            const tabs = ['applications', 'claims', 'races', 'admins', 'availability', 'roster', 'events', 'leagues', 'race-results', 'reports', 'posters', 'streams', 'system'];
             tabs.forEach(t => {
                 const btn = document.getElementById(`tab-${t}`);
                 if (btn) {
@@ -944,6 +1014,7 @@
             }
             if (tab === 'availability') loadAvailability();
             if (tab === 'events') loadEvents();
+            if (tab === 'leagues') loadLeaguesAdmin();
             if (tab === 'race-results') loadEventResults();
             if (tab === 'streams') loadStreams();
             if (tab === 'posters') loadResults();
@@ -2399,6 +2470,157 @@
             } catch(e) {
                 console.error("Error deleting stream:", e);
                 alert("Failed to delete stream.");
+            }
+        }
+
+        // ==========================================
+        // LEAGUE EVENT MANAGEMENT
+        // ==========================================
+        let ALL_LEAGUES = [];
+
+        async function loadLeaguesAdmin() {
+            const list = document.getElementById('leagues-manager-list');
+            if (!list) return;
+
+            list.innerHTML = '<p style="text-align: center; color: var(--text-muted); grid-column: 1/-1;">Loading league events...</p>';
+
+            try {
+                // Not hiding past league events, showing all
+                const snapshot = await db.collection("leagues").orderBy("startDate", "desc").get();
+                let leagues = [];
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const eventObj = { id: doc.id, ...data };
+                    leagues.push(eventObj);
+                });
+                
+                // Sort ascending in memory to keep the upcoming events at bottom or top depending on preference.
+                // Reversing them so older are at top or bottom? Let's just sort by startDate asc.
+                leagues.sort((a,b) => {
+                    return new Date(a.startDate || 0) - new Date(b.startDate || 0);
+                });
+
+                ALL_LEAGUES = leagues;
+
+                if (leagues.length === 0) {
+                    list.innerHTML = '<p style="text-align: center; color: var(--text-muted); grid-column: 1/-1;">No league events found.</p>';
+                    return;
+                }
+
+                list.innerHTML = '';
+                leagues.forEach(league => {
+                    const card = document.createElement('div');
+                    card.className = 'card glass';
+                    card.style.padding = '1.5rem';
+                    
+                    const isComplete = league.startDate && new Date(league.startDate) < new Date();
+                    const statusColor = isComplete ? '#a0a0a0' : (league.registrationStatus === 'open' ? '#00ff88' : '#ff3c3c');
+                    const statusText = isComplete ? 'Complete' : (league.registrationStatus === 'open' ? 'Open' : 'Closed');
+
+                    card.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                            <div style="font-size: 0.7rem; color: ${statusColor}; font-weight: 700; text-transform: uppercase;">
+                                <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${statusColor}; margin-right: 5px;"></span>
+                                ${statusText}
+                            </div>
+                            <div style="font-size: 0.6rem; color: var(--text-muted); font-family: monospace;">${league.id}</div>
+                        </div>
+                        <h4 style="margin-bottom: 0.5rem;">${league.name}</h4>
+                        <div style="font-size: 0.65rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem;">
+                            Class: ${league.carClass || 'GT3'} // ${league.date || league.schedule || 'TBD'}
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick='showLeagueModal(${JSON.stringify(league).replace(/'/g, "&apos;")})' class="btn btn-outline" style="flex: 1; font-size: 0.7rem; padding: 0.5rem;">Edit</button>
+                            <button onclick="deleteLeague('${league.id}')" class="btn btn-outline" style="flex: 1; font-size: 0.7rem; padding: 0.5rem; border-color: #ff0055; color: #ff0055;">Delete</button>
+                        </div>
+                    `;
+                    list.appendChild(card);
+                });
+
+            } catch (e) {
+                console.error("Error loading leagues:", e);
+                list.innerHTML = `<p style="color: #ff0055; grid-column: 1/-1;">Error loading leagues: ${e.message}</p>`;
+            }
+        }
+
+        function showLeagueModal(league = null) {
+            document.getElementById('edit-league-id').value = league ? league.id : '';
+            document.getElementById('edit-league-id').disabled = !!league;
+            document.getElementById('edit-league-name').value = league ? (league.name || '') : '';
+            document.getElementById('edit-league-class').value = league ? (league.carClass || '') : 'GT3';
+            document.getElementById('edit-league-schedule').value = league ? (league.schedule || league.date || '') : '';
+            document.getElementById('edit-league-description').value = league ? (league.description || '') : '';
+            document.getElementById('edit-league-banner').value = league ? (league.bannerUrl || '') : '';
+            document.getElementById('edit-league-broadcast').value = league ? (league.broadcastUrl || '') : '';
+            
+            if (league && league.registrationStatus) {
+                document.getElementById('edit-league-status').value = league.registrationStatus;
+            } else {
+                document.getElementById('edit-league-status').value = 'open';
+            }
+            
+            if (league && league.startDate) {
+                const date = new Date(league.startDate);
+                const offset = date.getTimezoneOffset() * 60000;
+                const localISODate = new Date(date.getTime() - offset).toISOString().slice(0, 16);
+                document.getElementById('edit-league-start').value = localISODate;
+            } else {
+                document.getElementById('edit-league-start').value = '';
+            }
+            
+            document.getElementById('league-modal-title').textContent = league ? 'Edit League Event' : 'Create League Event';
+            document.getElementById('league-modal').style.display = 'block';
+            document.getElementById('modal-backdrop').style.display = 'block';
+        }
+
+        function hideLeagueModal() {
+            document.getElementById('league-modal').style.display = 'none';
+            document.getElementById('modal-backdrop').style.display = 'none';
+        }
+
+        async function saveLeague() {
+            const id = document.getElementById('edit-league-id').value.trim();
+            const name = document.getElementById('edit-league-name').value.trim();
+            const carClass = document.getElementById('edit-league-class').value.trim();
+            const schedule = document.getElementById('edit-league-schedule').value.trim();
+            const startStr = document.getElementById('edit-league-start').value;
+            const status = document.getElementById('edit-league-status').value;
+            const bannerUrl = document.getElementById('edit-league-banner').value.trim();
+            const broadcastUrl = document.getElementById('edit-league-broadcast').value.trim();
+            const description = document.getElementById('edit-league-description').value.trim();
+
+            if (!id || !name || !startStr) return alert("Please fill ID, Name, and Start Date.");
+
+            const leagueData = {
+                name: name,
+                carClass: carClass,
+                schedule: schedule,
+                startDate: new Date(startStr).toISOString(),
+                date: new Date(startStr).toISOString(), // Fallback for some old logic
+                registrationStatus: status,
+                bannerUrl: bannerUrl || null,
+                broadcastUrl: broadcastUrl || null,
+                description: description
+            };
+
+            try {
+                await db.collection("leagues").doc(id).set(leagueData, { merge: true });
+                hideLeagueModal();
+                loadLeaguesAdmin();
+                alert("League event saved!");
+            } catch (e) {
+                alert("Error saving league event: " + e.message);
+            }
+        }
+
+        async function deleteLeague(id) {
+            if (!confirm(`Are you sure you want to delete league event ${id}?`)) return;
+            try {
+                await db.collection("leagues").doc(id).delete();
+                loadLeaguesAdmin();
+            } catch (e) {
+                alert("Error deleting league event: " + e.message);
             }
         }
 
