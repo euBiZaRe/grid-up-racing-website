@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Seed Missing Drivers</title>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <style>
+        body { font-family: monospace; background: #111; color: #0f0; padding: 20px; }
+        .added { color: #0ff; }
+        .exists { color: #888; }
+        button { background: #00ff88; border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h2>Checking and Adding Missing Drivers</h2>
+    <div id="output">Connecting to Firebase...</div>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAomPdMD_IrBw52m0Nc2l-cuDKNmH_qqAk",
+            authDomain: "grid-up.firebaseapp.com",
+            projectId: "grid-up",
+            storageBucket: "grid-up.firebasestorage.app",
+            messagingSenderId: "649006432736",
+            appId: "1:649006432736:web:5220f500a5e53cb7276b85",
+            measurementId: "G-956CFQ680Q"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        const inputList = [
+            "Adam L Jones", "Andrew B Fabian", "Bill McClain", "Jacob Reid", 
+            "Levi Wolfe", "Marko Skrnjug", "Martyn Cook", "Alexander Cortez", 
+            "Aten-Wa Theba", "Connor Deasey", "Daniel Tamminga", "David Shreve", 
+            "Faraz Ebrahim", "Gabe Wilmoth", "Hector Hernandez", "Jacob Roberts", 
+            "Jens Van Der Wilt", "John Daniels", "Johnathan Shampine", 
+            "Justin Sadowski", "Keith Todd", "Matthew Roberts", "Michael Graham", 
+            "Michael O'Dell", "Tanner Hupp", "Terry Cantwell", "Xavier Williams"
+        ];
+
+        async function processList() {
+            const out = document.getElementById('output');
+            out.innerHTML = "Fetching current roster...<br>";
+            
+            try {
+                const snap = await db.collection("drivers").get();
+                const existingNames = new Set();
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    if (data.name) {
+                        existingNames.add(data.name.toLowerCase().trim());
+                    }
+                });
+
+                let addedCount = 0;
+                let existingCount = 0;
+
+                for (const name of inputList) {
+                    if (existingNames.has(name.toLowerCase().trim())) {
+                        out.innerHTML += `<span class="exists">[EXISTS] ${name}</span><br>`;
+                        existingCount++;
+                    } else {
+                        // Add to Firestore
+                        const docRef = db.collection("drivers").doc();
+                        await docRef.set({
+                            name: name,
+                            active: true,
+                            role: "Driver",
+                            category: "GT3"
+                        });
+                        out.innerHTML += `<span class="added">[ADDED] ${name}</span><br>`;
+                        addedCount++;
+                    }
+                }
+
+                out.innerHTML += `<br><b>Process Complete!</b><br>`;
+                out.innerHTML += `Added: ${addedCount}<br>`;
+                out.innerHTML += `Already Existed: ${existingCount}<br>`;
+                
+                if (addedCount > 0) {
+                    out.innerHTML += `<br><i>You can now safely delete this file and check your admin dashboard!</i>`;
+                }
+                
+            } catch (error) {
+                out.innerHTML += `<br><span style="color:red">Error: ${error.message}</span>`;
+            }
+        }
+
+        processList();
+    </script>
+</body>
+</html>

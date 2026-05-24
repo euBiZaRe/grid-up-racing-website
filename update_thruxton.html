@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Update Thruxton 4H</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <style>
+        body { font-family: monospace; background: #111; color: #0f0; padding: 20px; }
+        .success { color: #00ff88; }
+        .error { color: #ff3c3c; }
+    </style>
+</head>
+<body>
+    <h2>Updating "thruxton-4h" Details</h2>
+    <div id="output">Connecting to Firebase...<br></div>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAomPdMD_IrBw52m0Nc2l-cuDKNmH_qqAk",
+            authDomain: "grid-up.firebaseapp.com",
+            projectId: "grid-up",
+            storageBucket: "grid-up.firebasestorage.app",
+            messagingSenderId: "649006432736",
+            appId: "1:649006432736:web:5220f500a5e53cb7276b85",
+            measurementId: "G-956CFQ680Q"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        const updateData = {
+            name: "4 Hours of Thruxton",
+            classes: ["TCR"],
+            description: `**4 Hours of Thruxton** primarily refers to the popular iRacing 4 Hours at Thruxton special event. This highly demanding team-based or solo endurance race features Touring Cars (TCR) battling on Britain’s fastest circuit.
+
+**Event Details & Format**
+• **Vehicle Classes:** Audi RS 3 LMS, Honda Civic Type R, Hyundai Elantra N, and Hyundai Veloster N.
+• **Participation:** Open to solo drivers or teams of drivers.
+• **License Requirements:** Minimum of a C-class Sports Car license or D-class with a 4.0 or higher rating.
+• **Track Profile:** Thruxton is a punishing, high-speed 2.4-mile layout featuring high wear on the front-left tire.
+• **Penalties:** Drive-through penalty issued at 20 incident points, and every 10 incidents thereafter.`
+        };
+
+        async function updateEvent() {
+            const out = document.getElementById('output');
+            
+            try {
+                out.innerHTML += "Attempting to update 'thruxton-4h' in the 'events' collection...<br>";
+                const docRef = db.collection("events").doc("thruxton-4h");
+                const doc = await docRef.get();
+                
+                if (doc.exists) {
+                    await docRef.set(updateData, { merge: true });
+                    out.innerHTML += `<span class="success">SUCCESS: Updated thruxton-4h in events!</span><br>`;
+                } else {
+                    out.innerHTML += `Document not found in 'events', checking 'leagues'...<br>`;
+                    const leagueRef = db.collection("leagues").doc("thruxton-4h");
+                    const leagueDoc = await leagueRef.get();
+                    if (leagueDoc.exists) {
+                        await leagueRef.set({
+                            name: updateData.name,
+                            description: updateData.description,
+                            carClass: "TCR"
+                        }, { merge: true });
+                        out.innerHTML += `<span class="success">SUCCESS: Updated thruxton-4h in leagues!</span><br>`;
+                    } else {
+                        // If it doesn't exist anywhere, create it in events
+                        out.innerHTML += `Document not found anywhere. Creating in 'events'...<br>`;
+                        await docRef.set({
+                            ...updateData,
+                            id: "thruxton-4h",
+                            type: "Endurance",
+                            distance: "4 Hours",
+                            startDate: new Date().toISOString()
+                        }, { merge: true });
+                        out.innerHTML += `<span class="success">SUCCESS: Created thruxton-4h in events!</span><br>`;
+                    }
+                }
+                out.innerHTML += `<br><b>Process Complete! You can now safely delete this file.</b>`;
+            } catch (error) {
+                out.innerHTML += `<br><span class="error">Error: ${error.message}</span>`;
+            }
+        }
+
+        updateEvent();
+    </script>
+</body>
+</html>
