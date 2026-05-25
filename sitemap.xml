@@ -1,38 +1,113 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+    <!-- Core Pages -->
     <url>
         <loc>https://gridup.online/</loc>
         <changefreq>daily</changefreq>
         <priority>1.0</priority>
     </url>
     <url>
-        <loc>https://gridup.online/league.html</loc>
+        <loc>https://gridup.online/roster.html</loc>
         <changefreq>weekly</changefreq>
         <priority>0.9</priority>
     </url>
     <url>
         <loc>https://gridup.online/events.html</loc>
         <changefreq>weekly</changefreq>
+        <priority>0.9</priority>
+    </url>
+    <url>
+        <loc>https://gridup.online/league.html</loc>
+        <changefreq>weekly</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
-        <loc>https://gridup.online/roster.html</loc>
-        <changefreq>daily</changefreq>
-        <priority>0.8</priority>
-    </url>
-    <url>
-        <loc>https://gridup.online/team-app.html</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.7</priority>
-    </url>
-    <url>
-        <loc>https://gridup.online/shop.html</loc>
-        <changefreq>monthly</changefreq>
+        <loc>https://gridup.online/reports.html</loc>
+        <changefreq>weekly</changefreq>
         <priority>0.7</priority>
     </url>
     <url>
         <loc>https://gridup.online/results.html</loc>
         <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
+    </url>
+    <url>
+        <loc>https://gridup.online/shop.html</loc>
+        <changefreq>monthly</changefreq>
         <priority>0.6</priority>
     </url>
+    <url>
+        <loc>https://gridup.online/team-app.html</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.6</priority>
+    </url>
+
+    <!-- Event Pages -->
+    <url><loc>https://gridup.online/events/992-endurance-cup.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+    <url><loc>https://gridup.online/events/bathurst-1000.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+    <url><loc>https://gridup.online/events/brickyard-400.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+    <url><loc>https://gridup.online/events/britcar-24hr.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+    <url><loc>https://gridup.online/events/chili-bowl.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+    <url><loc>https://gridup.online/events/crandon-championship.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+    <url><loc>https://gridup.online/events/ff1600-festival.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+    <url><loc>https://gridup.online/events/firecracker-400.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+    <url><loc>https://gridup.online/events/homestead-championship.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+    <url><loc>https://gridup.online/events/imsa-classic-500.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+    <url><loc>https://gridup.online/events/indy-500.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+    <url><loc>https://gridup.online/events/indy-8h.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+    <url><loc>https://gridup.online/events/knoxville-nationals.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+    <url><loc>https://gridup.online/events/nurburgring-24h.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+    <url><loc>https://gridup.online/events/petit-le-mans.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+    <url><loc>https://gridup.online/events/portimao-1000.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+    <url><loc>https://gridup.online/events/production-car-challenge.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+    <url><loc>https://gridup.online/events/road-america-6h.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+    <url><loc>https://gridup.online/events/scca-runoffs.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+    <url><loc>https://gridup.online/events/sfl-mountain-showdown.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+    <url><loc>https://gridup.online/events/southern-500.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+    <url><loc>https://gridup.online/events/spa-24hr.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+    <url><loc>https://gridup.online/events/suzuka-1000km.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+    <url><loc>https://gridup.online/events/thruxton-4h.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+    <url><loc>https://gridup.online/events/watkins-glen-6h.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+    <url><loc>https://gridup.online/events/winter-derby.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+    <url><loc>https://gridup.online/events/world-600.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+
+    <!-- Driver Profiles -->
+    <url><loc>https://gridup.online/drivers/adam-jones.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+    <url><loc>https://gridup.online/drivers/alex-cortez.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+    <url><loc>https://gridup.online/drivers/aman-johnson.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+    <url><loc>https://gridup.online/drivers/andrew-fabian.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+    <url><loc>https://gridup.online/drivers/aten-wa-theba.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+    <url><loc>https://gridup.online/drivers/brandon-koch.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+    <url><loc>https://gridup.online/drivers/broughton-jones.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+    <url><loc>https://gridup.online/drivers/bud-carmon.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+    <url><loc>https://gridup.online/drivers/connor-hatfield.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+    <url><loc>https://gridup.online/drivers/daniel-tamminga.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+    <url><loc>https://gridup.online/drivers/david-shreve.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+    <url><loc>https://gridup.online/drivers/faraz-ebrahim.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+    <url><loc>https://gridup.online/drivers/gabe-wilmoth.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+    <url><loc>https://gridup.online/drivers/isaac-shore.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+    <url><loc>https://gridup.online/drivers/jacob-reid.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+    <url><loc>https://gridup.online/drivers/jacob-roberts.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+    <url><loc>https://gridup.online/drivers/jason-hayden.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+    <url><loc>https://gridup.online/drivers/john-daniels.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+    <url><loc>https://gridup.online/drivers/john-houston.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+    <url><loc>https://gridup.online/drivers/johnathan-shampine.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+    <url><loc>https://gridup.online/drivers/justin-sadowski.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+    <url><loc>https://gridup.online/drivers/keith-todd.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+    <url><loc>https://gridup.online/drivers/landen-hendershot.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+    <url><loc>https://gridup.online/drivers/levi-wolfe.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+    <url><loc>https://gridup.online/drivers/marko-skrnjug.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+    <url><loc>https://gridup.online/drivers/martyn-cook.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+    <url><loc>https://gridup.online/drivers/matthew-graham-4.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+    <url><loc>https://gridup.online/drivers/matthew-koch.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+    <url><loc>https://gridup.online/drivers/matty-roberts.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+    <url><loc>https://gridup.online/drivers/michael-odell.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+    <url><loc>https://gridup.online/drivers/michael-zuver.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+    <url><loc>https://gridup.online/drivers/strats-g.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+    <url><loc>https://gridup.online/drivers/tanner-hupp.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+    <url><loc>https://gridup.online/drivers/terry-cantwell.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+    <url><loc>https://gridup.online/drivers/william-mcclain.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+    <url><loc>https://gridup.online/drivers/zack-saunders.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+
 </urlset>
