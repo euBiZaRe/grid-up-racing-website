@@ -147,6 +147,39 @@
     </header>
 
     <main class="container section" id="active-leagues">
+        
+        <!-- CHAMPIONSHIP STANDINGS SECTION -->
+        <section style="margin-bottom: 6rem;" class="reveal active">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1.5rem;">
+                <div>
+                    <h2 style="color: var(--primary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 1.8rem; text-shadow: 0 0 15px rgba(0,207,255,0.5);">🏆</span> Championship Standings
+                    </h2>
+                    <p style="color: var(--text-muted);">Current leaderboard for the GT Challenge.</p>
+                </div>
+            </div>
+
+            <div class="detail-card" style="padding: 2rem; background: rgba(15, 18, 24, 0.4); border-top: 2px solid rgba(0, 207, 255, 0.2); border-radius: 24px;">
+                <!-- Tab Controls -->
+                <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 1rem;">
+                    
+                    <div class="roster-tabs" style="margin-bottom: 0;">
+                        <button class="tab-btn st-class-btn active" id="st-btn-gt3" onclick="switchStandingsView('GT3', null)">GT3 CLASS</button>
+                        <button class="tab-btn st-class-btn" id="st-btn-gt4" onclick="switchStandingsView('GT4', null)">GT4 CLASS</button>
+                    </div>
+
+                    <div class="roster-tabs" style="margin-bottom: 0;">
+                        <button class="tab-btn st-type-btn active" id="st-btn-teams" onclick="switchStandingsView(null, 'teams')">TEAM CHAMPIONSHIP</button>
+                        <button class="tab-btn st-type-btn" id="st-btn-drivers" onclick="switchStandingsView(null, 'drivers')">DRIVER CHAMPIONSHIP</button>
+                    </div>
+                </div>
+
+                <!-- Standings Table Container -->
+                <div id="standings-container" style="min-height: 200px;">
+                    <div class="glass loading-shimmer" style="height: 150px; border-radius: 12px;"></div>
+                </div>
+            </div>
+        </section>
         <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 4rem;">
             <div>
                 <h2 style="color: var(--primary); margin-bottom: 0.5rem;">Season Calendar</h2>
@@ -201,6 +234,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
     <script src="script.js"></script>
     <script src="js/auth.js"></script>
+    <script src="js/standings.js"></script>
     <script>
         // Custom League Loading Logic
         async function loadLeagues() {

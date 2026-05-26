@@ -749,6 +749,23 @@
                                 <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">DRIVERS (Comma separated)</label>
                                 <input type="text" id="result-drivers" placeholder="Driver 1, Driver 2..." class="btn btn-outline" style="width: 100%; text-align: left;">
                             </div>
+                            <div style="display: grid; grid-template-columns: 1fr; gap: 1rem; margin-top: 1rem;">
+                                <div>
+                                    <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">INCIDENT POINTS (x)</label>
+                                    <input type="number" id="result-incidents" placeholder="e.g. 15" class="btn btn-outline" style="width: 100%; text-align: left;" value="0">
+                                </div>
+                                <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                                    <label style="display:flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--text-main); cursor: pointer;">
+                                        <input type="checkbox" id="result-pole"> Class Pole Position (+1 pt)
+                                    </label>
+                                    <label style="display:flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--text-main); cursor: pointer;">
+                                        <input type="checkbox" id="result-fastest-lap"> Class Fastest Lap (+1 pt)
+                                    </label>
+                                    <label style="display:flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--text-main); cursor: pointer;">
+                                        <input type="checkbox" id="result-fewest-incidents"> Fewest X's (+1 pt)
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                         <button onclick="saveRaceResult()" class="btn btn-primary" style="margin-top: 1.5rem; width: 100%;">SAVE TEAM RESULT</button>
                     </div>
@@ -2694,6 +2711,10 @@
             const sof = document.getElementById('result-sof').value.trim();
             const qualy = document.getElementById('result-qualy').value.trim();
             const finish = document.getElementById('result-finish').value.trim();
+            const incidents = parseInt(document.getElementById('result-incidents').value) || 0;
+            const polePosition = document.getElementById('result-pole').checked;
+            const fastestLap = document.getElementById('result-fastest-lap').checked;
+            const fewestIncidents = document.getElementById('result-fewest-incidents').checked;
 
             if (!eventId || !teamName || !car || !finish) {
                 alert("Event, Team, Car, and Finish position are required.");
@@ -2709,6 +2730,10 @@
                 sof,
                 qualy,
                 finish,
+                incidents,
+                polePosition,
+                fastestLap,
+                fewestIncidents,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             };
 
@@ -2723,6 +2748,10 @@
                 document.getElementById('result-sof').value = '';
                 document.getElementById('result-qualy').value = '';
                 document.getElementById('result-finish').value = '';
+                document.getElementById('result-incidents').value = '0';
+                document.getElementById('result-pole').checked = false;
+                document.getElementById('result-fastest-lap').checked = false;
+                document.getElementById('result-fewest-incidents').checked = false;
                 
                 loadEventResults();
                 alert("Result saved!");
