@@ -242,7 +242,7 @@
                     const profileSlug = d.slug || autoSlug;
 
                     const card = document.createElement('a');
-                    card.href = profileSlug ? `drivers/${profileSlug}.html` : '#';
+                    card.href = profileSlug ? `drivers/${profileSlug.toLowerCase()}.html` : '#';
                     card.className = isLeadership ? 'glass-premium driver-card' : 'glass driver-card';
                     
                     if (isLeadership) {

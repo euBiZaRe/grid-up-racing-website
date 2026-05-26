@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hector Hernandez | Driver Profile | GRiD UP Sim Racing</title>
-    <meta name="description" content="Hector Hernandez's official GRiD UP Sim Racing driver profile. View iRacing ratings, career stats, and more.">
     <link rel="stylesheet" href="../style.css">
     <link rel="icon" type="image/png" href="../assets/logo.png">
     <style>
@@ -36,7 +35,9 @@
             border: 1px solid var(--glass-border);
             background: rgba(255, 255, 255, 0.015);
         }
-        .rating-group { margin-bottom: 1.75rem; }
+        .rating-group {
+            margin-bottom: 1.75rem;
+        }
         .rating-label {
             display: flex;
             justify-content: space-between;
@@ -72,15 +73,29 @@
         .license-c { background: rgba(247, 209, 23, 0.2); color: #facc15; border: 1px solid rgba(247, 209, 23, 0.4); }
         .license-d { background: rgba(252, 106, 3, 0.2); color: #fb923c; border: 1px solid rgba(252, 106, 3, 0.4); }
         .license-r { background: rgba(188, 188, 188, 0.1); color: #9ca3af; border: 1px solid rgba(188, 188, 188, 0.2); }
-        .big-stat { font-size: 2.75rem; font-weight: 700; color: var(--text-main); line-height: 1; }
-        .big-stat-label { color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; margin-top: 0.75rem; }
+
+        .big-stat {
+            font-size: 2.75rem;
+            font-weight: 700;
+            color: var(--text-main);
+            line-height: 1;
+        }
+        .big-stat-label {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 0.75rem;
+        }
     </style>
 </head>
 <body class="driver-profile">
     <nav id="navbar">
         <div class="container nav-content">
-            <a href="../index.html" class="logo"><img src="../assets/logo.png" alt="GRiD UP" style="height: 40px; vertical-align: middle;"></a>
-            <ul class="nav-links">
+            <a href="../index.html" class="logo">
+                <img src="../assets/logo.png" alt="GRiD UP" style="height: 40px; vertical-align: middle;">
+            </a>
+                        <ul class="nav-links">
                 <li><a href="../index.html#home">Home</a></li>
                 <li><a href="../index.html#about">About</a></li>
                 <li><a href="../roster.html">Roster</a></li>
@@ -98,7 +113,9 @@
         <div class="container">
             <span class="profile-nickname"></span>
             <h1 class="glow-text" style="font-size: 3.5rem;">Hector Hernandez</h1>
-            <p style="color: var(--text-muted); margin-top: 1rem;">Official GRiD UP Driver | Member since Apr 24, 2020</p>
+            <p style="color: var(--text-muted); margin-top: 1rem;">Official GRiD UP Driver | Member since N/A</p>
+            
+            <!-- Claim Section (Hidden by default, shown by auth.js) -->
             <div id="claim-section" style="margin-top: 2rem; display: none;">
                 <button class="btn btn-outline claim-btn" onclick="openClaimModal()" style="font-size: 0.75rem; padding: 0.6rem 1.5rem;">Claim This Driver Profile</button>
             </div>
@@ -107,35 +124,63 @@
 
     <main class="container section" style="padding-top: 0;">
         <div class="stats-container">
+            <!-- iRatings Section -->
             <div class="glass stat-card">
-                <h3 class="section-title" style="margin-bottom: 2.5rem;">iRacing Ratings</h3>
+            <h3 class="section-title" style="margin-bottom: 2.5rem;">iRacing Ratings</h3>
+                
                 <div class="rating-group">
-                    <div class="rating-label"><span>Sports Car <span class="license-badge license-a">A 2.52</span></span><span>2190</span></div>
-                    <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 37%;"></div></div>
+                    <div class="rating-label">
+                        <span>Sports Car <span class="license-badge license-r">R 2.50</span></span>
+                        <span>---</span>
+                    </div>
+                    <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 0%;"></div></div>
                 </div>
+
                 <div class="rating-group">
-                    <div class="rating-label"><span>Formula <span class="license-badge license-a">A 2.27</span></span><span>2077</span></div>
-                    <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 35%;"></div></div>
+                    <div class="rating-label">
+                        <span>Formula <span class="license-badge license-r">R 2.50</span></span>
+                        <span>---</span>
+                    </div>
+                    <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 0%;"></div></div>
                 </div>
+
                 <div class="rating-group">
-                    <div class="rating-label"><span>Oval <span class="license-badge license-c">C 2.66</span></span><span>1518</span></div>
-                    <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 25%;"></div></div>
+                    <div class="rating-label">
+                        <span>Oval <span class="license-badge license-r">R 2.50</span></span>
+                        <span>---</span>
+                    </div>
+                    <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 0%;"></div></div>
                 </div>
+
                 <div class="rating-group">
-                    <div class="rating-label"><span>Dirt <span class="license-badge license-c">C 2.44</span></span><span>1584</span></div>
-                    <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 26%;"></div></div>
+                    <div class="rating-label">
+                        <span>Dirt <span class="license-badge license-r">R 2.50</span></span>
+                        <span>---</span>
+                    </div>
+                    <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 0%;"></div></div>
                 </div>
             </div>
 
+            <!-- Career Stats Section -->
             <div class="glass stat-card" style="display: flex; flex-direction: column; justify-content: space-between;">
                 <div>
                     <h3 class="section-title" style="margin-bottom: 2.5rem;">Career Activity</h3>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                        <div><div class="big-stat">---</div><div class="big-stat-label">Laps Driven</div></div>
-                        <div><div class="big-stat">---</div><div class="big-stat-label">Clean Laps</div></div>
-                        <div style="grid-column: span 2;"><div class="big-stat">---</div><div class="big-stat-label">Total Time on Track</div></div>
+                        <div>
+                            <div class="big-stat">0</div>
+                            <div class="big-stat-label">Laps Driven</div>
+                        </div>
+                        <div>
+                            <div class="big-stat">0%</div>
+                            <div class="big-stat-label">Clean Laps</div>
+                        </div>
+                        <div style="grid-column: span 2;">
+                            <div class="big-stat">N/A</div>
+                            <div class="big-stat-label">Total Time on Track</div>
+                        </div>
                     </div>
                 </div>
+                
                 <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1);">
                     <a href="https://garage61.net/app/drivers/hector-hernandez" target="_blank" class="btn btn-outline" style="width: 100%; text-align: center;">View on Garage 61</a>
                 </div>
@@ -143,7 +188,7 @@
         </div>
 
         <div style="text-align: center; margin-top: 8rem;">
-            <a href="../roster.html" class="btn btn-outline" style="padding: 1rem 3rem;">&larr; Back to Roster</a>
+            <a href="../roster.html" class="btn btn-outline" style="padding: 1rem 3rem;">← Back to Roster</a>
         </div>
     </main>
 
@@ -168,3 +213,4 @@
     </script>
 </body>
 </html>
+

@@ -39,7 +39,7 @@ def report_progress(current, total, driver_name):
             print(f"Failed to report progress: {e}")
 
 def generate_filename(slug):
-    return slug + ".html"
+    return slug.lower() + ".html"
 
 def get_license_class(license_str):
     if not license_str or license_str == "N/A" or license_str == "---":
