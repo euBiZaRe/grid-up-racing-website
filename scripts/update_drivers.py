@@ -38,10 +38,8 @@ def report_progress(current, total, driver_name):
         except Exception as e:
             print(f"Failed to report progress: {e}")
 
-def generate_filename(name):
-    # Sanitize name for filename
-    clean = name.lower().replace(" ", "-").replace("'", "").replace(".", "").replace("(", "").replace(")", "")
-    return clean + ".html"
+def generate_filename(slug):
+    return slug + ".html"
 
 def get_license_class(license_str):
     if not license_str or license_str == "N/A" or license_str == "---":
@@ -138,14 +136,81 @@ def fetch_driver_data_scrape(slug):
         print(f"Scraping failed for {slug}: {e}")
         return None
 
+def load_drivers_list():
+    drivers = []
+    
+    # 1. Try Firestore SDK (with service account)
+    if db:
+        try:
+            print("Fetching driver list from Firestore via Admin SDK...")
+            docs = db.collection("drivers").get()
+            for doc in docs:
+                data = doc.to_dict()
+                if data.get('active') != False and data.get('slug'):
+                    drivers.append({
+                        "name": data['name'],
+                        "url": f"https://garage61.net/app/drivers/{data['slug']}"
+                    })
+            print(f"Loaded {len(drivers)} active drivers from Firestore via Admin SDK.")
+        except Exception as e:
+            print(f"Firestore Admin SDK fetch failed: {e}")
+
+    # 2. Try Firestore REST API (without service account)
+    if not drivers:
+        try:
+            print("Fetching driver list from Firestore via REST API...")
+            import requests
+            url = "https://firestore.googleapis.com/v1/projects/grid-up/databases/(default)/documents/drivers?pageSize=100"
+            r = requests.get(url, timeout=10)
+            if r.status_code == 200:
+                docs = r.json().get('documents', [])
+                for doc in docs:
+                    fields = doc.get('fields', {})
+                    active_field = fields.get('active', {})
+                    active = active_field.get('booleanValue', True)
+                    
+                    name_field = fields.get('name', {})
+                    name = name_field.get('stringValue')
+                    
+                    slug_field = fields.get('slug', {})
+                    slug = slug_field.get('stringValue')
+                    
+                    if active != False and name and slug:
+                        drivers.append({
+                            "name": name,
+                            "url": f"https://garage61.net/app/drivers/{slug}"
+                        })
+                print(f"Loaded {len(drivers)} active drivers from Firestore via REST API.")
+        except Exception as e:
+            print(f"Firestore REST API fetch failed: {e}")
+
+    # 3. Fallback to local drivers.json
+    if not drivers:
+        if os.path.exists(DRIVERS_JSON):
+            print("Falling back to local drivers.json...")
+            with open(DRIVERS_JSON, "r") as f:
+                drivers = json.load(f)
+        else:
+            print(f"Error: {DRIVERS_JSON} not found and Firestore query failed.")
+            
+    # Sort and update drivers.json if we got a valid list
+    if drivers:
+        drivers.sort(key=lambda x: x['name'].lower())
+        try:
+            with open(DRIVERS_JSON, "w", encoding="utf-8") as f:
+                json.dump(drivers, f, indent=2)
+            print(f"Synchronized local {DRIVERS_JSON} with Firestore.")
+        except Exception as e:
+            print(f"Failed to save drivers.json: {e}")
+            
+    return drivers
+
 def update_profiles():
     # Load drivers
-    if not os.path.exists(DRIVERS_JSON):
-        print(f"Error: {DRIVERS_JSON} not found.")
+    drivers = load_drivers_list()
+    if not drivers:
+        print("No drivers to update.")
         return
-
-    with open(DRIVERS_JSON, "r") as f:
-        drivers = json.load(f)
         
     # Load template
     if not os.path.exists(TEMPLATE_PATH):
@@ -156,6 +221,8 @@ def update_profiles():
         template = f.read()
 
     total_drivers = len(drivers)
+    active_filenames = set()
+
     for i, driver in enumerate(drivers):
         name = driver["name"]
         url = driver["url"]
@@ -171,8 +238,17 @@ def update_profiles():
         time.sleep(3)
         
         if not stats:
-            print(f"Skipping {name} due to missing data.")
-            continue
+            print(f"Scraping failed for {slug}. Generating profile with default stats.")
+            stats = {
+                "nickname": "", 
+                "memberSince": "N/A", 
+                "iRatings": {}, 
+                "licenseLevels": {}, 
+                "iRatingPercentages": {}, 
+                "totalLaps": "0", 
+                "cleanPercentage": "0", 
+                "timeOnTrack": "N/A"
+            }
             
         # Hydrate template
         html = template
@@ -197,11 +273,23 @@ def update_profiles():
         html = html.replace("{{TIME_ON_TRACK}}", stats.get("timeOnTrack", "N/A"))
         
         # Write output
-        filename = generate_filename(name)
+        filename = generate_filename(slug)
+        active_filenames.add(filename)
         output_path = os.path.join(OUTPUT_DIR, filename)
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(html)
         print(f"Successfully updated {filename}")
+
+    # Clean up inactive/deleted driver profiles
+    try:
+        for f in os.listdir(OUTPUT_DIR):
+            if f.endswith(".html") and f != "driver-template.html":
+                if f not in active_filenames:
+                    file_to_delete = os.path.join(OUTPUT_DIR, f)
+                    print(f"Removing inactive/deleted driver profile: {f}")
+                    os.remove(file_to_delete)
+    except Exception as e:
+        print(f"Failed to clean up inactive driver profiles: {e}")
 
 if __name__ == "__main__":
     if not os.path.exists(OUTPUT_DIR):

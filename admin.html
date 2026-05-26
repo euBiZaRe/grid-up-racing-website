@@ -2788,6 +2788,10 @@
             }
         }
 
+        function nameToSlug(name) {
+            return name.toLowerCase().replace(/['']/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+        }
+
         async function saveDriver() {
             console.log("Saving driver data...");
             const id = document.getElementById('edit-driver-id').value;
@@ -2795,7 +2799,7 @@
             const iracingId = document.getElementById('roster-iracing-id').value.trim();
             const role = document.getElementById('roster-role').value.trim();
             const category = document.getElementById('roster-category').value;
-            const slug = document.getElementById('roster-slug').value.trim();
+            const slug = document.getElementById('roster-slug').value.trim() || nameToSlug(name);
             const active = document.getElementById('roster-active').checked;
 
             if (!name) return alert("Driver name is required.");
@@ -2820,9 +2824,23 @@
                     await db.collection("drivers").add(data);
                     console.log("New driver added successfully");
                 }
+
+                // Automatically request profile sync so the HTML page is created/updated
+                try {
+                    await db.collection("sync_requests").doc("update-profiles.yml").set({
+                        requestedBy: firebase.auth().currentUser ? firebase.auth().currentUser.uid : 'admin',
+                        requestedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        status: 'pending',
+                        workflowId: 'update-profiles.yml'
+                    });
+                    console.log("Profile update sync requested successfully");
+                } catch (syncErr) {
+                    console.error("Failed to automatically request profile sync:", syncErr);
+                }
+
                 hideDriverModal();
                 loadRoster();
-                alert("Driver saved successfully!");
+                alert("Driver saved successfully! Profile creation/sync has been scheduled.");
             } catch (e) {
                 console.error("Error saving driver:", e);
                 alert("Error saving driver: " + e.message);
@@ -2868,7 +2886,22 @@
             if (!confirm(`Are you sure you want to remove ${name} from the roster?`)) return;
             try {
                 await db.collection("drivers").doc(id).delete();
+
+                // Automatically request profile sync to clean up the deleted/inactive driver HTML file
+                try {
+                    await db.collection("sync_requests").doc("update-profiles.yml").set({
+                        requestedBy: firebase.auth().currentUser ? firebase.auth().currentUser.uid : 'admin',
+                        requestedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        status: 'pending',
+                        workflowId: 'update-profiles.yml'
+                    });
+                    console.log("Profile deletion sync requested successfully");
+                } catch (syncErr) {
+                    console.error("Failed to automatically request profile sync after deletion:", syncErr);
+                }
+
                 loadRoster();
+                alert("Driver removed successfully! Profile deletion/sync has been scheduled.");
             } catch (e) {
                 alert("Error deleting driver: " + e.message);
             }
@@ -3067,9 +3100,9 @@
                 </select>
             </div>
             <div>
-                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">URL SLUG (e.g. matty-roberts)</label>
-                <input type="text" id="roster-slug" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;" placeholder="matty-roberts">
-                <p style="font-size: 0.6rem; color: var(--text-muted); margin-top: 5px;">This links the roster card to their profile page.</p>
+                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">URL SLUG (auto-generated from name)</label>
+                <input type="text" id="roster-slug" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;" placeholder="e.g. matty-roberts">
+                <p style="font-size: 0.6rem; color: var(--text-muted); margin-top: 5px;">Auto-generated from name. Override only if needed. Links the roster card to their profile page.</p>
             </div>
             <div style="display: flex; align-items: center; gap: 10px;">
                 <input type="checkbox" id="roster-active" checked style="width: 20px; height: 20px;">

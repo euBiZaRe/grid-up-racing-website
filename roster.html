@@ -237,8 +237,12 @@
                     const isLeadership = (cat.toLowerCase() === 'owner' || cat.toLowerCase() === 'custom' || cat.toLowerCase() === 'leadership');
                     const isEndurance = cat.toLowerCase().includes('endurance');
                     
+                    // Generate slug from name as fallback (e.g. "Connor Deasey" → "connor-deasey")
+                    const autoSlug = d.name ? d.name.toLowerCase().replace(/['']/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') : null;
+                    const profileSlug = d.slug || autoSlug;
+
                     const card = document.createElement('a');
-                    card.href = d.slug ? `drivers/${d.slug}.html` : '#';
+                    card.href = profileSlug ? `drivers/${profileSlug}.html` : '#';
                     card.className = isLeadership ? 'glass-premium driver-card' : 'glass driver-card';
                     
                     if (isLeadership) {
