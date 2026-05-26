@@ -363,8 +363,10 @@ async function loadDynamicContent() {
             const data = JSON.parse(cachedEvents);
             const now = new Date();
             // Only use cache if the first event isn't ancient (allow 24h lookback)
-            const firstEventEnd = new Date(data[0].endDate || data[0].startDate);
-            firstEventEnd.setHours(23, 59, 59, 999);
+            const firstEventEnd = data[0].endDate ? new Date(data[0].endDate) : new Date(data[0].startDate);
+            if (!data[0].endDate) {
+                firstEventEnd.setHours(23, 59, 59, 999);
+            }
             
             if (firstEventEnd >= now) {
                 renderEventsUI(data);
@@ -487,22 +489,23 @@ async function loadDynamicContent() {
             
             const upcomingEvents = allEvents.filter(e => {
                 const start = parseDate(e.startDate);
-                const end = parseDate(e.endDate || e.startDate);
-                if (!start) return false;
-
-                const eventEnd = new Date(end);
-                eventEnd.setHours(23, 59, 59, 999);
+                const eventEnd = e.endDate ? parseDate(e.endDate) : (start ? new Date(start) : null);
+                if (eventEnd && !e.endDate) {
+                    eventEnd.setHours(23, 59, 59, 999);
+                }
+                if (!eventEnd) return false;
                 
                 if ((e.id === 'nurburgring-24h' || e.id === 'nurburgring-24') && nurburgringPast) return false;
                 return eventEnd >= now;
             });
 
             const pastEvents = allEvents.filter(e => {
-                const end = parseDate(e.endDate || e.startDate);
-                if (!end) return true;
-
-                const eventEnd = new Date(end);
-                eventEnd.setHours(23, 59, 59, 999);
+                const start = parseDate(e.startDate);
+                const eventEnd = e.endDate ? parseDate(e.endDate) : (start ? new Date(start) : null);
+                if (eventEnd && !e.endDate) {
+                    eventEnd.setHours(23, 59, 59, 999);
+                }
+                if (!eventEnd) return true;
                 
                 if ((e.id === 'nurburgring-24h' || e.id === 'nurburgring-24') && nurburgringPast) return true;
                 return eventEnd < now;
@@ -593,8 +596,10 @@ function renderEventsUI(upcomingEvents, pastEvents = null) {
     } else {
         const nextEvent = upcomingEvents[0];
         const startTime = parseDate(nextEvent.startDate);
-        const endTime = parseDate(nextEvent.endDate || nextEvent.startDate);
-        if (endTime) endTime.setHours(23, 59, 59, 999);
+        const endTime = nextEvent.endDate ? parseDate(nextEvent.endDate) : (startTime ? new Date(startTime) : null);
+        if (endTime && !nextEvent.endDate) {
+            endTime.setHours(23, 59, 59, 999);
+        }
         
         const isLive = now >= startTime && now <= endTime;
         
