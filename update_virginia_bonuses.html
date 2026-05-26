@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Update Virginia 120 — Bonuses & Incidents</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="js/auth.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 2rem; background: #0a0a0c; color: white; }
+        button { padding: 1rem 2rem; background: #00cfff; border: none; color: black; font-weight: bold; cursor: pointer; border-radius: 4px; }
+        #log { margin-top: 1rem; color: #00ff88; white-space: pre; font-family: monospace; }
+        .error { color: #ff3c3c; }
+    </style>
+</head>
+<body>
+    <h1>Update Virginia 120 — Bonuses & Incidents</h1>
+    <p>This script updates the event_results in Firestore with the exact incident points and +1 bonuses for pole, fastest lap, and fewest x's.</p>
+    <button onclick="updateBonuses()">Apply Deductions & Bonuses</button>
+    <div id="log"></div>
+
+    <script>
+        const EVENT_ID = 'gtc-virginia-120';
+
+        const TEAM_DATA = {
+            // GT3
+            "juan": { incidents: 3, polePosition: true, fastestLap: true, fewestIncidents: false },
+            "Refined Motorsport": { incidents: 5, polePosition: false, fastestLap: false, fewestIncidents: false },
+            "~* Dream Team *~": { incidents: 13, polePosition: false, fastestLap: false, fewestIncidents: false },
+            "Team Jacob Reid5": { incidents: 26, polePosition: false, fastestLap: false, fewestIncidents: false },
+            "Depend for Men Motorsports": { incidents: 10, polePosition: false, fastestLap: false, fewestIncidents: false },
+            "F&F Racing": { incidents: 16, polePosition: false, fastestLap: false, fewestIncidents: false },
+            "Team Breakfast": { incidents: 10, polePosition: false, fastestLap: false, fewestIncidents: false },
+            "Koch Motorsports": { incidents: 0, polePosition: false, fastestLap: false, fewestIncidents: true },
+            "MotorMouth Broadcasting": { incidents: 0, polePosition: false, fastestLap: false, fewestIncidents: true },
+            
+            // GT4
+            "solo dolo": { incidents: 17, polePosition: true, fastestLap: true, fewestIncidents: false },
+            "Motohaus White": { incidents: 2, polePosition: false, fastestLap: false, fewestIncidents: true },
+            "Apex Junky Motorsports": { incidents: 8, polePosition: false, fastestLap: false, fewestIncidents: false },
+            "Team Bayou Dust": { incidents: 12, polePosition: false, fastestLap: false, fewestIncidents: false },
+            "Bee Hive Racing": { incidents: 6, polePosition: false, fastestLap: false, fewestIncidents: false },
+            "Angry Rooster Racing": { incidents: 19, polePosition: false, fastestLap: false, fewestIncidents: false },
+            "Rev Limit Racing": { incidents: 13, polePosition: false, fastestLap: false, fewestIncidents: false },
+            "Grumpy duck racing": { incidents: 9, polePosition: false, fastestLap: false, fewestIncidents: false },
+            "Razor Racing": { incidents: 6, polePosition: false, fastestLap: false, fewestIncidents: false },
+            "Jayden Goslin": { incidents: 41, polePosition: false, fastestLap: false, fewestIncidents: false }
+        };
+
+        const log = (msg, err) => {
+            document.getElementById('log').innerHTML += `<span class="${err ? 'error' : ''}">${msg}\n</span>`;
+        };
+
+        async function updateBonuses() {
+            if (typeof db === 'undefined') {
+                log('ERROR: Firestore not initialized. Wait a moment and try again.', true);
+                return;
+            }
+            log('Fetching Virginia 120 results...\n');
+
+            try {
+                const snap = await db.collection('event_results')
+                    .where('eventId', '==', EVENT_ID)
+                    .get();
+
+                if (snap.empty) {
+                    log('No results found for gtc-virginia-120.', true);
+                    return;
+                }
+
+                let updated = 0;
+                for (const doc of snap.docs) {
+                    const data = doc.data();
+                    const team = data.teamName || '';
+                    const updates = TEAM_DATA[team];
+
+                    if (updates) {
+                        await doc.ref.update(updates);
+                        log(`✅ Updated ${team}: ${updates.incidents}x, Pole: ${updates.polePosition}, FL: ${updates.fastestLap}, FewestX: ${updates.fewestIncidents}`);
+                        updated++;
+                    } else {
+                        log(`⚠️  No match found for: "${team}"`, true);
+                    }
+                }
+
+                log(`\nDone! ${updated} teams updated successfully.`);
+                log('You can now check the live League Standings to see the completely accurate points!');
+            } catch (e) {
+                log(`ERROR: ${e.message}`, true);
+            }
+        }
+    </script>
+</body>
+</html>
