@@ -50,10 +50,10 @@ function calculateStandings(resultsData) {
         const pos = parsePosition(res.finish);
         let basePts = getBasePoints(pos);
 
-        // Bonuses
-        if (res.polePosition) basePts += 1;
-        if (res.fastestLap) basePts += 1;
-        if (res.fewestIncidents) basePts += 1;
+        // Bonuses (ensure they are booleans, since seeded scripts might have strings like '1:45.330')
+        if (res.polePosition === true) basePts += 1;
+        if (res.fastestLap === true) basePts += 1;
+        if (res.fewestIncidents === true) basePts += 1;
 
         // Incident Penalty: -1 point for every 10x
         const incidents = parseInt(res.incidents) || 0;
