@@ -206,10 +206,10 @@ function renderStandingsTable(type) {
                 <th style="padding:1rem;border-bottom:1px solid rgba(255,255,255,0.1);">Pos</th>
                 <th style="padding:1rem;border-bottom:1px solid rgba(255,255,255,0.1);">${type === 'teams' ? 'Team' : 'Driver'}</th>
                 <th style="padding:1rem;border-bottom:1px solid rgba(255,255,255,0.1);text-align:center;">Class</th>
-                <th style="padding:1rem;border-bottom:1px solid rgba(255,255,255,0.1);text-align:center;">Avg Start</th>
                 <th style="padding:1rem;border-bottom:1px solid rgba(255,255,255,0.1);text-align:center;">Pts</th>
                 <th style="padding:1rem;border-bottom:1px solid rgba(255,255,255,0.1);text-align:center;">Wins</th>
                 <th style="padding:1rem;border-bottom:1px solid rgba(255,255,255,0.1);text-align:center;">Podiums</th>
+                <th style="padding:1rem;border-bottom:1px solid rgba(255,255,255,0.1);text-align:center;">Avg Start</th>
             </tr>
         </thead>
         <tbody>`;
@@ -225,10 +225,10 @@ function renderStandingsTable(type) {
             <td style="padding:1rem;font-weight:800;border-radius:8px 0 0 8px;width:60px;text-align:center;">${posD}</td>
             <td style="padding:1rem;font-weight:700;color:#fff;">${row.name}</td>
             <td style="padding:1rem;text-align:center;">${badge}</td>
-            <td style="padding:1rem;font-weight:800;color:var(--text-muted);text-align:center;">${row.avgStart || '-'}</td>
             <td style="padding:1rem;font-weight:900;color:var(--primary);text-align:center;font-size:1.1rem;">${row.points}</td>
             <td style="padding:1rem;text-align:center;color:var(--text-muted);">${row.wins}</td>
-            <td style="padding:1rem;border-radius:0 8px 8px 0;text-align:center;color:var(--text-muted);">${row.podiums}</td>
+            <td style="padding:1rem;text-align:center;color:var(--text-muted);">${row.podiums}</td>
+            <td style="padding:1rem;border-radius:0 8px 8px 0;font-weight:800;color:var(--text-muted);text-align:center;">${row.avgStart || '-'}</td>
         </tr>`;
     });
 
