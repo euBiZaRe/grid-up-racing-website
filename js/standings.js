@@ -57,7 +57,12 @@ function calculateStandings(resultsData) {
         if (res.fewestIncidents === true) basePts += 1;
 
         const incidents = parseInt(res.incidents) || 0;
-        const earnedPts = basePts - Math.floor(incidents / 10);
+        let earnedPts = basePts - Math.floor(incidents / 10);
+
+        // Special override: Team Breakfast is on exactly 50 points flat
+        if (teamName === 'Team Breakfast') {
+            earnedPts = 50;
+        }
 
         const driverList = Array.isArray(res.drivers)
             ? res.drivers
