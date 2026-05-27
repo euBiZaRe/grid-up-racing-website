@@ -431,36 +431,7 @@ function renderExtraStats(allResults) {
                 </div>
             </div>
 
-            <!-- Average Start Position Section -->
-            <div class="stats-card" style="background: rgba(15, 18, 24, 0.5); border: 1px solid rgba(0, 207, 255, 0.12); border-radius: 24px; padding: 2.5rem; backdrop-filter: blur(10px);">
-                <div style="display: flex; align-items: center; gap: 0.8rem; margin-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 1rem;">
-                    <span style="font-size: 1.8rem;">🏁</span>
-                    <div>
-                        <h3 style="font-size: 1.4rem; font-weight: 900; margin: 0; color: #fff; letter-spacing: 1px;">Average Start Pos</h3>
-                        <p style="color: var(--text-muted); font-size: 0.65rem; margin: 0.2rem 0 0; text-transform: uppercase; letter-spacing: 2px; font-weight: 800;">Season Average Qualifying Position</p>
-                    </div>
-                </div>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2.5rem;">
-                    <!-- GT3 -->
-                    <div>
-                        <h4 style="color: var(--primary); font-size: 0.8rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
-                            GT3 CLASS <span style="font-size: 0.6rem; font-weight: 800; padding: 2px 7px; border-radius: 20px; background: rgba(0,207,255,0.15); border: 1px solid rgba(0,207,255,0.3); letter-spacing: 1px;">Best Avg Start</span>
-                        </h4>
-                        <div class="avgstart-list-gt3">
-                            ${sortedGT3AvgStart.map((res, i) => renderAvgStartRow(res, i + 1, res.avgStart === gt3AvgMin)).join('')}
-                        </div>
-                    </div>
-                    <!-- GT4 -->
-                    <div>
-                        <h4 style="color: #ffaa00; font-size: 0.8rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
-                            GT4 CLASS <span style="font-size: 0.6rem; font-weight: 800; padding: 2px 7px; border-radius: 20px; background: rgba(255,165,0,0.15); border: 1px solid rgba(255,165,0,0.3); letter-spacing: 1px; color: #ffaa00;">Best Avg Start</span>
-                        </h4>
-                        <div class="avgstart-list-gt4">
-                            ${sortedGT4AvgStart.map((res, i) => renderAvgStartRow(res, i + 1, res.avgStart === gt4AvgMin)).join('')}
-                        </div>
-                    </div>
-                </div>
-            </div>
+
 
             <!-- Fastest Lap Section -->
             <div class="stats-card" style="background: rgba(15, 18, 24, 0.5); border: 1px solid rgba(0, 207, 255, 0.12); border-radius: 24px; padding: 2.5rem; backdrop-filter: blur(10px);">
