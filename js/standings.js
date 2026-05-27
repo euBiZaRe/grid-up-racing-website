@@ -1,6 +1,5 @@
 // GT Challenge Championship Standings Calculator
 
-// Teams excluded from championship standings (house/broadcast entries)
 const EXCLUDED_TEAMS = [
     'GRID UP SIM RACING', 'GRID UP BLACK', 'GRID UP BLUE', 'GRID UP WHITE', 'GRID UP RED',
     'GRiD UP Sim Racing', 'GRiD UP Black', 'GRiD UP Blue', 'GRiD UP White', 'GRiD UP Red',
@@ -29,17 +28,19 @@ function parsePosition(posStr) {
 }
 
 function calculateStandings(resultsData) {
-    const standings = {
-        'GT3': { teams: {}, drivers: {} },
-        'GT4': { teams: {}, drivers: {} }
-    };
+    // Combined pool — both GT3 and GT4 together
+    const teams = {};
+    const drivers = {};
 
-    function getTeamSoloPenalty(soloRaceCount) {
-        let penalty = 0;
-        if (soloRaceCount >= 2) penalty += 5;
-        if (soloRaceCount >= 3) penalty += 10;
-        for (let i = 4; i <= soloRaceCount; i++) penalty += 20;
-        return penalty;
+    // Per-class tracking for solo-driver penalty (still per-class)
+    const classTeams = { GT3: {}, GT4: {} };
+
+    function getTeamSoloPenalty(n) {
+        let p = 0;
+        if (n >= 2) p += 5;
+        if (n >= 3) p += 10;
+        for (let i = 4; i <= n; i++) p += 20;
+        return p;
     }
 
     resultsData.forEach(res => {
@@ -47,7 +48,6 @@ function calculateStandings(resultsData) {
         if (isExcluded(teamName)) return;
 
         const carClass = (res.car || '').toUpperCase().includes('GT4') ? 'GT4' : 'GT3';
-        const s = standings[carClass];
         const pos = parsePosition(res.finish);
         let basePts = getBasePoints(pos);
 
@@ -58,41 +58,49 @@ function calculateStandings(resultsData) {
         const incidents = parseInt(res.incidents) || 0;
         const earnedPts = basePts - Math.floor(incidents / 10);
 
-        const drivers = Array.isArray(res.drivers) ? res.drivers : (res.drivers ? res.drivers.split(',').map(d => d.trim()) : []);
+        const driverList = Array.isArray(res.drivers)
+            ? res.drivers
+            : (res.drivers ? res.drivers.split(',').map(d => d.trim()) : []);
 
-        // TEAM STANDINGS
-        if (!s.teams[teamName]) {
-            s.teams[teamName] = { name: teamName, points: 0, wins: 0, podiums: 0, soloRaces: 0 };
+        // --- COMBINED TEAM ---
+        if (!teams[teamName]) {
+            teams[teamName] = { name: teamName, carClass, points: 0, wins: 0, podiums: 0 };
         }
-        const t = s.teams[teamName];
+        const t = teams[teamName];
         t.points += earnedPts;
         if (pos === 1) t.wins += 1;
         if (pos <= 3) t.podiums += 1;
-        if (drivers.length === 1) t.soloRaces += 1;
 
-        // DRIVER STANDINGS
-        drivers.forEach(driverName => {
+        // Track per-class solo races for penalty
+        if (!classTeams[carClass][teamName]) classTeams[carClass][teamName] = { soloRaces: 0 };
+        if (driverList.length === 1) classTeams[carClass][teamName].soloRaces += 1;
+
+        // --- COMBINED DRIVER ---
+        driverList.forEach(driverName => {
             if (!driverName) return;
-            if (!s.drivers[driverName]) {
-                s.drivers[driverName] = { name: driverName, points: 0, wins: 0, podiums: 0 };
+            if (!drivers[driverName]) {
+                drivers[driverName] = { name: driverName, carClass, points: 0, wins: 0, podiums: 0 };
             }
-            const d = s.drivers[driverName];
+            const d = drivers[driverName];
             d.points += earnedPts;
             if (pos === 1) d.wins += 1;
             if (pos <= 3) d.podiums += 1;
         });
     });
 
-    // Apply Team Solo Penalties
+    // Apply solo-driver team penalties
     for (const cc of ['GT3', 'GT4']) {
-        Object.values(standings[cc].teams).forEach(t => {
-            if (t.soloRaces > 0) t.points -= getTeamSoloPenalty(t.soloRaces);
+        Object.entries(classTeams[cc]).forEach(([name, info]) => {
+            if (info.soloRaces > 0 && teams[name]) {
+                teams[name].points -= getTeamSoloPenalty(info.soloRaces);
+            }
         });
-        standings[cc].teams = Object.values(standings[cc].teams).sort((a, b) => b.points - a.points);
-        standings[cc].drivers = Object.values(standings[cc].drivers).sort((a, b) => b.points - a.points);
     }
 
-    return standings;
+    return {
+        teams: Object.values(teams).sort((a, b) => b.points - a.points),
+        drivers: Object.values(drivers).sort((a, b) => b.points - a.points),
+    };
 }
 
 async function loadAndRenderStandings() {
@@ -113,35 +121,34 @@ async function loadAndRenderStandings() {
         const allResults = [];
         snapshot.forEach(doc => allResults.push(doc.data()));
         window.leagueStandings = calculateStandings(allResults);
-        renderStandingsTable('GT3', 'teams');
+        renderStandingsTable('teams');
     } catch (e) {
         console.error("Error loading standings:", e);
         container.innerHTML = '<p style="color: #ff3c3c; text-align: center;">Failed to load standings.</p>';
     }
 }
 
-function renderStandingsTable(carClass, type) {
+const CLASS_BADGE = {
+    GT3: '<span style="font-size:0.6rem;font-weight:800;padding:2px 7px;border-radius:20px;background:rgba(0,207,255,0.15);color:var(--primary);border:1px solid rgba(0,207,255,0.3);letter-spacing:1px;vertical-align:middle;margin-left:8px;">GT3</span>',
+    GT4: '<span style="font-size:0.6rem;font-weight:800;padding:2px 7px;border-radius:20px;background:rgba(255,165,0,0.15);color:#ffaa00;border:1px solid rgba(255,165,0,0.3);letter-spacing:1px;vertical-align:middle;margin-left:8px;">GT4</span>',
+};
+
+function renderStandingsTable(type) {
     const container = document.getElementById('standings-container');
     if (!container || !window.leagueStandings) return;
 
-    const data = window.leagueStandings[carClass][type];
+    const data = window.leagueStandings[type];
     const isCompact = container.closest('.hero-standings-card') !== null;
 
-    // Sync button states
-    document.querySelectorAll('.st-class-btn').forEach(btn => btn.classList.remove('active'));
-    const gt3Btn = document.getElementById('st-btn-gt3');
-    const gt4Btn = document.getElementById('st-btn-gt4');
-    if (carClass === 'GT3' && gt3Btn) gt3Btn.classList.add('active');
-    if (carClass === 'GT4' && gt4Btn) gt4Btn.classList.add('active');
-
+    // Sync type buttons
     document.querySelectorAll('.st-type-btn').forEach(btn => btn.classList.remove('active'));
     const teamsBtn = document.getElementById('st-btn-teams');
     const driversBtn = document.getElementById('st-btn-drivers');
     if (type === 'teams' && teamsBtn) teamsBtn.classList.add('active');
     if (type === 'drivers' && driversBtn) driversBtn.classList.add('active');
 
-    if (data.length === 0) {
-        container.innerHTML = `<p style="color: var(--text-muted); text-align: center; padding: 2rem;">No ${type} data for ${carClass}.</p>`;
+    if (!data || data.length === 0) {
+        container.innerHTML = `<p style="color: var(--text-muted); text-align: center; padding: 2rem;">No ${type} data yet.</p>`;
         return;
     }
 
@@ -153,22 +160,24 @@ function renderStandingsTable(carClass, type) {
             if (pos === 1) medal = '<span style="font-size:1rem;">&#x1F947;</span>';
             else if (pos === 2) medal = '<span style="font-size:1rem;">&#x1F948;</span>';
             else if (pos === 3) medal = '<span style="font-size:1rem;">&#x1F949;</span>';
+            const badge = row.carClass ? CLASS_BADGE[row.carClass] || '' : '';
             html += `<div class="st-row">
                 <div style="text-align:center;">${medal}</div>
-                <div style="font-size:0.8rem;font-weight:700;color:#fff;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${row.name}</div>
-                <div style="font-size:0.9rem;font-weight:900;color:var(--primary);">${row.points} <span style="font-size:0.65rem;color:var(--text-muted);">pts</span></div>
+                <div style="font-size:0.75rem;font-weight:700;color:#fff;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${row.name}${badge}</div>
+                <div style="font-size:0.9rem;font-weight:900;color:var(--primary);white-space:nowrap;">${row.points} <span style="font-size:0.6rem;color:var(--text-muted);">pts</span></div>
             </div>`;
         });
         container.innerHTML = html;
         return;
     }
 
-    // Full table (standings.html)
+    // Full table
     let html = `<table class="claims-table" style="width:100%;text-align:left;border-collapse:separate;border-spacing:0 8px;">
         <thead>
             <tr style="color:var(--text-muted);font-size:0.75rem;letter-spacing:2px;text-transform:uppercase;">
                 <th style="padding:1rem;border-bottom:1px solid rgba(255,255,255,0.1);">Pos</th>
                 <th style="padding:1rem;border-bottom:1px solid rgba(255,255,255,0.1);">${type === 'teams' ? 'Team' : 'Driver'}</th>
+                <th style="padding:1rem;border-bottom:1px solid rgba(255,255,255,0.1);text-align:center;">Class</th>
                 <th style="padding:1rem;border-bottom:1px solid rgba(255,255,255,0.1);text-align:center;">Pts</th>
                 <th style="padding:1rem;border-bottom:1px solid rgba(255,255,255,0.1);text-align:center;">Wins</th>
                 <th style="padding:1rem;border-bottom:1px solid rgba(255,255,255,0.1);text-align:center;">Podiums</th>
@@ -178,13 +187,15 @@ function renderStandingsTable(carClass, type) {
 
     data.forEach((row, index) => {
         const pos = index + 1;
-        let posDisplay = pos;
-        if (pos === 1) posDisplay = '&#x1F947;';
-        else if (pos === 2) posDisplay = '&#x1F948;';
-        else if (pos === 3) posDisplay = '&#x1F949;';
-        html += `<tr style="background:rgba(255,255,255,0.02);transition:background 0.2s;">
-            <td style="padding:1rem;font-weight:800;border-radius:8px 0 0 8px;width:60px;text-align:center;">${posDisplay}</td>
+        let posD = pos;
+        if (pos === 1) posD = '&#x1F947;';
+        else if (pos === 2) posD = '&#x1F948;';
+        else if (pos === 3) posD = '&#x1F949;';
+        const badge = row.carClass ? CLASS_BADGE[row.carClass] || '' : '';
+        html += `<tr style="background:rgba(255,255,255,0.02);">
+            <td style="padding:1rem;font-weight:800;border-radius:8px 0 0 8px;width:60px;text-align:center;">${posD}</td>
             <td style="padding:1rem;font-weight:700;color:#fff;">${row.name}</td>
+            <td style="padding:1rem;text-align:center;">${badge}</td>
             <td style="padding:1rem;font-weight:900;color:var(--primary);text-align:center;font-size:1.1rem;">${row.points}</td>
             <td style="padding:1rem;text-align:center;color:var(--text-muted);">${row.wins}</td>
             <td style="padding:1rem;border-radius:0 8px 8px 0;text-align:center;color:var(--text-muted);">${row.podiums}</td>
@@ -195,17 +206,9 @@ function renderStandingsTable(carClass, type) {
     container.innerHTML = html;
 }
 
-// Global hook for tab buttons
-window.switchStandingsView = function(carClass, type) {
-    if (!carClass) {
-        const active = document.querySelector('.st-class-btn.active');
-        carClass = (active && active.id.includes('gt4')) ? 'GT4' : 'GT3';
-    }
-    if (!type) {
-        const active = document.querySelector('.st-type-btn.active');
-        type = (active && active.id.includes('drivers')) ? 'drivers' : 'teams';
-    }
-    renderStandingsTable(carClass, type);
+// Global hook — type only now (no carClass arg needed)
+window.switchStandingsView = function(type) {
+    renderStandingsTable(type);
 };
 
 document.addEventListener('DOMContentLoaded', () => {

@@ -182,17 +182,13 @@
                 <div class="hero-standings-card">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                         <div>
-                            <p style="color: var(--primary); font-size: 0.65rem; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 0.2rem;">🏆 Championship</p>
-                            <div class="roster-tabs" style="margin: 0;">
-                                <button class="tab-btn st-class-btn active" id="st-btn-gt3" onclick="switchStandingsView('GT3', null)" style="padding: 0.3rem 0.8rem; font-size: 0.65rem;">GT3</button>
-                                <button class="tab-btn st-class-btn" id="st-btn-gt4" onclick="switchStandingsView('GT4', null)" style="padding: 0.3rem 0.8rem; font-size: 0.65rem;">GT4</button>
-                            </div>
+                            <p style="color: var(--primary); font-size: 0.65rem; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 0.2rem;">&#x1F3C6; Championship</p>
                         </div>
-                        <a href="standings.html" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.65rem; letter-spacing: 1px; white-space: nowrap;">FULL STANDINGS →</a>
+                        <a href="standings.html" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.65rem; letter-spacing: 1px; white-space: nowrap;">FULL STANDINGS &rarr;</a>
                     </div>
                     <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-                        <button class="tab-btn st-type-btn active" id="st-btn-teams" onclick="switchStandingsView(null, 'teams')" style="padding: 0.3rem 0.8rem; font-size: 0.65rem;">TEAMS</button>
-                        <button class="tab-btn st-type-btn" id="st-btn-drivers" onclick="switchStandingsView(null, 'drivers')" style="padding: 0.3rem 0.8rem; font-size: 0.65rem;">DRIVERS</button>
+                        <button class="tab-btn st-type-btn active" id="st-btn-teams" onclick="switchStandingsView('teams')" style="padding: 0.3rem 0.8rem; font-size: 0.65rem;">TEAMS</button>
+                        <button class="tab-btn st-type-btn" id="st-btn-drivers" onclick="switchStandingsView('drivers')" style="padding: 0.3rem 0.8rem; font-size: 0.65rem;">DRIVERS</button>
                     </div>
                     <div id="standings-container" style="min-height: 160px;">
                         <div class="glass loading-shimmer" style="height: 160px; border-radius: 12px;"></div>

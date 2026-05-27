@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-5JMPYRH8H9"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -16,7 +15,7 @@
     <meta name="description" content="Official GT Challenge Championship Standings — Team and Driver leaderboards for the GRiD UP GT Challenge season.">
     <meta name="keywords" content="GRiD UP, GT Challenge, championship standings, sim racing standings, iRacing league">
     <meta property="og:title" content="GT Challenge Championship Standings | GRiD UP">
-    <meta property="og:description" content="View the full GT3 and GT4 Team and Driver Championship standings for the GRiD UP GT Challenge.">
+    <meta property="og:description" content="View the full Team and Driver Championship standings for the GRiD UP GT Challenge.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://gridup.online/standings.html">
     <link rel="stylesheet" href="style.css">
@@ -31,18 +30,17 @@
             border-bottom: 1px solid rgba(0, 207, 255, 0.1);
         }
         .standings-section {
-            max-width: 1000px;
+            max-width: 900px;
             margin: 0 auto;
             padding: 4rem 2rem 8rem;
         }
-        .class-panel {
+        .standings-panel {
             background: rgba(15, 18, 24, 0.5);
             border: 1px solid rgba(0, 207, 255, 0.12);
             border-radius: 24px;
             padding: 2.5rem;
-            margin-bottom: 3rem;
         }
-        .class-panel-header {
+        .standings-panel-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -89,41 +87,22 @@
 
     <main>
         <div class="standings-section">
-
-            <!-- GT3 Panel -->
-            <div class="class-panel">
-                <div class="class-panel-header">
+            <div class="standings-panel">
+                <div class="standings-panel-header">
                     <div>
-                        <p style="color: var(--primary); font-size: 0.65rem; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 0.5rem;">Class</p>
-                        <h2 style="font-size: 2rem; font-weight: 900; margin: 0;">GT3</h2>
+                        <p style="color: var(--primary); font-size: 0.65rem; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 0.4rem;">GT Challenge</p>
+                        <h2 style="font-size: 1.8rem; font-weight: 900; margin: 0;">Championship Standings</h2>
                     </div>
                     <div class="roster-tabs" style="margin: 0;">
-                        <button class="tab-btn st-type-btn gt3-type-btn active" id="st-btn-teams" onclick="switchView3('teams')">TEAM CHAMPIONSHIP</button>
-                        <button class="tab-btn st-type-btn gt3-type-btn" id="st-btn-drivers" onclick="switchView3('drivers')">DRIVER CHAMPIONSHIP</button>
+                        <button class="tab-btn st-type-btn active" id="st-btn-teams" onclick="switchStandingsView('teams')">TEAM CHAMPIONSHIP</button>
+                        <button class="tab-btn st-type-btn" id="st-btn-drivers" onclick="switchStandingsView('drivers')">DRIVER CHAMPIONSHIP</button>
                     </div>
                 </div>
-                <div id="gt3-standings-container" style="min-height: 200px;">
-                    <div class="glass loading-shimmer" style="height: 200px; border-radius: 12px;"></div>
+
+                <div id="standings-container" style="min-height: 300px;">
+                    <div class="glass loading-shimmer" style="height: 300px; border-radius: 12px;"></div>
                 </div>
             </div>
-
-            <!-- GT4 Panel -->
-            <div class="class-panel">
-                <div class="class-panel-header">
-                    <div>
-                        <p style="color: var(--primary); font-size: 0.65rem; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 0.5rem;">Class</p>
-                        <h2 style="font-size: 2rem; font-weight: 900; margin: 0;">GT4</h2>
-                    </div>
-                    <div class="roster-tabs" style="margin: 0;">
-                        <button class="tab-btn st-type-btn gt4-type-btn active" id="gt4-btn-teams" onclick="switchView4('teams')">TEAM CHAMPIONSHIP</button>
-                        <button class="tab-btn st-type-btn gt4-type-btn" id="gt4-btn-drivers" onclick="switchView4('drivers')">DRIVER CHAMPIONSHIP</button>
-                    </div>
-                </div>
-                <div id="gt4-standings-container" style="min-height: 200px;">
-                    <div class="glass loading-shimmer" style="height: 200px; border-radius: 12px;"></div>
-                </div>
-            </div>
-
         </div>
     </main>
 
@@ -146,99 +125,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
     <script src="script.js"></script>
     <script src="js/auth.js"></script>
-    <script>
-        // Standalone standings page - renders both GT3 and GT4 simultaneously
-
-        const EXCLUDED_TEAMS_ST = ['GRID UP SIM RACING', 'GRID UP BLACK', 'GRID UP BLUE', 'GRID UP WHITE', 'GRID UP RED'];
-        function isExcludedST(name) {
-            if (!name) return false;
-            return EXCLUDED_TEAMS_ST.some(ex => ex.toUpperCase() === name.toUpperCase()) || /^grid\s*up/i.test(name);
-        }
-
-        const POINT_SYSTEM_ST = { 1:100,2:95,3:90,4:85,5:80,6:75,7:72,8:69,9:66,10:63,11:60,12:59,13:58,14:57,15:56,16:55,17:54,18:53,19:52,20:51 };
-        function getBasePtsST(pos) { return pos>=1&&pos<=20?POINT_SYSTEM_ST[pos]:pos>=21?50:0; }
-        function parsePosS(s) { return parseInt((s||'').replace(/[^0-9]/g,''))||999; }
-
-        function calcSt(results) {
-            const st = { GT3:{teams:{},drivers:{}}, GT4:{teams:{},drivers:{}} };
-            function penalty(n) { let p=0; if(n>=2)p+=5; if(n>=3)p+=10; for(let i=4;i<=n;i++)p+=20; return p; }
-            results.forEach(r => {
-                const tn = r.teamName||'Unknown';
-                if (isExcludedST(tn)) return;
-                const cc = (r.car||'').toUpperCase().includes('GT4')?'GT4':'GT3';
-                const s = st[cc];
-                const pos = parsePosS(r.finish);
-                let pts = getBasePtsST(pos);
-                if (r.polePosition===true) pts++;
-                if (r.fastestLap===true) pts++;
-                if (r.fewestIncidents===true) pts++;
-                pts -= Math.floor((parseInt(r.incidents)||0)/10);
-                const drivers = Array.isArray(r.drivers)?r.drivers:(r.drivers?r.drivers.split(',').map(d=>d.trim()):[]);
-                if (!s.teams[tn]) s.teams[tn]={name:tn,points:0,wins:0,podiums:0,soloRaces:0};
-                const t=s.teams[tn]; t.points+=pts; if(pos===1)t.wins++; if(pos<=3)t.podiums++; if(drivers.length===1)t.soloRaces++;
-                drivers.forEach(dn=>{if(!dn)return;if(!s.drivers[dn])s.drivers[dn]={name:dn,points:0,wins:0,podiums:0};const d=s.drivers[dn];d.points+=pts;if(pos===1)d.wins++;if(pos<=3)d.podiums++;});
-            });
-            for(const cc of['GT3','GT4']){Object.values(st[cc].teams).forEach(t=>{if(t.soloRaces>0)t.points-=penalty(t.soloRaces);});st[cc].teams=Object.values(st[cc].teams).sort((a,b)=>b.points-a.points);st[cc].drivers=Object.values(st[cc].drivers).sort((a,b)=>b.points-a.points);}
-            return st;
-        }
-
-        function renderTable(data, containerId, type) {
-            const container = document.getElementById(containerId);
-            if (!container) return;
-            if (data.length === 0) { container.innerHTML = `<p style="color:var(--text-muted);text-align:center;padding:2rem;">No ${type} data yet.</p>`; return; }
-            const medals = ['&#x1F947;','&#x1F948;','&#x1F949;'];
-            let html = `<table class="claims-table" style="width:100%;text-align:left;border-collapse:separate;border-spacing:0 8px;">
-                <thead><tr style="color:var(--text-muted);font-size:0.75rem;letter-spacing:2px;text-transform:uppercase;">
-                    <th style="padding:1rem;border-bottom:1px solid rgba(255,255,255,0.1);">Pos</th>
-                    <th style="padding:1rem;border-bottom:1px solid rgba(255,255,255,0.1);">${type==='teams'?'Team':'Driver'}</th>
-                    <th style="padding:1rem;border-bottom:1px solid rgba(255,255,255,0.1);text-align:center;">Pts</th>
-                    <th style="padding:1rem;border-bottom:1px solid rgba(255,255,255,0.1);text-align:center;">Wins</th>
-                    <th style="padding:1rem;border-bottom:1px solid rgba(255,255,255,0.1);text-align:center;">Podiums</th>
-                </tr></thead><tbody>`;
-            data.forEach((row,i)=>{
-                const pos=i+1;
-                const posD=pos<=3?medals[pos-1]:pos;
-                html+=`<tr style="background:rgba(255,255,255,0.02);"><td style="padding:1rem;font-weight:800;border-radius:8px 0 0 8px;width:60px;text-align:center;">${posD}</td><td style="padding:1rem;font-weight:700;color:#fff;">${row.name}</td><td style="padding:1rem;font-weight:900;color:var(--primary);text-align:center;font-size:1.1rem;">${row.points}</td><td style="padding:1rem;text-align:center;color:var(--text-muted);">${row.wins}</td><td style="padding:1rem;border-radius:0 8px 8px 0;text-align:center;color:var(--text-muted);">${row.podiums}</td></tr>`;
-            });
-            html += `</tbody></table>`;
-            container.innerHTML = html;
-        }
-
-        let pageStandings = null;
-
-        function switchView3(type) {
-            document.querySelectorAll('.gt3-type-btn').forEach(b=>b.classList.remove('active'));
-            document.getElementById(type==='teams'?'st-btn-teams':'st-btn-drivers').classList.add('active');
-            if (pageStandings) renderTable(pageStandings.GT3[type], 'gt3-standings-container', type);
-        }
-        function switchView4(type) {
-            document.querySelectorAll('.gt4-type-btn').forEach(b=>b.classList.remove('active'));
-            document.getElementById(type==='teams'?'gt4-btn-teams':'gt4-btn-drivers').classList.add('active');
-            if (pageStandings) renderTable(pageStandings.GT4[type], 'gt4-standings-container', type);
-        }
-
-        async function loadStandings() {
-            if (typeof db === 'undefined') { setTimeout(loadStandings, 500); return; }
-            try {
-                const snap = await db.collection("event_results").get();
-                if (snap.empty) {
-                    document.getElementById('gt3-standings-container').innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:2rem;">No results yet.</p>';
-                    document.getElementById('gt4-standings-container').innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:2rem;">No results yet.</p>';
-                    return;
-                }
-                const results = [];
-                snap.forEach(doc => results.push(doc.data()));
-                pageStandings = calcSt(results);
-                renderTable(pageStandings.GT3.teams, 'gt3-standings-container', 'teams');
-                renderTable(pageStandings.GT4.teams, 'gt4-standings-container', 'teams');
-            } catch(e) {
-                console.error(e);
-                document.getElementById('gt3-standings-container').innerHTML = '<p style="color:#ff3c3c;text-align:center;">Failed to load.</p>';
-                document.getElementById('gt4-standings-container').innerHTML = '<p style="color:#ff3c3c;text-align:center;">Failed to load.</p>';
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', loadStandings);
-    </script>
+    <script src="js/standings.js"></script>
 </body>
 </html>
