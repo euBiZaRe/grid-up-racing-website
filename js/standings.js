@@ -345,7 +345,7 @@ function renderExtraStats(allResults) {
                     <!-- GT3 -->
                     <div>
                         <h4 style="color: var(--primary); font-size: 0.8rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
-                            GT3 CLASS <span style="font-size: 0.6rem; font-weight: 800; padding: 2px 7px; border-radius: 20px; background: rgba(0,207,255,0.15); border: 1px solid rgba(0,207,255,0.3); letter-spacing: 1px;">POLE HIGHLIGHT</span>
+                            GT3 CLASS <span style="font-size: 0.6rem; font-weight: 800; padding: 2px 7px; border-radius: 20px; background: rgba(0,207,255,0.15); border: 1px solid rgba(0,207,255,0.3); letter-spacing: 1px;">Quali Times</span>
                         </h4>
                         <div class="qualy-list-gt3">
                             ${sortedGT3Qualy.map((res, i) => renderQualyRow(res, i + 1, parseQualy(res.qualy) === gt3QualyMin)).join('')}
@@ -354,7 +354,7 @@ function renderExtraStats(allResults) {
                     <!-- GT4 -->
                     <div>
                         <h4 style="color: #ffaa00; font-size: 0.8rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
-                            GT4 CLASS <span style="font-size: 0.6rem; font-weight: 800; padding: 2px 7px; border-radius: 20px; background: rgba(255,165,0,0.15); border: 1px solid rgba(255,165,0,0.3); letter-spacing: 1px; color: #ffaa00;">POLE HIGHLIGHT</span>
+                            GT4 CLASS <span style="font-size: 0.6rem; font-weight: 800; padding: 2px 7px; border-radius: 20px; background: rgba(255,165,0,0.15); border: 1px solid rgba(255,165,0,0.3); letter-spacing: 1px; color: #ffaa00;">Quali Times</span>
                         </h4>
                         <div class="qualy-list-gt4">
                             ${sortedGT4Qualy.map((res, i) => renderQualyRow(res, i + 1, parseQualy(res.qualy) === gt4QualyMin)).join('')}
@@ -376,7 +376,7 @@ function renderExtraStats(allResults) {
                     <!-- GT3 -->
                     <div>
                         <h4 style="color: var(--primary); font-size: 0.8rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
-                            GT3 CLASS <span style="font-size: 0.6rem; font-weight: 800; padding: 2px 7px; border-radius: 20px; background: rgba(0,207,255,0.15); border: 1px solid rgba(0,207,255,0.3); letter-spacing: 1px;">FASTEST HIGHLIGHT</span>
+                            GT3 CLASS <span style="font-size: 0.6rem; font-weight: 800; padding: 2px 7px; border-radius: 20px; background: rgba(0,207,255,0.15); border: 1px solid rgba(0,207,255,0.3); letter-spacing: 1px;">Fastest Laps</span>
                         </h4>
                         <div class="fl-list-gt3">
                             ${sortedGT3FL.map((res, i) => renderFLRow(res, i + 1, parseLapTime(res.fastestLap) === gt3FLMin)).join('')}
@@ -385,7 +385,7 @@ function renderExtraStats(allResults) {
                     <!-- GT4 -->
                     <div>
                         <h4 style="color: #ffaa00; font-size: 0.8rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
-                            GT4 CLASS <span style="font-size: 0.6rem; font-weight: 800; padding: 2px 7px; border-radius: 20px; background: rgba(255,165,0,0.15); border: 1px solid rgba(255,165,0,0.3); letter-spacing: 1px; color: #ffaa00;">FASTEST HIGHLIGHT</span>
+                            GT4 CLASS <span style="font-size: 0.6rem; font-weight: 800; padding: 2px 7px; border-radius: 20px; background: rgba(255,165,0,0.15); border: 1px solid rgba(255,165,0,0.3); letter-spacing: 1px; color: #ffaa00;">Fastest Laps</span>
                         </h4>
                         <div class="fl-list-gt4">
                             ${sortedGT4FL.map((res, i) => renderFLRow(res, i + 1, parseLapTime(res.fastestLap) === gt4FLMin)).join('')}
@@ -407,7 +407,7 @@ function renderExtraStats(allResults) {
                     <!-- GT3 -->
                     <div>
                         <h4 style="color: var(--primary); font-size: 0.8rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
-                            GT3 CLASS <span style="font-size: 0.6rem; font-weight: 800; padding: 2px 7px; border-radius: 20px; background: rgba(0,255,136,0.15); border: 1px solid rgba(0,255,136,0.3); letter-spacing: 1px; color: #00ff88;">SAFEST HIGHLIGHT</span>
+                            GT3 CLASS <span style="font-size: 0.6rem; font-weight: 800; padding: 2px 7px; border-radius: 20px; background: rgba(0,255,136,0.15); border: 1px solid rgba(0,255,136,0.3); letter-spacing: 1px; color: #00ff88;">Fewest Incidents</span>
                         </h4>
                         <div class="safety-list-gt3">
                             ${sortedGT3Safety.map((res, i) => renderSafetyRow(res, i + 1, parseIncidents(res.incidents) === gt3IncMin)).join('')}
@@ -416,7 +416,7 @@ function renderExtraStats(allResults) {
                     <!-- GT4 -->
                     <div>
                         <h4 style="color: #ffaa00; font-size: 0.8rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
-                            GT4 CLASS <span style="font-size: 0.6rem; font-weight: 800; padding: 2px 7px; border-radius: 20px; background: rgba(0,255,136,0.15); border: 1px solid rgba(0,255,136,0.3); letter-spacing: 1px; color: #00ff88;">SAFEST HIGHLIGHT</span>
+                            GT4 CLASS <span style="font-size: 0.6rem; font-weight: 800; padding: 2px 7px; border-radius: 20px; background: rgba(0,255,136,0.15); border: 1px solid rgba(0,255,136,0.3); letter-spacing: 1px; color: #00ff88;">Fewest Incidents</span>
                         </h4>
                         <div class="safety-list-gt4">
                             ${sortedGT4Safety.map((res, i) => renderSafetyRow(res, i + 1, parseIncidents(res.incidents) === gt4IncMin)).join('')}
