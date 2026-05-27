@@ -243,7 +243,39 @@ function renderExtraStats(allResults) {
     const gt3QualyMin = Math.min(...sortedGT3Qualy.map(r => parseQualy(r.qualy)));
     const gt4QualyMin = Math.min(...sortedGT4Qualy.map(r => parseQualy(r.qualy)));
 
-    // --- 2. FASTEST LAPS ---
+    // --- 2. AVERAGE STARTING POSITION ---
+    const teamQualys = {};
+    allResults.forEach(res => {
+        const teamName = res.teamName;
+        if (!teamName || isExcluded(teamName)) return;
+
+        const carClass = (res.car || '').toUpperCase().includes('GT4') ? 'GT4' : 'GT3';
+        const qPos = parseQualy(res.qualy);
+        if (qPos === 999) return; // Skip invalid qualy
+
+        if (!teamQualys[teamName]) {
+            teamQualys[teamName] = { name: teamName, carClass, qualys: [] };
+        }
+        teamQualys[teamName].qualys.push(qPos);
+    });
+
+    const avgStartList = Object.values(teamQualys).map(t => {
+        const sum = t.qualys.reduce((a, b) => a + b, 0);
+        const avg = sum / t.qualys.length;
+        return {
+            name: t.name,
+            carClass: t.carClass,
+            avgStart: avg
+        };
+    });
+
+    const sortedGT3AvgStart = avgStartList.filter(t => t.carClass === 'GT3').sort((a, b) => a.avgStart - b.avgStart);
+    const sortedGT4AvgStart = avgStartList.filter(t => t.carClass === 'GT4').sort((a, b) => a.avgStart - b.avgStart);
+
+    const gt3AvgMin = sortedGT3AvgStart.length > 0 ? Math.min(...sortedGT3AvgStart.map(t => t.avgStart)) : Infinity;
+    const gt4AvgMin = sortedGT4AvgStart.length > 0 ? Math.min(...sortedGT4AvgStart.map(t => t.avgStart)) : Infinity;
+
+    // --- 3. FASTEST LAPS ---
     const parseLapTime = (timeStr) => {
         if (!timeStr || timeStr === 'N/A' || timeStr === true || timeStr === false || timeStr === '-') return Infinity;
         const parts = String(timeStr).split(':');
@@ -261,7 +293,7 @@ function renderExtraStats(allResults) {
     const gt3FLMin = Math.min(...sortedGT3FL.map(r => parseLapTime(r.fastestLap)));
     const gt4FLMin = Math.min(...sortedGT4FL.map(r => parseLapTime(r.fastestLap)));
 
-    // --- 3. SAFETY / INCIDENTS ---
+    // --- 4. SAFETY / INCIDENTS ---
     const parseIncidents = (inc) => parseInt(inc) || 0;
 
     const sortedGT3Safety = [...gt3Results].sort((a, b) => parseIncidents(a.incidents) - parseIncidents(b.incidents));
@@ -287,6 +319,24 @@ function renderExtraStats(allResults) {
                     <span style="${highlightStyle} font-size: 0.85rem;">${trophy}${res.teamName}</span>
                 </div>
                 <div style="font-weight: 900; font-size: 0.95rem; color: ${isHighlight ? 'var(--primary)' : 'var(--text-muted)'};">${qualyText}${timeText}</div>
+            </div>
+        `;
+    };
+
+    const renderAvgStartRow = (res, rank, isHighlight) => {
+        const borderStyle = isHighlight 
+            ? 'background: linear-gradient(135deg, rgba(0, 207, 255, 0.15), rgba(0, 207, 255, 0.03)); border: 1px solid rgba(0, 207, 255, 0.5); box-shadow: 0 0 15px rgba(0, 207, 255, 0.15);' 
+            : 'background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);';
+        const trophy = isHighlight ? '🏁 ' : '';
+        const highlightStyle = isHighlight ? 'color: var(--primary); font-weight: 800;' : 'color: #fff;';
+        
+        return `
+            <div style="${borderStyle} border-radius: 12px; padding: 0.8rem 1.2rem; margin-bottom: 0.6rem; display: flex; justify-content: space-between; align-items: center; transition: all 0.3s ease;">
+                <div style="display: flex; align-items: center; gap: 0.8rem;">
+                    <span style="font-weight: 800; color: var(--text-muted); font-size: 0.75rem; width: 20px;">${rank}</span>
+                    <span style="${highlightStyle} font-size: 0.85rem;">${trophy}${res.name}</span>
+                </div>
+                <div style="font-weight: 900; font-size: 0.95rem; color: ${isHighlight ? 'var(--primary)' : 'var(--text-muted)'};">P${res.avgStart.toFixed(2)}</div>
             </div>
         `;
     };
@@ -330,7 +380,7 @@ function renderExtraStats(allResults) {
     };
 
     extraContainer.innerHTML = `
-        <div class="stats-grid" style="display: grid; grid-template-columns: 1fr; gap: 3rem; margin-top: 3rem;">
+        <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 3rem; margin-top: 3rem;">
             
             <!-- Qualifying Section -->
             <div class="stats-card" style="background: rgba(15, 18, 24, 0.5); border: 1px solid rgba(0, 207, 255, 0.12); border-radius: 24px; padding: 2.5rem; backdrop-filter: blur(10px);">
@@ -358,6 +408,37 @@ function renderExtraStats(allResults) {
                         </h4>
                         <div class="qualy-list-gt4">
                             ${sortedGT4Qualy.map((res, i) => renderQualyRow(res, i + 1, parseQualy(res.qualy) === gt4QualyMin)).join('')}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Average Start Position Section -->
+            <div class="stats-card" style="background: rgba(15, 18, 24, 0.5); border: 1px solid rgba(0, 207, 255, 0.12); border-radius: 24px; padding: 2.5rem; backdrop-filter: blur(10px);">
+                <div style="display: flex; align-items: center; gap: 0.8rem; margin-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 1rem;">
+                    <span style="font-size: 1.8rem;">🏁</span>
+                    <div>
+                        <h3 style="font-size: 1.4rem; font-weight: 900; margin: 0; color: #fff; letter-spacing: 1px;">Average Start Pos</h3>
+                        <p style="color: var(--text-muted); font-size: 0.65rem; margin: 0.2rem 0 0; text-transform: uppercase; letter-spacing: 2px; font-weight: 800;">Season Average Qualifying Position</p>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2.5rem;">
+                    <!-- GT3 -->
+                    <div>
+                        <h4 style="color: var(--primary); font-size: 0.8rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+                            GT3 CLASS <span style="font-size: 0.6rem; font-weight: 800; padding: 2px 7px; border-radius: 20px; background: rgba(0,207,255,0.15); border: 1px solid rgba(0,207,255,0.3); letter-spacing: 1px;">Best Avg Start</span>
+                        </h4>
+                        <div class="avgstart-list-gt3">
+                            ${sortedGT3AvgStart.map((res, i) => renderAvgStartRow(res, i + 1, res.avgStart === gt3AvgMin)).join('')}
+                        </div>
+                    </div>
+                    <!-- GT4 -->
+                    <div>
+                        <h4 style="color: #ffaa00; font-size: 0.8rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+                            GT4 CLASS <span style="font-size: 0.6rem; font-weight: 800; padding: 2px 7px; border-radius: 20px; background: rgba(255,165,0,0.15); border: 1px solid rgba(255,165,0,0.3); letter-spacing: 1px; color: #ffaa00;">Best Avg Start</span>
+                        </h4>
+                        <div class="avgstart-list-gt4">
+                            ${sortedGT4AvgStart.map((res, i) => renderAvgStartRow(res, i + 1, res.avgStart === gt4AvgMin)).join('')}
                         </div>
                     </div>
                 </div>
