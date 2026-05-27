@@ -23,7 +23,7 @@
     <style>
         .profile-container {
             margin-top: 5rem;
-            max-width: 800px;
+            max-width: 1200px;
             margin-left: auto;
             margin-right: auto;
         }
@@ -143,57 +143,92 @@
                 <p id="user-status" style="color: var(--text-muted); margin-top: 0.5rem;">GRiD UP Community Member</p>
             </div>
 
-            <div class="glass">
-                <div class="profile-form">
-                    <h2 class="section-title" style="font-size: 1.5rem;">Driver Details</h2>
-                    
-                    <div class="form-group">
-                        <label>Driver Name</label>
-                        <input type="text" id="input-name" class="form-input" placeholder="Enter Name">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem;">
+                <div class="glass">
+                    <div class="profile-form">
+                        <h2 class="section-title" style="font-size: 1.5rem;">Driver Details</h2>
+                        
+                        <div class="form-group">
+                            <label>Driver Name</label>
+                            <input type="text" id="input-name" class="form-input" placeholder="Enter Name">
+                        </div>
+
+                        <div class="form-group">
+                            <label>iRacing ID</label>
+                            <input type="text" id="input-iracing-id" class="form-input" placeholder="Enter your iRacing ID (e.g. 123456)">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Garage 61 URL</label>
+                            <input type="text" id="input-g61-url" class="form-input" placeholder="https://garage61.net/app/drivers/your-name">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Preferred Class</label>
+                            <select id="input-class" class="form-input" style="background: #111;">
+                                <option value="GT3">GT3</option>
+                                <option value="Formula">Formula</option>
+                                <option value="Prototypes">Prototypes</option>
+                                <option value="Oval">Oval</option>
+                                <option value="Endurance">Endurance</option>
+                            </select>
+                        </div>
+
+                        <h2 class="section-title" style="font-size: 1.5rem; margin-top: 1rem;">Streaming & Socials</h2>
+                        <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 1rem;">Link your channels to show up as LIVE on event pages!</p>
+
+                        <div class="form-group">
+                            <label>Twitch Channel URL</label>
+                            <input type="text" id="input-twitch" class="form-input" placeholder="https://twitch.tv/yourname">
+                        </div>
+
+                        <div class="form-group">
+                            <label>TikTok Profile URL</label>
+                            <input type="text" id="input-tiktok" class="form-input" placeholder="https://tiktok.com/@yourname">
+                        </div>
+
+                        <div class="form-group">
+                            <label>YouTube Channel URL</label>
+                            <input type="text" id="input-youtube" class="form-input" placeholder="https://youtube.com/@yourname">
+                        </div>
                     </div>
+                </div>
 
-                    <div class="form-group">
-                        <label>iRacing ID</label>
-                        <input type="text" id="input-iracing-id" class="form-input" placeholder="Enter your iRacing ID (e.g. 123456)">
+                <div class="glass">
+                    <div class="profile-form">
+                        <h2 class="section-title" style="font-size: 1.5rem;">Driver Information</h2>
+                        <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 1rem;">This information will be displayed publicly on your driver profile.</p>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                            <div class="form-group">
+                                <label>Age</label>
+                                <input type="number" id="input-age" class="form-input" placeholder="e.g. 25">
+                            </div>
+                            <div class="form-group">
+                                <label>Country</label>
+                                <input type="text" id="input-country" class="form-input" placeholder="e.g. United Kingdom">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Favourite Car (In iRacing)</label>
+                            <input type="text" id="input-fav-car" class="form-input" placeholder="e.g. Porsche 911 GT3 R">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Favourite Track</label>
+                            <input type="text" id="input-fav-track" class="form-input" placeholder="e.g. Spa-Francorchamps">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Advice for New Sim Racers</label>
+                            <textarea id="input-advice" class="form-input" rows="4" placeholder="Share your best tip..." style="resize: vertical;"></textarea>
+                        </div>
+
+                        <button onclick="saveProfile()" class="btn btn-primary" style="margin-top: 1rem; width: 100%; padding: 1rem; font-size: 1rem; font-weight: bold;">Save Profile Changes</button>
+                        
+                        <div id="save-status" style="text-align: center; color: var(--primary); font-size: 0.8rem; height: 1rem;"></div>
                     </div>
-
-                    <div class="form-group">
-                        <label>Garage 61 URL</label>
-                        <input type="text" id="input-g61-url" class="form-input" placeholder="https://garage61.net/app/drivers/your-name">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Preferred Class</label>
-                        <select id="input-class" class="form-input" style="background: #111;">
-                            <option value="GT3">GT3</option>
-                            <option value="Formula">Formula</option>
-                            <option value="Prototypes">Prototypes</option>
-                            <option value="Oval">Oval</option>
-                            <option value="Endurance">Endurance</option>
-                        </select>
-                    </div>
-
-                    <h2 class="section-title" style="font-size: 1.5rem; margin-top: 2rem;">Streaming & Socials</h2>
-                    <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 1rem;">Link your channels to show up as LIVE on event pages!</p>
-
-                    <div class="form-group">
-                        <label>Twitch Channel URL</label>
-                        <input type="text" id="input-twitch" class="form-input" placeholder="https://twitch.tv/yourname">
-                    </div>
-
-                    <div class="form-group">
-                        <label>TikTok Profile URL</label>
-                        <input type="text" id="input-tiktok" class="form-input" placeholder="https://tiktok.com/@yourname">
-                    </div>
-
-                    <div class="form-group">
-                        <label>YouTube Channel URL</label>
-                        <input type="text" id="input-youtube" class="form-input" placeholder="https://youtube.com/@yourname">
-                    </div>
-
-                    <button onclick="saveProfile()" class="btn btn-primary" style="margin-top: 1rem; width: 100%;">Save Profile Changes</button>
-                    
-                    <div id="save-status" style="text-align: center; color: var(--primary); font-size: 0.8rem; height: 1rem;"></div>
                 </div>
             </div>
 
@@ -273,6 +308,13 @@
                     document.getElementById('input-tiktok').value = data.tiktokUrl || "";
                     document.getElementById('input-youtube').value = data.youtubeUrl || "";
                     
+                    // Driver Info
+                    document.getElementById('input-age').value = data.age || "";
+                    document.getElementById('input-country').value = data.country || "";
+                    document.getElementById('input-fav-car').value = data.favCar || "";
+                    document.getElementById('input-fav-track').value = data.favTrack || "";
+                    document.getElementById('input-advice').value = data.advice || "";
+                    
                     // Update header if custom data exists
                     if (data.driverName) {
                         nameElt.textContent = data.driverName;
@@ -325,6 +367,11 @@
                     twitchUrl: document.getElementById('input-twitch').value,
                     tiktokUrl: document.getElementById('input-tiktok').value,
                     youtubeUrl: document.getElementById('input-youtube').value,
+                    age: document.getElementById('input-age').value,
+                    country: document.getElementById('input-country').value,
+                    favCar: document.getElementById('input-fav-car').value,
+                    favTrack: document.getElementById('input-fav-track').value,
+                    advice: document.getElementById('input-advice').value,
                     lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });
                 
