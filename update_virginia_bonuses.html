@@ -61,27 +61,27 @@
         // Exact data confirmed by race organisers
         const TEAM_DATA = {
             // GT3
-            "juan":                        { incidents: 3,  polePosition: true,  fastestLap: true,  fewestIncidents: true  },
-            "Refined Motorsport":          { incidents: 5,  polePosition: false, fastestLap: false, fewestIncidents: false },
-            "~* Dream Team *~":            { incidents: 13, polePosition: false, fastestLap: false, fewestIncidents: false },
-            "Team Jacob Reid5":            { incidents: 26, polePosition: false, fastestLap: false, fewestIncidents: false },
-            "Depend for Men Motorsports":  { incidents: 10, polePosition: false, fastestLap: false, fewestIncidents: false },
-            "F&F Racing":                  { incidents: 16, polePosition: false, fastestLap: false, fewestIncidents: false },
-            "Team Breakfast":              { incidents: 10, polePosition: false, fastestLap: false, fewestIncidents: false },
-            "Koch Motorsports":            { incidents: 0,  polePosition: false, fastestLap: false, fewestIncidents: false },
-            "MotorMouth Broadcasting":     { incidents: 0,  polePosition: false, fastestLap: false, fewestIncidents: false },
+            "juan":                        { incidents: 3,  polePosition: true,  fastestLapBonus: true,  fewestIncidents: true  },
+            "Refined Motorsport":          { incidents: 5,  polePosition: false, fastestLapBonus: false, fewestIncidents: false },
+            "~* Dream Team *~":            { incidents: 13, polePosition: false, fastestLapBonus: false, fewestIncidents: false },
+            "Team Jacob Reid5":            { incidents: 26, polePosition: false, fastestLapBonus: false, fewestIncidents: false },
+            "Depend for Men Motorsports":  { incidents: 10, polePosition: false, fastestLapBonus: false, fewestIncidents: false },
+            "F&F Racing":                  { incidents: 16, polePosition: false, fastestLapBonus: false, fewestIncidents: false },
+            "Team Breakfast":              { incidents: 10, polePosition: false, fastestLapBonus: false, fewestIncidents: false },
+            "Koch Motorsports":            { incidents: 0,  polePosition: false, fastestLapBonus: false, fewestIncidents: false },
+            "MotorMouth Broadcasting":     { incidents: 0,  polePosition: false, fastestLapBonus: false, fewestIncidents: false },
 
             // GT4
-            "solo dolo":                   { incidents: 17, polePosition: true,  fastestLap: true,  fewestIncidents: false },
-            "Motohaus White":              { incidents: 2,  polePosition: false, fastestLap: false, fewestIncidents: true  },
-            "Apex Junky Motorsports":      { incidents: 8,  polePosition: false, fastestLap: false, fewestIncidents: false },
-            "Team Bayou Dust":             { incidents: 12, polePosition: false, fastestLap: false, fewestIncidents: false },
-            "Bee Hive Racing":             { incidents: 6,  polePosition: false, fastestLap: false, fewestIncidents: false },
-            "Angry Rooster Racing":        { incidents: 19, polePosition: false, fastestLap: false, fewestIncidents: false },
-            "Rev Limit Racing":            { incidents: 13, polePosition: false, fastestLap: false, fewestIncidents: false },
-            "Grumpy duck racing":          { incidents: 9,  polePosition: false, fastestLap: false, fewestIncidents: false },
-            "Razor Racing":                { incidents: 6,  polePosition: false, fastestLap: false, fewestIncidents: false },
-            "Jayden Goslin":               { incidents: 41, polePosition: false, fastestLap: false, fewestIncidents: false },
+            "solo dolo":                   { incidents: 17, polePosition: true,  fastestLapBonus: true,  fewestIncidents: false },
+            "Motohaus White":              { incidents: 2,  polePosition: false, fastestLapBonus: false, fewestIncidents: true  },
+            "Apex Junky Motorsports":      { incidents: 8,  polePosition: false, fastestLapBonus: false, fewestIncidents: false },
+            "Team Bayou Dust":             { incidents: 12, polePosition: false, fastestLapBonus: false, fewestIncidents: false },
+            "Bee Hive Racing":             { incidents: 6,  polePosition: false, fastestLapBonus: false, fewestIncidents: false },
+            "Angry Rooster Racing":        { incidents: 19, polePosition: false, fastestLapBonus: false, fewestIncidents: false },
+            "Rev Limit Racing":            { incidents: 13, polePosition: false, fastestLapBonus: false, fewestIncidents: false },
+            "Grumpy duck racing":          { incidents: 9,  polePosition: false, fastestLapBonus: false, fewestIncidents: false },
+            "Razor Racing":                { incidents: 6,  polePosition: false, fastestLapBonus: false, fewestIncidents: false },
+            "Jayden Goslin":               { incidents: 41, polePosition: false, fastestLapBonus: false, fewestIncidents: false },
         };
 
         function log(msg, cls = 'ok') {
@@ -118,7 +118,7 @@
                         const deduction = Math.floor(updates.incidents / 10);
                         const bonuses = [
                             updates.polePosition   ? '+1 Pole'        : null,
-                            updates.fastestLap     ? '+1 FL'          : null,
+                            updates.fastestLapBonus? '+1 FL'          : null,
                             updates.fewestIncidents? '+1 FewestX'     : null,
                             deduction > 0          ? `-${deduction} Inc (${updates.incidents}x)` : null,
                         ].filter(Boolean).join(', ') || 'no bonuses/deductions';

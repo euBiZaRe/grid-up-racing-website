@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Update Virginia 120 — DNFs</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="js/auth.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 2rem; background: #0a0a0c; color: white; }
+        button { padding: 1rem 2rem; background: #00cfff; border: none; color: black; font-weight: bold; cursor: pointer; border-radius: 4px; }
+        #log { margin-top: 1rem; white-space: pre; font-family: monospace; font-size: 0.9rem; }
+        .ok { color: #00ff88; }
+        .err { color: #ff3c3c; }
+        .info { color: #a0a0ff; }
+        table { border-collapse: collapse; margin-top: 2rem; width: 100%; }
+        th, td { border: 1px solid #333; padding: 0.5rem 1rem; text-align: left; }
+        th { background: #111; color: #00cfff; }
+    </style>
+</head>
+<body>
+    <h1>Update Virginia 120 — DNF Statuses</h1>
+    <p>Sets finish position to <strong>DNF</strong> for the following teams in <strong>gtc-virginia-120</strong> in Firestore.</p>
+
+    <h3>What will be applied:</h3>
+    <table>
+        <thead>
+            <tr><th>Team</th><th>Original Finish</th><th>New Finish</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Team Breakfast</td><td>P7</td><td>DNF</td><td>50 base points</td></tr>
+            <tr><td>Jayden Goslin</td><td>P10</td><td>DNF</td><td>50 base points (-4 incident deduction = 46)</td></tr>
+            <tr><td>Razor Racing</td><td>P9</td><td>DNF</td><td>50 base points</td></tr>
+        </tbody>
+    </table>
+
+    <br>
+    <button onclick="applyUpdates()">Apply DNF Updates to Firestore</button>
+    <div id="log"></div>
+
+    <script>
+        const EVENT_ID = 'gtc-virginia-120';
+        const DNF_TEAMS = ['Team Breakfast', 'Jayden Goslin', 'Razor Racing'];
+
+        function log(msg, cls = 'ok') {
+            document.getElementById('log').innerHTML += `<span class="${cls}">${msg}\n</span>`;
+        }
+
+        async function applyUpdates() {
+            if (typeof db === 'undefined') {
+                log('ERROR: Firestore not initialized. Wait a moment and try again.', 'err');
+                return;
+            }
+            document.getElementById('log').innerHTML = '';
+            log(`Fetching Virginia 120 results from Firestore...`, 'info');
+
+            try {
+                const snap = await db.collection('event_results')
+                    .where('eventId', '==', EVENT_ID)
+                    .get();
+
+                if (snap.empty) {
+                    log('No results found for gtc-virginia-120.', 'err');
+                    return;
+                }
+
+                log(`Found ${snap.size} documents. Applying updates...\n`, 'info');
+
+                let updated = 0;
+                for (const doc of snap.docs) {
+                    const data = doc.data();
+                    const team = data.teamName || '';
+
+                    if (DNF_TEAMS.includes(team)) {
+                        await doc.ref.update({ finish: 'DNF' });
+                        log(`✅ ${team.padEnd(25)} → set finish to "DNF"`);
+                        updated++;
+                    }
+                }
+
+                log(`\n─────────────────────────────────────────`);
+                log(`Done! ${updated} updated.`);
+                log(`\nOpen standings.html to see updated standings!`, 'info');
+
+            } catch (e) {
+                log(`ERROR: ${e.message}`, 'err');
+            }
+        }
+    </script>
+</body>
+</html>

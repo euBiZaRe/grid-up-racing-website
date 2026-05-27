@@ -3,6 +3,7 @@
 const EXCLUDED_TEAMS = [
     'GRID UP SIM RACING', 'GRID UP BLACK', 'GRID UP BLUE', 'GRID UP WHITE', 'GRID UP RED',
     'GRiD UP Sim Racing', 'GRiD UP Black', 'GRiD UP Blue', 'GRiD UP White', 'GRiD UP Red',
+    'Koch Motorsports',
 ];
 
 function isExcluded(teamName) {
@@ -52,7 +53,7 @@ function calculateStandings(resultsData) {
         let basePts = getBasePoints(pos);
 
         if (res.polePosition === true) basePts += 1;
-        if (res.fastestLap === true) basePts += 1;
+        if (res.fastestLap === true || res.fastestLapBonus === true) basePts += 1;
         if (res.fewestIncidents === true) basePts += 1;
 
         const incidents = parseInt(res.incidents) || 0;
@@ -122,6 +123,12 @@ async function loadAndRenderStandings() {
         snapshot.forEach(doc => allResults.push(doc.data()));
         window.leagueStandings = calculateStandings(allResults);
         renderStandingsTable('teams');
+
+        // Render extra stats section if present
+        const extraContainer = document.getElementById('extra-stats-container');
+        if (extraContainer) {
+            renderExtraStats(allResults);
+        }
     } catch (e) {
         console.error("Error loading standings:", e);
         container.innerHTML = '<p style="color: #ff3c3c; text-align: center;">Failed to load standings.</p>';
@@ -157,9 +164,9 @@ function renderStandingsTable(type) {
         data.slice(0, 5).forEach((row, index) => {
             const pos = index + 1;
             let medal = `<span style="font-weight:800;color:var(--text-muted);font-size:0.8rem;">${pos}</span>`;
-            if (pos === 1) medal = '<span style="font-size:1rem;">&#x1F947;</span>';
-            else if (pos === 2) medal = '<span style="font-size:1rem;">&#x1F948;</span>';
-            else if (pos === 3) medal = '<span style="font-size:1rem;">&#x1F949;</span>';
+            if (pos === 1) medal = '<span style="font-size:1rem;">🥇</span>';
+            else if (pos === 2) medal = '<span style="font-size:1rem;">🥈</span>';
+            else if (pos === 3) medal = '<span style="font-size:1rem;">🥉</span>';
             const badge = row.carClass ? CLASS_BADGE[row.carClass] || '' : '';
             html += `<div class="st-row">
                 <div style="text-align:center;">${medal}</div>
@@ -188,9 +195,9 @@ function renderStandingsTable(type) {
     data.forEach((row, index) => {
         const pos = index + 1;
         let posD = pos;
-        if (pos === 1) posD = '&#x1F947;';
-        else if (pos === 2) posD = '&#x1F948;';
-        else if (pos === 3) posD = '&#x1F949;';
+        if (pos === 1) posD = '🥇';
+        else if (pos === 2) posD = '🥈';
+        else if (pos === 3) posD = '🥉';
         const badge = row.carClass ? CLASS_BADGE[row.carClass] || '' : '';
         html += `<tr style="background:rgba(255,255,255,0.02);">
             <td style="padding:1rem;font-weight:800;border-radius:8px 0 0 8px;width:60px;text-align:center;">${posD}</td>
@@ -204,6 +211,216 @@ function renderStandingsTable(type) {
 
     html += `</tbody></table>`;
     container.innerHTML = html;
+}
+
+function renderExtraStats(allResults) {
+    const extraContainer = document.getElementById('extra-stats-container');
+    if (!extraContainer) return;
+
+    // Filter for Virginia 120 results and non-excluded teams
+    const virginiaResults = allResults.filter(res => res.eventId === 'gtc-virginia-120' && !isExcluded(res.teamName));
+    if (virginiaResults.length === 0) {
+        extraContainer.style.display = 'none';
+        return;
+    }
+    extraContainer.style.display = 'block';
+
+    // Group by class
+    const gt3Results = virginiaResults.filter(res => !(res.car || '').toUpperCase().includes('GT4'));
+    const gt4Results = virginiaResults.filter(res => (res.car || '').toUpperCase().includes('GT4'));
+
+    // --- 1. QUALIFYING POSITIONS ---
+    const parseQualy = (q) => parseInt((q || '').replace(/[^0-9]/g, '')) || 999;
+    
+    const sortedGT3Qualy = [...gt3Results].sort((a, b) => parseQualy(a.qualy) - parseQualy(b.qualy));
+    const sortedGT4Qualy = [...gt4Results].sort((a, b) => parseQualy(a.qualy) - parseQualy(b.qualy));
+
+    const gt3QualyMin = Math.min(...sortedGT3Qualy.map(r => parseQualy(r.qualy)));
+    const gt4QualyMin = Math.min(...sortedGT4Qualy.map(r => parseQualy(r.qualy)));
+
+    // --- 2. FASTEST LAPS ---
+    const parseLapTime = (timeStr) => {
+        if (!timeStr || timeStr === 'N/A' || timeStr === true || timeStr === false) return Infinity;
+        const parts = String(timeStr).split(':');
+        if (parts.length === 2) {
+            const mins = parseInt(parts[0]) || 0;
+            const secs = parseFloat(parts[1]) || 0;
+            return mins * 60 + secs;
+        }
+        return parseFloat(timeStr) || Infinity;
+    };
+
+    const sortedGT3FL = [...gt3Results].sort((a, b) => parseLapTime(a.fastestLap) - parseLapTime(b.fastestLap));
+    const sortedGT4FL = [...gt4Results].sort((a, b) => parseLapTime(a.fastestLap) - parseLapTime(b.fastestLap));
+
+    const gt3FLMin = Math.min(...sortedGT3FL.map(r => parseLapTime(r.fastestLap)));
+    const gt4FLMin = Math.min(...sortedGT4FL.map(r => parseLapTime(r.fastestLap)));
+
+    // --- 3. SAFETY / INCIDENTS ---
+    const parseIncidents = (inc) => parseInt(inc) || 0;
+
+    const sortedGT3Safety = [...gt3Results].sort((a, b) => parseIncidents(a.incidents) - parseIncidents(b.incidents));
+    const sortedGT4Safety = [...gt4Results].sort((a, b) => parseIncidents(a.incidents) - parseIncidents(b.incidents));
+
+    const gt3IncMin = Math.min(...sortedGT3Safety.map(r => parseIncidents(r.incidents)));
+    const gt4IncMin = Math.min(...sortedGT4Safety.map(r => parseIncidents(r.incidents)));
+
+    // Helper to render rows
+    const renderQualyRow = (res, rank, isHighlight) => {
+        const borderStyle = isHighlight 
+            ? 'background: linear-gradient(135deg, rgba(0, 207, 255, 0.15), rgba(0, 207, 255, 0.03)); border: 1px solid rgba(0, 207, 255, 0.5); box-shadow: 0 0 15px rgba(0, 207, 255, 0.15);' 
+            : 'background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);';
+        const trophy = isHighlight ? '🏆 ' : '';
+        const qualyText = res.qualy || 'P-';
+        const highlightStyle = isHighlight ? 'color: var(--primary); font-weight: 800;' : 'color: #fff;';
+        
+        return `
+            <div style="${borderStyle} border-radius: 12px; padding: 0.8rem 1.2rem; margin-bottom: 0.6rem; display: flex; justify-content: space-between; align-items: center; transition: all 0.3s ease;">
+                <div style="display: flex; align-items: center; gap: 0.8rem;">
+                    <span style="font-weight: 800; color: var(--text-muted); font-size: 0.75rem; width: 20px;">${rank}</span>
+                    <span style="${highlightStyle} font-size: 0.85rem;">${trophy}${res.teamName}</span>
+                </div>
+                <div style="font-weight: 900; font-size: 0.95rem; color: ${isHighlight ? 'var(--primary)' : 'var(--text-muted)'};">${qualyText}</div>
+            </div>
+        `;
+    };
+
+    const renderFLRow = (res, rank, isHighlight) => {
+        const timeVal = res.fastestLap || 'N/A';
+        const borderStyle = isHighlight 
+            ? 'background: linear-gradient(135deg, rgba(255, 170, 0, 0.15), rgba(255, 170, 0, 0.03)); border: 1px solid rgba(255, 170, 0, 0.5); box-shadow: 0 0 15px rgba(255, 170, 0, 0.15);' 
+            : 'background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);';
+        const bolt = isHighlight ? '⚡ ' : '';
+        const highlightStyle = isHighlight ? 'color: #ffaa00; font-weight: 800;' : 'color: #fff;';
+        
+        return `
+            <div style="${borderStyle} border-radius: 12px; padding: 0.8rem 1.2rem; margin-bottom: 0.6rem; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 0.8rem;">
+                    <span style="font-weight: 800; color: var(--text-muted); font-size: 0.75rem; width: 20px;">${rank}</span>
+                    <span style="${highlightStyle} font-size: 0.85rem;">${bolt}${res.teamName}</span>
+                </div>
+                <div style="font-weight: 900; font-size: 0.95rem; color: ${isHighlight ? '#ffaa00' : 'var(--text-muted)'};">${timeVal}</div>
+            </div>
+        `;
+    };
+
+    const renderSafetyRow = (res, rank, isHighlight) => {
+        const incVal = res.incidents !== undefined ? `${res.incidents}x` : '-';
+        const borderStyle = isHighlight 
+            ? 'background: linear-gradient(135deg, rgba(0, 255, 136, 0.15), rgba(0, 255, 136, 0.03)); border: 1px solid rgba(0, 255, 136, 0.5); box-shadow: 0 0 15px rgba(0, 255, 136, 0.15);' 
+            : 'background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);';
+        const shield = isHighlight ? '🛡️ ' : '';
+        const highlightStyle = isHighlight ? 'color: #00ff88; font-weight: 800;' : 'color: #fff;';
+        
+        return `
+            <div style="${borderStyle} border-radius: 12px; padding: 0.8rem 1.2rem; margin-bottom: 0.6rem; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 0.8rem;">
+                    <span style="font-weight: 800; color: var(--text-muted); font-size: 0.75rem; width: 20px;">${rank}</span>
+                    <span style="${highlightStyle} font-size: 0.85rem;">${shield}${res.teamName}</span>
+                </div>
+                <div style="font-weight: 900; font-size: 0.95rem; color: ${isHighlight ? '#00ff88' : 'var(--text-muted)'};">${incVal}</div>
+            </div>
+        `;
+    };
+
+    extraContainer.innerHTML = `
+        <div class="stats-grid" style="display: grid; grid-template-columns: 1fr; gap: 3rem; margin-top: 3rem;">
+            
+            <!-- Qualifying Section -->
+            <div class="stats-card" style="background: rgba(15, 18, 24, 0.5); border: 1px solid rgba(0, 207, 255, 0.12); border-radius: 24px; padding: 2.5rem; backdrop-filter: blur(10px);">
+                <div style="display: flex; align-items: center; gap: 0.8rem; margin-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 1rem;">
+                    <span style="font-size: 1.8rem;">🏆</span>
+                    <div>
+                        <h3 style="font-size: 1.4rem; font-weight: 900; margin: 0; color: #fff; letter-spacing: 1px;">Qualifying Grid</h3>
+                        <p style="color: var(--text-muted); font-size: 0.65rem; margin: 0.2rem 0 0; text-transform: uppercase; letter-spacing: 2px; font-weight: 800;">Virginia 120 Starting Positions</p>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2.5rem;">
+                    <!-- GT3 -->
+                    <div>
+                        <h4 style="color: var(--primary); font-size: 0.8rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+                            GT3 CLASS <span style="font-size: 0.6rem; font-weight: 800; padding: 2px 7px; border-radius: 20px; background: rgba(0,207,255,0.15); border: 1px solid rgba(0,207,255,0.3); letter-spacing: 1px;">POLE HIGHLIGHT</span>
+                        </h4>
+                        <div class="qualy-list-gt3">
+                            ${sortedGT3Qualy.map((res, i) => renderQualyRow(res, i + 1, parseQualy(res.qualy) === gt3QualyMin)).join('')}
+                        </div>
+                    </div>
+                    <!-- GT4 -->
+                    <div>
+                        <h4 style="color: #ffaa00; font-size: 0.8rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+                            GT4 CLASS <span style="font-size: 0.6rem; font-weight: 800; padding: 2px 7px; border-radius: 20px; background: rgba(255,165,0,0.15); border: 1px solid rgba(255,165,0,0.3); letter-spacing: 1px; color: #ffaa00;">POLE HIGHLIGHT</span>
+                        </h4>
+                        <div class="qualy-list-gt4">
+                            ${sortedGT4Qualy.map((res, i) => renderQualyRow(res, i + 1, parseQualy(res.qualy) === gt4QualyMin)).join('')}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fastest Lap Section -->
+            <div class="stats-card" style="background: rgba(15, 18, 24, 0.5); border: 1px solid rgba(0, 207, 255, 0.12); border-radius: 24px; padding: 2.5rem; backdrop-filter: blur(10px);">
+                <div style="display: flex; align-items: center; gap: 0.8rem; margin-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 1rem;">
+                    <span style="font-size: 1.8rem;">⚡</span>
+                    <div>
+                        <h3 style="font-size: 1.4rem; font-weight: 900; margin: 0; color: #fff; letter-spacing: 1px;">Fastest Laps</h3>
+                        <p style="color: var(--text-muted); font-size: 0.65rem; margin: 0.2rem 0 0; text-transform: uppercase; letter-spacing: 2px; font-weight: 800;">Virginia 120 Speed Leaderboard</p>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2.5rem;">
+                    <!-- GT3 -->
+                    <div>
+                        <h4 style="color: var(--primary); font-size: 0.8rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+                            GT3 CLASS <span style="font-size: 0.6rem; font-weight: 800; padding: 2px 7px; border-radius: 20px; background: rgba(0,207,255,0.15); border: 1px solid rgba(0,207,255,0.3); letter-spacing: 1px;">FASTEST HIGHLIGHT</span>
+                        </h4>
+                        <div class="fl-list-gt3">
+                            ${sortedGT3FL.map((res, i) => renderFLRow(res, i + 1, parseLapTime(res.fastestLap) === gt3FLMin)).join('')}
+                        </div>
+                    </div>
+                    <!-- GT4 -->
+                    <div>
+                        <h4 style="color: #ffaa00; font-size: 0.8rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+                            GT4 CLASS <span style="font-size: 0.6rem; font-weight: 800; padding: 2px 7px; border-radius: 20px; background: rgba(255,165,0,0.15); border: 1px solid rgba(255,165,0,0.3); letter-spacing: 1px; color: #ffaa00;">FASTEST HIGHLIGHT</span>
+                        </h4>
+                        <div class="fl-list-gt4">
+                            ${sortedGT4FL.map((res, i) => renderFLRow(res, i + 1, parseLapTime(res.fastestLap) === gt4FLMin)).join('')}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Safety Leaderboard Section -->
+            <div class="stats-card" style="background: rgba(15, 18, 24, 0.5); border: 1px solid rgba(0, 207, 255, 0.12); border-radius: 24px; padding: 2.5rem; backdrop-filter: blur(10px);">
+                <div style="display: flex; align-items: center; gap: 0.8rem; margin-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 1rem;">
+                    <span style="font-size: 1.8rem;">🛡️</span>
+                    <div>
+                        <h3 style="font-size: 1.4rem; font-weight: 900; margin: 0; color: #fff; letter-spacing: 1px;">Safety Leaderboard</h3>
+                        <p style="color: var(--text-muted); font-size: 0.65rem; margin: 0.2rem 0 0; text-transform: uppercase; letter-spacing: 2px; font-weight: 800;">Virginia 120 Fewest Incidents</p>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2.5rem;">
+                    <!-- GT3 -->
+                    <div>
+                        <h4 style="color: var(--primary); font-size: 0.8rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+                            GT3 CLASS <span style="font-size: 0.6rem; font-weight: 800; padding: 2px 7px; border-radius: 20px; background: rgba(0,255,136,0.15); border: 1px solid rgba(0,255,136,0.3); letter-spacing: 1px; color: #00ff88;">SAFEST HIGHLIGHT</span>
+                        </h4>
+                        <div class="safety-list-gt3">
+                            ${sortedGT3Safety.map((res, i) => renderSafetyRow(res, i + 1, parseIncidents(res.incidents) === gt3IncMin)).join('')}
+                        </div>
+                    </div>
+                    <!-- GT4 -->
+                    <div>
+                        <h4 style="color: #ffaa00; font-size: 0.8rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+                            GT4 CLASS <span style="font-size: 0.6rem; font-weight: 800; padding: 2px 7px; border-radius: 20px; background: rgba(0,255,136,0.15); border: 1px solid rgba(0,255,136,0.3); letter-spacing: 1px; color: #00ff88;">SAFEST HIGHLIGHT</span>
+                        </h4>
+                        <div class="safety-list-gt4">
+                            ${sortedGT4Safety.map((res, i) => renderSafetyRow(res, i + 1, parseIncidents(res.incidents) === gt4IncMin)).join('')}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    `;
 }
 
 // Global hook — type only now (no carClass arg needed)
