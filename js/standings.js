@@ -68,14 +68,17 @@ function calculateStandings(resultsData) {
             ? res.drivers
             : (res.drivers ? res.drivers.split(',').map(d => d.trim()) : []);
 
+        const qPos = parseInt((res.qualy || '').replace(/[^0-9]/g, '')) || 999;
+
         // --- COMBINED TEAM ---
         if (!teams[teamName]) {
-            teams[teamName] = { name: teamName, carClass, points: 0, wins: 0, podiums: 0 };
+            teams[teamName] = { name: teamName, carClass, points: 0, wins: 0, podiums: 0, qualys: [] };
         }
         const t = teams[teamName];
         t.points += earnedPts;
         if (pos === 1) t.wins += 1;
         if (pos <= 3) t.podiums += 1;
+        if (qPos !== 999) t.qualys.push(qPos);
 
         // Track per-class solo races for penalty
         if (!classTeams[carClass][teamName]) classTeams[carClass][teamName] = { soloRaces: 0 };
@@ -85,12 +88,13 @@ function calculateStandings(resultsData) {
         driverList.forEach(driverName => {
             if (!driverName) return;
             if (!drivers[driverName]) {
-                drivers[driverName] = { name: driverName, carClass, points: 0, wins: 0, podiums: 0 };
+                drivers[driverName] = { name: driverName, carClass, points: 0, wins: 0, podiums: 0, qualys: [] };
             }
             const d = drivers[driverName];
             d.points += earnedPts;
             if (pos === 1) d.wins += 1;
             if (pos <= 3) d.podiums += 1;
+            if (qPos !== 999) d.qualys.push(qPos);
         });
     });
 
@@ -103,9 +107,21 @@ function calculateStandings(resultsData) {
         });
     }
 
+    const prepareList = (dict) => {
+        return Object.values(dict).map(item => {
+            let avg = '-';
+            if (item.qualys.length > 0) {
+                avg = 'P' + (item.qualys.reduce((a,b) => a+b, 0) / item.qualys.length).toFixed(1);
+                if (avg.endsWith('.0')) avg = avg.slice(0, -2);
+            }
+            item.avgStart = avg;
+            return item;
+        }).sort((a, b) => b.points - a.points);
+    };
+
     return {
-        teams: Object.values(teams).sort((a, b) => b.points - a.points),
-        drivers: Object.values(drivers).sort((a, b) => b.points - a.points),
+        teams: prepareList(teams),
+        drivers: prepareList(drivers),
     };
 }
 
@@ -190,6 +206,7 @@ function renderStandingsTable(type) {
                 <th style="padding:1rem;border-bottom:1px solid rgba(255,255,255,0.1);">Pos</th>
                 <th style="padding:1rem;border-bottom:1px solid rgba(255,255,255,0.1);">${type === 'teams' ? 'Team' : 'Driver'}</th>
                 <th style="padding:1rem;border-bottom:1px solid rgba(255,255,255,0.1);text-align:center;">Class</th>
+                <th style="padding:1rem;border-bottom:1px solid rgba(255,255,255,0.1);text-align:center;">Avg Start</th>
                 <th style="padding:1rem;border-bottom:1px solid rgba(255,255,255,0.1);text-align:center;">Pts</th>
                 <th style="padding:1rem;border-bottom:1px solid rgba(255,255,255,0.1);text-align:center;">Wins</th>
                 <th style="padding:1rem;border-bottom:1px solid rgba(255,255,255,0.1);text-align:center;">Podiums</th>
@@ -208,6 +225,7 @@ function renderStandingsTable(type) {
             <td style="padding:1rem;font-weight:800;border-radius:8px 0 0 8px;width:60px;text-align:center;">${posD}</td>
             <td style="padding:1rem;font-weight:700;color:#fff;">${row.name}</td>
             <td style="padding:1rem;text-align:center;">${badge}</td>
+            <td style="padding:1rem;font-weight:800;color:var(--text-muted);text-align:center;">${row.avgStart || '-'}</td>
             <td style="padding:1rem;font-weight:900;color:var(--primary);text-align:center;font-size:1.1rem;">${row.points}</td>
             <td style="padding:1rem;text-align:center;color:var(--text-muted);">${row.wins}</td>
             <td style="padding:1rem;border-radius:0 8px 8px 0;text-align:center;color:var(--text-muted);">${row.podiums}</td>
