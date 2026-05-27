@@ -1,5 +1,6 @@
 
 $driversPath = "F:\Grid Up\Website\drivers"
+$opts = [System.Text.RegularExpressions.RegexOptions]::Singleline
 
 function Get-LicenseClass([string]$sr) {
     switch ($sr[0]) {
@@ -18,6 +19,15 @@ function Get-BarWidth([string]$ir) {
     return "$pct"
 }
 
+function Replace-Category([string]$content, [string]$catName, [string]$cls, [string]$sr, [string]$ir, [string]$w) {
+    $escaped = [regex]::Escape($catName)
+    # Pattern: capture pre-class, post-class-quote, mid-close-span-open-span, mid-close-to-width, post-width
+    $pattern = '(<span>' + $escaped + ' <span class="license-badge )[^"]+(">[^<]*</span></span>\s*<span>)[^<]*(</span>\s*</div>\s*<div class="rating-bar-bg"><div class="rating-bar-fill" style="width: )[^%]+(%;"></div></div>\s*</div>)'
+    # Build replacement using string concat to avoid PS variable vs regex-backref ambiguity
+    $repl = '${1}' + $cls + '${2}' + $sr + '${3}' + $ir + '${4}' + $w + '${5}'
+    return [System.Text.RegularExpressions.Regex]::Replace($content, $pattern, $repl, $opts)
+}
+
 function Update-DriverFile {
     param(
         [string]$fileName,
@@ -33,48 +43,18 @@ function Update-DriverFile {
         return
     }
 
-    $scClass = Get-LicenseClass $scSR
-    $fmClass = Get-LicenseClass $fmSR
-    $ovClass = Get-LicenseClass $ovSR
-    $dtClass = Get-LicenseClass $dtSR
-
-    $scW = Get-BarWidth $sc
-    $fmW = Get-BarWidth $fm
-    $ovW = Get-BarWidth $ov
-    $dtW = Get-BarWidth $dt
-
     $content = [System.IO.File]::ReadAllText($path, [System.Text.Encoding]::UTF8)
 
-    # Replace each rating-group block by category name using regex (singleline mode)
-    $opts = [System.Text.RegularExpressions.RegexOptions]::Singleline
-
-    # Sports Car block
-    $pattern = '(<div class="rating-group">\s*<div class="rating-label">\s*<span>Sports Car <span class="license-badge )[^"]*("[^>]*>)[^<]*(</span></span>\s*<span>)[^<]*(</span>\s*</div>\s*<div class="rating-bar-bg"><div class="rating-bar-fill" style="width: )[^%]*(%;"></div></div>\s*</div>)'
-    $replacement = "`$1$scClass`$2$scSR`$3$sc`$4$scW`$5"
-    $content = [System.Text.RegularExpressions.Regex]::Replace($content, $pattern, $replacement, $opts)
-
-    # Formula block
-    $pattern = '(<div class="rating-group">\s*<div class="rating-label">\s*<span>Formula <span class="license-badge )[^"]*("[^>]*>)[^<]*(</span></span>\s*<span>)[^<]*(</span>\s*</div>\s*<div class="rating-bar-bg"><div class="rating-bar-fill" style="width: )[^%]*(%;"></div></div>\s*</div>)'
-    $replacement = "`$1$fmClass`$2$fmSR`$3$fm`$4$fmW`$5"
-    $content = [System.Text.RegularExpressions.Regex]::Replace($content, $pattern, $replacement, $opts)
-
-    # Oval block
-    $pattern = '(<div class="rating-group">\s*<div class="rating-label">\s*<span>Oval <span class="license-badge )[^"]*("[^>]*>)[^<]*(</span></span>\s*<span>)[^<]*(</span>\s*</div>\s*<div class="rating-bar-bg"><div class="rating-bar-fill" style="width: )[^%]*(%;"></div></div>\s*</div>)'
-    $replacement = "`$1$ovClass`$2$ovSR`$3$ov`$4$ovW`$5"
-    $content = [System.Text.RegularExpressions.Regex]::Replace($content, $pattern, $replacement, $opts)
-
-    # Dirt block
-    $pattern = '(<div class="rating-group">\s*<div class="rating-label">\s*<span>Dirt <span class="license-badge )[^"]*("[^>]*>)[^<]*(</span></span>\s*<span>)[^<]*(</span>\s*</div>\s*<div class="rating-bar-bg"><div class="rating-bar-fill" style="width: )[^%]*(%;"></div></div>\s*</div>)'
-    $replacement = "`$1$dtClass`$2$dtSR`$3$dt`$4$dtW`$5"
-    $content = [System.Text.RegularExpressions.Regex]::Replace($content, $pattern, $replacement, $opts)
+    $content = Replace-Category $content 'Sports Car' (Get-LicenseClass $scSR) $scSR $sc (Get-BarWidth $sc)
+    $content = Replace-Category $content 'Formula'    (Get-LicenseClass $fmSR) $fmSR $fm (Get-BarWidth $fm)
+    $content = Replace-Category $content 'Oval'       (Get-LicenseClass $ovSR) $ovSR $ov (Get-BarWidth $ov)
+    $content = Replace-Category $content 'Dirt'       (Get-LicenseClass $dtSR) $dtSR $dt (Get-BarWidth $dt)
 
     [System.IO.File]::WriteAllText($path, $content, [System.Text.Encoding]::UTF8)
     Write-Host "Updated: $fileName" -ForegroundColor Green
 }
 
-# ===== DRIVER DATA (sc=SportsCarIR, scSR=SportsCar SafetyRating, fm=FormulaIR, fmSR=..., ov=OvalIR, dt=DirtIR) =====
-# Dirt = DirtOval if it has a real value, else DirtRoad
-
+# ===== DRIVER DATA =====
 Update-DriverFile 'alex-cortez.html'          '4125' 'A 4.24' '2989' 'B 2.74' '1972' 'C 4.71' '1350' 'R 2.50'
 Update-DriverFile 'aman-johnson.html'          '1184' 'A 4.99' '1184' 'A 4.99' '1350' 'R 2.50' '1350' 'R 2.50'
 Update-DriverFile 'andrew-fabian.html'         '2251' 'A 4.99' '2126' 'A 3.55' '2638' 'A 3.05' '1212' 'B 2.67'
@@ -111,4 +91,4 @@ Update-DriverFile 'terry-cantwell.html'        '1381' 'A 4.99' '1311' 'D 1.67' '
 Update-DriverFile 'zack-saunders.html'         '2698' 'A 4.50' '2058' 'A 3.39' '3427' 'A 2.98' '1785' 'B 3.70'
 Update-DriverFile 'martyn-cook.html'           '2263' 'A 4.99' '2054' 'A 4.99' '1419' 'C 2.83' '---'  'R 2.50'
 
-Write-Host "`nAll done! $((Get-ChildItem $driversPath -Filter *.html | Measure-Object).Count) driver files processed." -ForegroundColor Cyan
+Write-Host "`nDone!" -ForegroundColor Cyan
