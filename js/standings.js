@@ -6,32 +6,6 @@ const EXCLUDED_TEAMS = [
     'Koch Motorsports',
 ];
 
-// Qualifying times from official iRacing results images
-const QUALY_TIMES = {
-    // GT3
-    "juan": "1:44.731",
-    "F&F Racing": "1:44.818",
-    "Team Breakfast": "1:45.430",
-    "Refined Motorsport": "1:45.530",
-    "Depend for Men Motorsports": "1:45.881",
-    "Team Jacob Reid5": "1:46.096",
-    "~* Dream Team *~": "1:46.105",
-    "Koch Motorsports": "N/A",
-    "MotorMouth Broadcasting": "N/A",
-    
-    // GT4
-    "solo dolo": "1:54.501",
-    "Bee Hive Racing": "1:54.544",
-    "Team Bayou Dust": "1:55.720",
-    "Angry Rooster Racing": "1:55.832",
-    "Motohaus White": "1:56.291",
-    "Apex Junky Motorsports": "1:56.484",
-    "Grumpy duck racing": "1:57.048",
-    "Razor Racing": "1:57.150",
-    "Rev Limit Racing": "1:57.600",
-    "Jayden Goslin": "N/A"
-};
-
 function isExcluded(teamName) {
     if (!teamName) return false;
     return EXCLUDED_TEAMS.some(ex => ex.toUpperCase() === teamName.toUpperCase()) || /^grid\s*up/i.test(teamName);
@@ -85,7 +59,7 @@ function calculateStandings(resultsData) {
         const incidents = parseInt(res.incidents) || 0;
         let earnedPts = basePts - Math.floor(incidents / 10);
 
-        // Special override: Team Breakfast is DNF but organiser requested they be on 50 points flat
+        // Exemption for Team Breakfast to keep them on exactly 50 points flat as requested by the organizer
         if (teamName === 'Team Breakfast') {
             earnedPts = 50;
         }
@@ -271,7 +245,7 @@ function renderExtraStats(allResults) {
 
     // --- 2. FASTEST LAPS ---
     const parseLapTime = (timeStr) => {
-        if (!timeStr || timeStr === 'N/A' || timeStr === true || timeStr === false) return Infinity;
+        if (!timeStr || timeStr === 'N/A' || timeStr === true || timeStr === false || timeStr === '-') return Infinity;
         const parts = String(timeStr).split(':');
         if (parts.length === 2) {
             const mins = parseInt(parts[0]) || 0;
@@ -303,13 +277,8 @@ function renderExtraStats(allResults) {
             : 'background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);';
         const trophy = isHighlight ? '🏆 ' : '';
         const qualyText = res.qualy || 'P-';
+        const timeText = res.qualyTime && res.qualyTime !== '-' && res.qualyTime !== 'N/A' ? ` (${res.qualyTime})` : '';
         const highlightStyle = isHighlight ? 'color: var(--primary); font-weight: 800;' : 'color: #fff;';
-        
-        // Look up qualifying lap time
-        const qualyTime = QUALY_TIMES[res.teamName] || 'N/A';
-        const timeDisplay = qualyTime !== 'N/A' 
-            ? `<span style="font-size: 0.75rem; color: var(--text-muted); font-family: monospace; margin-right: 1rem; opacity: 0.85;">${qualyTime}</span>` 
-            : '';
         
         return `
             <div style="${borderStyle} border-radius: 12px; padding: 0.8rem 1.2rem; margin-bottom: 0.6rem; display: flex; justify-content: space-between; align-items: center; transition: all 0.3s ease;">
@@ -317,10 +286,7 @@ function renderExtraStats(allResults) {
                     <span style="font-weight: 800; color: var(--text-muted); font-size: 0.75rem; width: 20px;">${rank}</span>
                     <span style="${highlightStyle} font-size: 0.85rem;">${trophy}${res.teamName}</span>
                 </div>
-                <div style="display: flex; align-items: center;">
-                    ${timeDisplay}
-                    <div style="font-weight: 900; font-size: 0.95rem; color: ${isHighlight ? 'var(--primary)' : 'var(--text-muted)'};">${qualyText}</div>
-                </div>
+                <div style="font-weight: 900; font-size: 0.95rem; color: ${isHighlight ? 'var(--primary)' : 'var(--text-muted)'};">${qualyText}${timeText}</div>
             </div>
         `;
     };
@@ -372,7 +338,7 @@ function renderExtraStats(allResults) {
                     <span style="font-size: 1.8rem;">🏆</span>
                     <div>
                         <h3 style="font-size: 1.4rem; font-weight: 900; margin: 0; color: #fff; letter-spacing: 1px;">Qualifying Grid</h3>
-                        <p style="color: var(--text-muted); font-size: 0.65rem; margin: 0.2rem 0 0; text-transform: uppercase; letter-spacing: 2px; font-weight: 800;">Virginia 120 Starting Positions & Laps</p>
+                        <p style="color: var(--text-muted); font-size: 0.65rem; margin: 0.2rem 0 0; text-transform: uppercase; letter-spacing: 2px; font-weight: 800;">Virginia 120 Starting Positions</p>
                     </div>
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2.5rem;">

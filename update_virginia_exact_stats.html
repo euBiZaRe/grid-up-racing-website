@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Update Virginia 120 — Exact iRacing Data</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="js/auth.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 2rem; background: #0a0a0c; color: white; }
+        button { padding: 1rem 2rem; background: #00cfff; border: none; color: black; font-weight: bold; cursor: pointer; border-radius: 4px; }
+        #log { margin-top: 1rem; white-space: pre; font-family: monospace; font-size: 0.9rem; }
+        .ok { color: #00ff88; }
+        .err { color: #ff3c3c; }
+        .info { color: #a0a0ff; }
+        table { border-collapse: collapse; margin-top: 2rem; width: 100%; font-size: 0.85rem; }
+        th, td { border: 1px solid #333; padding: 0.5rem 1rem; text-align: left; }
+        th { background: #111; color: #00cfff; }
+    </style>
+</head>
+<body>
+    <h1>Update Virginia 120 — Exact iRacing Data</h1>
+    <p>Applies exact qualifying times, fastest laps, incident counts, and finish positions directly from the official iRacing results screenshots.</p>
+
+    <button onclick="applyExactUpdates()">Apply Exact iRacing Data to Firestore</button>
+    <div id="log"></div>
+
+    <script>
+        const EVENT_ID = 'gtc-virginia-120';
+
+        // 100% accurate data parsed directly from screenshots
+        const EXACT_DATA = {
+            // --- GT3 CLASS ---
+            "juan": {
+                qualy: "P1",
+                qualyTime: "1:44.731",
+                fastestLap: "1:45.329",
+                incidents: 3,
+                finish: "P1",
+                polePosition: true,
+                fastestLapBonus: true,
+                fewestIncidents: true
+            },
+            "F&F Racing": {
+                qualy: "P2",
+                qualyTime: "1:44.818",
+                fastestLap: "1:45.525",
+                incidents: 16,
+                finish: "P6",
+                polePosition: false,
+                fastestLapBonus: false,
+                fewestIncidents: false
+            },
+            "Team Breakfast": {
+                qualy: "P3",
+                qualyTime: "1:45.430",
+                fastestLap: "1:46.040",
+                incidents: 10,
+                finish: "DNF", // 50 points flat exemption
+                polePosition: false,
+                fastestLapBonus: false,
+                fewestIncidents: false
+            },
+            "Refined Motorsport": {
+                qualy: "P4",
+                qualyTime: "1:45.530",
+                fastestLap: "1:45.892",
+                incidents: 5,
+                finish: "P2",
+                polePosition: false,
+                fastestLapBonus: false,
+                fewestIncidents: false
+            },
+            "Depend for Men Motorsports": {
+                qualy: "P5",
+                qualyTime: "1:45.881",
+                fastestLap: "1:46.577",
+                incidents: 10,
+                finish: "P5",
+                polePosition: false,
+                fastestLapBonus: false,
+                fewestIncidents: false
+            },
+            "Team Jacob Reid5": {
+                qualy: "P6",
+                qualyTime: "1:46.096",
+                fastestLap: "1:46.334",
+                incidents: 26,
+                finish: "P4",
+                polePosition: false,
+                fastestLapBonus: false,
+                fewestIncidents: false
+            },
+            "~* Dream Team *~": {
+                qualy: "P7",
+                qualyTime: "1:46.105",
+                fastestLap: "1:46.113",
+                incidents: 13,
+                finish: "P3",
+                polePosition: false,
+                fastestLapBonus: false,
+                fewestIncidents: false
+            },
+            "Koch Motorsports": {
+                qualy: "P8",
+                qualyTime: "-",
+                fastestLap: "N/A",
+                incidents: 0,
+                finish: "DNF",
+                polePosition: false,
+                fastestLapBonus: false,
+                fewestIncidents: false
+            },
+
+            // --- GT4 CLASS ---
+            "solo dolo": {
+                qualy: "P1",
+                qualyTime: "1:54.501",
+                fastestLap: "1:54.839",
+                incidents: 17,
+                finish: "P1",
+                polePosition: true,
+                fastestLapBonus: true,
+                fewestIncidents: false
+            },
+            "Bee Hive Racing": {
+                qualy: "P2",
+                qualyTime: "1:54.544",
+                fastestLap: "1:54.994",
+                incidents: 6,
+                finish: "P5",
+                polePosition: false,
+                fastestLapBonus: false,
+                fewestIncidents: false
+            },
+            "Team Bayou Dust": {
+                qualy: "P3",
+                qualyTime: "1:55.720",
+                fastestLap: "1:56.205",
+                incidents: 12,
+                finish: "P4",
+                polePosition: false,
+                fastestLapBonus: false,
+                fewestIncidents: false
+            },
+            "Angry Rooster Racing": {
+                qualy: "P4",
+                qualyTime: "1:55.832",
+                fastestLap: "1:56.300",
+                incidents: 19,
+                finish: "P6",
+                polePosition: false,
+                fastestLapBonus: false,
+                fewestIncidents: false
+            },
+            "Motohaus White": {
+                qualy: "P5",
+                qualyTime: "1:56.291",
+                fastestLap: "1:56.230",
+                incidents: 2,
+                finish: "P2",
+                polePosition: false,
+                fastestLapBonus: false,
+                fewestIncidents: true
+            },
+            "Apex Junky Motorsports": {
+                qualy: "P6",
+                qualyTime: "1:56.484",
+                fastestLap: "1:56.052",
+                incidents: 8,
+                finish: "P3",
+                polePosition: false,
+                fastestLapBonus: false,
+                fewestIncidents: false
+            },
+            "Grumpy duck racing": {
+                qualy: "P7",
+                qualyTime: "1:57.048",
+                fastestLap: "1:57.008",
+                incidents: 9,
+                finish: "P8",
+                polePosition: false,
+                fastestLapBonus: false,
+                fewestIncidents: false
+            },
+            "Razor Racing": {
+                qualy: "P8",
+                qualyTime: "1:57.150",
+                fastestLap: "1:57.214",
+                incidents: 6,
+                finish: "DNF",
+                polePosition: false,
+                fastestLapBonus: false,
+                fewestIncidents: false
+            },
+            "Rev Limit Racing": {
+                qualy: "P9",
+                qualyTime: "1:57.600",
+                fastestLap: "1:58.201",
+                incidents: 13,
+                finish: "P7",
+                polePosition: false,
+                fastestLapBonus: false,
+                fewestIncidents: false
+            },
+            "Jayden Goslin": {
+                qualy: "P10",
+                qualyTime: "-",
+                fastestLap: "N/A",
+                incidents: 41,
+                finish: "DNF",
+                polePosition: false,
+                fastestLapBonus: false,
+                fewestIncidents: false
+            }
+        };
+
+        function log(msg, cls = 'ok') {
+            document.getElementById('log').innerHTML += `<span class="${cls}">${msg}\n</span>`;
+        }
+
+        async function applyExactUpdates() {
+            if (typeof db === 'undefined') {
+                log('ERROR: Firestore not initialized. Wait a moment and try again.', 'err');
+                return;
+            }
+            document.getElementById('log').innerHTML = '';
+            log(`Fetching Virginia 120 results from Firestore...`, 'info');
+
+            try {
+                const snap = await db.collection('event_results')
+                    .where('eventId', '==', EVENT_ID)
+                    .get();
+
+                if (snap.empty) {
+                    log('No results found for gtc-virginia-120. Have you seeded the results?', 'err');
+                    return;
+                }
+
+                log(`Found ${snap.size} documents. Applying exact iRacing updates...\n`, 'info');
+
+                let updated = 0, skipped = 0;
+                for (const doc of snap.docs) {
+                    const data = doc.data();
+                    const team = data.teamName || '';
+                    const updates = EXACT_DATA[team];
+
+                    if (updates !== undefined) {
+                        await doc.ref.update(updates);
+                        log(`✅ Updated ${team.padEnd(28)} → Qualy: ${updates.qualy.padEnd(4)} (${updates.qualyTime.padEnd(8)}) | Best Lap: ${updates.fastestLap.padEnd(8)} | Incidents: ${updates.incidents}x | Finish: ${updates.finish}`);
+                        updated++;
+                    } else {
+                        log(`⚠️  No exact match in config: "${team}"`, 'err');
+                        skipped++;
+                    }
+                }
+
+                log(`\n─────────────────────────────────────────`);
+                log(`Done! ${updated} updated, ${skipped} skipped.`);
+                log(`\nYour standings page will now display 100% accurate start/fastest times and DNF points!`, 'info');
+
+            } catch (e) {
+                log(`ERROR: ${e.message}`, 'err');
+            }
+        }
+    </script>
+</body>
+</html>
