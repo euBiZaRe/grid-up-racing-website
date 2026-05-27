@@ -10,54 +10,91 @@
     <style>
         body { font-family: sans-serif; padding: 2rem; background: #0a0a0c; color: white; }
         button { padding: 1rem 2rem; background: #00cfff; border: none; color: black; font-weight: bold; cursor: pointer; border-radius: 4px; }
-        #log { margin-top: 1rem; color: #00ff88; white-space: pre; font-family: monospace; }
-        .error { color: #ff3c3c; }
+        #log { margin-top: 1rem; white-space: pre; font-family: monospace; font-size: 0.9rem; }
+        .ok { color: #00ff88; }
+        .err { color: #ff3c3c; }
+        .info { color: #a0a0ff; }
+        table { border-collapse: collapse; margin-top: 2rem; width: 100%; }
+        th, td { border: 1px solid #333; padding: 0.5rem 1rem; text-align: left; }
+        th { background: #111; color: #00cfff; }
     </style>
 </head>
 <body>
     <h1>Update Virginia 120 — Bonuses & Incidents</h1>
-    <p>This script updates the event_results in Firestore with the exact incident points and +1 bonuses for pole, fastest lap, and fewest x's.</p>
-    <button onclick="updateBonuses()">Apply Deductions & Bonuses</button>
+    <p>Applies exact incident deductions and class bonuses to <strong>gtc-virginia-120</strong> in Firestore.</p>
+
+    <h3>What will be applied:</h3>
+    <table>
+        <thead>
+            <tr><th>Team</th><th>Class</th><th>Incidents</th><th>Deduction</th><th>Pole</th><th>Fastest Lap</th><th>Fewest X's</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>juan</td><td>GT3</td><td>3x</td><td>0</td><td>✅</td><td>✅</td><td>✅</td></tr>
+            <tr><td>Refined Motorsport</td><td>GT3</td><td>5x</td><td>0</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td>~* Dream Team *~</td><td>GT3</td><td>13x</td><td>-1</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td>Team Jacob Reid5</td><td>GT3</td><td>26x</td><td>-2</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td>Depend for Men Motorsports</td><td>GT3</td><td>10x</td><td>-1</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td>F&F Racing</td><td>GT3</td><td>16x</td><td>-1</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td>Team Breakfast</td><td>GT3</td><td>10x</td><td>-1</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td>Koch Motorsports</td><td>GT3</td><td>0x</td><td>0</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td>MotorMouth Broadcasting</td><td>GT3</td><td>0x</td><td>0</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td>solo dolo</td><td>GT4</td><td>17x</td><td>-1</td><td>✅</td><td>✅</td><td>—</td></tr>
+            <tr><td>Motohaus White</td><td>GT4</td><td>2x</td><td>0</td><td>—</td><td>—</td><td>✅</td></tr>
+            <tr><td>Apex Junky Motorsports</td><td>GT4</td><td>8x</td><td>0</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td>Team Bayou Dust</td><td>GT4</td><td>12x</td><td>-1</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td>Bee Hive Racing</td><td>GT4</td><td>6x</td><td>0</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td>Angry Rooster Racing</td><td>GT4</td><td>19x</td><td>-1</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td>Rev Limit Racing</td><td>GT4</td><td>13x</td><td>-1</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td>Grumpy duck racing</td><td>GT4</td><td>9x</td><td>0</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td>Razor Racing</td><td>GT4</td><td>6x</td><td>0</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td>Jayden Goslin</td><td>GT4</td><td>41x</td><td>-4</td><td>—</td><td>—</td><td>—</td></tr>
+        </tbody>
+    </table>
+
+    <br>
+    <button onclick="applyUpdates()">Apply All Updates to Firestore</button>
     <div id="log"></div>
 
     <script>
         const EVENT_ID = 'gtc-virginia-120';
 
+        // Exact data confirmed by race organisers
         const TEAM_DATA = {
             // GT3
-            "juan": { incidents: 3, polePosition: true, fastestLap: true, fewestIncidents: false },
-            "Refined Motorsport": { incidents: 5, polePosition: false, fastestLap: false, fewestIncidents: false },
-            "~* Dream Team *~": { incidents: 13, polePosition: false, fastestLap: false, fewestIncidents: false },
-            "Team Jacob Reid5": { incidents: 26, polePosition: false, fastestLap: false, fewestIncidents: false },
-            "Depend for Men Motorsports": { incidents: 10, polePosition: false, fastestLap: false, fewestIncidents: false },
-            "F&F Racing": { incidents: 16, polePosition: false, fastestLap: false, fewestIncidents: false },
-            "Team Breakfast": { incidents: 10, polePosition: false, fastestLap: false, fewestIncidents: false },
-            "Koch Motorsports": { incidents: 0, polePosition: false, fastestLap: false, fewestIncidents: true },
-            "MotorMouth Broadcasting": { incidents: 0, polePosition: false, fastestLap: false, fewestIncidents: true },
-            
+            "juan":                        { incidents: 3,  polePosition: true,  fastestLap: true,  fewestIncidents: true  },
+            "Refined Motorsport":          { incidents: 5,  polePosition: false, fastestLap: false, fewestIncidents: false },
+            "~* Dream Team *~":            { incidents: 13, polePosition: false, fastestLap: false, fewestIncidents: false },
+            "Team Jacob Reid5":            { incidents: 26, polePosition: false, fastestLap: false, fewestIncidents: false },
+            "Depend for Men Motorsports":  { incidents: 10, polePosition: false, fastestLap: false, fewestIncidents: false },
+            "F&F Racing":                  { incidents: 16, polePosition: false, fastestLap: false, fewestIncidents: false },
+            "Team Breakfast":              { incidents: 10, polePosition: false, fastestLap: false, fewestIncidents: false },
+            "Koch Motorsports":            { incidents: 0,  polePosition: false, fastestLap: false, fewestIncidents: false },
+            "MotorMouth Broadcasting":     { incidents: 0,  polePosition: false, fastestLap: false, fewestIncidents: false },
+
             // GT4
-            "solo dolo": { incidents: 17, polePosition: true, fastestLap: true, fewestIncidents: false },
-            "Motohaus White": { incidents: 2, polePosition: false, fastestLap: false, fewestIncidents: true },
-            "Apex Junky Motorsports": { incidents: 8, polePosition: false, fastestLap: false, fewestIncidents: false },
-            "Team Bayou Dust": { incidents: 12, polePosition: false, fastestLap: false, fewestIncidents: false },
-            "Bee Hive Racing": { incidents: 6, polePosition: false, fastestLap: false, fewestIncidents: false },
-            "Angry Rooster Racing": { incidents: 19, polePosition: false, fastestLap: false, fewestIncidents: false },
-            "Rev Limit Racing": { incidents: 13, polePosition: false, fastestLap: false, fewestIncidents: false },
-            "Grumpy duck racing": { incidents: 9, polePosition: false, fastestLap: false, fewestIncidents: false },
-            "Razor Racing": { incidents: 6, polePosition: false, fastestLap: false, fewestIncidents: false },
-            "Jayden Goslin": { incidents: 41, polePosition: false, fastestLap: false, fewestIncidents: false }
+            "solo dolo":                   { incidents: 17, polePosition: true,  fastestLap: true,  fewestIncidents: false },
+            "Motohaus White":              { incidents: 2,  polePosition: false, fastestLap: false, fewestIncidents: true  },
+            "Apex Junky Motorsports":      { incidents: 8,  polePosition: false, fastestLap: false, fewestIncidents: false },
+            "Team Bayou Dust":             { incidents: 12, polePosition: false, fastestLap: false, fewestIncidents: false },
+            "Bee Hive Racing":             { incidents: 6,  polePosition: false, fastestLap: false, fewestIncidents: false },
+            "Angry Rooster Racing":        { incidents: 19, polePosition: false, fastestLap: false, fewestIncidents: false },
+            "Rev Limit Racing":            { incidents: 13, polePosition: false, fastestLap: false, fewestIncidents: false },
+            "Grumpy duck racing":          { incidents: 9,  polePosition: false, fastestLap: false, fewestIncidents: false },
+            "Razor Racing":                { incidents: 6,  polePosition: false, fastestLap: false, fewestIncidents: false },
+            "Jayden Goslin":               { incidents: 41, polePosition: false, fastestLap: false, fewestIncidents: false },
         };
 
-        const log = (msg, err) => {
-            document.getElementById('log').innerHTML += `<span class="${err ? 'error' : ''}">${msg}\n</span>`;
-        };
+        function log(msg, cls = 'ok') {
+            document.getElementById('log').innerHTML += `<span class="${cls}">${msg}\n</span>`;
+        }
 
-        async function updateBonuses() {
+        async function applyUpdates() {
             if (typeof db === 'undefined') {
-                log('ERROR: Firestore not initialized. Wait a moment and try again.', true);
+                log('ERROR: Firestore not initialized. Wait a moment and try again.', 'err');
                 return;
             }
-            log('Fetching Virginia 120 results...\n');
+            document.getElementById('log').innerHTML = '';
+            log(`Fetching Virginia 120 results from Firestore...`, 'info');
 
             try {
                 const snap = await db.collection('event_results')
@@ -65,29 +102,42 @@
                     .get();
 
                 if (snap.empty) {
-                    log('No results found for gtc-virginia-120.', true);
+                    log('No results found for gtc-virginia-120. Have you seeded the results?', 'err');
                     return;
                 }
 
-                let updated = 0;
+                log(`Found ${snap.size} documents. Applying updates...\n`, 'info');
+
+                let updated = 0, skipped = 0;
                 for (const doc of snap.docs) {
                     const data = doc.data();
                     const team = data.teamName || '';
                     const updates = TEAM_DATA[team];
 
-                    if (updates) {
+                    if (updates !== undefined) {
+                        const deduction = Math.floor(updates.incidents / 10);
+                        const bonuses = [
+                            updates.polePosition   ? '+1 Pole'        : null,
+                            updates.fastestLap     ? '+1 FL'          : null,
+                            updates.fewestIncidents? '+1 FewestX'     : null,
+                            deduction > 0          ? `-${deduction} Inc (${updates.incidents}x)` : null,
+                        ].filter(Boolean).join(', ') || 'no bonuses/deductions';
+
                         await doc.ref.update(updates);
-                        log(`✅ Updated ${team}: ${updates.incidents}x, Pole: ${updates.polePosition}, FL: ${updates.fastestLap}, FewestX: ${updates.fewestIncidents}`);
+                        log(`✅ ${team.padEnd(32)} → ${bonuses}`);
                         updated++;
                     } else {
-                        log(`⚠️  No match found for: "${team}"`, true);
+                        log(`⚠️  No match: "${team}"`, 'err');
+                        skipped++;
                     }
                 }
 
-                log(`\nDone! ${updated} teams updated successfully.`);
-                log('You can now check the live League Standings to see the completely accurate points!');
+                log(`\n─────────────────────────────────────────`);
+                log(`Done! ${updated} updated, ${skipped} skipped.`);
+                log(`\nOpen league.html or standings.html to see the updated Championship Standings!`, 'info');
+
             } catch (e) {
-                log(`ERROR: ${e.message}`, true);
+                log(`ERROR: ${e.message}`, 'err');
             }
         }
     </script>
