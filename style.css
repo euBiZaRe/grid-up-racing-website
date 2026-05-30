@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Orbitron:wght@400;700;900&display=swap');
 
 :root {
-    --bg-dark: #0a0c10;
+    --bg-dark: #121212;
     --bg-card: rgba(15, 18, 24, 0.6);
     --primary: #00CFFF;
     --primary-glow: rgba(0, 207, 255, 0.4);
@@ -177,10 +177,6 @@ body {
 
 body {
     background-color: var(--bg-dark);
-    background-image: url('assets/motorsport_carbon_bg.png');
-    background-attachment: fixed;
-    background-size: cover;
-    background-blend-mode: multiply;
     color: var(--text-main);
     font-family: 'Outfit', sans-serif;
     line-height: 1.6;
@@ -189,14 +185,7 @@ body {
 }
 
 .tread-overlay {
-    background-image: url('assets/tire_tread_marks.png');
-    background-size: 800px;
-    background-repeat: repeat;
-    opacity: 0.1;
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: -1;
+    display: none;
 }
 
 /* Custom Scrollbar */
