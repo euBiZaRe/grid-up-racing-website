@@ -529,7 +529,7 @@ nav.scrolled {
 .hero-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to top, var(--bg) 0%, rgba(10, 12, 16, 0.4) 50%, rgba(10, 12, 16, 0.7) 100%);
+    background: linear-gradient(to bottom, rgba(18, 18, 18, 0.2) 0%, rgba(18, 18, 18, 0.5) 60%, var(--bg-dark) 100%);
     z-index: 1;
 }
 
