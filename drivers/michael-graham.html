@@ -220,7 +220,7 @@
     </script>
 
     <script>
-        // Load driver info from Firestore
+        // Load driver info from Firestore (uses db from auth.js)
         (function() {
             const driverName = document.querySelector('h1.glow-text') 
                 ? document.querySelector('h1.glow-text').textContent.trim() 
@@ -228,11 +228,11 @@
             if (!driverName) return;
 
             function tryLoadDriverInfo() {
-                if (typeof firebase === 'undefined' || !firebase.apps || !firebase.apps.length) {
-                    setTimeout(tryLoadDriverInfo, 300);
+                // Wait for auth.js to initialise the global `db` variable
+                if (typeof db === 'undefined' || db === null) {
+                    setTimeout(tryLoadDriverInfo, 200);
                     return;
                 }
-                const db = firebase.firestore();
                 db.collection('users')
                     .where('driverName', '==', driverName)
                     .limit(1)
@@ -240,15 +240,21 @@
                     .then(function(snap) {
                         if (snap.empty) return;
                         const d = snap.docs[0].data();
-                        if (d.age)      document.getElementById('di-age').textContent = d.age;
-                        if (d.country)  document.getElementById('di-country').textContent = d.country;
-                        if (d.favCar)   document.getElementById('di-fav-car').textContent = d.favCar;
-                        if (d.favTrack) document.getElementById('di-fav-track').textContent = d.favTrack;
-                        if (d.advice)   document.getElementById('di-advice').textContent = '"' + d.advice + '"';
+                        var age   = document.getElementById('di-age');
+                        var cntry = document.getElementById('di-country');
+                        var car   = document.getElementById('di-fav-car');
+                        var track = document.getElementById('di-fav-track');
+                        var advice = document.getElementById('di-advice');
+                        if (age   && d.age)      age.textContent   = d.age;
+                        if (cntry && d.country)  cntry.textContent = d.country;
+                        if (car   && d.favCar)   car.textContent   = d.favCar;
+                        if (track && d.favTrack) track.textContent = d.favTrack;
+                        if (advice && d.advice)  advice.textContent = '\u201c' + d.advice + '\u201d';
                     })
                     .catch(function(e) { console.warn('Driver info load failed:', e); });
             }
-            tryLoadDriverInfo();
+            // Give auth.js a moment to run first, then start polling for db
+            setTimeout(tryLoadDriverInfo, 100);
         })();
     </script>
 </body>
