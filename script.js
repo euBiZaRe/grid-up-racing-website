@@ -190,44 +190,111 @@ if (toggleBtn && pastSection) {
 }
 
 // Countdown Timer Logic
-function updateCountdown(targetTimestamp) {
+function updateCountdown(targetTimestamp, endVal = null) {
     if (!targetTimestamp) return;
     
     // Clear any existing timer
     if (window.countdownInterval) clearInterval(window.countdownInterval);
 
-    const targetDate = new Date(targetTimestamp).getTime();
+    const parseDateLocal = (d) => {
+        if (!d) return null;
+        if (typeof d.toDate === 'function') return d.toDate();
+        if (d.seconds) return new Date(d.seconds * 1000);
+        return new Date(d);
+    };
+
+    const targetDate = parseDateLocal(targetTimestamp).getTime();
+    const endDate = endVal ? parseDateLocal(endVal).getTime() : (targetDate + 24 * 60 * 60 * 1000);
     
     function update() {
         const now = new Date().getTime();
-        const distance = targetDate - now;
-        
         const countdownEl = document.getElementById('countdown');
-        if (distance < 0) {
+        
+        // 1. If currently live (between start and end)
+        if (now >= targetDate && now <= endDate) {
             if (countdownEl) {
-                // Check if the race is "Today" or "Upcoming"
-                const oneDayInMs = 24 * 60 * 60 * 1000;
-                if (Math.abs(distance) < oneDayInMs) {
-                    countdownEl.innerHTML = "<div class='glow-text animate-pulse' style='font-size: 2.5rem; font-weight: 900;'>RACE DAY</div>";
-                } else {
-                    // It's in the past, show "Event Recap" or similar
-                    const subtitleEl = document.getElementById('hero-event-subtitle');
-                    if (subtitleEl) subtitleEl.textContent = 'Event Completed';
-                    countdownEl.innerHTML = "<div style='color: var(--text-muted); font-size: 1rem; letter-spacing: 2px;'>CHECK RECENT RESULTS BELOW</div>";
+                // Ensure subtitle says Live
+                const subtitleEl = document.getElementById('hero-event-subtitle');
+                if (subtitleEl && !subtitleEl.textContent.startsWith('LIVE NOW')) {
+                    subtitleEl.style.color = '#ff0055';
+                    subtitleEl.classList.add('animate-pulse');
                 }
+                
+                // Show RACE DAY pulsing state
+                if (!countdownEl.querySelector('.glow-text.animate-pulse')) {
+                    countdownEl.innerHTML = "<div class='glow-text animate-pulse' style='font-size: 2.5rem; font-weight: 900; color: #ff0055;'>LIVE NOW / RACE DAY</div>";
+                }
+            }
+            return false; // Keep running the timer to detect when it ends
+        }
+        
+        // 2. If completely finished (past end date)
+        if (now > endDate) {
+            if (countdownEl) {
+                const subtitleEl = document.getElementById('hero-event-subtitle');
+                if (subtitleEl) {
+                    subtitleEl.textContent = 'Event Completed';
+                    subtitleEl.style.color = 'var(--text-muted)';
+                    subtitleEl.classList.remove('animate-pulse');
+                }
+                countdownEl.innerHTML = "<div style='color: var(--text-muted); font-size: 1rem; letter-spacing: 2px;'>CHECK RECENT RESULTS BELOW</div>";
+            }
+            
+            // AUTOMATIC TRANSITION: Re-run dynamic content loading to move completed race to past events
+            // and fetch the next upcoming race.
+            console.log("Active event has ended! Automatically reloading events...");
+            if (typeof loadDynamicContent === 'function') {
+                localStorage.removeItem('gridup_upcoming_events');
+                window.dynamicContentLoaded = false;
+                loadDynamicContent();
             }
             return true; // Stop timer
         }
         
+        // 3. Upcoming (before start date) - run standard countdown
+        const distance = targetDate - now;
         const days = Math.floor(distance / (1000 * 60 * 60 * 24));
         const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
         
-        const daysEl = document.getElementById('days');
-        const hoursEl = document.getElementById('hours');
-        const minutesEl = document.getElementById('minutes');
-        const secondsEl = document.getElementById('seconds');
+        let daysEl = document.getElementById('days');
+        let hoursEl = document.getElementById('hours');
+        let minutesEl = document.getElementById('minutes');
+        let secondsEl = document.getElementById('seconds');
+        
+        // If elements are missing (e.g. from previous LIVE NOW state), restore the countdown structure
+        if (countdownEl && (!daysEl || !hoursEl || !minutesEl || !secondsEl)) {
+            let container = countdownEl.querySelector('.countdown-container');
+            if (!container) {
+                // Restore the entire structure inside #countdown but keep subtitle if it exists
+                const subtitleHtml = document.getElementById('hero-event-subtitle') ? '' : `<p id="hero-event-subtitle" style="color: var(--primary); font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; letter-spacing: 2px;">Next Major Race</p>`;
+                countdownEl.innerHTML = subtitleHtml + `
+                    <div class="countdown-container" style="display: flex; gap: 1.5rem; justify-content: center; background: rgba(0,0,0,0.3); padding: 2rem; border-radius: 24px; border: 1px solid var(--glass-border); backdrop-filter: blur(5px); width: 100%;">
+                        <div class="countdown-box">
+                            <span id="days" class="countdown-number">00</span>
+                            <span class="countdown-label">Days</span>
+                        </div>
+                        <div class="countdown-box">
+                            <span id="hours" class="countdown-number">00</span>
+                            <span class="countdown-label">Hours</span>
+                        </div>
+                        <div class="countdown-box">
+                            <span id="minutes" class="countdown-number">00</span>
+                            <span class="countdown-label">Mins</span>
+                        </div>
+                        <div class="countdown-box">
+                            <span id="seconds" class="countdown-number">00</span>
+                            <span class="countdown-label">Secs</span>
+                        </div>
+                    </div>
+                `;
+                daysEl = document.getElementById('days');
+                hoursEl = document.getElementById('hours');
+                minutesEl = document.getElementById('minutes');
+                secondsEl = document.getElementById('seconds');
+            }
+        }
         
         if (daysEl) daysEl.innerText = days.toString().padStart(2, '0');
         if (hoursEl) hoursEl.innerText = hours.toString().padStart(2, '0');
@@ -617,7 +684,7 @@ function renderEventsUI(upcomingEvents, pastEvents = null) {
             heroLink.href = staticIds.includes(nextEvent.id) ? getEventLink(nextEvent.id, true) : getEventLink(nextEvent.id);
         }
         
-        updateCountdown(nextEvent.startDate);
+        updateCountdown(nextEvent.startDate, endTime);
 
         if (upcomingTrack) {
             upcomingTrack.innerHTML = '';
