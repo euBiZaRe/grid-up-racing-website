@@ -1,10 +1,10 @@
-const fs = require('fs');
+﻿const fs = require('fs');
 const path = require('path');
 
 const eventsDir = path.join(__dirname, 'events');
 
 const mapping = {
-    'thruxton-4h.html': { track: 'Thruxton Circuit', dur: '4 Hours', type: 'Team Event', classStr: 'GT3 Class', desc: 'A touring car endurance event on the UK\'s fastest circuit. High-speed sweepers reward clean racing over aggressive tactics.', date: 'May 29-31, 2026' },
+    'thruxton-4h.html': { track: 'Thruxton Circuit', dur: '4 Hours', type: 'Team Event', classStr: 'GT3 Class', desc: 'A touring car endurance event on the UK\'s fastest circuit. High-speed sweepers reward clean racing over aggressive tactics.', date: 'May 29-30, 2026' },
     'watkins-glen-6h.html': { track: 'Watkins Glen International', dur: '6 Hours', type: 'Team Event (IMSA Classes)', classStr: 'GTP, LMP2, GT3', desc: 'Six hours of IMSA multiclass racing at the iconic Finger Lakes circuit. The Bus Stop chicane is the prime overtaking and incident zone.', date: 'June 19-21, 2026' },
     'firecracker-400.html': { track: 'Daytona International Speedway', dur: '400 Miles', type: 'NASCAR iRacing Series (Solo)', classStr: '1987 NASCAR', desc: 'Throwback event using 1987 NASCAR machinery. No power steering or aero refinement makes this a raw mechanical challenge.', date: 'June 30 - July 6, 2026' },
     'spa-24hr.html': { track: 'Circuit de Spa-Francorchamps', dur: '24 Hours', type: 'Team Event', classStr: 'GT3 Class', desc: '24 hours of GT3 racing at Spa. Guaranteed weather changes and high-speed night laps through Eau Rouge and Raidillon.', date: 'July 10-12, 2026' },

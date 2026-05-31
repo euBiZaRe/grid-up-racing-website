@@ -1,4 +1,4 @@
-// Migration script to move UPCOMING_EVENTS from code to Firestore
+﻿// Migration script to move UPCOMING_EVENTS from code to Firestore
 const firebase = require('firebase-admin');
 const serviceAccount = require('C:/Users/Mattys PC/Downloads/grid-up-firebase-adminsdk.json'); // I'll check if this exists or use a temporary approach
 
@@ -20,7 +20,7 @@ const UPCOMING_EVENTS = [
     { id: 'nurburgring-24h', name: 'Nürburgring 24h', date: 'May 1-3', startDate: '2026-05-01T22:00:00Z', slots: IMSA_SLOTS, classes: ['GT3', 'GT4', 'TCR', 'PC'] },
     { id: 'indy-500', name: 'INDY 500', date: 'May 5-18', startDate: '2026-05-05T18:00:00Z', slots: IMSA_SLOTS, classes: ['IndyCar'] },
     { id: 'world-600', name: 'World 600', date: 'May 20-25', startDate: '2026-05-20T22:00:00Z', slots: IMSA_SLOTS, classes: ['NASCAR Next Gen'] },
-    { id: 'thruxton-4h', name: '4 Hours at Thruxton', date: 'May 29-31', startDate: '2026-05-29T22:00:00Z', slots: IMSA_SLOTS, classes: ['GT3', 'LMP3'] },
+    { id: 'thruxton-4h', name: '4 Hours at Thruxton', date: 'May 29-30', startDate: '2026-05-29T22:00:00Z', slots: IMSA_SLOTS, classes: ['GT3', 'LMP3'] },
     { id: 'watkins-glen-6h', name: 'Watkins Glen 6 Hour', date: 'June 19-21', startDate: '2026-06-19T22:00:00Z', slots: IMSA_SLOTS, classes: ['GTP', 'LMP2', 'GT3'] },
     { id: 'firecracker-400', name: 'Firecracker 400', date: 'June 30 - July 6', startDate: '2026-06-30T22:00:00Z', slots: IMSA_SLOTS, classes: ['NASCAR Next Gen'] },
     { id: 'spa-24hr', name: 'Spa 24hr', date: 'July 10-12', startDate: '2026-07-10T22:00:00Z', slots: IMSA_SLOTS, classes: ['GT3'] },
