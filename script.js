@@ -459,8 +459,13 @@ async function loadDynamicContent() {
     if (fullEventList && !cacheLoaded) fullEventList.innerHTML = getSkeletonHTML('list');
     
     // Global Constants for URL generation
-    const isSubdir = window.location.pathname.includes('/events/') || window.location.pathname.includes('/drivers/');
-    const prefix = isSubdir ? '../' : '';
+    const path = window.location.pathname;
+    let prefix = '';
+    if (path.includes('/events/past/')) {
+        prefix = '../../';
+    } else if (path.includes('/events/') || path.includes('/drivers/')) {
+        prefix = '../';
+    }
     const staticIds = [
         // Upcoming events with static pages
         'imsa-classic-500', 'indy-500', 'world-600',
@@ -771,8 +776,13 @@ window.addEventListener('DOMContentLoaded', beautifyCurrentURL);
 
 // Helper for clean event links
 function getEventLink(id, isStatic = false) {
-    const isSubdir = window.location.pathname.includes('/events/') || window.location.pathname.includes('/drivers/');
-    const prefix = isSubdir ? '../' : '';
+    const path = window.location.pathname;
+    let prefix = '';
+    if (path.includes('/events/past/')) {
+        prefix = '../../';
+    } else if (path.includes('/events/') || path.includes('/drivers/')) {
+        prefix = '../';
+    }
     
     if (isStatic) {
         const pastStatic = ['iracing-roar', 'daytona-24', 'daytona-500', 'bathurst-12', 'sebring-12hr'];
@@ -1499,6 +1509,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadRecentResults(); // Load from cache immediately
     initCarousel();
     injectCredits();
+    startRealTimeEventCheck(); // Start real-time event conclusion monitor
     
     // Poll for Firestore 'db' initialization from auth.js
     const dbCheckInterval = setInterval(() => {
@@ -1516,6 +1527,39 @@ document.addEventListener('DOMContentLoaded', () => {
     // Safety timeout to avoid infinite polling if Firestore fails
     setTimeout(() => clearInterval(dbCheckInterval), 5000);
 });
+
+function startRealTimeEventCheck() {
+    setInterval(() => {
+        const cachedEvents = localStorage.getItem('gridup_upcoming_events');
+        if (cachedEvents) {
+            try {
+                const data = JSON.parse(cachedEvents);
+                if (data.length > 0) {
+                    const now = new Date();
+                    const parseDate = (d) => {
+                        if (!d) return null;
+                        if (typeof d.toDate === 'function') return d.toDate();
+                        if (d.seconds) return new Date(d.seconds * 1000);
+                        return new Date(d);
+                    };
+                    const firstEventEnd = data[0].endDate ? parseDate(data[0].endDate) : (data[0].startDate ? new Date(data[0].startDate) : null);
+                    if (firstEventEnd && !data[0].endDate) {
+                        firstEventEnd.setHours(23, 59, 59, 999);
+                    }
+                    
+                    if (firstEventEnd && now > firstEventEnd) {
+                        console.log("Real-time event transition check: Active event has ended! Reloading events...");
+                        localStorage.removeItem('gridup_upcoming_events');
+                        window.dynamicContentLoaded = false;
+                        loadDynamicContent();
+                    }
+                }
+            } catch (e) {
+                console.warn("Error in real-time event transition check:", e);
+            }
+        }
+    }, 60000);
+}
 
 function injectCredits() {
     if (document.querySelector('.bizare-credits')) return;

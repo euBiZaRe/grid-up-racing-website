@@ -163,8 +163,13 @@ function handleLogOutRedirect() {
     
     if (protectedPages.includes(currentPage)) {
         // Handle subdirectory relative path
-        const isSubdir = window.location.pathname.includes('/events/') || window.location.pathname.includes('/drivers/');
-        const basePath = isSubdir ? "../" : "";
+        const path = window.location.pathname;
+        let basePath = '';
+        if (path.includes('/events/past/')) {
+            basePath = '../../';
+        } else if (path.includes('/events/') || path.includes('/drivers/')) {
+            basePath = '../';
+        }
         window.location.href = basePath + "login.html";
     }
 }
@@ -189,8 +194,13 @@ async function updateAuthUI(user, isTentative = false) {
     const driverTitle = document.querySelector('h1.glow-text');
 
     // Auto-detect relative path prefix
-    const isSubdir = window.location.pathname.includes('/events/') || window.location.pathname.includes('/drivers/');
-    const basePath = isSubdir ? "../" : "";
+    const path = window.location.pathname;
+    let basePath = '';
+    if (path.includes('/events/past/')) {
+        basePath = '../../';
+    } else if (path.includes('/events/') || path.includes('/drivers/')) {
+        basePath = '../';
+    }
 
     if (user) {
         let avatar = user.photoURL || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
