@@ -370,6 +370,7 @@ nav.scrolled {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 3.5rem;
 }
 
 .logo {
@@ -459,6 +460,12 @@ nav.scrolled {
 
 .nav-links a:hover::after {
     width: 100%;
+}
+
+@media (max-width: 1150px) {
+    .nav-links {
+        gap: 1rem;
+    }
 }
 
 @media (max-width: 768px) {
