@@ -926,13 +926,15 @@
                 entry.innerHTML = `
                     <div style="display: flex; flex-direction: column; flex: 1;">
                         <span class="roster-name" style="${isMe ? 'color: var(--primary); font-weight: 800;' : ''}">
-                            ${reg.entryType === 'team' ? (isMe ? 'YOU (' + reg.teamName + ')' : reg.teamName) : (isMe ? 'YOU (' + reg.name + ')' : reg.name)}
+                            ${reg.teamName ? (isMe ? 'YOU (' + reg.teamName + ')' : reg.teamName) : (isMe ? 'YOU (' + reg.name + ')' : reg.name)}
                         </span>
                         <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
                             ${reg.entryType === 'team' ? `<span style="font-size: 0.65rem; color: #fff; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px;">TEAM</span>` : ''}
                             ${reg.car ? `<span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">${reg.car}</span>` : ''}
                         </div>
-                        ${reg.entryType === 'team' ? `<span style="font-size: 0.65rem; color: var(--text-muted); margin-top: 2px;">Captain: ${reg.name} ${reg.coDrivers ? '| Co: ' + reg.coDrivers : ''}</span>` : ''}
+                        ${reg.entryType === 'team' 
+                            ? `<span style="font-size: 0.65rem; color: var(--text-muted); margin-top: 2px;">Captain: ${reg.name} ${reg.coDrivers ? '| Co: ' + reg.coDrivers : ''}</span>` 
+                            : (reg.teamName ? `<span style="font-size: 0.65rem; color: var(--text-muted); margin-top: 2px;">Driver: ${reg.name}</span>` : '')}
                     </div>
                     <span class="metallic-text ${reg.status === 'confirmed' ? 'gold-text' : 'silver-text'}" style="font-size: 0.6rem;">
                         ${reg.status.toUpperCase()}

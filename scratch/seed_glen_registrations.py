@@ -17,7 +17,7 @@ def main():
             "teamName": "Team Wynn's",
             "name": "Martyn Cook",
             "coDrivers": "Matty Roberts",
-            "car": "Porsche 992 GT3 R",
+            "car": "",
             "entryType": "team",
             "status": "confirmed"
         },
@@ -25,7 +25,7 @@ def main():
             "teamName": "Dream Team",
             "name": "Gabe Wilmoth",
             "coDrivers": "Terry Cantwell",
-            "car": "Porsche 992 GT3 R",
+            "car": "",
             "entryType": "team",
             "status": "confirmed"
         },
@@ -33,7 +33,7 @@ def main():
             "teamName": "Depend® for Men Motorsports",
             "name": "Levi Wolfe",
             "coDrivers": "Marko Skrnjug",
-            "car": "Chevrolet Corvette Z06 GT3.R",
+            "car": "",
             "entryType": "team",
             "status": "confirmed"
         },
@@ -41,7 +41,7 @@ def main():
             "teamName": "\"Juan\"",
             "name": "Erskine Jones",
             "coDrivers": "Michael O'Dell",
-            "car": "Chevrolet Corvette Z06 GT3.R",
+            "car": "",
             "entryType": "team",
             "status": "confirmed"
         },
@@ -49,7 +49,7 @@ def main():
             "teamName": "F&F Racing",
             "name": "Faraz Ebrahim",
             "coDrivers": "Alexander Cortez",
-            "car": "Ferrari 296 GT3",
+            "car": "",
             "entryType": "team",
             "status": "confirmed"
         },
@@ -57,20 +57,20 @@ def main():
             "teamName": "Koch Motorsports",
             "name": "Matthew Koch",
             "coDrivers": "Brandon Koch",
-            "car": "Porsche 992 GT3 R",
+            "car": "",
             "entryType": "team",
             "status": "confirmed"
         },
         # GT3 Class - Solo (1 driver)
         {
             "name": "Jacob Reid",
-            "car": "Lamborghini Huracán GT3",
+            "car": "",
             "entryType": "solo",
             "status": "confirmed"
         },
         {
             "name": "Joseph Francis5",
-            "car": "Porsche 992 GT3 R",
+            "car": "",
             "entryType": "solo",
             "status": "confirmed"
         },
@@ -80,7 +80,7 @@ def main():
             "teamName": "Angry Rooster Racing",
             "name": "Andrew B Fabian",
             "coDrivers": "Landen Hendershot",
-            "car": "Ford Mustang GT4",
+            "car": "",
             "entryType": "team",
             "status": "confirmed"
         },
@@ -88,7 +88,7 @@ def main():
             "teamName": "Grumpy Duck Racing",
             "name": "Adam L Jones",
             "coDrivers": "Zack Saunders",
-            "car": "Ford Mustang GT4",
+            "car": "",
             "entryType": "team",
             "status": "confirmed"
         },
@@ -96,32 +96,32 @@ def main():
             "teamName": "Apex Racing",
             "name": "David Shreve",
             "coDrivers": "Mark Prince",
-            "car": "Ford Mustang GT4",
+            "car": "",
             "entryType": "team",
             "status": "confirmed"
         },
         # GT4 Class - Solo (1 driver)
         {
             "name": "Johnathan Shampine",
-            "car": "BMW M4 GT4",
+            "car": "",
             "entryType": "solo",
             "status": "confirmed"
         },
         {
             "name": "Matt Perez",
-            "car": "BMW M4 GT4",
+            "car": "",
             "entryType": "solo",
             "status": "confirmed"
         },
         {
             "name": "Tanner Hupp",
-            "car": "BMW M4 GT4",
+            "car": "",
             "entryType": "solo",
             "status": "confirmed"
         },
         {
             "name": "A.J. Johnson",
-            "car": "BMW M4 GT4",
+            "car": "",
             "entryType": "solo",
             "status": "confirmed"
         }
@@ -149,7 +149,7 @@ def main():
             doc_ref = regs_ref.document(doc_id)
             batch.set(doc_ref, reg)
             name_display = reg["teamName"] if reg["entryType"] == "team" else reg["name"]
-            print(f"Prepared {doc_id}: {name_display} ({reg['car']}) [{reg['entryType']}]")
+            print(f"Prepared {doc_id}: {name_display} [{reg['entryType']}]")
         
         batch.commit()
         print("\nSUCCESS! Successfully seeded registrations for gtc-glen-24.")
