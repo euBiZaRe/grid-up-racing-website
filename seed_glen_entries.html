@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Seed Watkins Glen 2.4 Entries</title>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <!-- Our Auth Config -->
+    <script src="js/auth.js"></script>
+    
+    <style>
+        body { font-family: sans-serif; padding: 2rem; background: #0a0a0c; color: white; }
+        button { padding: 1rem 2rem; background: #00cfff; border: none; color: black; font-weight: bold; cursor: pointer; border-radius: 4px; }
+        #log { margin-top: 1rem; color: #00ff88; white-space: pre; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>Seed Watkins Glen 2.4 Entries</h1>
+    <button onclick="seedDatabase()">Seed Entries</button>
+    <div id="log"></div>
+
+    <script>
+        const EVENT_ID = 'gtc-glen-24';
+        const REGISTRATIONS = [
+            // GT3 Class - Teams (2+ drivers)
+            {
+                "teamName": "Team Wynn's",
+                "name": "Martyn Cook",
+                "coDrivers": "Matty Roberts",
+                "car": "Porsche 992 GT3 R",
+                "entryType": "team",
+                "status": "confirmed"
+            },
+            {
+                "teamName": "Dream Team",
+                "name": "Gabe Wilmoth",
+                "coDrivers": "Terry Cantwell",
+                "car": "Porsche 992 GT3 R",
+                "entryType": "team",
+                "status": "confirmed"
+            },
+            {
+                "teamName": "Depend® for Men Motorsports",
+                "name": "Levi Wolfe",
+                "coDrivers": "Marko Skrnjug",
+                "car": "Chevrolet Corvette Z06 GT3.R",
+                "entryType": "team",
+                "status": "confirmed"
+            },
+            {
+                "teamName": "\"Juan\"",
+                "name": "Erskine Jones",
+                "coDrivers": "Michael O'Dell",
+                "car": "Chevrolet Corvette Z06 GT3.R",
+                "entryType": "team",
+                "status": "confirmed"
+            },
+            {
+                "teamName": "F&F Racing",
+                "name": "Faraz Ebrahim",
+                "coDrivers": "Alexander Cortez",
+                "car": "Ferrari 296 GT3",
+                "entryType": "team",
+                "status": "confirmed"
+            },
+            {
+                "teamName": "Koch Motorsports",
+                "name": "Matthew Koch",
+                "coDrivers": "Brandon Koch",
+                "car": "Porsche 992 GT3 R",
+                "entryType": "team",
+                "status": "confirmed"
+            },
+            // GT3 Class - Solo (1 driver)
+            {
+                "name": "Jacob Reid",
+                "car": "Lamborghini Huracán GT3",
+                "entryType": "solo",
+                "status": "confirmed"
+            },
+            {
+                "name": "Joseph Francis5",
+                "car": "Porsche 992 GT3 R",
+                "entryType": "solo",
+                "status": "confirmed"
+            },
+
+            // GT4 Class - Teams (2+ drivers)
+            {
+                "teamName": "Angry Rooster Racing",
+                "name": "Andrew B Fabian",
+                "coDrivers": "Landen Hendershot",
+                "car": "Ford Mustang GT4",
+                "entryType": "team",
+                "status": "confirmed"
+            },
+            {
+                "teamName": "Grumpy Duck Racing",
+                "name": "Adam L Jones",
+                "coDrivers": "Zack Saunders",
+                "car": "Ford Mustang GT4",
+                "entryType": "team",
+                "status": "confirmed"
+            },
+            {
+                "teamName": "Apex Racing",
+                "name": "David Shreve",
+                "coDrivers": "Mark Prince",
+                "car": "Ford Mustang GT4",
+                "entryType": "team",
+                "status": "confirmed"
+            },
+            // GT4 Class - Solo (1 driver)
+            {
+                "name": "Johnathan Shampine",
+                "car": "BMW M4 GT4",
+                "entryType": "solo",
+                "status": "confirmed"
+            },
+            {
+                "name": "Matt Perez",
+                "car": "BMW M4 GT4",
+                "entryType": "solo",
+                "status": "confirmed"
+            },
+            {
+                "name": "Tanner Hupp",
+                "car": "BMW M4 GT4",
+                "entryType": "solo",
+                "status": "confirmed"
+            },
+            {
+                "name": "A.J. Johnson",
+                "car": "BMW M4 GT4",
+                "entryType": "solo",
+                "status": "confirmed"
+            }
+        ];
+
+        async function seedDatabase() {
+            const logDiv = document.getElementById('log');
+            logDiv.innerHTML = "Starting batch insert...\n";
+            try {
+                // First delete existing registrations
+                logDiv.innerHTML += "Clearing old entries...\n";
+                const snap = await db.collection('leagues').doc(EVENT_ID).collection('registrations').get();
+                const clearBatch = db.batch();
+                snap.forEach(doc => clearBatch.delete(doc.ref));
+                await clearBatch.commit();
+                logDiv.innerHTML += `Cleared ${snap.size} entries.\n`;
+
+                const batch = db.batch();
+                REGISTRATIONS.forEach((reg, idx) => {
+                    const docRef = db.collection('leagues').doc(EVENT_ID).collection('registrations').doc('entry_' + idx);
+                    reg.timestamp = firebase.firestore.FieldValue.serverTimestamp();
+                    reg.avatar = "";
+                    batch.set(docRef, reg);
+                    logDiv.innerHTML += `Queued: ${reg.teamName || reg.name} \n`;
+                });
+                await batch.commit();
+                logDiv.innerHTML += "\nSUCCESS: All entries seeded to Firestore!";
+            } catch (e) {
+                console.error(e);
+                logDiv.innerHTML += `\nERROR: ${e.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

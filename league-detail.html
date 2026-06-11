@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 
@@ -718,7 +718,7 @@
             let totalDrivers = 0;
             registrations.forEach(r => {
                 if (r.entryType === 'team') {
-                    totalDrivers += 1; // The registering manager
+                    totalDrivers += 1; // The registering captain
                     if (r.coDrivers) {
                         // Split by comma, filter out empty strings, and count
                         const extras = r.coDrivers.split(',').filter(name => name.trim() !== '').length;
@@ -933,7 +933,7 @@
                             ${reg.entryType === 'team' ? `<span style="font-size: 0.65rem; color: #fff; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px;">TEAM</span>` : ''}
                             ${reg.car ? `<span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">${reg.car}</span>` : ''}
                         </div>
-                        ${reg.entryType === 'team' ? `<span style="font-size: 0.65rem; color: var(--text-muted); margin-top: 2px;">Manager: ${reg.name} ${reg.coDrivers ? '| Co: ' + reg.coDrivers : ''}</span>` : ''}
+                        ${reg.entryType === 'team' ? `<span style="font-size: 0.65rem; color: var(--text-muted); margin-top: 2px;">Captain: ${reg.name} ${reg.coDrivers ? '| Co: ' + reg.coDrivers : ''}</span>` : ''}
                     </div>
                     <span class="metallic-text ${reg.status === 'confirmed' ? 'gold-text' : 'silver-text'}" style="font-size: 0.6rem;">
                         ${reg.status.toUpperCase()}
