@@ -15,7 +15,7 @@ def main():
         "slug": "the-glen-24-endurance-awaits",
         "date": datetime(2026, 6, 11, 12, 0, 0, tzinfo=timezone.utc),
         "author": "GRiD UP Media",
-        "bannerUrl": "assets/reports/the-glen-upcoming.png",
+        "bannerUrl": "assets/reports/the-glen-upcoming.png?v=1",
         "summary": "The GRiD UP GT Challenge rolls into the legendary Watkins Glen International for a grueling 2.4-hour multiclass endurance battle, where speed, precision, and heavy traffic will test every team to their limits.",
         "content": """
 <p>The high-speed thrill of multiclass endurance racing returns this weekend as the GRiD UP GT Challenge heads to the historic Watkins Glen International. On Saturday, 13th June 2026, the grid will tackle the demanding "2.4 at The Glen"—a 144-minute test of raw pace, traffic management, and steel-nerved team strategy.</p>
