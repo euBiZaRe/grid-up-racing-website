@@ -924,8 +924,7 @@
                 }
 
                 entry.innerHTML = `
-                    <span class="roster-pos">${isMe ? '--' : 'P' + (i + 1)}</span>
-                    <div style="display: flex; flex-direction: column;">
+                    <div style="display: flex; flex-direction: column; flex: 1;">
                         <span class="roster-name" style="${isMe ? 'color: var(--primary); font-weight: 800;' : ''}">
                             ${reg.entryType === 'team' ? (isMe ? 'YOU (' + reg.teamName + ')' : reg.teamName) : (isMe ? 'YOU (' + reg.name + ')' : reg.name)}
                         </span>
