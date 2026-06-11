@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 
@@ -171,7 +171,11 @@
                 <div>
                     <div style="background: rgba(0, 207, 255, 0.1); border: 1px solid var(--primary); display: inline-block; padding: 0.5rem 1.5rem; border-radius: 50px; font-size: 0.75rem; font-weight: 800; letter-spacing: 3px; color: var(--primary); margin-bottom: 2rem; text-transform: uppercase;">Next Major Event</div>
                     <h1 id="featured-name" class="glow-text" style="font-size: clamp(2rem, 5vw, 4rem); font-weight: 900; line-height: 1.1; margin-bottom: 1rem;">GT CHALLENGE: THE GLEN 24</h1>
-                    <p id="featured-track" style="font-family: var(--font-heading); font-size: 1rem; letter-spacing: 4px; color: var(--text-main); opacity: 0.8; margin-bottom: 2.5rem;">WATKINS GLEN INTERNATIONAL</p>
+                    <p id="featured-track" style="font-family: var(--font-heading); font-size: 1rem; letter-spacing: 4px; color: var(--text-main); opacity: 0.8; margin-bottom: 1.5rem;">WATKINS GLEN INTERNATIONAL</p>
+                    <div id="hero-countdown" class="countdown-container" style="display: none; margin-bottom: 2rem; padding: 0.8rem 1.2rem; background: rgba(0, 207, 255, 0.04); border: 1px solid rgba(0, 207, 255, 0.15); border-radius: 8px; max-width: 340px; backdrop-filter: blur(10px);">
+                        <span style="font-size: 0.65rem; font-weight: 800; letter-spacing: 2px; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 0.4rem;">Event Starts In</span>
+                        <span class="countdown-timer" style="font-family: monospace; font-size: 1.3rem; font-weight: 900; color: var(--primary); letter-spacing: 2px;">--d --h --m --s</span>
+                    </div>
                     <div class="hero-event-btns" style="display: flex; gap: 1rem; flex-wrap: wrap;">
                         <a href="league-detail.html?id=gtc-glen-24" id="featured-link" class="btn" style="padding: 1rem 2rem; font-size: 0.9rem; box-shadow: 0 0 40px var(--primary-glow);">VIEW EVENT DETAILS</a>
                         <a href="https://discord.gg/gridup" class="btn btn-outline" style="padding: 1rem 2rem; font-size: 0.9rem;">JOIN DISCORD</a>
@@ -330,7 +334,8 @@
                             id: doc.id,
                             name: data.name,
                             posterUrl: posterUrl,
-                            track: TRACK_NAMES[doc.id] || 'TBD'
+                            track: TRACK_NAMES[doc.id] || 'TBD',
+                            eventDate: eventDate
                         };
                     }
 
@@ -387,6 +392,13 @@
                             </div>
                             <h3 style="font-size: 1.8rem; margin: 1rem 0 0.5rem; font-weight: 800;">${data.name}</h3>
                             <p style="color: var(--primary); font-family: var(--font-heading); font-size: 0.8rem; letter-spacing: 2px;">${scheduleText}</p>
+                            
+                            ${!isComplete && eventDate ? `
+                            <div class="countdown-container" data-time="${eventDate.getTime()}" style="margin-top: 1rem; padding: 0.6rem 1rem; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; display: flex; align-items: center; justify-content: space-between;">
+                                <span style="font-size: 0.65rem; font-weight: 800; letter-spacing: 2px; color: var(--text-muted); text-transform: uppercase;">Starts In:</span>
+                                <span class="countdown-timer" style="font-family: monospace; font-size: 0.85rem; font-weight: 700; color: var(--primary); letter-spacing: 1px;">--d --h --m --s</span>
+                            </div>
+                            ` : ''}
                         </div>
                         <div style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; margin: 1rem 0;">
                             ${descText}
@@ -404,6 +416,7 @@
                     const heroName = document.getElementById('featured-name');
                     const heroTrack = document.getElementById('featured-track');
                     const heroLink = document.getElementById('featured-link');
+                    const heroCountdown = document.getElementById('hero-countdown');
                     
                     if (hero) {
                         hero.style.background = `linear-gradient(to bottom, rgba(10,12,16,0.45), var(--bg-dark)), url('${firstEventData.posterUrl}')`;
@@ -413,10 +426,53 @@
                     if (heroName) heroName.textContent = firstEventData.name;
                     if (heroTrack) heroTrack.textContent = firstEventData.track;
                     if (heroLink) heroLink.href = `league-detail.html?id=${firstEventData.id}`;
+                    
+                    if (heroCountdown && firstEventData.eventDate) {
+                        heroCountdown.dataset.time = firstEventData.eventDate.getTime();
+                        heroCountdown.style.display = 'block';
+                    }
                 }
+                
+                // Start countdown update loop
+                startCountdowns();
+
             } catch (e) {
                 console.error("Error loading leagues:", e);
                 list.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--secondary);">Failed to load leagues. Please try again later.</p>';
+            }
+        }
+
+        function startCountdowns() {
+            updateTimers();
+            setInterval(updateTimers, 1000);
+
+            function updateTimers() {
+                const now = new Date().getTime();
+                document.querySelectorAll('.countdown-container').forEach(el => {
+                    const targetTime = parseInt(el.dataset.time);
+                    if (isNaN(targetTime)) return;
+                    
+                    const distance = targetTime - now;
+                    const displayEl = el.querySelector('.countdown-timer');
+                    if (!displayEl) return;
+                    
+                    if (distance < 0) {
+                        displayEl.textContent = "STARTED";
+                        return;
+                    }
+                    
+                    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                    
+                    const dStr = days.toString().padStart(2, '0');
+                    const hStr = hours.toString().padStart(2, '0');
+                    const mStr = minutes.toString().padStart(2, '0');
+                    const sStr = seconds.toString().padStart(2, '0');
+                    
+                    displayEl.textContent = `${dStr}d : ${hStr}h : ${mStr}m : ${sStr}s`;
+                });
             }
         }
 
