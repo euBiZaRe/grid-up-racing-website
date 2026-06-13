@@ -321,15 +321,20 @@
                     const eventDate = eventDateStr ? new Date(eventDateStr) : null;
                     const now = new Date();
                     const isComplete = eventDate && eventDate < now;
-                    const isOpen = !isComplete && data.registrationStatus === 'open';
+                    
+                    // 12-hour registration cutoff (must match league-detail.html)
+                    const regCutoff = eventDate ? new Date(eventDate.getTime() - (12 * 60 * 60 * 1000)) : null;
+                    const isRegClosed = regCutoff && now >= regCutoff;
+                    
+                    const isOpen = !isComplete && !isRegClosed && data.registrationStatus === 'open';
 
                     const posterUrl = data.bannerUrl || LEAGUE_POSTERS[doc.id];
                     const bannerHtml = posterUrl
                         ? `<div class="league-card-banner" style="background-image: url('${posterUrl}')"></div>`
                         : '';
 
-                    // Use the first open event for the hero
-                    if (!firstEventData && isOpen && posterUrl) {
+                    // Use the next upcoming event for the hero (even if registration is closed)
+                    if (!firstEventData && !isComplete && posterUrl) {
                         firstEventData = {
                             id: doc.id,
                             name: data.name,
@@ -375,11 +380,12 @@
                         btnText = 'VIEW EVENT DETAILS';
                         btnStyle = '';
                     } else {
+                        // Event is upcoming, but registration is closed (cutoff passed or status is manually set to closed)
                         statusColor = '#ff3c3c';
                         statusDotClass = 'status-closed';
-                        statusLabel = 'Season in Progress';
-                        btnText = 'JOIN WAITING LIST';
-                        btnStyle = 'opacity: 0.5; pointer-events: none;';
+                        statusLabel = 'Registration Closed';
+                        btnText = 'VIEW EVENT DETAILS';
+                        btnStyle = '';
                     }
 
                     card.innerHTML = `

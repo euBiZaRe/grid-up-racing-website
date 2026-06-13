@@ -933,8 +933,8 @@
                             ${reg.car ? `<span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">${reg.car}</span>` : ''}
                         </div>
                         ${reg.entryType === 'team' 
-                            ? `<span style="font-size: 0.65rem; color: var(--text-muted); margin-top: 2px;">Captain: ${reg.name} ${reg.coDrivers ? '| Co: ' + reg.coDrivers : ''}</span>` 
-                            : (reg.teamName ? `<span style="font-size: 0.65rem; color: var(--text-muted); margin-top: 2px;">Driver: ${reg.name}</span>` : '')}
+                            ? `<span style="font-size: 0.65rem; color: var(--text-muted); margin-top: 2px;">Driver(s): ${reg.name}${reg.coDrivers ? ', ' + reg.coDrivers : ''}</span>` 
+                            : (reg.teamName ? `<span style="font-size: 0.65rem; color: var(--text-muted); margin-top: 2px;">Driver(s): ${reg.name}</span>` : '')}
                     </div>
                     <span class="metallic-text ${reg.status === 'confirmed' ? 'gold-text' : 'silver-text'}" style="font-size: 0.6rem;">
                         ${reg.status.toUpperCase()}
