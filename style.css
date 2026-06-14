@@ -462,6 +462,10 @@ nav.scrolled {
     width: 100%;
 }
 
+.nav-links a.btn::after {
+    display: none !important;
+}
+
 @media (max-width: 1150px) {
     .nav-links {
         gap: 1rem;

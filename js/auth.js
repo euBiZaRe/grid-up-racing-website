@@ -22,6 +22,8 @@ if (typeof firebase !== 'undefined') {
 let AUTH_USER = null;
 let IS_ADMIN = false;
 let IS_VERIFIED = false;
+let PORTAL_HAS_UNREAD = false;
+let appNotificationUnsub = null;
 
 // FAST-PATH: Restore UI from cache immediately to prevent flash
 (function restoreCachedUI() {
@@ -151,7 +153,15 @@ function initAuth() {
             
             // 2. Background Enrichment (Admin/Verification)
             enrichAuthData(user);
+
+            // 3. Watch for application notifications
+            watchApplicationNotification(user);
         } else {
+            if (appNotificationUnsub) {
+                appNotificationUnsub();
+                appNotificationUnsub = null;
+            }
+            PORTAL_HAS_UNREAD = false;
             localStorage.removeItem('gridup_auth_cache');
             updateAuthUI(null);
             handleLogOutRedirect();
@@ -293,7 +303,7 @@ async function updateAuthUI(user, isTentative = false) {
                 container.style.gap = "8px";
             }
 
-            const portalLink = `<a href="${basePath}portal.html" class="btn btn-primary" style="padding: 0.4rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border-radius: 4px;">Portal</a>`;
+            const portalLink = `<a href="${basePath}portal.html" id="navbar-portal-btn" class="btn btn-primary" style="position: relative; padding: 0.4rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border-radius: 4px;">Portal<span id="portal-badge" style="display: ${PORTAL_HAS_UNREAD ? 'block' : 'none'}; position: absolute; top: -4px; right: -4px; width: 8px; height: 8px; background-color: #ff3b30; border-radius: 50%; border: 1px solid #fff; box-shadow: 0 0 4px rgba(255,59,48,0.6);"></span></a>`;
             const profileLink = `<a href="${basePath}profile.html" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border-radius: 4px;">Profile</a>`;
             const logoutBtn = `<a href="#" onclick="if(confirm('Logout?')) firebase.auth().signOut()" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border-color: rgba(255,255,255,0.15); border-radius: 4px;"><img src="${avatar}" style="width: 16px; height: 16px; border-radius: 50%; vertical-align: middle; margin-right: 5px;"> Logout</a>`;
 
@@ -525,6 +535,32 @@ async function loadRaceLineup(slug) {
     } catch (error) {
         console.error("Error loading lineup from Firestore:", error);
     }
+}
+
+function watchApplicationNotification(user) {
+    if (appNotificationUnsub) {
+        appNotificationUnsub();
+        appNotificationUnsub = null;
+    }
+    if (!db || !user) return;
+    
+    appNotificationUnsub = db.collection('applications')
+        .where('discordUid', '==', user.uid)
+        .onSnapshot(snap => {
+            let hasUnread = false;
+            snap.forEach(doc => {
+                if (doc.data().unreadApplicant) {
+                    hasUnread = true;
+                }
+            });
+            PORTAL_HAS_UNREAD = hasUnread;
+            const badge = document.getElementById('portal-badge');
+            if (badge) {
+                badge.style.display = hasUnread ? 'block' : 'none';
+            }
+        }, err => {
+            console.warn("Error watching application notification:", err);
+        });
 }
 
 // Initialize on page load

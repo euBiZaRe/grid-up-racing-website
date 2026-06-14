@@ -689,6 +689,13 @@
 
                     const data = doc.data();
 
+                    // Clear unread applicant flag if set
+                    if (data.unreadApplicant) {
+                        db.collection("applications").doc(appId).update({
+                            unreadApplicant: false
+                        }).catch(e => console.warn("Failed to clear unread applicant flag:", e));
+                    }
+
                     
 
                     const badge = document.getElementById('portal-app-status-badge');
