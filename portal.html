@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 
@@ -18,7 +18,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Team Portal | GRiD UP Sim Racing</title>
-    <link rel="stylesheet" href="style.css?v=6">
+    <link rel="stylesheet" href="style.css?v=7">
     <link rel="icon" type="image/png" href="assets/G_2.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -86,7 +86,7 @@
         <!-- Portal View -->
         <div id="portal-view" style="display: none;">
             <div class="portal-welcome" style="margin-bottom: 3rem;">
-                <a href="portal.html" class="back-btn" style="margin-bottom: 1.5rem; display: inline-block;">← Switch Event</a>
+                <a href="portal.html" class="back-btn" style="margin-bottom: 1.5rem; display: inline-block;">? Switch Event</a>
                 <h1 id="event-title" class="glow-text" style="font-size: 3.5rem; margin-bottom: 0.5rem;">Event Name</h1>
                 <p id="team-title" style="color: var(--primary); font-size: 1.1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 4px; opacity: 0.9;">Team Name</p>
             </div>
@@ -269,7 +269,7 @@
                                 <span style="font-weight: 700; color: var(--primary); font-size: 0.85rem; white-space: nowrap;">${m.author}:</span>
                                 <span style="flex: 1; font-size: 0.9rem; color: var(--text-main);">${m.text}</span>
                                 <span style="font-size: 0.7rem; color: var(--text-muted); opacity: 0.5; white-space: nowrap;">${time}</span>
-                                ${canDelete ? `<button class="delete-msg" onclick="deleteMessage('${doc.id}')" title="Delete Message">🗑️</button>` : ''}
+                                ${canDelete ? `<button class="delete-msg" onclick="deleteMessage('${doc.id}')" title="Delete Message">???</button>` : ''}
                             </div>
                         `;
                     });
@@ -652,7 +652,7 @@
                             <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">${t.eventName}</h3>
                             <div style="display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 0.8rem;">
                                 <span>Portal Access</span>
-                                <span style="color: var(--primary);">→</span>
+                                <span style="color: var(--primary);">?</span>
                             </div>
                         </div>
                     `;
@@ -865,7 +865,7 @@
                         `;
                         UPCOMING_EVENTS.forEach(event => {
                             const status = allResponses[event.id][uid];
-                            let statusHtml = "–";
+                            let statusHtml = "�";
                             if (status === 'signed_up') statusHtml = `<span style="color: #00ff88;">YES</span>`;
                             if (status === 'not_interested') statusHtml = `<span style="color: #888;">N/I</span>`;
                             if (status === 'unavailable') statusHtml = `<span style="color: #ff0055;">N/A</span>`;
