@@ -21,10 +21,64 @@ function Get-BarWidth([string]$ir) {
 
 function Replace-Category([string]$content, [string]$catName, [string]$cls, [string]$sr, [string]$ir, [string]$w) {
     $escaped = [regex]::Escape($catName)
-    # Pattern: capture pre-class, post-class-quote, mid-close-span-open-span, mid-close-to-width, post-width
-    $pattern = '(<span>' + $escaped + ' <span class="license-badge )[^"]+(">[^<]*</span></span>\s*<span>)[^<]*(</span>\s*</div>\s*<div class="rating-bar-bg"><div class="rating-bar-fill" style="width: )[^%]+(%;"></div></div>\s*</div>)'
-    # Build replacement using string concat to avoid PS variable vs regex-backref ambiguity
-    $repl = '${1}' + $cls + '${2}' + $sr + '${3}' + $ir + '${4}' + $w + '${5}'
+    # Pattern explanation:
+    # 1: '(<span>' + $escaped + ' <span class="license-badge )'
+    # 2: '[^"]+' -> current license badge class
+    # 3: '(">[^<]*</span></span>\s*<span>)' -> closing tag of span, middle tags
+    # 4: '[^<]*' -> current safety rating/irating text (e.g. '---' or '1288')
+    # 5: '(</span>\s*</div>\s*<div class="rating-bar-bg"><div class="rating-bar-fill" style="width: )'
+    # 6: '[^%]+' -> current width percentage
+    # 7: '(%;"></div></div>\s*</div>)'
+    $pattern = '(<span>' + $escaped + ' <span class="license-badge )([^"]+)(">[^<]*</span></span>\s*<span>)([^<]*)(</span>\s*</div>\s*<div class="rating-bar-bg"><div class="rating-bar-fill" style="width: )([^%]+)(%;"></div></div>\s*</div>)'
+    
+    # We want to replace group 2 (license badge class) with $cls, group 4 (text inside the iRating/SR span) with $ir, and group 6 (bar width percentage) with $w.
+    # But wait, looking at driver-template.html:
+    # Sports Car <span class="license-badge {{LICENSE_CLASS_SPORTS}}">{{LICENSE_SPORTS}}</span>
+    # {{IRATING_SPORTS}}
+    # Wait, in the driver HTML:
+    # <span>Sports Car <span class="license-badge license-b">B 2.74</span></span>
+    # <span>1265</span>
+    # Let's write a regex that matches this structure and replaces the license badge class, safety rating text, and the iRating text.
+    # Let's inspect the exact lines of driver-template.html or a driver profile.
+    # <span>Sports Car <span class="license-badge license-b">B 2.74</span></span>
+    # <span>1265</span>
+    # So the structure is:
+    # (<span>Sports Car <span class="license-badge )(license-b)(">[B 2.74]</span></span>\s*<span>)([1265])(</span>\s*</div>\s*<div class="rating-bar-bg"><div class="rating-bar-fill" style="width: )([25.3])(%;"></div></div>\s*</div>)
+    # Let's define the capture groups carefully:
+    # Group 1: (<span>Category <span class="license-badge )
+    # Group 2: ([^"]+) -> license class
+    # Group 3: (">)
+    # Group 4: ([^<]+) -> Safety rating text (e.g., "B 2.74")
+    # Group 5: (</span></span>\s*<span>)
+    # Group 6: ([^<]+) -> iRating text (e.g., "1265")
+    # Group 7: (</span>\s*</div>\s*<div class="rating-bar-bg"><div class="rating-bar-fill" style="width: )
+    # Group 8: ([^%]+) -> bar width percentage
+    # Group 9: (%;"></div></div>\s*</div>)
+    $pattern = '(<span>' + $escaped + ' <span class="license-badge )([^"]+)(">[^<]*)(</span></span>\s*<span>)([^<]*)(</span>\s*</div>\s*<div class="rating-bar-bg"><div class="rating-bar-fill" style="width: )([^%]+)(%;"></div></div>\s*</div>)'
+    
+    # We want to replace group 2 (license badge class) with $cls, group 4 (text inside the iRating/SR span) with $ir, and group 6 (bar width percentage) with $w.
+    # But wait, looking at driver-template.html:
+    # Sports Car <span class="license-badge {{LICENSE_CLASS_SPORTS}}">{{LICENSE_SPORTS}}</span>
+    # {{IRATING_SPORTS}}
+    # Wait, in the driver HTML:
+    # <span>Sports Car <span class="license-badge license-b">B 2.74</span></span>
+    # <span>1265</span>
+    # So the structure is:
+    # (<span>Sports Car <span class="license-badge )(license-b)(">[B 2.74]</span></span>\s*<span>)([1265])(</span>\s*</div>\s*<div class="rating-bar-bg"><div class="rating-bar-fill" style="width: )([25.3])(%;"></div></div>\s*</div>)
+    # Let's define the capture groups carefully:
+    # Group 1: (<span>Category <span class="license-badge )
+    # Group 2: ([^"]+) -> license class
+    # Group 3: (">)
+    # Group 4: ([^<]+) -> Safety rating text (e.g., "B 2.74")
+    # Group 5: (</span></span>\s*<span>)
+    # Group 6: ([^<]+) -> iRating text (e.g., "1265")
+    # Group 7: (</span>\s*</div>\s*... style="width: )
+    # Group 8: ([^%]+) -> bar width percentage
+    # Group 9: (%;"></div></div>\s*</div>)
+    $pattern = '(<span>' + $escaped + ' <span class="license-badge )([^"]+)(">[^<]*)(</span></span>\s*<span>)([^<]*)(</span>\s*</div>\s*<div class="rating-bar-bg"><div class="rating-bar-fill" style="width: )([^%]+)(%;"></div></div>\s*</div>)'
+    
+    # Replacement string using double quotes for PS variable interpolation:
+    $repl = "`${1}$cls`">${sr}`${4}$ir`${6}$w`${8}"
     return [System.Text.RegularExpressions.Regex]::Replace($content, $pattern, $repl, $opts)
 }
 
@@ -55,40 +109,48 @@ function Update-DriverFile {
 }
 
 # ===== DRIVER DATA =====
-Update-DriverFile 'alex-cortez.html'          '4125' 'A 4.24' '2989' 'B 2.74' '1972' 'C 4.71' '1350' 'R 2.50'
-Update-DriverFile 'aman-johnson.html'          '1184' 'A 4.99' '1184' 'A 4.99' '1350' 'R 2.50' '1350' 'R 2.50'
-Update-DriverFile 'andrew-fabian.html'         '2251' 'A 4.99' '2126' 'A 3.55' '2638' 'A 3.05' '1212' 'B 2.67'
-Update-DriverFile 'aten-wa-theba.html'         '2107' 'B 2.32' '2555' 'C 3.49' '1662' 'B 3.57' '1367' 'D 2.60'
-Update-DriverFile 'bill-mcclain.html'          '1828' 'A 4.95' '1960' 'A 3.96' '1962' 'C 2.81' '1428' 'D 2.43'
+Update-DriverFile 'adam-jones.html'           '1288' 'B 2.78' '---'  'R 2.50' '1672' 'B 3.66' '---'  'R 2.50'
+Update-DriverFile 'alex-cortez.html'          '4132' 'A 3.49' '2989' 'B 2.74' '1972' 'C 4.71' '---'  'R 2.50'
+Update-DriverFile 'aman-johnson.html'         '1184' 'A 4.99' '1184' 'A 4.99' '1350' 'R 2.50' '1350' 'R 2.50'
+Update-DriverFile 'andrew-fabian.html'        '2427' 'A 4.99' '2126' 'A 3.55' '2638' 'A 3.05' '1212' 'B 2.67'
+Update-DriverFile 'aten-wa-theba.html'         '2107' 'B 2.34' '2540' 'C 3.38' '1662' 'B 3.57' '1367' 'D 2.60'
+Update-DriverFile 'bill-mcclain.html'          '1828' 'A 4.95' '1960' 'A 3.96' '---'  'C 2.81' '1428' 'D 2.43'
 Update-DriverFile 'brandon-koch.html'          '2096' 'A 2.62' '1740' 'C 2.60' '1828' 'C 2.36' '1533' 'D 2.57'
 Update-DriverFile 'broughton-jones.html'       '595'  'C 1.40' '---'  'R 2.65' '1350' 'R 2.50' '1350' 'R 2.50'
 Update-DriverFile 'bud-carmon.html'            '1076' 'A 2.02' '1202' 'C 3.88' '727'  'C 2.35' '1350' 'R 2.50'
+Update-DriverFile 'connor-deasey.html'         '2445' 'A 3.32' '1550' 'D 3.50' '---'  'R 2.67' '---'  'D 3.64'
 Update-DriverFile 'connor-hatfield.html'       '1425' 'A 1.80' '1760' 'B 2.53' '2748' 'A 2.44' '1202' 'B 2.36'
-Update-DriverFile 'daniel-tamminga.html'       '1170' 'A 3.58' '1311' 'C 2.06' '1350' 'R 2.50' '1350' 'R 2.50'
-Update-DriverFile 'david-shreve.html'          '1902' 'A 1.56' '1743' 'B 2.24' '1337' 'D 2.70' '1325' 'D 2.44'
-Update-DriverFile 'faraz-ebrahim.html'         '1036' 'A 4.04' '1350' 'A 3.57' '1331' 'A 3.79' '1350' 'R 2.50'
-Update-DriverFile 'gabe-wilmoth.html'          '2040' 'A 4.76' '1440' 'C 2.43' '1277' 'B 2.72' '1079' 'C 2.43'
+Update-DriverFile 'daniel-tamminga.html'       '1157' 'A 3.10' '1285' 'C 1.52' '---'  'R 2.50' '---'  'R 2.37'
+Update-DriverFile 'david-shreve.html'          '1933' 'A 3.44' '1743' 'B 2.24' '1337' 'D 2.70' '1325' 'D 2.44'
+Update-DriverFile 'eric-gentry.html'           '1200' 'B 3.21' '1258' 'B 3.49' '964'  'B 3.56' '---'  'R 2.50'
+Update-DriverFile 'faraz-ebrahim.html'         '1219' 'A 4.23' '1350' 'A 3.59' '1331' 'A 3.79' '---'  'R 2.50'
+Update-DriverFile 'gabe-wilmoth.html'          '2047' 'A 4.13' '1506' 'C 2.54' '1277' 'B 2.72' '1079' 'C 2.43'
+Update-DriverFile 'hector-hernandez.html'      '2073' 'A 2.46' '2077' 'A 2.27' '1518' 'C 2.86' '---'  'R 2.50'
 Update-DriverFile 'isaac-shore.html'           '894'  'B 2.66' '552'  'D 1.18' '1380' 'B 2.01' '1350' 'R 2.50'
-Update-DriverFile 'jacob-reid.html'            '3712' 'A 4.99' '1664' 'D 2.95' '1664' 'C 4.99' '---'  'R 2.76'
-Update-DriverFile 'jacob-roberts.html'         '1471' 'B 1.53' '1350' 'R 2.50' '1106' 'D 1.23' '1350' 'R 2.50'
+Update-DriverFile 'jacob-reid.html'            '4068' 'A 2.59' '1742' 'D 3.47' '1664' 'C 4.99' '---'  'R 2.76'
+Update-DriverFile 'jacob-roberts.html'         '1471' 'B 1.53' '---'  'R 2.50' '1106' 'D 1.23' '---'  'R 2.50'
 Update-DriverFile 'jason-hayden.html'          '1989' 'A 3.34' '1619' 'D 2.56' '---'  'R 2.69' '1464' 'D 3.35'
-Update-DriverFile 'john-daniels.html'          '2423' 'A 3.43' '2262' 'A 2.40' '3212' 'A 3.55' '1347' 'D 2.53'
+Update-DriverFile 'jens-van-der-wilt.html'     '1952' 'B 3.13' '1609' 'D 2.34' '---'  'R 2.39' '---'  'R 2.50'
+Update-DriverFile 'john-daniels.html'          '2319' 'A 3.46' '2262' 'A 2.40' '3212' 'A 3.55' '1347' 'D 2.53'
 Update-DriverFile 'john-houston.html'          '1832' 'B 2.75' '1068' 'C 2.02' '2123' 'B 2.66' '1350' 'R 2.50'
-Update-DriverFile 'johnathan-shampine.html'    '2403' 'B 3.51' '---'  'R 2.65' '2427' 'A 2.62' '1697' 'C 3.36'
-Update-DriverFile 'justin-sadowski.html'       '637'  'B 2.68' '807'  'A 3.05' '---'  'R 2.59' '1350' 'R 2.50'
-Update-DriverFile 'keith-todd.html'            '956'  'A 3.83' '1043' 'C 4.99' '2597' 'A 2.37' '2218' 'A 2.55'
+Update-DriverFile 'johnathan-shampine.html'    '1913' 'B 3.13' '---'  'R 2.65' '2427' 'A 2.62' '1697' 'C 3.36'
+Update-DriverFile 'justin-sadowski.html'       '637'  'B 2.68' '---'  'A 3.42' '---'  'R 2.59' '---'  'R 2.50'
+Update-DriverFile 'keith-todd.html'            '956'  'A 3.83' '1043' 'C 4.99' '2597' 'A 2.37' '2262' 'A 2.65'
 Update-DriverFile 'landen-hendershot.html'     '1140' 'A 4.23' '1008' 'A 4.67' '2696' 'A 2.23' '1311' 'A 2.68'
-Update-DriverFile 'levi-wolfe.html'            '2071' 'A 4.99' '1383' 'C 2.41' '3026' 'A 4.73' '1436' 'D 2.82'
-Update-DriverFile 'marko-skrnjug.html'         '1756' 'A 4.93' '1646' 'C 2.97' '1107' 'C 2.10' '---'  'R 2.50'
+Update-DriverFile 'levi-wolfe.html'            '2028' 'A 4.99' '1383' 'C 2.41' '3026' 'A 4.73' '1436' 'D 2.82'
+Update-DriverFile 'marko-skrnjug.html'         '1651' 'A 4.47' '1646' 'C 2.97' '1107' 'C 2.10' '---'  'R 2.50'
+Update-DriverFile 'martyn-cook.html'           '2263' 'A 4.99' '2054' 'A 4.99' '1419' 'C 2.83' '---'  'R 2.50'
+Update-DriverFile 'mason-howington.html'       '1635' 'A 3.71' '---'  'R 2.50' '2133' 'A 3.32' '1729' 'D 2.75'
 Update-DriverFile 'matthew-graham-4.html'      '1193' 'A 2.52' '---'  'R 2.99' '1350' 'R 2.50' '1350' 'R 2.50'
 Update-DriverFile 'matthew-koch.html'          '2104' 'A 3.06' '1636' 'B 2.67' '1521' 'D 2.67' '1402' 'C 2.78'
 Update-DriverFile 'matty-roberts.html'         '1268' 'C 2.07' '1350' 'R 2.50' '---'  'R 2.59' '---'  'R 2.58'
-Update-DriverFile 'michael-odell.html'         '3674' 'A 3.71' '3126' 'A 2.35' '2092' 'A 2.47' '1466' 'D 2.69'
+Update-DriverFile 'michael-graham.html'        '1194' 'A 2.39' '---'  'R 2.99' '---'  'R 2.50' '---'  'R 2.50'
+Update-DriverFile 'michael-odell.html'         '3749' 'A 4.31' '3186' 'A 2.10' '2092' 'A 2.47' '1466' 'D 2.69'
 Update-DriverFile 'michael-zuver.html'         '1792' 'A 3.91' '1668' 'B 2.04' '2486' 'C 3.77' '1365' 'B 3.09'
-Update-DriverFile 'strats-g.html'             '1426' 'C 2.68' '1449' 'D 2.35' '---'  'R 2.16' '---'  'R 2.58'
-Update-DriverFile 'tanner-hupp.html'           '937'  'C 2.75' '---'  'R 2.14' '---'  'R 2.46' '1350' 'R 2.50'
-Update-DriverFile 'terry-cantwell.html'        '1381' 'A 4.99' '1311' 'D 1.67' '---'  'R 2.73' '2077' 'C 2.72'
+Update-DriverFile 'strats-g.html'              '1426' 'C 2.68' '1449' 'D 2.35' '---'  'R 2.16' '---'  'R 2.58'
+Update-DriverFile 'tanner-hupp.html'           '---'  'C 2.75' '---'  'R 2.14' '---'  'R 2.46' '---'  'R 2.50'
+Update-DriverFile 'terry-cantwell.html'        '1381' 'A 4.99' '1311' 'D 1.67' '---'  'R 2.73' '---'  'C 2.72'
+Update-DriverFile 'xavier-williams.html'       '1707' 'A 4.17' '1512' 'B 2.40' '852'  'D 2.13' '---'  'R 2.45'
 Update-DriverFile 'zack-saunders.html'         '2698' 'A 4.50' '2058' 'A 3.39' '3427' 'A 2.98' '1785' 'B 3.70'
-Update-DriverFile 'martyn-cook.html'           '2263' 'A 4.99' '2054' 'A 4.99' '1419' 'C 2.83' '---'  'R 2.50'
 
 Write-Host "`nDone!" -ForegroundColor Cyan
