@@ -544,57 +544,72 @@ function watchApplicationNotification(user) {
     }
     if (!db || !user) return;
 
-    let unsubUid = null;
-    let unsubName = null;
-    let unreadUid = false;
-    let unreadName = false;
+    // Resolve the application document ID first, then watch it directly.
+    // This avoids Firestore security rule issues with collection-level onSnapshot queries.
+    resolveAndWatchApplication(user);
+}
 
-    const updateBadge = () => {
-        const hasUnread = unreadUid || unreadName;
-        PORTAL_HAS_UNREAD = hasUnread;
-        const badge = document.getElementById('portal-badge');
-        if (badge) {
-            badge.style.display = hasUnread ? 'block' : 'none';
+async function resolveAndWatchApplication(user) {
+    let appDocId = null;
+
+    try {
+        // 1. Try by UID
+        const snapUid = await db.collection('applications').where('discordUid', '==', user.uid).get();
+        if (!snapUid.empty) {
+            appDocId = snapUid.docs[0].id;
         }
-    };
-
-    unsubUid = db.collection('applications')
-        .where('discordUid', '==', user.uid)
-        .onSnapshot(snap => {
-            unreadUid = false;
-            snap.forEach(doc => {
-                if (doc.data().unreadApplicant) {
-                    unreadUid = true;
-                }
-            });
-            updateBadge();
-        }, err => console.warn("Error watching app notifications by UID:", err));
-
-    if (user.displayName && user.displayName !== 'Discord User' && user.displayName !== 'Unknown Driver') {
-        unsubName = db.collection('applications')
-            .where('discordUsername', '==', user.displayName)
-            .onSnapshot(snap => {
-                unreadName = false;
-                snap.forEach(doc => {
-                    const data = doc.data();
-                    if (data.unreadApplicant) {
-                        unreadName = true;
-                    }
-                    // Proactively link their secure UID if not set yet
-                    if (!data.discordUid && user.uid) {
-                        db.collection('applications').doc(doc.id).update({
-                            discordUid: user.uid
-                        }).catch(e => console.warn("Failed to link discordUid in auth.js:", e));
-                    }
-                });
-                updateBadge();
-            }, err => console.warn("Error watching app notifications by Username:", err));
+    } catch (e) {
+        console.warn("Notification: UID query failed:", e.message);
     }
 
-    appNotificationUnsub = () => {
-        if (unsubUid) unsubUid();
-        if (unsubName) unsubName();
-    };
+    // 2. Fallback: try by display name
+    if (!appDocId && user.displayName && user.displayName !== 'Discord User' && user.displayName !== 'Unknown Driver') {
+        try {
+            const snapName = await db.collection('applications').where('discordUsername', '==', user.displayName).get();
+            if (!snapName.empty) {
+                appDocId = snapName.docs[0].id;
+                // Proactively link their UID for future lookups
+                try {
+                    await db.collection('applications').doc(appDocId).update({ discordUid: user.uid });
+                } catch (linkErr) {
+                    console.warn("Notification: Failed to link discordUid:", linkErr.message);
+                }
+            }
+        } catch (e) {
+            console.warn("Notification: Username query failed:", e.message);
+        }
+    }
+
+    if (!appDocId) {
+        console.log("Notification: No application found for user", user.uid);
+        return;
+    }
+
+    console.log("Notification: Watching application doc:", appDocId);
+
+    // 3. Watch the specific document by ID (not a collection query)
+    const unsub = db.collection('applications').doc(appDocId)
+        .onSnapshot(doc => {
+            if (!doc.exists) {
+                PORTAL_HAS_UNREAD = false;
+                updateNotificationBadge();
+                return;
+            }
+            const data = doc.data();
+            PORTAL_HAS_UNREAD = !!data.unreadApplicant;
+            updateNotificationBadge();
+        }, err => {
+            console.warn("Notification: Error watching application doc:", err.message);
+        });
+
+    appNotificationUnsub = unsub;
+}
+
+function updateNotificationBadge() {
+    const badge = document.getElementById('portal-badge');
+    if (badge) {
+        badge.style.display = PORTAL_HAS_UNREAD ? 'block' : 'none';
+    }
 }
 
 // Initialize on page load
