@@ -190,7 +190,7 @@ if (toggleBtn && pastSection) {
 }
 
 // Countdown Timer Logic
-function updateCountdown(targetTimestamp, endVal = null) {
+function updateCountdown(targetTimestamp, endVal = null, broadcastUrl = null, liveStartVal = null) {
     if (!targetTimestamp) return;
     
     // Clear any existing timer
@@ -204,14 +204,15 @@ function updateCountdown(targetTimestamp, endVal = null) {
     };
 
     const targetDate = parseDateLocal(targetTimestamp).getTime();
+    const liveStartDate = liveStartVal ? parseDateLocal(liveStartVal).getTime() : targetDate;
     const endDate = endVal ? parseDateLocal(endVal).getTime() : (targetDate + 24 * 60 * 60 * 1000);
     
     function update() {
         const now = new Date().getTime();
         const countdownEl = document.getElementById('countdown');
         
-        // 1. If currently live (between start and end)
-        if (now >= targetDate && now <= endDate) {
+        // 1. If currently live (between liveStartDate and endDate)
+        if (now >= liveStartDate && now <= endDate) {
             if (countdownEl) {
                 // Ensure subtitle says Live
                 const subtitleEl = document.getElementById('hero-event-subtitle');
@@ -220,8 +221,22 @@ function updateCountdown(targetTimestamp, endVal = null) {
                     subtitleEl.classList.add('animate-pulse');
                 }
                 
-                // Show RACE DAY pulsing state
-                if (!countdownEl.querySelector('.glow-text.animate-pulse')) {
+                // Show YouTube player or RACE DAY pulsing state
+                if (broadcastUrl) {
+                    if (!countdownEl.querySelector('iframe')) {
+                        let embedUrl = getEmbedUrl(broadcastUrl);
+                        if (embedUrl) {
+                            if (embedUrl.includes('youtube.com/embed/') && !embedUrl.includes('mute=1')) {
+                                embedUrl += '&mute=1';
+                            }
+                            countdownEl.innerHTML = `
+                                <div class="live-player-container" style="max-width: 800px; width: 100%; margin: 1.5rem auto 0; border-radius: 16px; border: 1px solid var(--primary); box-shadow: 0 0 40px var(--primary-glow); overflow: hidden; aspect-ratio: 16/9; background: #000;">
+                                    <iframe src="${embedUrl}" style="width: 100%; height: 100%; border: none;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                </div>
+                            `;
+                        }
+                    }
+                } else if (!countdownEl.querySelector('.glow-text.animate-pulse')) {
                     countdownEl.innerHTML = "<div class='glow-text animate-pulse' style='font-size: 2.5rem; font-weight: 900; color: #ff0055;'>LIVE NOW / RACE DAY</div>";
                 }
             }
@@ -449,6 +464,37 @@ async function loadDynamicContent() {
         return;
     }
 
+    // Check if Watkins Glen league event is active/upcoming/live (only on homepage)
+    let featuredOverride = null;
+    if (document.getElementById('home')) {
+        try {
+            const glenDoc = await db.collection("leagues").doc("gtc-glen-24").get();
+            if (glenDoc.exists) {
+                const data = glenDoc.data();
+                const start = data.startDate ? new Date(data.startDate) : null;
+                if (start) {
+                    const practiceStart = new Date(start.getTime() - 60 * 60 * 1000); // 1h before race start (practice starts)
+                    const raceEnd = new Date(start.getTime() + 3.5 * 60 * 60 * 1000); // 3.5h after race start
+                    const now = new Date();
+                    
+                    if (now < raceEnd) {
+                        featuredOverride = {
+                            id: 'gtc-glen-24',
+                            name: data.name || 'GT Challenge: The Glen 24',
+                            startDate: data.startDate,
+                            practiceStart: practiceStart,
+                            endDate: raceEnd,
+                            isLeague: true,
+                            broadcastUrl: "https://www.youtube.com/watch?v=VF8XwzNoAUw"
+                        };
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn("Could not fetch Watkins Glen league event for hero override:", e);
+        }
+    }
+
     // 1. Load Upcoming Races & Update Hero (Show events starting now or recently finished)
     // We use a 24h lookback so ongoing races stay visible
     const lookbackDate = new Date();
@@ -588,7 +634,7 @@ async function loadDynamicContent() {
                 localStorage.setItem('gridup_upcoming_events', JSON.stringify(upcomingEvents));
             }
 
-            renderEventsUI(upcomingEvents, pastEvents);
+            renderEventsUI(upcomingEvents, pastEvents, featuredOverride);
             window.dynamicContentLoaded = true;
         }
     } catch (error) {
@@ -597,7 +643,7 @@ async function loadDynamicContent() {
 }
 
 // Extracted UI rendering logic to allow calling from cache or Firestore
-function renderEventsUI(upcomingEvents, pastEvents = null) {
+function renderEventsUI(upcomingEvents, pastEvents = null, featuredOverride = null) {
     const upcomingTrack = document.getElementById('dynamic-upcoming-track');
     const fullEventList = document.getElementById('full-event-list');
     const heroSubtitle = document.getElementById('hero-event-subtitle');
@@ -660,25 +706,30 @@ function renderEventsUI(upcomingEvents, pastEvents = null) {
     };
 
     // A. Update Upcoming UI
-    if (upcomingEvents.length === 0) {
+    const nextEvent = featuredOverride || (upcomingEvents.length > 0 ? upcomingEvents[0] : null);
+    if (!nextEvent) {
         if (upcomingTrack) upcomingTrack.innerHTML = '<p style="text-align: center; color: var(--text-muted); width: 100%;">No upcoming events scheduled.</p>';
         if (fullEventList) fullEventList.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Stay tuned for future event dates.</p>';
         if (heroSubtitle) heroSubtitle.textContent = 'Next Major Race: TBA';
         if (heroTitle) heroTitle.textContent = 'GRiD UP';
     } else {
-        const nextEvent = upcomingEvents[0];
         const startTime = parseDate(nextEvent.startDate);
         const endTime = nextEvent.endDate ? parseDate(nextEvent.endDate) : (startTime ? new Date(startTime) : null);
         if (endTime && !nextEvent.endDate) {
             endTime.setHours(23, 59, 59, 999);
         }
         
-        const isLive = now >= startTime && now <= endTime;
+        const liveStart = nextEvent.practiceStart ? parseDate(nextEvent.practiceStart) : startTime;
+        const isLive = now >= liveStart && now <= endTime;
         
         if (heroSubtitle) {
             heroSubtitle.textContent = isLive ? `LIVE NOW: ${nextEvent.name || 'TBA'}` : `Next Major Race: ${nextEvent.name || 'TBA'}`;
             heroSubtitle.style.color = isLive ? '#ff0055' : 'var(--primary)';
-            if (isLive) heroSubtitle.classList.add('animate-pulse');
+            if (isLive) {
+                heroSubtitle.classList.add('animate-pulse');
+            } else {
+                heroSubtitle.classList.remove('animate-pulse');
+            }
         }
         
         if (heroTitle) {
@@ -686,10 +737,14 @@ function renderEventsUI(upcomingEvents, pastEvents = null) {
         }
         
         if (heroLink) {
-            heroLink.href = staticIds.includes(nextEvent.id) ? getEventLink(nextEvent.id, true) : getEventLink(nextEvent.id);
+            if (nextEvent.isLeague) {
+                heroLink.href = `league-detail.html?id=${nextEvent.id}`;
+            } else {
+                heroLink.href = staticIds.includes(nextEvent.id) ? getEventLink(nextEvent.id, true) : getEventLink(nextEvent.id);
+            }
         }
         
-        updateCountdown(nextEvent.startDate, endTime);
+        updateCountdown(nextEvent.startDate, endTime, nextEvent.broadcastUrl, nextEvent.practiceStart);
 
         if (upcomingTrack) {
             upcomingTrack.innerHTML = '';
