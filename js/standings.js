@@ -216,7 +216,7 @@ function renderStandingsTable(type) {
             const soloPenalty = row.soloPenalty || 0;
             const totalLost = incDeductions + soloPenalty;
 
-            const incText = incDeductions > 0 ? `-${incDeductions} <span style="font-size:0.75rem;color:var(--text-muted);">pts (${row.incidents}x)</span>` : '-';
+            const incText = incDeductions > 0 ? `-${incDeductions} <span style="font-size:0.75rem;color:var(--text-muted);">pts</span>` : '-';
             const soloText = soloPenalty > 0 ? `-${soloPenalty} <span style="font-size:0.75rem;color:var(--text-muted);">pts (${row.soloRaces} solo)</span>` : '-';
             const totalText = totalLost > 0 ? `<span style="color:#ff3c3c;font-weight:900;">-${totalLost} pts</span>` : '<span style="color:var(--text-muted);">-</span>';
 
