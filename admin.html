@@ -2519,7 +2519,12 @@
                 let html = `
                     <div style="margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem;">
                         <h3 style="color: var(--primary); margin-bottom: 0.5rem;">${data.iracingName || 'Unknown'}</h3>
-                        <p style="font-size: 0.85rem; color: #5865F2; margin-bottom: 0.5rem;"><strong>Discord:</strong> ${resolvedDiscordUsername} ${data.discordUid ? `<span style="color: var(--text-muted); font-size: 0.7rem;">(UID: ${data.discordUid})</span>` : ''}</p>
+                        <p style="font-size: 0.85rem; color: #5865F2; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                            <strong>Discord:</strong> 
+                            <span>${resolvedDiscordUsername}</span> 
+                            <button onclick="editDiscordUsername('${id}', '${resolvedDiscordUsername}')" class="btn btn-outline" style="padding: 2px 8px; font-size: 0.6rem; border-radius: 4px; line-height: 1.2;">Edit</button>
+                            ${data.discordUid ? `<span style="color: var(--text-muted); font-size: 0.7rem;">(UID: ${data.discordUid})</span>` : ''}
+                        </p>
                         <p style="font-size: 0.8rem; color: var(--text-muted);">Applied on: ${data.timestamp ? data.timestamp.toDate().toLocaleString() : 'Unknown'}</p>
                     </div>
                     
@@ -2573,6 +2578,33 @@
         function hideApplicationModal() {
             document.getElementById('application-modal').style.display = 'none';
             document.getElementById('app-modal-backdrop').style.display = 'none';
+        }
+
+        async function editDiscordUsername(id, currentName) {
+            const newUsername = prompt("Enter the correct Discord Username for this user:", currentName);
+            if (newUsername === null) return;
+            const trimmed = newUsername.trim();
+            if (!trimmed) return alert("Discord username cannot be empty.");
+            
+            try {
+                await db.collection("applications").doc(id).update({
+                    discordUsername: trimmed
+                });
+                
+                const appDoc = await db.collection("applications").doc(id).get();
+                const uid = appDoc.data().discordUid;
+                if (uid) {
+                    await db.collection("users").doc(uid).set({
+                        discordName: trimmed
+                    }, { merge: true });
+                }
+                
+                alert("Discord username updated successfully!");
+                viewApplication(id);
+            } catch (error) {
+                console.error("Error updating discord username:", error);
+                alert("Error updating username: " + error.message);
+            }
         }
 
         async function updateApplicationStatus(id, newStatus) {
