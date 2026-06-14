@@ -273,7 +273,8 @@
                 }
             }
 
-                // 2. Check for existing application
+            if (!user) return;
+// 2. Check for existing application
                 if (!db) return;
                 try {
                     let snap = await db.collection('applications').where('discordUid', '==', user.uid).get();
