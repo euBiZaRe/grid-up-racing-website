@@ -252,7 +252,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-    <script src="js/auth.js?v=3"></script>
+    <script src="js/auth.js?v=4"></script>
     <script src="script.js?v=5"></script>
     
     <script>
@@ -265,26 +265,13 @@
             const helpText = document.getElementById('discord-help-text');
             
             if (user && discordInput) {
-                // 1. Auto-fill Form
-                let username = user.displayName;
-                if (!username || username === 'Discord User') {
-                    try {
-                        const tokenResult = await user.getIdTokenResult();
-                        username = tokenResult.claims.preferred_username || tokenResult.claims.username || tokenResult.claims.name || 'Discord User';
-                    } catch (e) {
-                        username = 'Discord User';
-                    }
-                }
-                discordInput.value = username;
-                discordInput.readOnly = true;
-                discordInput.style.backgroundColor = 'rgba(0, 207, 255, 0.1)';
-                discordInput.style.borderColor = 'var(--primary)';
-                
+                // Link the application to their secure Discord login UID
                 if (uidInput) uidInput.value = user.uid;
                 
                 if (helpText) {
-                    helpText.innerHTML = '<span style="color: var(--primary);">? Auto-filled from your Discord login.</span>';
+                    helpText.innerHTML = '<span style="color: var(--primary);">✓ Logged in. Please type your Discord Username below.</span>';
                 }
+            }
 
                 // 2. Check for existing application
                 if (!db) return;
