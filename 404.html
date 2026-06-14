@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Not Found | GRiD UP Sim Racing</title>
+    <link rel="stylesheet" href="/style.css?v=8">
+    <link rel="icon" type="image/png" href="/assets/G_2.png">
+    <style>
+        /* Loading & Error Styles */
+        .fallback-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 70vh;
+            text-align: center;
+            padding: 2rem;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(0, 207, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 1.5rem;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Profile Specific Styles duplicated from driver-template.html */
+        .profile-header {
+            text-align: center;
+            padding: 5rem 0 3rem;
+            background: radial-gradient(circle at 50% 100%, rgba(0,207,255,0.05) 0%, transparent 70%);
+        }
+        .profile-nickname {
+            color: var(--text-muted);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            font-size: 0.8rem;
+            margin-bottom: 0.75rem;
+            display: block;
+        }
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2.5rem;
+            margin-top: 3rem;
+        }
+        .stat-card {
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.015);
+        }
+        .rating-group {
+            margin-bottom: 1.75rem;
+        }
+        .rating-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+        .rating-bar-bg {
+            height: 4px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .rating-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--secondary), var(--primary));
+            box-shadow: 0 0 12px rgba(0, 207, 255, 0.2);
+        }
+        .license-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-left: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+        .license-a { background: rgba(0, 66, 209, 0.2); color: #4DA3FF; border: 1px solid rgba(0, 66, 209, 0.4); }
+        .license-b { background: rgba(0, 143, 31, 0.2); color: #4ade80; border: 1px solid rgba(0, 143, 31, 0.4); }
+        .license-c { background: rgba(247, 209, 23, 0.2); color: #facc15; border: 1px solid rgba(247, 209, 23, 0.4); }
+        .license-d { background: rgba(252, 106, 3, 0.2); color: #fb923c; border: 1px solid rgba(252, 106, 3, 0.4); }
+        .license-r { background: rgba(188, 188, 188, 0.1); color: #9ca3af; border: 1px solid rgba(188, 188, 188, 0.2); }
+    </style>
+</head>
+<body>
+    <nav id="navbar">
+        <div class="container nav-content">
+            <a href="/index.html" class="logo">
+                <img src="/assets/logo.png" alt="GRiD UP" style="height: 40px; vertical-align: middle;">
+            </a>
+            <ul class="nav-links">
+                <li><a href="/index.html#home">Home</a></li>
+                <li><a href="/index.html#about">About</a></li>
+                <li><a href="/roster.html">Roster</a></li>
+                <li><a href="/events.html">Events</a></li>
+                <li><a href="/reports.html">Race Reports</a></li>
+                <li><a href="/shop.html">Shop</a></li>
+                <li><a href="/team-app.html">Apply</a></li>
+                <li><a href="https://discord.gg/gridup" target="_blank"><img src="/assets/discord_header.png" alt="Discord" style="height: 25px; vertical-align: middle;"></a></li>
+                <li><a href="/login.html" id="login-link" class="btn btn-outline" style="padding: 0.5rem 1.25rem; font-size: 0.8rem; margin-left: 1rem;">Login</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Content Area -->
+    <div id="dynamic-content">
+        <!-- Loading fallback by default -->
+        <div class="fallback-container">
+            <div class="spinner"></div>
+            <p style="color: var(--text-muted);">Verifying requested page...</p>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p style="color: var(--text-muted); font-size: 0.8rem;">&copy; 2026 GRiD UP SIM RACING. ALL RIGHTS RESERVED.</p>
+        </div>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="/script.js?v=6"></script>
+    <script src="/js/auth.js"></script>
+    <script>
+        // Check if the current URL points to a driver profile
+        const path = window.location.pathname;
+        const match = path.match(/\/drivers\/([^/]+)\.html$/i);
+
+        if (match) {
+            const slug = match[1].toLowerCase();
+            
+            // Wait for DB to load
+            const dbInterval = setInterval(async () => {
+                if (window.db) {
+                    clearInterval(dbInterval);
+                    try {
+                        const snap = await window.db.collection("drivers").where("slug", "==", slug).get();
+                        if (!snap.empty) {
+                            const driverData = snap.docs[0].data();
+                            if (driverData.active !== false) {
+                                renderDriverProfile(driverData);
+                                return;
+                            }
+                        }
+                        render404();
+                    } catch (err) {
+                        console.error("Error fetching driver:", err);
+                        render404();
+                    }
+                }
+            }, 100);
+        } else {
+            render404();
+        }
+
+        function getLicenseClass(licenseStr) {
+            if (!licenseStr || licenseStr === "N/A" || licenseStr === "---") return "license-r";
+            const firstChar = licenseStr.charAt(0).toLowerCase();
+            return "license-" + firstChar;
+        }
+
+        function renderDriverProfile(driver) {
+            const name = driver.name || "Unknown Driver";
+            const nickname = driver.nickname || "";
+            const memberSince = driver.memberSince || "N/A";
+            const g61Url = `https://garage61.net/app/drivers/${driver.slug}`;
+            
+            // Helper for stats fallback
+            const stats = driver.stats || {};
+            const irations = stats.iRatings || {};
+            const licenses = stats.licenseLevels || {};
+            const percentages = stats.iRatingPercentages || {};
+
+            const categories = ["SPORTS", "FORMULA", "OVAL", "DIRT"];
+            const statsHtml = categories.map(cat => {
+                const ir = irations[cat] || 0;
+                const lic = licenses[cat] || "R 2.50";
+                const pc = percentages[cat] || 0;
+                const licClass = getLicenseClass(lic);
+                const displayIr = ir > 0 ? ir : "---";
+                const displayCat = cat === "SPORTS" ? "Sports Car" : cat.charAt(0) + cat.slice(1).toLowerCase();
+
+                return `
+                    <div class="rating-group">
+                        <div class="rating-label">
+                            <span>${displayCat} <span class="license-badge ${licClass}">${lic}</span></span>
+                            <span>${displayIr}</span>
+                        </div>
+                        <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: ${pc}%;"></div></div>
+                    </div>
+                `;
+            }).join('');
+
+            const totalLaps = stats.totalLaps || "0";
+            const cleanPercentage = stats.cleanPercentage || "0";
+            const timeOnTrack = stats.timeOnTrack || "N/A";
+
+            const info = driver.info || {};
+            const age = info.age || "N/A";
+            const country = info.country || "N/A";
+            const favCar = info.favCar || "N/A";
+            const favTrack = info.favTrack || "N/A";
+            const advice = info.advice || "N/A";
+
+            document.title = `${name} | Driver Profile | GRiD UP Sim Racing`;
+
+            document.getElementById("dynamic-content").innerHTML = `
+                <header class="profile-header">
+                    <div class="container">
+                        <span class="profile-nickname">${nickname}</span>
+                        <h1 class="glow-text" style="font-size: 3.5rem;">${name}</h1>
+                        <p style="color: var(--text-muted); margin-top: 1rem;">Official GRiD UP Driver | Member since ${memberSince}</p>
+                        
+                        <div id="claim-section" style="margin-top: 2rem; display: none;">
+                            <button class="btn btn-outline claim-btn" onclick="openClaimModal()" style="font-size: 0.75rem; padding: 0.6rem 1.5rem;">Claim This Driver Profile</button>
+                        </div>
+                    </div>
+                </header>
+
+                <main class="container section" style="padding-top: 0;">
+                    <div class="stats-container">
+                        <div class="glass stat-card">
+                            <h3 class="section-title" style="margin-bottom: 2.5rem;">iRacing Ratings</h3>
+                            ${statsHtml}
+                        </div>
+
+                        <div class="glass stat-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <h3 class="section-title" style="margin-bottom: 2.5rem;">Driver Information</h3>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                                    <div>
+                                        <div style="font-size: 1.5rem; font-weight: 700; color: #fff;">${age}</div>
+                                        <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-top: 0.5rem;">Age</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 1.5rem; font-weight: 700; color: #fff;">${country}</div>
+                                        <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-top: 0.5rem;">Country</div>
+                                    </div>
+                                    <div style="grid-column: span 2;">
+                                        <div style="font-size: 1.2rem; font-weight: 500; color: #fff;">${favCar}</div>
+                                        <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-top: 0.5rem;">Favourite Car (In iRacing)</div>
+                                    </div>
+                                    <div style="grid-column: span 2;">
+                                        <div style="font-size: 1.2rem; font-weight: 500; color: #fff;">${favTrack}</div>
+                                        <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-top: 0.5rem;">Favourite Track</div>
+                                    </div>
+                                    <div style="grid-column: span 2;">
+                                        <div style="font-size: 1rem; line-height: 1.6; color: rgba(255,255,255,0.9); font-style: italic;">"${advice}"</div>
+                                        <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-top: 0.5rem;">Advice for New Sim Racers</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                                <a href="${g61Url}" target="_blank" class="btn btn-outline" style="width: 100%; text-align: center;">View on Garage 61</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 8rem;">
+                        <a href="/roster.html" class="btn btn-outline" style="padding: 1rem 3rem;">← Back to Roster</a>
+                    </div>
+                </main>
+            `;
+
+            // Initialize claim event
+            window.openClaimModal = function() {
+                const iracingId = prompt("Please enter your iRacing ID to verify ownership:");
+                if (iracingId) {
+                    claimProfile(name, iracingId);
+                }
+            };
+            
+            // Re-run the auth checker to show the claim button if the user is authenticated and hasn't claimed
+            if (window.checkClaimVisibility) {
+                window.checkClaimVisibility(name);
+            }
+        }
+
+        function render404() {
+            document.title = "404 - Page Not Found | GRiD UP Sim Racing";
+            document.getElementById("dynamic-content").innerHTML = `
+                <div class="fallback-container">
+                    <h1 class="glow-text" style="font-size: 8rem; line-height: 1.1; margin-bottom: 1rem;">404</h1>
+                    <h2 style="margin-bottom: 1.5rem; font-weight: 600;">PAGE NOT FOUND</h2>
+                    <p style="color: var(--text-muted); max-width: 500px; margin-bottom: 3rem; line-height: 1.6;">
+                        The page you are looking for does not exist or has been moved. Use the navigation links above or return to the home page.
+                    </p>
+                    <a href="/index.html" class="btn" style="padding: 1rem 3rem; background: var(--primary); color: #000; font-weight: 700;">Go To Home</a>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
