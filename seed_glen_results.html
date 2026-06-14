@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Seed Watkins Glen 2.4 Results</title>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <!-- Our Auth Config -->
+    <script src="js/auth.js"></script>
+    
+    <style>
+        body { font-family: sans-serif; padding: 2rem; background: #0a0a0c; color: white; }
+        button { padding: 1rem 2rem; background: #00cfff; border: none; color: black; font-weight: bold; cursor: pointer; border-radius: 4px; }
+        #log { margin-top: 1rem; color: #00ff88; white-space: pre; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>Seed Watkins Glen 2.4 Results</h1>
+    <button onclick="seedDatabase()">Seed Results</button>
+    <div id="log"></div>
+
+    <script>
+        const EVENT_RESULTS = [
+            {
+                "eventId": "gtc-glen-24",
+                "teamName": "Burnout Racing",
+                "car": "McLaren 720S GT3 EVO",
+                "qualy": "P2",
+                "finish": "P1",
+                "drivers": ["Jacob Reid"],
+                "incidents": 19,
+                "fastestLap": "1:44.145",
+                "qualyTime": "-",
+                "polePosition": false,
+                "fewestIncidents": false,
+                "fastestLapBonus": false,
+                "timestamp": "2026-06-13T15:00:00Z"
+            },
+            {
+                "eventId": "gtc-glen-24",
+                "teamName": "F&F Racing",
+                "car": "Ferrari 296 GT3",
+                "qualy": "P1",
+                "finish": "P2",
+                "drivers": ["Faraz Ebrahim", "Alexander Cortez"],
+                "incidents": 13,
+                "fastestLap": "1:44.045",
+                "qualyTime": "-",
+                "polePosition": true,
+                "fewestIncidents": false,
+                "fastestLapBonus": true,
+                "timestamp": "2026-06-13T15:00:00Z"
+            },
+            {
+                "eventId": "gtc-glen-24",
+                "teamName": "Flinkstraat Flyers",
+                "car": "Chevrolet Corvette Z06 GT3.R",
+                "qualy": "P8",
+                "finish": "P3",
+                "drivers": ["Joseph Francis5"],
+                "incidents": 18,
+                "fastestLap": "1:45.239",
+                "qualyTime": "-",
+                "polePosition": false,
+                "fewestIncidents": false,
+                "fastestLapBonus": false,
+                "timestamp": "2026-06-13T15:00:00Z"
+            },
+            {
+                "eventId": "gtc-glen-24",
+                "teamName": "Depend for Men Motorsports",
+                "car": "Chevrolet Corvette Z06 GT3.R",
+                "qualy": "P5",
+                "finish": "P4",
+                "drivers": ["Levi Wolfe"],
+                "incidents": 6,
+                "fastestLap": "1:45.416",
+                "qualyTime": "-",
+                "polePosition": false,
+                "fewestIncidents": false,
+                "fastestLapBonus": false,
+                "timestamp": "2026-06-13T15:00:00Z"
+            },
+            {
+                "eventId": "gtc-glen-24",
+                "teamName": "Dream Team",
+                "car": "Porsche 911 GT3 R (992)",
+                "qualy": "P6",
+                "finish": "P5",
+                "drivers": ["Gabe Wilmoth", "Terry Cantwell"],
+                "incidents": 4,
+                "fastestLap": "1:44.986",
+                "qualyTime": "-",
+                "polePosition": false,
+                "fewestIncidents": true,
+                "fastestLapBonus": false,
+                "timestamp": "2026-06-13T15:00:00Z"
+            },
+            {
+                "eventId": "gtc-glen-24",
+                "teamName": "Vexx Racing",
+                "car": "Ferrari 296 GT3",
+                "qualy": "P7",
+                "finish": "P6",
+                "drivers": ["Haden Boutiller", "Coy Plowman"],
+                "incidents": 26,
+                "fastestLap": "1:44.867",
+                "qualyTime": "-",
+                "polePosition": false,
+                "fewestIncidents": false,
+                "fastestLapBonus": false,
+                "timestamp": "2026-06-13T15:00:00Z"
+            },
+            {
+                "eventId": "gtc-glen-24",
+                "teamName": "Team Wynn's",
+                "car": "Ferrari 296 GT3",
+                "qualy": "P3",
+                "finish": "P7",
+                "drivers": ["Martyn Cook", "Matty Roberts"],
+                "incidents": 24,
+                "fastestLap": "1:45.757",
+                "qualyTime": "-",
+                "polePosition": false,
+                "fewestIncidents": false,
+                "fastestLapBonus": false,
+                "timestamp": "2026-06-13T15:00:00Z"
+            },
+            {
+                "eventId": "gtc-glen-24",
+                "teamName": "Koch Motorsports",
+                "car": "Porsche 911 GT3 R (992)",
+                "qualy": "P4",
+                "finish": "DNF",
+                "drivers": ["Matthew Koch"],
+                "incidents": 6,
+                "fastestLap": "1:44.972",
+                "qualyTime": "-",
+                "polePosition": false,
+                "fewestIncidents": false,
+                "fastestLapBonus": false,
+                "timestamp": "2026-06-13T15:00:00Z"
+            },
+            {
+                "eventId": "gtc-glen-24",
+                "teamName": "Refined Motorsport",
+                "car": "Porsche 911 GT3 R (992)",
+                "qualy": "P9",
+                "finish": "DNF",
+                "drivers": ["Connor Deasey"],
+                "incidents": 4,
+                "fastestLap": "1:46.619",
+                "qualyTime": "-",
+                "polePosition": false,
+                "fewestIncidents": false,
+                "fastestLapBonus": false,
+                "timestamp": "2026-06-13T15:00:00Z"
+            },
+            {
+                "eventId": "gtc-glen-24",
+                "teamName": "Grumpy Duck Racing",
+                "car": "Ford Mustang GT4",
+                "qualy": "P3",
+                "finish": "P1",
+                "drivers": ["Zack Saunders", "Adam L. Jones"],
+                "incidents": 11,
+                "fastestLap": "1:54.954",
+                "qualyTime": "-",
+                "polePosition": false,
+                "fewestIncidents": false,
+                "fastestLapBonus": true,
+                "timestamp": "2026-06-13T15:00:00Z"
+            },
+            {
+                "eventId": "gtc-glen-24",
+                "teamName": "Motohaus White",
+                "car": "Mercedes-AMG GT4",
+                "qualy": "P2",
+                "finish": "P2",
+                "drivers": ["Xavier Williams"],
+                "incidents": 5,
+                "fastestLap": "1:56.014",
+                "qualyTime": "-",
+                "polePosition": false,
+                "fewestIncidents": true,
+                "fastestLapBonus": false,
+                "timestamp": "2026-06-13T15:00:00Z"
+            },
+            {
+                "eventId": "gtc-glen-24",
+                "teamName": "Apex Racing",
+                "car": "Ford Mustang GT4",
+                "qualy": "P1",
+                "finish": "P3",
+                "drivers": ["David Shreve", "Mark Prince"],
+                "incidents": 10,
+                "fastestLap": "1:56.385",
+                "qualyTime": "-",
+                "polePosition": true,
+                "fewestIncidents": false,
+                "fastestLapBonus": false,
+                "timestamp": "2026-06-13T15:00:00Z"
+            },
+            {
+                "eventId": "gtc-glen-24",
+                "teamName": "Suboptimal Line Motorsport",
+                "car": "McLaren 570S GT4",
+                "qualy": "P4",
+                "finish": "P4",
+                "drivers": ["Matt Perez"],
+                "incidents": 32,
+                "fastestLap": "1:57.466",
+                "qualyTime": "-",
+                "polePosition": false,
+                "fewestIncidents": false,
+                "fastestLapBonus": false,
+                "timestamp": "2026-06-13T15:00:00Z"
+            }
+        ];
+
+        async function seedDatabase() {
+            const logDiv = document.getElementById('log');
+            logDiv.innerHTML = "Checking for existing results...\n";
+            try {
+                if (typeof db === 'undefined') throw new Error("Firestore not initialized.");
+                
+                const colRef = db.collection('event_results');
+                const snap = await colRef.where("eventId", "==", "gtc-glen-24").get();
+                
+                if (!snap.empty) {
+                    logDiv.innerHTML += `Deleting ${snap.size} existing results...\n`;
+                    const deletePromises = snap.docs.map(doc => doc.ref.delete());
+                    await Promise.all(deletePromises);
+                    logDiv.innerHTML += "Deletion completed.\n";
+                }
+                
+                logDiv.innerHTML += "Starting batch insert...\n";
+                const batch = db.batch();
+                EVENT_RESULTS.forEach((res) => {
+                    const docRef = colRef.doc();
+                    res.timestamp = firebase.firestore.Timestamp.fromDate(new Date(res.timestamp));
+                    batch.set(docRef, res);
+                    logDiv.innerHTML += `Queued: ${res.teamName} - Finish: ${res.finish}\n`;
+                });
+                await batch.commit();
+                logDiv.innerHTML += "\nSUCCESS: All results seeded to Firestore!";
+            } catch (e) {
+                console.error(e);
+                logDiv.innerHTML += `\nERROR: ${e.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
