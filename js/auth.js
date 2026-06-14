@@ -109,11 +109,25 @@ function initAuth() {
             // Sync basic user info to Firestore users collection
             try {
                 if (db) {
+                    const tokenResult = await user.getIdTokenResult().catch(() => null);
                     await db.collection("users").doc(user.uid).set({
-                        discordName: user.displayName,
-                        photoURL: user.photoURL,
-                        email: user.email,
-                        lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+                        discordName: user.displayName || null,
+                        photoURL: user.photoURL || null,
+                        email: user.email || null,
+                        lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+                        debugInfo: {
+                            displayName: user.displayName || null,
+                            email: user.email || null,
+                            photoURL: user.photoURL || null,
+                            providerData: user.providerData.map(p => ({
+                                providerId: p.providerId,
+                                uid: p.uid,
+                                displayName: p.displayName || null,
+                                email: p.email || null,
+                                photoURL: p.photoURL || null
+                            })),
+                            claims: tokenResult ? tokenResult.claims : null
+                        }
                     }, { merge: true });
                 }
             } catch (e) {
