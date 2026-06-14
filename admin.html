@@ -2704,12 +2704,66 @@
                 await db.collection("applications").doc(id).update({
                     status: newStatus
                 });
-                alert(`Application status updated to: ${newStatus.toUpperCase()}`);
+
+                // When approved, automatically create a driver roster entry and profile page
+                if (newStatus === 'approved') {
+                    try {
+                        const appDoc = await db.collection("applications").doc(id).get();
+                        const appData = appDoc.data();
+                        const driverName = appData.iracingName || 'Unknown Driver';
+                        const slug = nameToSlug(driverName);
+
+                        // Check if driver already exists in roster
+                        const existing = await db.collection("drivers").where("slug", "==", slug).get();
+                        if (existing.empty) {
+                            await db.collection("drivers").add({
+                                name: driverName,
+                                iracingId: '',
+                                role: 'Driver',
+                                category: 'Driver',
+                                slug: slug,
+                                active: true,
+                                lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
+                                addedFromApplication: id
+                            });
+
+                            // Create the profile HTML page from template
+                            await createDriverProfilePage(driverName, slug);
+
+                            console.log("Auto-created driver roster entry and profile for:", driverName);
+                        } else {
+                            console.log("Driver already exists in roster, skipping creation for:", driverName);
+                        }
+                    } catch (driverErr) {
+                        console.error("Error auto-creating driver profile:", driverErr);
+                        // Don't block the approval — the driver can be added manually
+                    }
+                }
+
+                alert(`Application status updated to: ${newStatus.toUpperCase()}` + 
+                    (newStatus === 'approved' ? '\n\nDriver has been automatically added to the roster under "GRiD UP Drivers"!' : ''));
                 loadApplications();
                 hideApplicationModal();
             } catch (error) {
                 console.error("Error updating application status:", error);
                 alert("Error updating status: " + error.message);
+            }
+        }
+
+        async function createDriverProfilePage(driverName, slug) {
+            // Trigger the GitHub Actions workflow to generate the profile HTML page.
+            // The existing update_drivers.py script reads from the 'drivers' Firestore collection
+            // and auto-generates all profile pages from the template.
+            try {
+                await db.collection("sync_requests").doc("update-profiles.yml").set({
+                    requestedBy: firebase.auth().currentUser ? firebase.auth().currentUser.uid : 'admin',
+                    requestedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    status: 'pending',
+                    workflowId: 'update-profiles.yml'
+                });
+                console.log("Sync request sent for profile generation:", slug + ".html");
+            } catch (err) {
+                console.error("Error requesting profile sync:", err);
             }
         }
 
