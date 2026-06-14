@@ -141,7 +141,12 @@ async function loadAndRenderStandings() {
             return;
         }
         const allResults = [];
-        snapshot.forEach(doc => allResults.push(doc.data()));
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            if (data.eventId === 'gtc-virginia-120') {
+                allResults.push(data);
+            }
+        });
         window.leagueStandings = calculateStandings(allResults);
         renderStandingsTable('teams');
 
