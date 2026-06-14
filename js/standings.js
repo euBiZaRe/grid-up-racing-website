@@ -127,8 +127,7 @@ function calculateStandings(resultsData) {
         return Object.values(dict).map(item => {
             let avg = '-';
             if (item.qualys.length > 0) {
-                avg = 'P' + (item.qualys.reduce((a,b) => a+b, 0) / item.qualys.length).toFixed(1);
-                if (avg.endsWith('.0')) avg = avg.slice(0, -2);
+                avg = 'P' + Math.round(item.qualys.reduce((a,b) => a+b, 0) / item.qualys.length);
             }
             item.avgStart = avg;
             return item;
