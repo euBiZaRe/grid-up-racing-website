@@ -211,8 +211,36 @@ function handleLogOutRedirect() {
 function loginWithDiscord() {
     console.log("Starting Discord Login...");
     const provider = new firebase.auth.OAuthProvider('oidc.discord');
-    auth.signInWithPopup(provider).then((result) => {
-        console.log("Login Success:", result.user.displayName);
+    auth.signInWithPopup(provider).then(async (result) => {
+        const profile = result.additionalUserInfo?.profile;
+        console.log("Login Success. Profile:", profile);
+        
+        let discordUsername = 'Discord User';
+        if (profile) {
+            discordUsername = profile.preferred_username || profile.username || profile.name || result.user.displayName || 'Discord User';
+        } else if (result.user.displayName) {
+            discordUsername = result.user.displayName;
+        }
+        
+        try {
+            if (result.user) {
+                await result.user.updateProfile({ displayName: discordUsername });
+                console.log("Updated auth profile displayName to:", discordUsername);
+            }
+            
+            if (db && result.user) {
+                await db.collection("users").doc(result.user.uid).set({
+                    discordName: discordUsername,
+                    photoURL: result.user.photoURL || (profile ? (profile.picture || profile.avatar) : null),
+                    email: result.user.email || (profile ? profile.email : null),
+                    lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                console.log("Synced user info to Firestore users collection");
+            }
+        } catch (err) {
+            console.error("Error updating user info after login:", err);
+        }
+        
         window.location.href = "index.html";
     }).catch((error) => {
         console.error("Login Error:", error.code, error.message);
