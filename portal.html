@@ -1,1065 +1,2088 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5JMPYRH8H9"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-5JMPYRH8H9');
-    </script>
-
-    <meta name="keywords" content="iRacing, sim racing, endurance racing, GT3, GT4, sim racing league, competitive sim racing">
-    <meta property="og:type" content="website">
-    <meta property="og:image" content="https://raw.githubusercontent.com/gridup/gridup.github.io/main/assets/bg-banner.png">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Team Portal | GRiD UP Sim Racing</title>
-    <link rel="stylesheet" href="style.css?v=7">
-    <link rel="icon" type="image/png" href="assets/G_2.png">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        .message { position: relative; margin-bottom: 0.5rem !important; }
-        .delete-msg {
-            background: none;
-            border: none;
-            color: #ff4d4d;
-            font-size: 1.2rem;
-            cursor: pointer;
-            line-height: 1;
-            padding: 0 8px;
-            transition: all 0.2s;
-            z-index: 5;
-            order: 4;
-            opacity: 0.8;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .delete-msg:hover { color: #ff0055; transform: scale(1.2); opacity: 1; }
-    </style>
-</head>
-<body class="member-portal-page">
-    <nav id="navbar" class="scrolled">
-        <div class="container nav-content">
-            <a href="index.html" class="logo">
-                <img src="assets/logo.png" alt="GRiD UP" style="height: 40px; vertical-align: middle;">
-            </a>
-            <div class="menu-toggle">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-                        <ul class="nav-links">
-                <li><a href="index.html#home">Home</a></li>
-                <li><a href="index.html#about">About</a></li>
-                <li><a href="roster.html">Roster</a></li>
-                <li><a href="events.html">Events</a></li>
-                <li><a href="reports.html">Race Reports</a></li>
-                <li><a href="league.html">League</a></li>
-                <li><a href="shop.html">Shop</a></li>
-                <li><a href="team-app.html">Apply</a></li>
-                <li><a href="https://discord.gg/gridup" target="_blank"><img src="assets/discord_header.png" alt="Discord" style="height: 25px; vertical-align: middle;"></a></li>
-                <li><a href="login.html" id="login-link" class="btn btn-outline" style="padding: 0.5rem 1.25rem; font-size: 0.8rem; margin-left: 1rem;">Login</a></li>
-            </ul>
-            </div>
-        </div>
-    </nav>
-
-    <main class="container" style="padding: 10rem 0 4rem;">
-        <div class="tread-overlay"></div>
-        <div id="loading-portal" style="text-align: center; padding: 5rem 0;">
-            <p class="glow-text" style="font-size: 2rem;">Accessing Team Portal...</p>
-        </div>
-
-        <!-- Selection View -->
-        <div id="selection-view" style="display: none;">
-            <h1 class="glow-text" style="margin-bottom: 2rem;">Select Your Event</h1>
-            <div id="event-selection-grid" class="grid">
-                <!-- Populated via JS -->
-            </div>
-        </div>
-
-        <!-- Portal View -->
-        <div id="portal-view" style="display: none;">
-            <div class="portal-welcome" style="margin-bottom: 3rem;">
-                <a href="portal.html" class="back-btn" style="margin-bottom: 1.5rem; display: inline-block;">? Switch Event</a>
-                <h1 id="event-title" class="glow-text" style="font-size: 3.5rem; margin-bottom: 0.5rem;">Event Name</h1>
-                <p id="team-title" style="color: var(--primary); font-size: 1.1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 4px; opacity: 0.9;">Team Name</p>
-            </div>
-
-            <div class="portal-layout">
-                <div class="portal-tabs vertical-tabs">
-                <div class="portal-tab active" onclick="switchTab('wall')"><i class="fas fa-comments"></i> Communications</div>
-                <div class="portal-tab" onclick="switchTab('setups')"><i class="fas fa-file-export"></i> Setups</div>
-                <div class="portal-tab" onclick="switchTab('telemetry')"><i class="fas fa-stopwatch"></i> Lap Times</div>
-            </div>
-
-            <div class="portal-grid">
-                <!-- Main Content -->
-                <div class="portal-main-content">
-                    
-                    <!-- Wall Tab -->
-                    <div id="tab-wall" class="tab-content glass chat-wall" style="border-radius: 12px; overflow: hidden;">
-                        <div id="chat-messages" class="chat-messages">
-                            <!-- Messages go here -->
-                        </div>
-                        <div class="chat-input-area">
-                            <input type="text" id="chat-input" class="chat-input" placeholder="Type a message for the team...">
-                            <button onclick="sendMessage()" class="btn btn-primary" style="padding: 0.8rem 2rem;">Send</button>
-                        </div>
-                    </div>
-
-                    <!-- Setups Tab -->
-                    <div id="tab-setups" class="tab-content glass" style="display: none; padding: 2.5rem; border-radius: 12px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem;">
-                            <h2 style="font-size: 1.4rem; color: var(--primary);">Setup Repository</h2>
-                            <label class="btn btn-outline" style="font-size: 0.75rem; cursor: pointer; border-radius: 50px;">
-                                <i class="fas fa-upload" style="margin-right: 8px;"></i> Upload Setup (.sto or .zip)
-                                <input type="file" id="setup-upload" style="display: none;" accept=".sto,.zip" onchange="uploadSetup(this)">
-                            </label>
-                        </div>
-                        <div id="setup-list" class="setup-list">
-                            <!-- Setups go here -->
-                        </div>
-                    </div>
-
-                    <div id="tab-telemetry" class="tab-content glass" style="display: none; padding: 2.5rem; border-radius: 12px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem; flex-wrap: wrap; gap: 1.5rem;">
-                            <h2 style="font-size: 1.4rem; color: var(--primary);">Event Lap Times</h2>
-                            
-                            <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
-                                <!-- iRating Filter -->
-                                <div style="display: flex; align-items: center; gap: 1rem; background: rgba(255,255,255,0.03); padding: 0.6rem 1.25rem; border-radius: 12px; border: 1px solid var(--glass-border);">
-                                    <label style="font-size: 0.65rem; color: var(--primary); text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">Your iRating</label>
-                                    <input type="range" id="irating-slider" min="0" max="10000" step="100" value="2000" style="width: 100px; accent-color: var(--primary);">
-                                    <input type="number" id="irating-input" value="2000" min="0" max="10000" step="100" class="btn btn-outline" style="width: 70px; font-size: 0.8rem; padding: 0.3rem 0.5rem; text-align: center; border-radius: 6px;" onchange="updateIRating(this.value)">
-                                    
-                                    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.7rem; color: var(--text-muted); cursor: pointer; margin-left: 0.5rem; border-left: 1px solid rgba(255,255,255,0.1); padding-left: 1rem;">
-                                        <input type="checkbox" id="show-all-ir" onchange="toggleShowAll(this.checked)" style="accent-color: var(--primary); width: 16px; height: 16px;">
-                                        Show All
-                                    </label>
-                                </div>
-
-                                <select id="class-filter" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.6rem 1.5rem; border-radius: 12px;" onchange="loadTelemetry()">
-                                    <option value="ALL">All Classes</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div id="telemetry-leaderboard" class="results-table-wrapper">
-                            <!-- Table goes here -->
-                        </div>
-                    </div>
-
-                </div>
-
-                <!-- Sidebar -->
-                <div class="portal-sidebar">
-                    <div class="glass" style="padding: 1.5rem;">
-                        <h3 style="font-size: 0.9rem; margin-bottom: 1rem; color: var(--primary);">Confirmed Lineup</h3>
-                        <div id="lineup-list" style="font-size: 0.9rem;">
-                            <!-- Sidebar lineup -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-                    </div>
-
-        <!-- Access Denied View -->
-        <div id="denied-view" style="display: none; text-align: center; padding: 5rem 0;">
-            <div class="glass-premium" style="max-width: 600px; margin: 0 auto; padding: 4rem 2rem;">
-                <h1 class="glow-text" style="color: #ff3c3c; filter: drop-shadow(0 0 15px rgba(255, 60, 60, 0.4));">Access Denied</h1>
-                <p id="denied-reason" style="margin: 2rem 0; color: var(--text-muted); font-size: 1.1rem;"></p>
-                <a href="index.html" class="btn btn-outline">Return Home</a>
-            </div>
-        </div>
-
-        <!-- Application Portal / Communications View -->
-        <div id="application-portal-view" style="display: none; max-width: 900px; margin: 0 auto; padding: 2rem 0;">
-            <div class="glass-premium" style="padding: 3rem; border-radius: 20px;">
-                <h1 class="glow-text" style="margin-bottom: 0.5rem; font-size: 2.5rem;">Application Status</h1>
-                <p style="color: var(--text-muted); margin-bottom: 2rem;">Track your application status and communicate with the admin team below.</p>
-                
-                <!-- Status Card -->
-                <div class="glass" style="padding: 2rem; margin-bottom: 2rem; border-left: 4px solid var(--primary); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem;">
-                    <div>
-                        <h3 style="margin-bottom: 0.5rem; font-size: 1.2rem;">Status</h3>
-                        <p id="portal-app-status-message" style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; max-width: 500px;"></p>
-                    </div>
-                    <div id="portal-app-status-badge" style="font-weight: 800; font-size: 1rem; text-transform: uppercase; padding: 0.6rem 1.5rem; border: 1.5px solid; border-radius: 50px; text-align: center; min-width: 120px; letter-spacing: 1px;">
-                        Pending
-                    </div>
-                </div>
-
-                <!-- Chat History Section -->
-                <h2 style="font-size: 1.4rem; color: var(--primary); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
-                    <i class="fas fa-comments"></i> Admin Communications
-                </h2>
-                
-                <div class="glass chat-wall" style="border-radius: 12px; overflow: hidden; height: 400px; display: flex; flex-direction: column; padding: 0;">
-                    <div id="portal-app-chat-messages" style="flex: 1; padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; background: rgba(0, 0, 0, 0.2);">
-                        <!-- Messages populated by JS -->
-                    </div>
-                    <div class="chat-input-area" style="display: flex; gap: 10px; padding: 1.5rem; background: rgba(15, 18, 24, 0.8); border-top: 1px solid var(--glass-border); margin-top: 0;">
-                        <input type="text" id="portal-app-chat-input" class="chat-input" placeholder="Type a message to the admin team..." style="flex: 1; margin: 0;" onkeydown="if(event.key === 'Enter') sendApplicantReply()">
-                        <button onclick="sendApplicantReply()" class="btn btn-primary" style="padding: 0 2rem; border-radius: 8px;">Send</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
-    <script src="js/auth.js?v=4"></script>
-    <script>
-        let currentEvent = null;
-        let currentTeam = null;
-        let userProfile = null;
-        let unsubMessages = null;
-        let isAdminUser = false;
-
-        let UPCOMING_EVENTS = [];
-
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(t => {
-                t.style.display = 'none';
-                t.classList.remove('animate-fade-in');
-            });
-            document.querySelectorAll('.portal-tab').forEach(t => t.classList.remove('active'));
-            
-            const content = document.getElementById(`tab-${tabId}`);
-            if (content) {
-                content.style.display = tabId === 'wall' ? 'flex' : 'block';
-                content.classList.add('animate-fade-in');
-            }
-            
-            const tabBtn = document.querySelector(`.portal-tab[onclick*="${tabId}"]`);
-            if (tabBtn) tabBtn.classList.add('active');
-
-            if (tabId === 'setups') loadSetups();
-            if (tabId === 'telemetry') loadTelemetry();
-        }
-
-        async function loadTeamPortal(team) {
-            currentEvent = team.eventSlug;
-            currentTeam = team.teamName;
-            
-            document.getElementById('selection-view').style.display = 'none';
-            document.getElementById('portal-view').style.display = 'block';
-            
-            document.getElementById('event-title').textContent = team.eventName;
-            document.getElementById('team-title').textContent = team.teamName;
-            
-            loadLineup(team.teamData);
-            loadMessages();
-            switchTab('wall');
-        }
-
-        function loadLineup(data) {
-            const list = document.getElementById('lineup-list');
-            if (!list || !data) return;
-            
-            let html = `
-                <div style="margin-bottom: 1rem;">
-                    <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Car</div>
-                    <div style="font-weight: 700;">${data.car_class || 'Not Set'}</div>
-                </div>
-                <div style="margin-bottom: 1rem;">
-                    <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Captain</div>
-                    <div style="font-weight: 700; color: var(--primary);">${data.captain || 'None'}</div>
-                </div>
-                <div>
-                    <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">Drivers</div>
-                    ${data.drivers ? data.drivers.map(d => `<div style="padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">${d}</div>`).join('') : '<div style="color: var(--text-muted);">No drivers assigned</div>'}
-                </div>
-            `;
-            list.innerHTML = html;
-        }
-
-        async function loadMessages() {
-            if (unsubMessages) unsubMessages();
-            
-            const container = document.getElementById('chat-messages');
-            unsubMessages = db.collection("race_lineups").doc(currentEvent)
-                .collection("teams").doc(currentTeam)
-                .collection("messages")
-                .orderBy("timestamp", "asc")
-                .onSnapshot(snap => {
-                    container.innerHTML = '';
-                    snap.forEach(doc => {
-                        const m = doc.data();
-                        const time = m.timestamp ? m.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...';
-                        const canDelete = m.uid === auth.currentUser.uid || isAdminUser;
-                        container.innerHTML += `
-                            <div class="message ${m.uid === auth.currentUser.uid ? 'sent' : 'received'}" style="display: flex; align-items: center; gap: 0.8rem; padding: 0.6rem 1rem; background: rgba(255,255,255,0.02); border-left: 2px solid ${m.uid === auth.currentUser.uid ? 'var(--primary)' : 'rgba(255,255,255,0.05)'}; border-radius: 4px;">
-                                <span style="font-weight: 700; color: var(--primary); font-size: 0.85rem; white-space: nowrap;">${m.author}:</span>
-                                <span style="flex: 1; font-size: 0.9rem; color: var(--text-main);">${m.text}</span>
-                                <span style="font-size: 0.7rem; color: var(--text-muted); opacity: 0.5; white-space: nowrap;">${time}</span>
-                                ${canDelete ? `<button class="delete-msg" onclick="deleteMessage('${doc.id}')" title="Delete Message">???</button>` : ''}
-                            </div>
-                        `;
-                    });
-                    container.scrollTop = container.scrollHeight;
-                });
-        }
-
-        async function deleteMessage(id) {
-            if (!confirm("Are you sure you want to delete this message?")) return;
-            try {
-                await db.collection("race_lineups").doc(currentEvent)
-                    .collection("teams").doc(currentTeam)
-                    .collection("messages").doc(id).delete();
-            } catch (error) {
-                console.error("Error deleting message:", error);
-                alert("Could not delete message.");
-            }
-        }
-
-        async function sendMessage() {
-            const input = document.getElementById('chat-input');
-            const text = input.value.trim();
-            if (!text || !currentEvent || !currentTeam) return;
-            
-            input.value = '';
-            try {
-                await db.collection("race_lineups").doc(currentEvent)
-                    .collection("teams").doc(currentTeam)
-                    .collection("messages").add({
-                        author: userProfile.driverName || auth.currentUser.displayName,
-                        uid: auth.currentUser.uid,
-                        text: text,
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-            } catch (error) {
-                console.error("Error sending message:", error);
-                alert("Could not send message.");
-            }
-        }
-
-        let unsubAppPortal = null;
-        function loadApplicantChat(appId) {
-            if (unsubAppPortal) unsubAppPortal();
-            
-            const container = document.getElementById('portal-app-chat-messages');
-            unsubAppPortal = db.collection("applications").doc(appId)
-                .onSnapshot(doc => {
-                    if (!doc.exists) return;
-                    const data = doc.data();
-                    
-                    const badge = document.getElementById('portal-app-status-badge');
-                    const statusMsg = document.getElementById('portal-app-status-message');
-                    const status = data.status || 'pending';
-                    
-                    badge.innerText = status;
-                    if (status === 'pending') {
-                        badge.style.borderColor = 'orange';
-                        badge.style.color = 'orange';
-                        badge.style.background = 'rgba(255, 165, 0, 0.1)';
-                        statusMsg.innerText = "Your application has been received and is waiting for an admin to review it. Thank you for your patience!";
-                    } else if (status === 'processing') {
-                        badge.style.borderColor = '#00CFFF';
-                        badge.style.color = '#00CFFF';
-                        badge.style.background = 'rgba(0, 207, 255, 0.1)';
-                        statusMsg.innerText = "An admin is currently reviewing your application. You can chat with them below.";
-                    } else if (status === 'approved') {
-                        badge.style.borderColor = '#00ff88';
-                        badge.style.color = '#00ff88';
-                        badge.style.background = 'rgba(0, 255, 136, 0.1)';
-                        statusMsg.innerText = "Congratulations! Your application has been approved. Welcome to the GRiD UP Endurance team!";
-                    } else if (status === 'denied') {
-                        badge.style.borderColor = '#ff3333';
-                        badge.style.color = '#ff3333';
-                        badge.style.background = 'rgba(255, 51, 51, 0.1)';
-                        statusMsg.innerText = "Unfortunately, your application has been denied at this time. Thank you for your interest in GRiD UP.";
-                    }
-                    
-                    container.innerHTML = '';
-                    const messages = data.messages || [];
-                    if (messages.length === 0) {
-                        container.innerHTML = `<p style="text-align: center; color: var(--text-muted); margin-top: 2rem;">No messages yet. Send a message to start the conversation with admins!</p>`;
-                    } else {
-                        messages.forEach(m => {
-                            const dateObj = m.timestamp ? (m.timestamp.toDate ? m.timestamp.toDate() : new Date(m.timestamp)) : new Date();
-                            const time = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' ' + dateObj.toLocaleDateString();
-                            const isMe = m.uid === auth.currentUser.uid;
-                            container.innerHTML += `
-                                <div class="message ${isMe ? 'sent' : 'received'}" style="display: flex; flex-direction: column; padding: 0.6rem 1rem; background: ${isMe ? 'rgba(0, 207, 255, 0.05)' : 'rgba(255,255,255,0.02)'}; border-left: 2px solid ${isMe ? 'var(--primary)' : 'rgba(255,255,255,0.05)'}; border-radius: 4px; max-width: 80%; align-self: ${isMe ? 'flex-end' : 'flex-start'};">
-                                    <span style="font-weight: 700; color: ${isMe ? 'var(--primary)' : 'var(--text-muted)'}; font-size: 0.8rem; margin-bottom: 0.2rem;">${m.author}</span>
-                                    <span style="font-size: 0.9rem; color: var(--text-main); word-break: break-word;">${m.text}</span>
-                                    <span style="font-size: 0.65rem; color: var(--text-muted); opacity: 0.5; margin-top: 0.4rem; align-self: flex-end;">${time}</span>
-                                </div>
-                            `;
-                        });
-                    }
-                    container.scrollTop = container.scrollHeight;
-                });
-        }
-
-        async function sendApplicantReply() {
-            const input = document.getElementById('portal-app-chat-input');
-            const text = input.value.trim();
-            if (!text || !auth.currentUser) return;
-            
-            try {
-                const snap = await db.collection('applications').where('discordUid', '==', auth.currentUser.uid).get();
-                if (snap.empty) return alert("Application not found.");
-                const appId = snap.docs[0].id;
-                
-                await db.collection('applications').doc(appId).update({
-                    messages: firebase.firestore.FieldValue.arrayUnion({
-                        author: auth.currentUser.displayName || 'Applicant',
-                        uid: auth.currentUser.uid,
-                        text: text,
-                        timestamp: new Date()
-                    })
-                });
-                input.value = '';
-            } catch (err) {
-                console.error("Error sending applicant reply:", err);
-                alert("Could not send message: " + err.message);
-            }
-        }
-
-        async function loadSetups() {
-            const list = document.getElementById('setup-list');
-            list.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Loading setups...</p>';
-            
-            try {
-                const snap = await db.collection("race_lineups").doc(currentEvent)
-                    .collection("teams").doc(currentTeam)
-                    .collection("setups").get();
-                
-                list.innerHTML = '';
-                if (snap.empty) {
-                    list.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">No setups uploaded yet.</p>';
-                    return;
-                }
-                
-                snap.forEach(doc => {
-                    const s = doc.data();
-                    list.innerHTML += `
-                        <div class="setup-item" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                            <div>
-                                <div style="font-weight: 700;">${s.name}</div>
-                                <div style="font-size: 0.7rem; color: var(--text-muted);">Uploaded by ${s.author}</div>
-                            </div>
-                            <button onclick="downloadSetup('${s.url}', '${s.name}')" class="btn btn-primary" style="padding: 0.3rem 1rem; font-size: 0.7rem;">Download</button>
-                        </div>
-                    `;
-                });
-            } catch (error) {
-                console.error("Error loading setups:", error);
-            }
-        }
-
-        function downloadSetup(url, name) {
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = name;
-            link.target = "_blank";
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        async function uploadSetup(input) {
-            const file = input.files[0];
-            if (!file || !currentEvent || !currentTeam) return;
-            
-            if (!file.name.endsWith('.sto') && !file.name.endsWith('.zip')) {
-                alert("Please upload an iRacing .sto setup or a .zip archive.");
-                return;
-            }
-
-            const storageRef = firebase.storage().ref(`setups/${currentEvent}/${currentTeam}/${file.name}`);
-            try {
-                const snapshot = await storageRef.put(file);
-                const url = await snapshot.ref.getDownloadURL();
-                
-                await db.collection("race_lineups").doc(currentEvent)
-                    .collection("teams").doc(currentTeam)
-                    .collection("setups").add({
-                        name: file.name,
-                        url: url,
-                        author: userProfile.driverName || auth.currentUser.displayName,
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                
-                alert("Setup uploaded successfully!");
-                loadSetups();
-            } catch (error) {
-                console.error("Upload error:", error);
-                alert("Upload failed: " + error.message);
-            }
-        }
-
-        let currentIRating = 2000;
-        let showAllIRBench = false;
-
-        function updateIRating(val) {
-            currentIRating = parseInt(val);
-            document.getElementById('irating-slider').value = currentIRating;
-            document.getElementById('irating-input').value = currentIRating;
-            loadTelemetry();
-        }
-
-        function toggleShowAll(checked) {
-            showAllIRBench = checked;
-            loadTelemetry();
-        }
-
-        async function loadTelemetry() {
-            const container = document.getElementById('telemetry-leaderboard');
-            const classFilter = document.getElementById('class-filter');
-            const event = UPCOMING_EVENTS.find(e => e.id === currentEvent);
-            
-            if (!event) return;
-
-            if (classFilter.options.length === 1 && event.classes) {
-                event.classes.forEach(c => {
-                    const opt = document.createElement('option');
-                    opt.value = c;
-                    opt.textContent = c;
-                    classFilter.appendChild(opt);
-                });
-            }
-
-            container.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Loading lap data...</p>';
-            
-            try {
-                let query = db.collection("race_laps").doc(currentEvent).collection("laps").orderBy("lapTime", "asc");
-                const selectedClass = classFilter.value;
-                if (selectedClass !== 'ALL') {
-                    query = query.where("carClass", "==", selectedClass);
-                }
-
-                const snap = await query.get();
-                if (snap.empty) {
-                    container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">No data recorded yet for this event.</p>';
-                    return;
-                }
-
-                // DATA PROCESSING & FILTERING
-                const allLaps = [];
-                snap.forEach(doc => allLaps.push({id: doc.id, ...doc.data()}));
-
-                const g61Laps = allLaps.filter(l => l.source !== 'iRacingData');
-                const irdLaps = allLaps.filter(l => l.source === 'iRacingData');
-                const filteredIRDLaps = [];
-                const cars = [...new Set(irdLaps.map(l => l.car))];
-                
-                if (showAllIRBench) {
-                    filteredIRDLaps.push(...irdLaps);
-                } else {
-                    cars.forEach(car => {
-                        const carOptions = irdLaps.filter(l => l.car === car);
-                        let closest = null;
-                        let minDiff = Infinity;
-                        
-                        carOptions.forEach(l => {
-                            const match = l.driverName.match(/\d+/);
-                            if (match) {
-                                const bucketIR = parseInt(match[0]);
-                                const diff = Math.abs(bucketIR - currentIRating);
-                                if (diff < minDiff) {
-                                    minDiff = diff;
-                                    closest = l;
-                                }
-                            }
-                        });
-                        if (closest) filteredIRDLaps.push(closest);
-                    });
-                }
-
-                const finalLaps = [...g61Laps, ...filteredIRDLaps].sort((a,b) => a.lapTime.localeCompare(b.lapTime));
-
-                let html = `
-                    <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left;">
-                        <thead>
-                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--primary);">
-                                <th style="padding: 1rem 0.5rem;">#</th>
-                                <th style="padding: 1rem 0.5rem;">Driver / Benchmark</th>
-                                <th style="padding: 1rem 0.5rem;">Car</th>
-                                <th style="padding: 1rem 0.5rem;">Lap Time</th>
-                                <th style="padding: 1rem 0.5rem;">Season</th>
-                                <th style="padding: 1rem 0.5rem; text-align: right;">Updated</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                `;
-
-                let rank = 1;
-                finalLaps.forEach(d => {
-                    const ago = d.timestamp ? formatTimeAgo(d.timestamp.toDate()) : '...';
-                    const isBenchmark = d.source === 'iRacingData';
-                    html += `
-                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.03); ${isBenchmark ? 'background: rgba(0,207,255,0.03);' : ''}">
-                            <td style="padding: 1rem 0.5rem; color: var(--text-muted);">${rank++}</td>
-                            <td style="padding: 1rem 0.5rem; font-weight: 700; color: ${isBenchmark ? 'var(--primary)' : 'white'};">
-                                ${d.driverName}
-                                ${isBenchmark ? '<span style="font-size:0.6rem; margin-left:5px; opacity:0.6;">(iR Benchmark)</span>' : ''}
-                            </td>
-                            <td style="padding: 1rem 0.5rem; font-size: 0.75rem;">${d.car} <span style="color:var(--primary); font-size:0.6rem;">[${d.carClass}]</span></td>
-                            <td style="padding: 1rem 0.5rem; font-family: monospace; color: var(--primary); font-weight: 700;">${d.lapTime}</td>
-                            <td style="padding: 1rem 0.5rem; font-size: 0.75rem; color: var(--text-muted);">${d.season || 'N/A'}</td>
-                            <td style="padding: 1rem 0.5rem; text-align: right; font-size: 0.75rem; color: var(--text-muted);">${ago}</td>
-                        </tr>
-                    `;
-                });
-
-                html += `</tbody></table>`;
-                if (finalLaps.length === 0) {
-                    html = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">No matching data for your iRating and Class.</p>';
-                }
-                container.innerHTML = html;
-            } catch (error) {
-                console.error("Telemetry error:", error);
-                let errorMsg = "Error loading lap data.";
-                if (error.message.includes("index")) {
-                    errorMsg = `Firestore missing index. <a href="${error.message.split(' ').find(word => word.startsWith('https://'))}" target="_blank" style="color: var(--primary); text-decoration: underline;">Click here to create the required index</a>.`;
-                } else {
-                    errorMsg += " " + error.message;
-                }
-                container.innerHTML = `<p style="color: #ff0055; font-size: 0.8rem; padding: 1rem;">${errorMsg}</p>`;
-            }
-        }
-
-        function formatTimeAgo(date) {
-            const seconds = Math.floor((new Date() - date) / 1000);
-            let interval = seconds / 31536000;
-            if (interval > 1) return Math.floor(interval) + "y ago";
-            interval = seconds / 2592000;
-            if (interval > 1) return Math.floor(interval) + "mo ago";
-            interval = seconds / 86400;
-            if (interval > 1) return Math.floor(interval) + "d ago";
-            interval = seconds / 3600;
-            if (interval > 1) return Math.floor(interval) + "h ago";
-            interval = seconds / 60;
-            if (interval > 1) return Math.floor(interval) + "m ago";
-            return Math.floor(seconds) + "s ago";
-        }
-
-        async function initPortal(user) {
-            const loading = document.getElementById('loading-portal');
-            const portal = document.getElementById('portal-view');
-            const denied = document.getElementById('denied-view');
-            const deniedReason = document.getElementById('denied-reason');
-
-            try {
-                // 0. Load Global Events
-                const eventsSnap = await db.collection("events").orderBy("startDate", "asc").get();
-                UPCOMING_EVENTS = [];
-                const now = new Date();
-                eventsSnap.forEach(doc => {
-                    const data = doc.data();
-                    const eventEndDate = data.endDate ? new Date(data.endDate) : new Date(data.startDate);
-                    // Filter: Only include events where endDate is in the future
-                    if (eventEndDate >= now) {
-                        UPCOMING_EVENTS.push({ id: doc.id, ...data });
-                    }
-                });
-
-                if (UPCOMING_EVENTS.length === 0) {
-                    loading.innerHTML = `<p style="color: var(--text-muted);">No upcoming events found. Please wait for an admin to post the schedule.</p>`;
-                    return;
-                }
-
-                // 1. Check Admin Status
-                const MASTER_ADMIN = 'B0t4f4nqqpZIQKpT8Ed97xka5gM2';
-                isAdminUser = (user.uid === MASTER_ADMIN);
-                
-                if (!isAdminUser) {
-                    const adminDoc = await db.collection("settings").doc("admins").get();
-                    if (adminDoc.exists) {
-                        const adminList = adminDoc.data().uids || [];
-                        isAdminUser = adminList.includes(user.uid);
-                    }
-                }
-
-                // 2. Check Verification (Skip for Admins)
-                if (!isAdminUser) {
-                    const claimDoc = await db.collection("claims").where("discordId", "==", user.uid).get();
-                    if (claimDoc.empty || claimDoc.docs[0].data().status !== 'verified') {
-                        // Check if they have an application
-                        let appSnap = await db.collection('applications').where('discordUid', '==', user.uid).get();
-                        if (appSnap.empty && user.displayName) {
-                            appSnap = await db.collection('applications').where('discordUsername', '==', user.displayName).get();
-                            if (!appSnap.empty) {
-                                const docId = appSnap.docs[0].id;
-                                await db.collection('applications').doc(docId).update({ discordUid: user.uid });
-                                appSnap = await db.collection('applications').where('discordUid', '==', user.uid).get();
-                            }
-                        }
-
-                        if (!appSnap.empty) {
-                            loading.style.display = 'none';
-                            document.getElementById('application-portal-view').style.display = 'block';
-                            loadApplicantChat(appSnap.docs[0].id);
-                            return;
-                        }
-
-                        loading.style.display = 'none';
-                        denied.style.display = 'block';
-                        deniedReason.textContent = "You must be a verified team member to access the portal. Please claim your profile on the Roster page.";
-                        return;
-                    }
-                }
-
-                // 3. Load User Profile
-                const userDoc = await db.collection("users").doc(user.uid).get();
-                userProfile = userDoc.exists ? userDoc.data() : { driverName: user.displayName };
-                const myName = userProfile.driverName || user.displayName;
-
-                // 4. Find Teams
-                const lineups = await db.collection("race_lineups").get();
-                const myTeams = [];
-                const allTeamAssignments = [];
-
-                // Valid active event IDs
-                const activeEventIds = new Set(UPCOMING_EVENTS.map(e => e.id));
-
-                lineups.forEach(doc => {
-                    const slug = doc.id;
-                    if (!activeEventIds.has(slug)) return; // Skip orphaned lineups
-
-                    const data = doc.data();
-                    if (data.teams) {
-                        data.teams.forEach(team => {
-                            const teamObj = {
-                                eventSlug: slug,
-                                eventName: data.eventName || slug.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' '),
-                                teamName: team.name,
-                                teamData: team
-                            };
-                            allTeamAssignments.push(teamObj);
-                            
-                            const isCaptain = team.captain === myName;
-                            const isDriver = team.drivers && team.drivers.includes(myName);
-                            if (isCaptain || isDriver) {
-                                myTeams.push(teamObj);
-                            }
-                        });
-                    }
-                });
-
-                loading.style.display = 'none';
-
-                if (isAdminUser) {
-                    showSelection(allTeamAssignments, true);
-                } else if (myTeams.length === 0) {
-                    showSelection([], false); // Still show sign-ups
-                } else if (myTeams.length === 1 && !window.location.hash) {
-                    loadTeamPortal(myTeams[0]);
-                } else {
-                    showSelection(myTeams, false);
-                }
-
-            } catch (error) {
-                console.error("Portal Init Error:", error);
-                loading.innerHTML = `<p style="color: #ff0055;">Error: ${error.message}</p>`;
-            }
-        }
-
-        async function showSelection(teams, isAdmin) {
-            const container = document.getElementById('selection-view');
-            const grid = document.getElementById('event-selection-grid');
-            
-            let html = `
-                <div style="margin-bottom: 4rem;">
-                    <h2 class="section-title">${isAdminUser ? 'Admin: All Event Lineups' : 'Your Assigned Events'}</h2>
-                    <div class="grid">`;
-            
-            if (teams.length === 0) {
-                html += `<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center; padding: 2rem;">No active team assignments found.</p>`;
-            } else {
-                window._assignedTeams = teams;
-                teams.forEach((t, idx) => {
-                    html += `
-                        <div class="card glass animate-fade-in" onclick="loadTeamPortal(window._assignedTeams[${idx}])" style="cursor: pointer; padding: 2.5rem; transition: var(--transition);">
-                            <div class="event-meta" style="color: var(--primary); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 2px;">${t.teamName}</div>
-                            <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">${t.eventName}</h3>
-                            <div style="display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 0.8rem;">
-                                <span>Portal Access</span>
-                                <span style="color: var(--primary);">?</span>
-                            </div>
-                        </div>
-                    `;
-                });
-            }
-
-            html += `</div></div>`;
-
-            // Availability Section
-            html += `
-                <div style="margin-bottom: 4rem;">
-                    <h2 class="section-title">Upcoming Event Sign-ups</h2>
-                    <div id="availability-grid" class="grid">
-                        <!-- Populated via JS -->
-                    </div>
-                </div>
-            `;
-
-            // Admin Results Section
-            if (isAdminUser) {
-                html += `
-                    <div style="margin-bottom: 4rem;">
-                        <h2 class="section-title">Admin Dashboard: Driver Accessibility</h2>
-                        <div id="admin-availability-results" class="glass" style="padding: 2rem; overflow-x: auto;">
-                            <p>Loading summary...</p>
-                        </div>
-                    </div>
-                `;
-            }
-
-            container.innerHTML = `<h1 class="glow-text" style="margin-bottom: 3rem;">Team Portal Dashboard</h1>` + html;
-            container.style.display = 'block';
-
-            // Populate Availability Buttons
-            populateAvailability();
-
-            if (isAdminUser) {
-                loadAdminAvailability();
-            }
-        }
-
-        async function populateAvailability() {
-            const availGrid = document.getElementById('availability-grid');
-            if (!availGrid) return;
-            
-            // Initial load or rebuild? Check if cards exist
-            const hasCards = availGrid.querySelectorAll('.event-card').length === UPCOMING_EVENTS.length;
-            
-            for (const event of UPCOMING_EVENTS) {
-                let card = availGrid.querySelector(`[data-event-id="${event.id}"]`);
-                
-                // Fetch current status
-                let currentStatus = null;
-                let preferredSlot = null;
-                try {
-                    const statusDoc = await db.collection("event_availability").doc(event.id).collection("responses").doc(auth.currentUser.uid).get();
-                    if (statusDoc.exists) {
-                        currentStatus = statusDoc.data().status;
-                        preferredSlot = statusDoc.data().preferredSlot;
-                    }
-                } catch (e) { console.warn("Could not fetch status for", event.id); }
-
-                if (!card) {
-                    card = document.createElement('div');
-                    card.className = "card glass event-card";
-                    card.setAttribute('data-event-id', event.id);
-                    card.style.padding = "1.5rem";
-                    availGrid.appendChild(card);
-                }
-
-                // Update content only if needed (or always if we want precise states)
-                let slotsHtml = '';
-                if (event.slots && currentStatus === 'signed_up') {
-                    slotsHtml = `
-                        <div style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
-                            <label style="font-size: 0.6rem; color: var(--primary); display:block; margin-bottom: 0.5rem; text-transform: uppercase;">Timeslot Preference</label>
-                            <select onchange="updatePreference('${event.id}', this.value)" class="btn btn-outline" style="width: 100%; font-size: 0.7rem; padding: 0.4rem;">
-                                <option value="">-- Select Preference --</option>
-                                ${event.slots.map(s => `<option value="${s}" ${preferredSlot === s ? 'selected' : ''}>${s}</option>`).join('')}
-                            </select>
-                        </div>
-                    `;
-                }
-
-                card.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
-                        <div class="event-meta">${event.date}</div>
-                        <div id="countdown-${event.id}" style="font-size: 0.6rem; font-weight: 700; color: var(--primary); font-family: monospace; background: rgba(0,207,255,0.1); padding: 2px 6px; border-radius: 4px;">--:--:--:--</div>
-                    </div>
-                    <h3 style="font-size: 1rem;">${event.name}</h3>
-                    <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1.5rem;">
-                        <button onclick="setAvailability('${event.id}', 'signed_up')" class="btn ${currentStatus === 'signed_up' ? 'btn-primary' : 'btn-outline'}" style="padding: 0.5rem; font-size: 0.7rem;">Sign Up</button>
-                        <button onclick="setAvailability('${event.id}', 'not_interested')" class="btn ${currentStatus === 'not_interested' ? 'btn-primary' : 'btn-outline'}" style="padding: 0.5rem; font-size: 0.7rem; background: ${currentStatus === 'not_interested' ? '#444' : ''};">Not Interested</button>
-                        <button onclick="setAvailability('${event.id}', 'unavailable')" class="btn ${currentStatus === 'unavailable' ? 'btn-primary' : 'btn-outline'}" style="padding: 0.5rem; font-size: 0.7rem; background: ${currentStatus === 'unavailable' ? '#600' : ''};">Not Available</button>
-                    </div>
-                    ${slotsHtml}
-                `;
-            }
-            startCountdowns();
-        }
-
-        let countdownInterval = null;
-        function startCountdowns() {
-            if (countdownInterval) clearInterval(countdownInterval);
-            
-            const update = () => {
-                const now = new Date().getTime();
-                UPCOMING_EVENTS.forEach(event => {
-                    const el = document.getElementById(`countdown-${event.id}`);
-                    if (!el || !event.startDate) return;
-
-                    const target = new Date(event.startDate).getTime();
-                    const diff = target - now;
-
-                    if (diff <= 0) {
-                        el.textContent = "LIVE";
-                        el.style.color = "#00ff88";
-                        return;
-                    }
-
-                    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                    const secs = Math.floor((diff % (1000 * 60)) / 1000);
-
-                    el.textContent = `${days}d ${hours}h ${mins}m ${secs}s`;
-                });
-            };
-
-            update();
-            countdownInterval = setInterval(update, 1000);
-        }
-
-        async function updatePreference(eventId, slot) {
-            try {
-                await db.collection("event_availability").doc(eventId).collection("responses").doc(auth.currentUser.uid).update({
-                    preferredSlot: slot
-                });
-                if (isAdminUser) loadAdminAvailability();
-            } catch (error) {
-                console.error("Error updating preference:", error);
-            }
-        }
-
-        async function setAvailability(eventId, status) {
-            try {
-                const docRef = db.collection("event_availability").doc(eventId).collection("responses").doc(auth.currentUser.uid);
-                const currentDoc = await docRef.get();
-                const currentStatus = currentDoc.exists ? currentDoc.data().status : null;
-
-                if (currentStatus === status) {
-                    await docRef.delete();
-                } else {
-                    const myName = userProfile.driverName || auth.currentUser.displayName;
-                    await docRef.set({
-                        status: status,
-                        driverName: myName,
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                }
-
-                // Refresh only the logic states, but keep DOM stable
-                populateAvailability();
-                if (isAdminUser) loadAdminAvailability();
-            } catch (error) {
-                console.error("Error updating availability:", error);
-                alert("Error: " + error.message);
-            }
-        }
-
-        async function loadAdminAvailability() {
-            const resultsDiv = document.getElementById('admin-availability-results');
-            if (!resultsDiv) return;
-
-            try {
-                let html = `
-                    <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem; text-align: left;">
-                        <thead>
-                            <tr style="border-bottom: 1px solid var(--glass-border);">
-                                <th style="padding: 1rem;">Driver</th>
-                                ${UPCOMING_EVENTS.map(e => `<th style="padding: 1rem; white-space: nowrap;">${e.name.split(' ').slice(0,2).join(' ')}</th>`).join('')}
-                            </tr>
-                        </thead>
-                        <tbody>
-                `;
-
-                // Fetch all unique drivers who have responded
-                const allDrivers = {}; // uid -> name
-                const allResponses = {}; // eventId -> { uid -> status }
-
-                for (const event of UPCOMING_EVENTS) {
-                    const snap = await db.collection("event_availability").doc(event.id).collection("responses").get();
-                    allResponses[event.id] = {};
-                    snap.forEach(doc => {
-                        const data = doc.data();
-                        // Fix: Use multiple fallbacks for driver name
-                        allDrivers[doc.id] = data.driverName || data.name || data.discordName || "Unknown Driver";
-                        allResponses[event.id][doc.id] = data.status;
-                    });
-                }
-
-                const driverUids = Object.keys(allDrivers).sort((a,b) => (allDrivers[a] || "").localeCompare(allDrivers[b] || ""));
-
-                if (driverUids.length === 0) {
-                    html += `<tr><td colspan="${UPCOMING_EVENTS.length + 1}" style="padding: 2rem; text-align: center; color: var(--text-muted);">No responses received yet.</td></tr>`;
-                } else {
-                    driverUids.forEach(uid => {
-                        html += `<tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
-                            <td style="padding: 0.8rem; font-weight: 700; color: var(--primary);">${allDrivers[uid]}</td>
-                        `;
-                        UPCOMING_EVENTS.forEach(event => {
-                            const status = allResponses[event.id][uid];
-                            let statusHtml = "";
-                            if (status === 'signed_up') statusHtml = `<span style="color: #00ff88;">YES</span>`;
-                            if (status === 'not_interested') statusHtml = `<span style="color: #888;">N/I</span>`;
-                            if (status === 'unavailable') statusHtml = `<span style="color: #ff0055;">N/A</span>`;
-                            html += `<td style="padding: 0.8rem; text-align: center;">${statusHtml}</td>`;
-                        });
-                        html += `</tr>`;
-                    });
-                }
-
-                html += `</tbody></table>`;
-                resultsDiv.innerHTML = html;
-
-            } catch (error) {
-                console.error("Error loading admin availability:", error);
-                resultsDiv.innerHTML = `<p style="color: #ff0055;">Error loading results.</p>`;
-            }
-        }
-
-        // Consolidated Auth Hook from auth.js
-        function onAuthReady(user) {
-            if (user) {
-                initPortal(user);
-            }
-        }
-
-        // Enter key for chat
-        document.getElementById('chat-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
-        });
-
-        function injectCredits() {
-            if (document.querySelector('.bizare-credits')) return;
-            const footer = document.querySelector('footer');
-            if (!footer) return;
-            
-            const credits = document.createElement('a');
-            credits.href = 'https://bizare.shop/';
-            credits.target = '_blank';
-            credits.className = 'bizare-credits';
-            credits.innerHTML = 'Created by BiZaRe';
-            footer.appendChild(credits);
-        }
-
-        // Initialize Credits
-        document.addEventListener('DOMContentLoaded', injectCredits);
-        injectCredits(); // Immediate call in case DOM already loaded
-    </script>
-    <footer style="padding: 3rem 0; border-top: 1px solid rgba(255,255,255,0.05); text-align: center; margin-top: 4rem;">
-        <div style="display: flex; justify-content: center; gap: 1.5rem; margin-bottom: 1.5rem;">
-            <a href="https://discord.gg/gridup" target="_blank" style="opacity: 0.6; transition: opacity 0.3s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">
-                <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 127.14 96.36" fill="#ffffff"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a67.55,67.55,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.31,60,73.31,53s5-12.74,11.43-12.74S96.2,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
-            </a>
-            <a href="https://www.youtube.com/@griduptv" target="_blank" style="opacity: 0.6; transition: opacity 0.3s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">
-                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="#ffffff" style="margin-top: -1px;"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
-            </a>
-        </div>
-        <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">&copy; 2026 GRiD UP Sim Racing. Not affiliated with iRacing.com</p>
-    <div style="display: none;"><a href="https://www.sigmatraffic.com?ref=328509">Free website hits</a></div></footer>
-</body>
-</html>
-
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+
+
+    <!-- Google tag (gtag.js) -->
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5JMPYRH8H9"></script>
+
+    <script>
+
+      window.dataLayer = window.dataLayer || [];
+
+      function gtag(){dataLayer.push(arguments);}
+
+      gtag('js', new Date());
+
+
+
+      gtag('config', 'G-5JMPYRH8H9');
+
+    </script>
+
+
+
+    <meta name="keywords" content="iRacing, sim racing, endurance racing, GT3, GT4, sim racing league, competitive sim racing">
+
+    <meta property="og:type" content="website">
+
+    <meta property="og:image" content="https://raw.githubusercontent.com/gridup/gridup.github.io/main/assets/bg-banner.png">
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Team Portal | GRiD UP Sim Racing</title>
+
+    <link rel="stylesheet" href="style.css?v=7">
+
+    <link rel="icon" type="image/png" href="assets/G_2.png">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+
+        .message { position: relative; margin-bottom: 0.5rem !important; }
+
+        .delete-msg {
+
+            background: none;
+
+            border: none;
+
+            color: #ff4d4d;
+
+            font-size: 1.2rem;
+
+            cursor: pointer;
+
+            line-height: 1;
+
+            padding: 0 8px;
+
+            transition: all 0.2s;
+
+            z-index: 5;
+
+            order: 4;
+
+            opacity: 0.8;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+        }
+
+        .delete-msg:hover { color: #ff0055; transform: scale(1.2); opacity: 1; }
+
+    </style>
+
+</head>
+
+<body class="member-portal-page">
+
+    <nav id="navbar" class="scrolled">
+
+        <div class="container nav-content">
+
+            <a href="index.html" class="logo">
+
+                <img src="assets/logo.png" alt="GRiD UP" style="height: 40px; vertical-align: middle;">
+
+            </a>
+
+            <div class="menu-toggle">
+
+                <span></span>
+
+                <span></span>
+
+                <span></span>
+
+            </div>
+
+                        <ul class="nav-links">
+
+                <li><a href="index.html#home">Home</a></li>
+
+                <li><a href="index.html#about">About</a></li>
+
+                <li><a href="roster.html">Roster</a></li>
+
+                <li><a href="events.html">Events</a></li>
+
+                <li><a href="reports.html">Race Reports</a></li>
+
+                <li><a href="league.html">League</a></li>
+
+                <li><a href="shop.html">Shop</a></li>
+
+                <li><a href="team-app.html">Apply</a></li>
+
+                <li><a href="https://discord.gg/gridup" target="_blank"><img src="assets/discord_header.png" alt="Discord" style="height: 25px; vertical-align: middle;"></a></li>
+
+                <li><a href="login.html" id="login-link" class="btn btn-outline" style="padding: 0.5rem 1.25rem; font-size: 0.8rem; margin-left: 1rem;">Login</a></li>
+
+            </ul>
+
+            </div>
+
+        </div>
+
+    </nav>
+
+
+
+    <main class="container" style="padding: 10rem 0 4rem;">
+
+        <div class="tread-overlay"></div>
+
+        <div id="loading-portal" style="text-align: center; padding: 5rem 0;">
+
+            <p class="glow-text" style="font-size: 2rem;">Accessing Team Portal...</p>
+
+        </div>
+
+
+
+        <!-- Selection View -->
+
+        <div id="selection-view" style="display: none;">
+
+            <h1 class="glow-text" style="margin-bottom: 2rem;">Select Your Event</h1>
+
+            <div id="event-selection-grid" class="grid">
+
+                <!-- Populated via JS -->
+
+            </div>
+
+        </div>
+
+
+
+        <!-- Portal View -->
+
+        <div id="portal-view" style="display: none;">
+
+            <div class="portal-welcome" style="margin-bottom: 3rem;">
+
+                <a href="portal.html" class="back-btn" style="margin-bottom: 1.5rem; display: inline-block;">? Switch Event</a>
+
+                <h1 id="event-title" class="glow-text" style="font-size: 3.5rem; margin-bottom: 0.5rem;">Event Name</h1>
+
+                <p id="team-title" style="color: var(--primary); font-size: 1.1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 4px; opacity: 0.9;">Team Name</p>
+
+            </div>
+
+
+
+            <div class="portal-layout">
+
+                <div class="portal-tabs vertical-tabs">
+
+                <div class="portal-tab active" onclick="switchTab('wall')"><i class="fas fa-comments"></i> Communications</div>
+
+                <div class="portal-tab" onclick="switchTab('setups')"><i class="fas fa-file-export"></i> Setups</div>
+
+                <div class="portal-tab" onclick="switchTab('telemetry')"><i class="fas fa-stopwatch"></i> Lap Times</div>
+
+            </div>
+
+
+
+            <div class="portal-grid">
+
+                <!-- Main Content -->
+
+                <div class="portal-main-content">
+
+                    
+
+                    <!-- Wall Tab -->
+
+                    <div id="tab-wall" class="tab-content glass chat-wall" style="border-radius: 12px; overflow: hidden;">
+
+                        <div id="chat-messages" class="chat-messages">
+
+                            <!-- Messages go here -->
+
+                        </div>
+
+                        <div class="chat-input-area">
+
+                            <input type="text" id="chat-input" class="chat-input" placeholder="Type a message for the team...">
+
+                            <button onclick="sendMessage()" class="btn btn-primary" style="padding: 0.8rem 2rem;">Send</button>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- Setups Tab -->
+
+                    <div id="tab-setups" class="tab-content glass" style="display: none; padding: 2.5rem; border-radius: 12px;">
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem;">
+
+                            <h2 style="font-size: 1.4rem; color: var(--primary);">Setup Repository</h2>
+
+                            <label class="btn btn-outline" style="font-size: 0.75rem; cursor: pointer; border-radius: 50px;">
+
+                                <i class="fas fa-upload" style="margin-right: 8px;"></i> Upload Setup (.sto or .zip)
+
+                                <input type="file" id="setup-upload" style="display: none;" accept=".sto,.zip" onchange="uploadSetup(this)">
+
+                            </label>
+
+                        </div>
+
+                        <div id="setup-list" class="setup-list">
+
+                            <!-- Setups go here -->
+
+                        </div>
+
+                    </div>
+
+
+
+                    <div id="tab-telemetry" class="tab-content glass" style="display: none; padding: 2.5rem; border-radius: 12px;">
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem; flex-wrap: wrap; gap: 1.5rem;">
+
+                            <h2 style="font-size: 1.4rem; color: var(--primary);">Event Lap Times</h2>
+
+                            
+
+                            <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+
+                                <!-- iRating Filter -->
+
+                                <div style="display: flex; align-items: center; gap: 1rem; background: rgba(255,255,255,0.03); padding: 0.6rem 1.25rem; border-radius: 12px; border: 1px solid var(--glass-border);">
+
+                                    <label style="font-size: 0.65rem; color: var(--primary); text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">Your iRating</label>
+
+                                    <input type="range" id="irating-slider" min="0" max="10000" step="100" value="2000" style="width: 100px; accent-color: var(--primary);">
+
+                                    <input type="number" id="irating-input" value="2000" min="0" max="10000" step="100" class="btn btn-outline" style="width: 70px; font-size: 0.8rem; padding: 0.3rem 0.5rem; text-align: center; border-radius: 6px;" onchange="updateIRating(this.value)">
+
+                                    
+
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.7rem; color: var(--text-muted); cursor: pointer; margin-left: 0.5rem; border-left: 1px solid rgba(255,255,255,0.1); padding-left: 1rem;">
+
+                                        <input type="checkbox" id="show-all-ir" onchange="toggleShowAll(this.checked)" style="accent-color: var(--primary); width: 16px; height: 16px;">
+
+                                        Show All
+
+                                    </label>
+
+                                </div>
+
+
+
+                                <select id="class-filter" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.6rem 1.5rem; border-radius: 12px;" onchange="loadTelemetry()">
+
+                                    <option value="ALL">All Classes</option>
+
+                                </select>
+
+                            </div>
+
+                        </div>
+
+                        <div id="telemetry-leaderboard" class="results-table-wrapper">
+
+                            <!-- Table goes here -->
+
+                        </div>
+
+                    </div>
+
+
+
+                </div>
+
+
+
+                <!-- Sidebar -->
+
+                <div class="portal-sidebar">
+
+                    <div class="glass" style="padding: 1.5rem;">
+
+                        <h3 style="font-size: 0.9rem; margin-bottom: 1rem; color: var(--primary);">Confirmed Lineup</h3>
+
+                        <div id="lineup-list" style="font-size: 0.9rem;">
+
+                            <!-- Sidebar lineup -->
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+                    </div>
+
+
+
+        <!-- Access Denied View -->
+
+        <div id="denied-view" style="display: none; text-align: center; padding: 5rem 0;">
+
+            <div class="glass-premium" style="max-width: 600px; margin: 0 auto; padding: 4rem 2rem;">
+
+                <h1 class="glow-text" style="color: #ff3c3c; filter: drop-shadow(0 0 15px rgba(255, 60, 60, 0.4));">Access Denied</h1>
+
+                <p id="denied-reason" style="margin: 2rem 0; color: var(--text-muted); font-size: 1.1rem;"></p>
+
+                <a href="index.html" class="btn btn-outline">Return Home</a>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- Application Portal / Communications View -->
+        <div id="application-portal-view" style="display: none; max-width: 900px; margin: 0 auto; padding: 2rem 0;">
+            <div class="glass-premium" style="padding: 3rem; border-radius: 20px;">
+                <!-- Application Details Container (Visible if application exists) -->
+                <div id="portal-app-details-container" style="display: none;">
+                    <h1 class="glow-text" style="margin-bottom: 0.5rem; font-size: 2.5rem;">Application Status</h1>
+                    <p style="color: var(--text-muted); margin-bottom: 2rem;">Track your application status and communicate with the admin team below.</p>
+                    
+                    <!-- Status Card -->
+                    <div class="glass" style="padding: 2rem; margin-bottom: 2rem; border-left: 4px solid var(--primary); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem;">
+                        <div>
+                            <h3 style="margin-bottom: 0.5rem; font-size: 1.2rem;">Status</h3>
+                            <p id="portal-app-status-message" style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; max-width: 500px;"></p>
+                        </div>
+                        <div id="portal-app-status-badge" style="font-weight: 800; font-size: 1rem; text-transform: uppercase; padding: 0.6rem 1.5rem; border: 1.5px solid; border-radius: 50px; text-align: center; min-width: 120px; letter-spacing: 1px;">
+                            Pending
+                        </div>
+                    </div>
+
+                    <!-- Chat History Section -->
+                    <h2 style="font-size: 1.4rem; color: var(--primary); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-comments"></i> Admin Communications
+                    </h2>
+                    
+                    <div class="glass chat-wall" style="border-radius: 12px; overflow: hidden; height: 400px; display: flex; flex-direction: column; padding: 0;">
+                        <div id="portal-app-chat-messages" style="flex: 1; padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; background: rgba(0, 0, 0, 0.2);">
+                            <!-- Messages populated by JS -->
+                        </div>
+                        <div class="chat-input-area" style="display: flex; gap: 10px; padding: 1.5rem; background: rgba(15, 18, 24, 0.8); border-top: 1px solid var(--glass-border); margin-top: 0;">
+                            <input type="text" id="portal-app-chat-input" class="chat-input" placeholder="Type a message to the admin team..." style="flex: 1; margin: 0;" onkeydown="if(event.key === 'Enter') sendApplicantReply()">
+                            <button onclick="sendApplicantReply()" class="btn btn-primary" style="padding: 0 2rem; border-radius: 8px;">Send</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- No Application View (Visible if signed up but no app submitted) -->
+                <div id="portal-no-app-view" style="display: none; text-align: center; padding: 2rem 0;">
+                    <h1 class="glow-text" style="margin-bottom: 1.5rem; font-size: 2.5rem;">Welcome to GRiD UP</h1>
+                    <p style="color: var(--text-muted); margin-bottom: 2.5rem; line-height: 1.6; max-width: 600px; margin-left: auto; margin-right: auto;">
+                        To access the active team portal, view assigned lineups, and sign up for upcoming events, you must submit a driver application first.
+                    </p>
+                    <a href="team-app.html" class="btn btn-primary" style="padding: 1rem 2.5rem; font-size: 1rem; border-radius: 8px;">Apply to Join Team</a>
+                </div>
+            </div>
+        </div>
+    
+
+    </main>
+
+
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
+
+    <script src="js/auth.js?v=4"></script>
+
+    <script>
+
+        let currentEvent = null;
+
+        let currentTeam = null;
+
+        let userProfile = null;
+
+        let unsubMessages = null;
+
+        let isAdminUser = false;
+
+
+
+        let UPCOMING_EVENTS = [];
+
+
+
+        function switchTab(tabId) {
+
+            document.querySelectorAll('.tab-content').forEach(t => {
+
+                t.style.display = 'none';
+
+                t.classList.remove('animate-fade-in');
+
+            });
+
+            document.querySelectorAll('.portal-tab').forEach(t => t.classList.remove('active'));
+
+            
+
+            const content = document.getElementById(`tab-${tabId}`);
+
+            if (content) {
+
+                content.style.display = tabId === 'wall' ? 'flex' : 'block';
+
+                content.classList.add('animate-fade-in');
+
+            }
+
+            
+
+            const tabBtn = document.querySelector(`.portal-tab[onclick*="${tabId}"]`);
+
+            if (tabBtn) tabBtn.classList.add('active');
+
+
+
+            if (tabId === 'setups') loadSetups();
+
+            if (tabId === 'telemetry') loadTelemetry();
+
+        }
+
+
+
+        async function loadTeamPortal(team) {
+
+            currentEvent = team.eventSlug;
+
+            currentTeam = team.teamName;
+
+            
+
+            document.getElementById('selection-view').style.display = 'none';
+
+            document.getElementById('portal-view').style.display = 'block';
+
+            
+
+            document.getElementById('event-title').textContent = team.eventName;
+
+            document.getElementById('team-title').textContent = team.teamName;
+
+            
+
+            loadLineup(team.teamData);
+
+            loadMessages();
+
+            switchTab('wall');
+
+        }
+
+
+
+        function loadLineup(data) {
+
+            const list = document.getElementById('lineup-list');
+
+            if (!list || !data) return;
+
+            
+
+            let html = `
+
+                <div style="margin-bottom: 1rem;">
+
+                    <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Car</div>
+
+                    <div style="font-weight: 700;">${data.car_class || 'Not Set'}</div>
+
+                </div>
+
+                <div style="margin-bottom: 1rem;">
+
+                    <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Captain</div>
+
+                    <div style="font-weight: 700; color: var(--primary);">${data.captain || 'None'}</div>
+
+                </div>
+
+                <div>
+
+                    <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">Drivers</div>
+
+                    ${data.drivers ? data.drivers.map(d => `<div style="padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">${d}</div>`).join('') : '<div style="color: var(--text-muted);">No drivers assigned</div>'}
+
+                </div>
+
+            `;
+
+            list.innerHTML = html;
+
+        }
+
+
+
+        async function loadMessages() {
+
+            if (unsubMessages) unsubMessages();
+
+            
+
+            const container = document.getElementById('chat-messages');
+
+            unsubMessages = db.collection("race_lineups").doc(currentEvent)
+
+                .collection("teams").doc(currentTeam)
+
+                .collection("messages")
+
+                .orderBy("timestamp", "asc")
+
+                .onSnapshot(snap => {
+
+                    container.innerHTML = '';
+
+                    snap.forEach(doc => {
+
+                        const m = doc.data();
+
+                        const time = m.timestamp ? m.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...';
+
+                        const canDelete = m.uid === auth.currentUser.uid || isAdminUser;
+
+                        container.innerHTML += `
+
+                            <div class="message ${m.uid === auth.currentUser.uid ? 'sent' : 'received'}" style="display: flex; align-items: center; gap: 0.8rem; padding: 0.6rem 1rem; background: rgba(255,255,255,0.02); border-left: 2px solid ${m.uid === auth.currentUser.uid ? 'var(--primary)' : 'rgba(255,255,255,0.05)'}; border-radius: 4px;">
+
+                                <span style="font-weight: 700; color: var(--primary); font-size: 0.85rem; white-space: nowrap;">${m.author}:</span>
+
+                                <span style="flex: 1; font-size: 0.9rem; color: var(--text-main);">${m.text}</span>
+
+                                <span style="font-size: 0.7rem; color: var(--text-muted); opacity: 0.5; white-space: nowrap;">${time}</span>
+
+                                ${canDelete ? `<button class="delete-msg" onclick="deleteMessage('${doc.id}')" title="Delete Message">???</button>` : ''}
+
+                            </div>
+
+                        `;
+
+                    });
+
+                    container.scrollTop = container.scrollHeight;
+
+                });
+
+        }
+
+
+
+        async function deleteMessage(id) {
+
+            if (!confirm("Are you sure you want to delete this message?")) return;
+
+            try {
+
+                await db.collection("race_lineups").doc(currentEvent)
+
+                    .collection("teams").doc(currentTeam)
+
+                    .collection("messages").doc(id).delete();
+
+            } catch (error) {
+
+                console.error("Error deleting message:", error);
+
+                alert("Could not delete message.");
+
+            }
+
+        }
+
+
+
+        async function sendMessage() {
+
+            const input = document.getElementById('chat-input');
+
+            const text = input.value.trim();
+
+            if (!text || !currentEvent || !currentTeam) return;
+
+            
+
+            input.value = '';
+
+            try {
+
+                await db.collection("race_lineups").doc(currentEvent)
+
+                    .collection("teams").doc(currentTeam)
+
+                    .collection("messages").add({
+
+                        author: userProfile.driverName || auth.currentUser.displayName,
+
+                        uid: auth.currentUser.uid,
+
+                        text: text,
+
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+
+                    });
+
+            } catch (error) {
+
+                console.error("Error sending message:", error);
+
+                alert("Could not send message.");
+
+            }
+
+        }
+
+
+
+        let unsubAppPortal = null;
+
+        function loadApplicantChat(appId) {
+
+            if (unsubAppPortal) unsubAppPortal();
+
+            
+
+            const container = document.getElementById('portal-app-chat-messages');
+
+            unsubAppPortal = db.collection("applications").doc(appId)
+
+                .onSnapshot(doc => {
+
+                    if (!doc.exists) return;
+
+                    const data = doc.data();
+
+                    
+
+                    const badge = document.getElementById('portal-app-status-badge');
+
+                    const statusMsg = document.getElementById('portal-app-status-message');
+
+                    const status = data.status || 'pending';
+
+                    
+
+                    badge.innerText = status;
+
+                    if (status === 'pending') {
+
+                        badge.style.borderColor = 'orange';
+
+                        badge.style.color = 'orange';
+
+                        badge.style.background = 'rgba(255, 165, 0, 0.1)';
+
+                        statusMsg.innerText = "Your application has been received and is waiting for an admin to review it. Thank you for your patience!";
+
+                    } else if (status === 'processing') {
+
+                        badge.style.borderColor = '#00CFFF';
+
+                        badge.style.color = '#00CFFF';
+
+                        badge.style.background = 'rgba(0, 207, 255, 0.1)';
+
+                        statusMsg.innerText = "An admin is currently reviewing your application. You can chat with them below.";
+
+                    } else if (status === 'approved') {
+
+                        badge.style.borderColor = '#00ff88';
+
+                        badge.style.color = '#00ff88';
+
+                        badge.style.background = 'rgba(0, 255, 136, 0.1)';
+
+                        statusMsg.innerText = "Congratulations! Your application has been approved. Welcome to the GRiD UP Endurance team!";
+
+                    } else if (status === 'denied') {
+
+                        badge.style.borderColor = '#ff3333';
+
+                        badge.style.color = '#ff3333';
+
+                        badge.style.background = 'rgba(255, 51, 51, 0.1)';
+
+                        statusMsg.innerText = "Unfortunately, your application has been denied at this time. Thank you for your interest in GRiD UP.";
+
+                    }
+
+                    
+
+                    container.innerHTML = '';
+
+                    const messages = data.messages || [];
+
+                    if (messages.length === 0) {
+
+                        container.innerHTML = `<p style="text-align: center; color: var(--text-muted); margin-top: 2rem;">No messages yet. Send a message to start the conversation with admins!</p>`;
+
+                    } else {
+
+                        messages.forEach(m => {
+
+                            const dateObj = m.timestamp ? (m.timestamp.toDate ? m.timestamp.toDate() : new Date(m.timestamp)) : new Date();
+
+                            const time = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' ' + dateObj.toLocaleDateString();
+
+                            const isMe = m.uid === auth.currentUser.uid;
+
+                            container.innerHTML += `
+
+                                <div class="message ${isMe ? 'sent' : 'received'}" style="display: flex; flex-direction: column; padding: 0.6rem 1rem; background: ${isMe ? 'rgba(0, 207, 255, 0.05)' : 'rgba(255,255,255,0.02)'}; border-left: 2px solid ${isMe ? 'var(--primary)' : 'rgba(255,255,255,0.05)'}; border-radius: 4px; max-width: 80%; align-self: ${isMe ? 'flex-end' : 'flex-start'};">
+
+                                    <span style="font-weight: 700; color: ${isMe ? 'var(--primary)' : 'var(--text-muted)'}; font-size: 0.8rem; margin-bottom: 0.2rem;">${m.author}</span>
+
+                                    <span style="font-size: 0.9rem; color: var(--text-main); word-break: break-word;">${m.text}</span>
+
+                                    <span style="font-size: 0.65rem; color: var(--text-muted); opacity: 0.5; margin-top: 0.4rem; align-self: flex-end;">${time}</span>
+
+                                </div>
+
+                            `;
+
+                        });
+
+                    }
+
+                    container.scrollTop = container.scrollHeight;
+
+                });
+
+        }
+
+
+
+        async function sendApplicantReply() {
+
+            const input = document.getElementById('portal-app-chat-input');
+
+            const text = input.value.trim();
+
+            if (!text || !auth.currentUser) return;
+
+            
+
+            try {
+
+                const snap = await db.collection('applications').where('discordUid', '==', auth.currentUser.uid).get();
+
+                if (snap.empty) return alert("Application not found.");
+
+                const appId = snap.docs[0].id;
+
+                
+
+                await db.collection('applications').doc(appId).update({
+
+                    messages: firebase.firestore.FieldValue.arrayUnion({
+
+                        author: auth.currentUser.displayName || 'Applicant',
+
+                        uid: auth.currentUser.uid,
+
+                        text: text,
+
+                        timestamp: new Date()
+
+                    })
+
+                });
+
+                input.value = '';
+
+            } catch (err) {
+
+                console.error("Error sending applicant reply:", err);
+
+                alert("Could not send message: " + err.message);
+
+            }
+
+        }
+
+
+
+        async function loadSetups() {
+
+            const list = document.getElementById('setup-list');
+
+            list.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Loading setups...</p>';
+
+            
+
+            try {
+
+                const snap = await db.collection("race_lineups").doc(currentEvent)
+
+                    .collection("teams").doc(currentTeam)
+
+                    .collection("setups").get();
+
+                
+
+                list.innerHTML = '';
+
+                if (snap.empty) {
+
+                    list.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">No setups uploaded yet.</p>';
+
+                    return;
+
+                }
+
+                
+
+                snap.forEach(doc => {
+
+                    const s = doc.data();
+
+                    list.innerHTML += `
+
+                        <div class="setup-item" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
+
+                            <div>
+
+                                <div style="font-weight: 700;">${s.name}</div>
+
+                                <div style="font-size: 0.7rem; color: var(--text-muted);">Uploaded by ${s.author}</div>
+
+                            </div>
+
+                            <button onclick="downloadSetup('${s.url}', '${s.name}')" class="btn btn-primary" style="padding: 0.3rem 1rem; font-size: 0.7rem;">Download</button>
+
+                        </div>
+
+                    `;
+
+                });
+
+            } catch (error) {
+
+                console.error("Error loading setups:", error);
+
+            }
+
+        }
+
+
+
+        function downloadSetup(url, name) {
+
+            const link = document.createElement('a');
+
+            link.href = url;
+
+            link.download = name;
+
+            link.target = "_blank";
+
+            document.body.appendChild(link);
+
+            link.click();
+
+            document.body.removeChild(link);
+
+        }
+
+
+
+        async function uploadSetup(input) {
+
+            const file = input.files[0];
+
+            if (!file || !currentEvent || !currentTeam) return;
+
+            
+
+            if (!file.name.endsWith('.sto') && !file.name.endsWith('.zip')) {
+
+                alert("Please upload an iRacing .sto setup or a .zip archive.");
+
+                return;
+
+            }
+
+
+
+            const storageRef = firebase.storage().ref(`setups/${currentEvent}/${currentTeam}/${file.name}`);
+
+            try {
+
+                const snapshot = await storageRef.put(file);
+
+                const url = await snapshot.ref.getDownloadURL();
+
+                
+
+                await db.collection("race_lineups").doc(currentEvent)
+
+                    .collection("teams").doc(currentTeam)
+
+                    .collection("setups").add({
+
+                        name: file.name,
+
+                        url: url,
+
+                        author: userProfile.driverName || auth.currentUser.displayName,
+
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+
+                    });
+
+                
+
+                alert("Setup uploaded successfully!");
+
+                loadSetups();
+
+            } catch (error) {
+
+                console.error("Upload error:", error);
+
+                alert("Upload failed: " + error.message);
+
+            }
+
+        }
+
+
+
+        let currentIRating = 2000;
+
+        let showAllIRBench = false;
+
+
+
+        function updateIRating(val) {
+
+            currentIRating = parseInt(val);
+
+            document.getElementById('irating-slider').value = currentIRating;
+
+            document.getElementById('irating-input').value = currentIRating;
+
+            loadTelemetry();
+
+        }
+
+
+
+        function toggleShowAll(checked) {
+
+            showAllIRBench = checked;
+
+            loadTelemetry();
+
+        }
+
+
+
+        async function loadTelemetry() {
+
+            const container = document.getElementById('telemetry-leaderboard');
+
+            const classFilter = document.getElementById('class-filter');
+
+            const event = UPCOMING_EVENTS.find(e => e.id === currentEvent);
+
+            
+
+            if (!event) return;
+
+
+
+            if (classFilter.options.length === 1 && event.classes) {
+
+                event.classes.forEach(c => {
+
+                    const opt = document.createElement('option');
+
+                    opt.value = c;
+
+                    opt.textContent = c;
+
+                    classFilter.appendChild(opt);
+
+                });
+
+            }
+
+
+
+            container.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Loading lap data...</p>';
+
+            
+
+            try {
+
+                let query = db.collection("race_laps").doc(currentEvent).collection("laps").orderBy("lapTime", "asc");
+
+                const selectedClass = classFilter.value;
+
+                if (selectedClass !== 'ALL') {
+
+                    query = query.where("carClass", "==", selectedClass);
+
+                }
+
+
+
+                const snap = await query.get();
+
+                if (snap.empty) {
+
+                    container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">No data recorded yet for this event.</p>';
+
+                    return;
+
+                }
+
+
+
+                // DATA PROCESSING & FILTERING
+
+                const allLaps = [];
+
+                snap.forEach(doc => allLaps.push({id: doc.id, ...doc.data()}));
+
+
+
+                const g61Laps = allLaps.filter(l => l.source !== 'iRacingData');
+
+                const irdLaps = allLaps.filter(l => l.source === 'iRacingData');
+
+                const filteredIRDLaps = [];
+
+                const cars = [...new Set(irdLaps.map(l => l.car))];
+
+                
+
+                if (showAllIRBench) {
+
+                    filteredIRDLaps.push(...irdLaps);
+
+                } else {
+
+                    cars.forEach(car => {
+
+                        const carOptions = irdLaps.filter(l => l.car === car);
+
+                        let closest = null;
+
+                        let minDiff = Infinity;
+
+                        
+
+                        carOptions.forEach(l => {
+
+                            const match = l.driverName.match(/\d+/);
+
+                            if (match) {
+
+                                const bucketIR = parseInt(match[0]);
+
+                                const diff = Math.abs(bucketIR - currentIRating);
+
+                                if (diff < minDiff) {
+
+                                    minDiff = diff;
+
+                                    closest = l;
+
+                                }
+
+                            }
+
+                        });
+
+                        if (closest) filteredIRDLaps.push(closest);
+
+                    });
+
+                }
+
+
+
+                const finalLaps = [...g61Laps, ...filteredIRDLaps].sort((a,b) => a.lapTime.localeCompare(b.lapTime));
+
+
+
+                let html = `
+
+                    <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left;">
+
+                        <thead>
+
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--primary);">
+
+                                <th style="padding: 1rem 0.5rem;">#</th>
+
+                                <th style="padding: 1rem 0.5rem;">Driver / Benchmark</th>
+
+                                <th style="padding: 1rem 0.5rem;">Car</th>
+
+                                <th style="padding: 1rem 0.5rem;">Lap Time</th>
+
+                                <th style="padding: 1rem 0.5rem;">Season</th>
+
+                                <th style="padding: 1rem 0.5rem; text-align: right;">Updated</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                `;
+
+
+
+                let rank = 1;
+
+                finalLaps.forEach(d => {
+
+                    const ago = d.timestamp ? formatTimeAgo(d.timestamp.toDate()) : '...';
+
+                    const isBenchmark = d.source === 'iRacingData';
+
+                    html += `
+
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.03); ${isBenchmark ? 'background: rgba(0,207,255,0.03);' : ''}">
+
+                            <td style="padding: 1rem 0.5rem; color: var(--text-muted);">${rank++}</td>
+
+                            <td style="padding: 1rem 0.5rem; font-weight: 700; color: ${isBenchmark ? 'var(--primary)' : 'white'};">
+
+                                ${d.driverName}
+
+                                ${isBenchmark ? '<span style="font-size:0.6rem; margin-left:5px; opacity:0.6;">(iR Benchmark)</span>' : ''}
+
+                            </td>
+
+                            <td style="padding: 1rem 0.5rem; font-size: 0.75rem;">${d.car} <span style="color:var(--primary); font-size:0.6rem;">[${d.carClass}]</span></td>
+
+                            <td style="padding: 1rem 0.5rem; font-family: monospace; color: var(--primary); font-weight: 700;">${d.lapTime}</td>
+
+                            <td style="padding: 1rem 0.5rem; font-size: 0.75rem; color: var(--text-muted);">${d.season || 'N/A'}</td>
+
+                            <td style="padding: 1rem 0.5rem; text-align: right; font-size: 0.75rem; color: var(--text-muted);">${ago}</td>
+
+                        </tr>
+
+                    `;
+
+                });
+
+
+
+                html += `</tbody></table>`;
+
+                if (finalLaps.length === 0) {
+
+                    html = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">No matching data for your iRating and Class.</p>';
+
+                }
+
+                container.innerHTML = html;
+
+            } catch (error) {
+
+                console.error("Telemetry error:", error);
+
+                let errorMsg = "Error loading lap data.";
+
+                if (error.message.includes("index")) {
+
+                    errorMsg = `Firestore missing index. <a href="${error.message.split(' ').find(word => word.startsWith('https://'))}" target="_blank" style="color: var(--primary); text-decoration: underline;">Click here to create the required index</a>.`;
+
+                } else {
+
+                    errorMsg += " " + error.message;
+
+                }
+
+                container.innerHTML = `<p style="color: #ff0055; font-size: 0.8rem; padding: 1rem;">${errorMsg}</p>`;
+
+            }
+
+        }
+
+
+
+        function formatTimeAgo(date) {
+
+            const seconds = Math.floor((new Date() - date) / 1000);
+
+            let interval = seconds / 31536000;
+
+            if (interval > 1) return Math.floor(interval) + "y ago";
+
+            interval = seconds / 2592000;
+
+            if (interval > 1) return Math.floor(interval) + "mo ago";
+
+            interval = seconds / 86400;
+
+            if (interval > 1) return Math.floor(interval) + "d ago";
+
+            interval = seconds / 3600;
+
+            if (interval > 1) return Math.floor(interval) + "h ago";
+
+            interval = seconds / 60;
+
+            if (interval > 1) return Math.floor(interval) + "m ago";
+
+            return Math.floor(seconds) + "s ago";
+
+        }
+
+
+
+        async function initPortal(user) {
+
+            const loading = document.getElementById('loading-portal');
+
+            const portal = document.getElementById('portal-view');
+
+            const denied = document.getElementById('denied-view');
+
+            const deniedReason = document.getElementById('denied-reason');
+
+
+
+            try {
+
+                // 0. Load Global Events
+
+                const eventsSnap = await db.collection("events").orderBy("startDate", "asc").get();
+
+                UPCOMING_EVENTS = [];
+
+                const now = new Date();
+
+                eventsSnap.forEach(doc => {
+
+                    const data = doc.data();
+
+                    const eventEndDate = data.endDate ? new Date(data.endDate) : new Date(data.startDate);
+
+                    // Filter: Only include events where endDate is in the future
+
+                    if (eventEndDate >= now) {
+
+                        UPCOMING_EVENTS.push({ id: doc.id, ...data });
+
+                    }
+
+                });
+
+
+
+                if (UPCOMING_EVENTS.length === 0) {
+
+                    loading.innerHTML = `<p style="color: var(--text-muted);">No upcoming events found. Please wait for an admin to post the schedule.</p>`;
+
+                    return;
+
+                }
+
+
+
+                // 1. Check Admin Status
+
+                const MASTER_ADMIN = 'B0t4f4nqqpZIQKpT8Ed97xka5gM2';
+
+                isAdminUser = (user.uid === MASTER_ADMIN);
+
+                
+
+                if (!isAdminUser) {
+
+                    const adminDoc = await db.collection("settings").doc("admins").get();
+
+                    if (adminDoc.exists) {
+
+                        const adminList = adminDoc.data().uids || [];
+
+                        isAdminUser = adminList.includes(user.uid);
+
+                    }
+
+                }
+
+
+
+                                // 2. Check Verification (Skip for Admins)
+                if (!isAdminUser) {
+                    const claimDoc = await db.collection("claims").where("discordId", "==", user.uid).get();
+                    if (claimDoc.empty || claimDoc.docs[0].data().status !== 'verified') {
+                        // Check if they have an application
+                        let appSnap = await db.collection('applications').where('discordUid', '==', user.uid).get();
+                        if (appSnap.empty && user.displayName) {
+                            appSnap = await db.collection('applications').where('discordUsername', '==', user.displayName).get();
+                            if (!appSnap.empty) {
+                                const docId = appSnap.docs[0].id;
+                                await db.collection('applications').doc(docId).update({ discordUid: user.uid });
+                                appSnap = await db.collection('applications').where('discordUid', '==', user.uid).get();
+                            }
+                        }
+
+                        if (!appSnap.empty) {
+                            loading.style.display = 'none';
+                            document.getElementById('application-portal-view').style.display = 'block';
+                            document.getElementById('portal-app-details-container').style.display = 'block';
+                            document.getElementById('portal-no-app-view').style.display = 'none';
+                            loadApplicantChat(appSnap.docs[0].id);
+                            return;
+                        }
+
+                        // Always allow access to portal frame, show clean Apply screen instead of Access Denied
+                        loading.style.display = 'none';
+                        document.getElementById('application-portal-view').style.display = 'block';
+                        document.getElementById('portal-app-details-container').style.display = 'none';
+                        document.getElementById('portal-no-app-view').style.display = 'block';
+                        return;
+                    }
+                }
+
+
+
+                // 3. Load User Profile
+
+                const userDoc = await db.collection("users").doc(user.uid).get();
+
+                userProfile = userDoc.exists ? userDoc.data() : { driverName: user.displayName };
+
+                const myName = userProfile.driverName || user.displayName;
+
+
+
+                // 4. Find Teams
+
+                const lineups = await db.collection("race_lineups").get();
+
+                const myTeams = [];
+
+                const allTeamAssignments = [];
+
+
+
+                // Valid active event IDs
+
+                const activeEventIds = new Set(UPCOMING_EVENTS.map(e => e.id));
+
+
+
+                lineups.forEach(doc => {
+
+                    const slug = doc.id;
+
+                    if (!activeEventIds.has(slug)) return; // Skip orphaned lineups
+
+
+
+                    const data = doc.data();
+
+                    if (data.teams) {
+
+                        data.teams.forEach(team => {
+
+                            const teamObj = {
+
+                                eventSlug: slug,
+
+                                eventName: data.eventName || slug.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' '),
+
+                                teamName: team.name,
+
+                                teamData: team
+
+                            };
+
+                            allTeamAssignments.push(teamObj);
+
+                            
+
+                            const isCaptain = team.captain === myName;
+
+                            const isDriver = team.drivers && team.drivers.includes(myName);
+
+                            if (isCaptain || isDriver) {
+
+                                myTeams.push(teamObj);
+
+                            }
+
+                        });
+
+                    }
+
+                });
+
+
+
+                loading.style.display = 'none';
+
+
+
+                if (isAdminUser) {
+
+                    showSelection(allTeamAssignments, true);
+
+                } else if (myTeams.length === 0) {
+
+                    showSelection([], false); // Still show sign-ups
+
+                } else if (myTeams.length === 1 && !window.location.hash) {
+
+                    loadTeamPortal(myTeams[0]);
+
+                } else {
+
+                    showSelection(myTeams, false);
+
+                }
+
+
+
+            } catch (error) {
+
+                console.error("Portal Init Error:", error);
+
+                loading.innerHTML = `<p style="color: #ff0055;">Error: ${error.message}</p>`;
+
+            }
+
+        }
+
+
+
+        async function showSelection(teams, isAdmin) {
+
+            const container = document.getElementById('selection-view');
+
+            const grid = document.getElementById('event-selection-grid');
+
+            
+
+            let html = `
+
+                <div style="margin-bottom: 4rem;">
+
+                    <h2 class="section-title">${isAdminUser ? 'Admin: All Event Lineups' : 'Your Assigned Events'}</h2>
+
+                    <div class="grid">`;
+
+            
+
+            if (teams.length === 0) {
+
+                html += `<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center; padding: 2rem;">No active team assignments found.</p>`;
+
+            } else {
+
+                window._assignedTeams = teams;
+
+                teams.forEach((t, idx) => {
+
+                    html += `
+
+                        <div class="card glass animate-fade-in" onclick="loadTeamPortal(window._assignedTeams[${idx}])" style="cursor: pointer; padding: 2.5rem; transition: var(--transition);">
+
+                            <div class="event-meta" style="color: var(--primary); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 2px;">${t.teamName}</div>
+
+                            <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">${t.eventName}</h3>
+
+                            <div style="display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 0.8rem;">
+
+                                <span>Portal Access</span>
+
+                                <span style="color: var(--primary);">?</span>
+
+                            </div>
+
+                        </div>
+
+                    `;
+
+                });
+
+            }
+
+
+
+            html += `</div></div>`;
+
+
+
+            // Availability Section
+
+            html += `
+
+                <div style="margin-bottom: 4rem;">
+
+                    <h2 class="section-title">Upcoming Event Sign-ups</h2>
+
+                    <div id="availability-grid" class="grid">
+
+                        <!-- Populated via JS -->
+
+                    </div>
+
+                </div>
+
+            `;
+
+
+
+            // Admin Results Section
+
+            if (isAdminUser) {
+
+                html += `
+
+                    <div style="margin-bottom: 4rem;">
+
+                        <h2 class="section-title">Admin Dashboard: Driver Accessibility</h2>
+
+                        <div id="admin-availability-results" class="glass" style="padding: 2rem; overflow-x: auto;">
+
+                            <p>Loading summary...</p>
+
+                        </div>
+
+                    </div>
+
+                `;
+
+            }
+
+
+
+            container.innerHTML = `<h1 class="glow-text" style="margin-bottom: 3rem;">Team Portal Dashboard</h1>` + html;
+
+            container.style.display = 'block';
+
+
+
+            // Populate Availability Buttons
+
+            populateAvailability();
+
+
+
+            if (isAdminUser) {
+
+                loadAdminAvailability();
+
+            }
+
+        }
+
+
+
+        async function populateAvailability() {
+
+            const availGrid = document.getElementById('availability-grid');
+
+            if (!availGrid) return;
+
+            
+
+            // Initial load or rebuild? Check if cards exist
+
+            const hasCards = availGrid.querySelectorAll('.event-card').length === UPCOMING_EVENTS.length;
+
+            
+
+            for (const event of UPCOMING_EVENTS) {
+
+                let card = availGrid.querySelector(`[data-event-id="${event.id}"]`);
+
+                
+
+                // Fetch current status
+
+                let currentStatus = null;
+
+                let preferredSlot = null;
+
+                try {
+
+                    const statusDoc = await db.collection("event_availability").doc(event.id).collection("responses").doc(auth.currentUser.uid).get();
+
+                    if (statusDoc.exists) {
+
+                        currentStatus = statusDoc.data().status;
+
+                        preferredSlot = statusDoc.data().preferredSlot;
+
+                    }
+
+                } catch (e) { console.warn("Could not fetch status for", event.id); }
+
+
+
+                if (!card) {
+
+                    card = document.createElement('div');
+
+                    card.className = "card glass event-card";
+
+                    card.setAttribute('data-event-id', event.id);
+
+                    card.style.padding = "1.5rem";
+
+                    availGrid.appendChild(card);
+
+                }
+
+
+
+                // Update content only if needed (or always if we want precise states)
+
+                let slotsHtml = '';
+
+                if (event.slots && currentStatus === 'signed_up') {
+
+                    slotsHtml = `
+
+                        <div style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
+
+                            <label style="font-size: 0.6rem; color: var(--primary); display:block; margin-bottom: 0.5rem; text-transform: uppercase;">Timeslot Preference</label>
+
+                            <select onchange="updatePreference('${event.id}', this.value)" class="btn btn-outline" style="width: 100%; font-size: 0.7rem; padding: 0.4rem;">
+
+                                <option value="">-- Select Preference --</option>
+
+                                ${event.slots.map(s => `<option value="${s}" ${preferredSlot === s ? 'selected' : ''}>${s}</option>`).join('')}
+
+                            </select>
+
+                        </div>
+
+                    `;
+
+                }
+
+
+
+                card.innerHTML = `
+
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+
+                        <div class="event-meta">${event.date}</div>
+
+                        <div id="countdown-${event.id}" style="font-size: 0.6rem; font-weight: 700; color: var(--primary); font-family: monospace; background: rgba(0,207,255,0.1); padding: 2px 6px; border-radius: 4px;">--:--:--:--</div>
+
+                    </div>
+
+                    <h3 style="font-size: 1rem;">${event.name}</h3>
+
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1.5rem;">
+
+                        <button onclick="setAvailability('${event.id}', 'signed_up')" class="btn ${currentStatus === 'signed_up' ? 'btn-primary' : 'btn-outline'}" style="padding: 0.5rem; font-size: 0.7rem;">Sign Up</button>
+
+                        <button onclick="setAvailability('${event.id}', 'not_interested')" class="btn ${currentStatus === 'not_interested' ? 'btn-primary' : 'btn-outline'}" style="padding: 0.5rem; font-size: 0.7rem; background: ${currentStatus === 'not_interested' ? '#444' : ''};">Not Interested</button>
+
+                        <button onclick="setAvailability('${event.id}', 'unavailable')" class="btn ${currentStatus === 'unavailable' ? 'btn-primary' : 'btn-outline'}" style="padding: 0.5rem; font-size: 0.7rem; background: ${currentStatus === 'unavailable' ? '#600' : ''};">Not Available</button>
+
+                    </div>
+
+                    ${slotsHtml}
+
+                `;
+
+            }
+
+            startCountdowns();
+
+        }
+
+
+
+        let countdownInterval = null;
+
+        function startCountdowns() {
+
+            if (countdownInterval) clearInterval(countdownInterval);
+
+            
+
+            const update = () => {
+
+                const now = new Date().getTime();
+
+                UPCOMING_EVENTS.forEach(event => {
+
+                    const el = document.getElementById(`countdown-${event.id}`);
+
+                    if (!el || !event.startDate) return;
+
+
+
+                    const target = new Date(event.startDate).getTime();
+
+                    const diff = target - now;
+
+
+
+                    if (diff <= 0) {
+
+                        el.textContent = "LIVE";
+
+                        el.style.color = "#00ff88";
+
+                        return;
+
+                    }
+
+
+
+                    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+                    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+                    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+                    const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+
+
+                    el.textContent = `${days}d ${hours}h ${mins}m ${secs}s`;
+
+                });
+
+            };
+
+
+
+            update();
+
+            countdownInterval = setInterval(update, 1000);
+
+        }
+
+
+
+        async function updatePreference(eventId, slot) {
+
+            try {
+
+                await db.collection("event_availability").doc(eventId).collection("responses").doc(auth.currentUser.uid).update({
+
+                    preferredSlot: slot
+
+                });
+
+                if (isAdminUser) loadAdminAvailability();
+
+            } catch (error) {
+
+                console.error("Error updating preference:", error);
+
+            }
+
+        }
+
+
+
+        async function setAvailability(eventId, status) {
+
+            try {
+
+                const docRef = db.collection("event_availability").doc(eventId).collection("responses").doc(auth.currentUser.uid);
+
+                const currentDoc = await docRef.get();
+
+                const currentStatus = currentDoc.exists ? currentDoc.data().status : null;
+
+
+
+                if (currentStatus === status) {
+
+                    await docRef.delete();
+
+                } else {
+
+                    const myName = userProfile.driverName || auth.currentUser.displayName;
+
+                    await docRef.set({
+
+                        status: status,
+
+                        driverName: myName,
+
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+
+                    });
+
+                }
+
+
+
+                // Refresh only the logic states, but keep DOM stable
+
+                populateAvailability();
+
+                if (isAdminUser) loadAdminAvailability();
+
+            } catch (error) {
+
+                console.error("Error updating availability:", error);
+
+                alert("Error: " + error.message);
+
+            }
+
+        }
+
+
+
+        async function loadAdminAvailability() {
+
+            const resultsDiv = document.getElementById('admin-availability-results');
+
+            if (!resultsDiv) return;
+
+
+
+            try {
+
+                let html = `
+
+                    <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem; text-align: left;">
+
+                        <thead>
+
+                            <tr style="border-bottom: 1px solid var(--glass-border);">
+
+                                <th style="padding: 1rem;">Driver</th>
+
+                                ${UPCOMING_EVENTS.map(e => `<th style="padding: 1rem; white-space: nowrap;">${e.name.split(' ').slice(0,2).join(' ')}</th>`).join('')}
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                `;
+
+
+
+                // Fetch all unique drivers who have responded
+
+                const allDrivers = {}; // uid -> name
+
+                const allResponses = {}; // eventId -> { uid -> status }
+
+
+
+                for (const event of UPCOMING_EVENTS) {
+
+                    const snap = await db.collection("event_availability").doc(event.id).collection("responses").get();
+
+                    allResponses[event.id] = {};
+
+                    snap.forEach(doc => {
+
+                        const data = doc.data();
+
+                        // Fix: Use multiple fallbacks for driver name
+
+                        allDrivers[doc.id] = data.driverName || data.name || data.discordName || "Unknown Driver";
+
+                        allResponses[event.id][doc.id] = data.status;
+
+                    });
+
+                }
+
+
+
+                const driverUids = Object.keys(allDrivers).sort((a,b) => (allDrivers[a] || "").localeCompare(allDrivers[b] || ""));
+
+
+
+                if (driverUids.length === 0) {
+
+                    html += `<tr><td colspan="${UPCOMING_EVENTS.length + 1}" style="padding: 2rem; text-align: center; color: var(--text-muted);">No responses received yet.</td></tr>`;
+
+                } else {
+
+                    driverUids.forEach(uid => {
+
+                        html += `<tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+
+                            <td style="padding: 0.8rem; font-weight: 700; color: var(--primary);">${allDrivers[uid]}</td>
+
+                        `;
+
+                        UPCOMING_EVENTS.forEach(event => {
+
+                            const status = allResponses[event.id][uid];
+
+                            let statusHtml = "";
+
+                            if (status === 'signed_up') statusHtml = `<span style="color: #00ff88;">YES</span>`;
+
+                            if (status === 'not_interested') statusHtml = `<span style="color: #888;">N/I</span>`;
+
+                            if (status === 'unavailable') statusHtml = `<span style="color: #ff0055;">N/A</span>`;
+
+                            html += `<td style="padding: 0.8rem; text-align: center;">${statusHtml}</td>`;
+
+                        });
+
+                        html += `</tr>`;
+
+                    });
+
+                }
+
+
+
+                html += `</tbody></table>`;
+
+                resultsDiv.innerHTML = html;
+
+
+
+            } catch (error) {
+
+                console.error("Error loading admin availability:", error);
+
+                resultsDiv.innerHTML = `<p style="color: #ff0055;">Error loading results.</p>`;
+
+            }
+
+        }
+
+
+
+        // Consolidated Auth Hook from auth.js
+
+        function onAuthReady(user) {
+
+            if (user) {
+
+                initPortal(user);
+
+            }
+
+        }
+
+
+
+        // Enter key for chat
+
+        document.getElementById('chat-input').addEventListener('keypress', (e) => {
+
+            if (e.key === 'Enter') sendMessage();
+
+        });
+
+
+
+        function injectCredits() {
+
+            if (document.querySelector('.bizare-credits')) return;
+
+            const footer = document.querySelector('footer');
+
+            if (!footer) return;
+
+            
+
+            const credits = document.createElement('a');
+
+            credits.href = 'https://bizare.shop/';
+
+            credits.target = '_blank';
+
+            credits.className = 'bizare-credits';
+
+            credits.innerHTML = 'Created by BiZaRe';
+
+            footer.appendChild(credits);
+
+        }
+
+
+
+        // Initialize Credits
+
+        document.addEventListener('DOMContentLoaded', injectCredits);
+
+        injectCredits(); // Immediate call in case DOM already loaded
+
+    </script>
+
+    <footer style="padding: 3rem 0; border-top: 1px solid rgba(255,255,255,0.05); text-align: center; margin-top: 4rem;">
+
+        <div style="display: flex; justify-content: center; gap: 1.5rem; margin-bottom: 1.5rem;">
+
+            <a href="https://discord.gg/gridup" target="_blank" style="opacity: 0.6; transition: opacity 0.3s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">
+
+                <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 127.14 96.36" fill="#ffffff"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a67.55,67.55,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.31,60,73.31,53s5-12.74,11.43-12.74S96.2,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
+
+            </a>
+
+            <a href="https://www.youtube.com/@griduptv" target="_blank" style="opacity: 0.6; transition: opacity 0.3s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">
+
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="#ffffff" style="margin-top: -1px;"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+
+            </a>
+
+        </div>
+
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">&copy; 2026 GRiD UP Sim Racing. Not affiliated with iRacing.com</p>
+
+    <div style="display: none;"><a href="https://www.sigmatraffic.com?ref=328509">Free website hits</a></div></footer>
+
+</body>
+
+</html>
+
+
+
