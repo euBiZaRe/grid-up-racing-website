@@ -143,7 +143,7 @@ async function loadAndRenderStandings() {
         const allResults = [];
         snapshot.forEach(doc => {
             const data = doc.data();
-            if (data.eventId === 'gtc-virginia-120') {
+            if (data.eventId === 'gtc-virginia-120' || data.eventId === 'gtc-glen-24') {
                 allResults.push(data);
             }
         });
