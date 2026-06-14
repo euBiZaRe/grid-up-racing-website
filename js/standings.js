@@ -82,7 +82,11 @@ function calculateStandings(resultsData) {
                 incidents: 0,
                 incidentDeductions: 0,
                 soloRaces: 0,
-                soloPenalty: 0
+                soloPenalty: 0,
+                poles: 0,
+                fastestLapsCount: 0,
+                fewestIncidentsCount: 0,
+                totalBonusPoints: 0
             };
         }
         const t = teams[teamName];
@@ -92,6 +96,19 @@ function calculateStandings(resultsData) {
         if (pos === 1) t.wins += 1;
         if (pos <= 3) t.podiums += 1;
         if (qPos !== 999) t.qualys.push(qPos);
+
+        if (res.polePosition === true) {
+            t.poles += 1;
+            t.totalBonusPoints += 1;
+        }
+        if (res.fastestLap === true || res.fastestLapBonus === true) {
+            t.fastestLapsCount += 1;
+            t.totalBonusPoints += 1;
+        }
+        if (res.fewestIncidents === true) {
+            t.fewestIncidentsCount += 1;
+            t.totalBonusPoints += 1;
+        }
 
         // Track per-class solo races for penalty
         if (!classTeams[carClass][teamName]) classTeams[carClass][teamName] = { soloRaces: 0 };
@@ -184,9 +201,61 @@ function renderStandingsTable(type) {
     const teamsBtn = document.getElementById('st-btn-teams');
     const driversBtn = document.getElementById('st-btn-drivers');
     const penaltiesBtn = document.getElementById('st-btn-penalties');
+    const bonusesBtn = document.getElementById('st-btn-bonuses');
     if (type === 'teams' && teamsBtn) teamsBtn.classList.add('active');
     if (type === 'drivers' && driversBtn) driversBtn.classList.add('active');
     if (type === 'penalties' && penaltiesBtn) penaltiesBtn.classList.add('active');
+    if (type === 'bonuses' && bonusesBtn) bonusesBtn.classList.add('active');
+
+    if (type === 'bonuses') {
+        const teamData = window.leagueStandings.teams;
+        let html = `<table class="claims-table" style="width:100%;text-align:left;border-collapse:separate;border-spacing:0 8px;">
+            <thead>
+                <tr style="color:var(--text-muted);font-size:0.75rem;letter-spacing:2px;text-transform:uppercase;">
+                    <th style="padding:1rem;border-bottom:1px solid rgba(255,255,255,0.1);text-align:center;">Pos</th>
+                    <th style="padding:1rem;border-bottom:1px solid rgba(255,255,255,0.1);">Team</th>
+                    <th style="padding:1rem;border-bottom:1px solid rgba(255,255,255,0.1);text-align:center;">Class</th>
+                    <th style="padding:1rem;border-bottom:1px solid rgba(255,255,255,0.1);text-align:center;">Qualy Pole</th>
+                    <th style="padding:1rem;border-bottom:1px solid rgba(255,255,255,0.1);text-align:center;">Fastest Lap</th>
+                    <th style="padding:1rem;border-bottom:1px solid rgba(255,255,255,0.1);text-align:center;">Fewest Incidents</th>
+                    <th style="padding:1rem;border-bottom:1px solid rgba(255,255,255,0.1);text-align:center;">Total Gained</th>
+                </tr>
+            </thead>
+            <tbody>`;
+
+        teamData.forEach((row, index) => {
+            const pos = index + 1;
+            let posD = pos;
+            if (pos === 1) posD = '🥇';
+            else if (pos === 2) posD = '🥈';
+            else if (pos === 3) posD = '🥉';
+            
+            const badge = row.carClass ? CLASS_BADGE[row.carClass] || '' : '';
+            const poles = row.poles || 0;
+            const fastestLaps = row.fastestLapsCount || 0;
+            const cleanRaces = row.fewestIncidentsCount || 0;
+            const totalGained = row.totalBonusPoints || 0;
+
+            const polesText = poles > 0 ? `+${poles} <span style="font-size:0.75rem;color:var(--text-muted);">pts</span>` : '-';
+            const fastestText = fastestLaps > 0 ? `+${fastestLaps} <span style="font-size:0.75rem;color:var(--text-muted);">pts</span>` : '-';
+            const cleanText = cleanRaces > 0 ? `+${cleanRaces} <span style="font-size:0.75rem;color:var(--text-muted);">pts</span>` : '-';
+            const totalText = totalGained > 0 ? `<span style="color:#00ff88;font-weight:900;">+${totalGained} pts</span>` : '<span style="color:var(--text-muted);">-</span>';
+
+            html += `<tr style="background:rgba(255,255,255,0.02);">
+                <td style="padding:1rem;font-weight:800;border-radius:8px 0 0 8px;width:60px;text-align:center;">${posD}</td>
+                <td style="padding:1rem;font-weight:700;color:#fff;">${row.name}</td>
+                <td style="padding:1rem;text-align:center;">${badge}</td>
+                <td style="padding:1rem;text-align:center;color:#fff;font-weight:700;">${polesText}</td>
+                <td style="padding:1rem;text-align:center;color:#fff;font-weight:700;">${fastestText}</td>
+                <td style="padding:1rem;text-align:center;color:#fff;font-weight:700;">${cleanText}</td>
+                <td style="padding:1rem;border-radius:0 8px 8px 0;font-weight:800;text-align:center;">${totalText}</td>
+            </tr>`;
+        });
+
+        html += `</tbody></table>`;
+        container.innerHTML = html;
+        return;
+    }
 
     if (type === 'penalties') {
         const teamData = window.leagueStandings.teams;
