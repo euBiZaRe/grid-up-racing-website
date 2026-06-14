@@ -543,24 +543,58 @@ function watchApplicationNotification(user) {
         appNotificationUnsub = null;
     }
     if (!db || !user) return;
-    
-    appNotificationUnsub = db.collection('applications')
+
+    let unsubUid = null;
+    let unsubName = null;
+    let unreadUid = false;
+    let unreadName = false;
+
+    const updateBadge = () => {
+        const hasUnread = unreadUid || unreadName;
+        PORTAL_HAS_UNREAD = hasUnread;
+        const badge = document.getElementById('portal-badge');
+        if (badge) {
+            badge.style.display = hasUnread ? 'block' : 'none';
+        }
+    };
+
+    unsubUid = db.collection('applications')
         .where('discordUid', '==', user.uid)
         .onSnapshot(snap => {
-            let hasUnread = false;
+            unreadUid = false;
             snap.forEach(doc => {
                 if (doc.data().unreadApplicant) {
-                    hasUnread = true;
+                    unreadUid = true;
                 }
             });
-            PORTAL_HAS_UNREAD = hasUnread;
-            const badge = document.getElementById('portal-badge');
-            if (badge) {
-                badge.style.display = hasUnread ? 'block' : 'none';
-            }
-        }, err => {
-            console.warn("Error watching application notification:", err);
-        });
+            updateBadge();
+        }, err => console.warn("Error watching app notifications by UID:", err));
+
+    if (user.displayName && user.displayName !== 'Discord User' && user.displayName !== 'Unknown Driver') {
+        unsubName = db.collection('applications')
+            .where('discordUsername', '==', user.displayName)
+            .onSnapshot(snap => {
+                unreadName = false;
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    if (data.unreadApplicant) {
+                        unreadName = true;
+                    }
+                    // Proactively link their secure UID if not set yet
+                    if (!data.discordUid && user.uid) {
+                        db.collection('applications').doc(doc.id).update({
+                            discordUid: user.uid
+                        }).catch(e => console.warn("Failed to link discordUid in auth.js:", e));
+                    }
+                });
+                updateBadge();
+            }, err => console.warn("Error watching app notifications by Username:", err));
+    }
+
+    appNotificationUnsub = () => {
+        if (unsubUid) unsubUid();
+        if (unsubName) unsubName();
+    };
 }
 
 // Initialize on page load
