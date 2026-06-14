@@ -88,6 +88,39 @@ function initAuth() {
         const flashStyle = document.getElementById('auth-flash-prevention');
         if (flashStyle) flashStyle.remove();
 
+        if (user) {
+            // Check if user.displayName is generic/empty, and try to retrieve the real username from the token claims
+            if (!user.displayName || user.displayName === 'Discord User' || user.displayName === 'Unknown Driver') {
+                try {
+                    const tokenResult = await user.getIdTokenResult();
+                    const claims = tokenResult.claims;
+                    const realUsername = claims.preferred_username || claims.username || claims.name;
+                    if (realUsername && realUsername !== user.displayName) {
+                        await user.updateProfile({ displayName: realUsername });
+                        console.log("GRiD UP Auth: Successfully updated displayName to:", realUsername);
+                        // Refresh the user object reference
+                        user = auth.currentUser;
+                    }
+                } catch (e) {
+                    console.error("GRiD UP Auth: Error auto-resolving Discord username:", e);
+                }
+            }
+
+            // Sync basic user info to Firestore users collection
+            try {
+                if (db) {
+                    await db.collection("users").doc(user.uid).set({
+                        discordName: user.displayName,
+                        photoURL: user.photoURL,
+                        email: user.email,
+                        lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+                    }, { merge: true });
+                }
+            } catch (e) {
+                console.warn("GRiD UP Auth: Failed to sync user to Firestore:", e);
+            }
+        }
+
         AUTH_USER = user;
         
         if (user) {

@@ -2500,13 +2500,26 @@
                 }
                 const data = doc.data();
                 
+                // Try to resolve real Discord username from users collection if the saved name is generic
+                let resolvedDiscordUsername = data.discordUsername || 'Not provided';
+                if ((resolvedDiscordUsername === 'Discord User' || resolvedDiscordUsername === 'Unknown Driver' || !data.discordUsername) && data.discordUid) {
+                    try {
+                        const userDoc = await db.collection("users").doc(data.discordUid).get();
+                        if (userDoc.exists && userDoc.data().discordName) {
+                            resolvedDiscordUsername = userDoc.data().discordName;
+                        }
+                    } catch (err) {
+                        console.warn("Could not fetch user profile for discord name resolution:", err);
+                    }
+                }
+                
                 const avail = Array.isArray(data.availability) ? data.availability.join(', ') : (data.availability || 'None');
                 const classes = Array.isArray(data.classes) ? data.classes.join(', ') : (data.classes || 'None');
                 
                 let html = `
                     <div style="margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem;">
                         <h3 style="color: var(--primary); margin-bottom: 0.5rem;">${data.iracingName || 'Unknown'}</h3>
-                        <p style="font-size: 0.85rem; color: #5865F2; margin-bottom: 0.5rem;"><strong>Discord:</strong> ${data.discordUsername || 'Not provided'} ${data.discordUid ? `<span style="color: var(--text-muted); font-size: 0.7rem;">(UID: ${data.discordUid})</span>` : ''}</p>
+                        <p style="font-size: 0.85rem; color: #5865F2; margin-bottom: 0.5rem;"><strong>Discord:</strong> ${resolvedDiscordUsername} ${data.discordUid ? `<span style="color: var(--text-muted); font-size: 0.7rem;">(UID: ${data.discordUid})</span>` : ''}</p>
                         <p style="font-size: 0.8rem; color: var(--text-muted);">Applied on: ${data.timestamp ? data.timestamp.toDate().toLocaleString() : 'Unknown'}</p>
                     </div>
                     

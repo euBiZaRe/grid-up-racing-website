@@ -266,7 +266,16 @@
             
             if (user && discordInput) {
                 // 1. Auto-fill Form
-                discordInput.value = user.displayName || 'Discord User';
+                let username = user.displayName;
+                if (!username || username === 'Discord User') {
+                    try {
+                        const tokenResult = await user.getIdTokenResult();
+                        username = tokenResult.claims.preferred_username || tokenResult.claims.username || tokenResult.claims.name || 'Discord User';
+                    } catch (e) {
+                        username = 'Discord User';
+                    }
+                }
+                discordInput.value = username;
                 discordInput.readOnly = true;
                 discordInput.style.backgroundColor = 'rgba(0, 207, 255, 0.1)';
                 discordInput.style.borderColor = 'var(--primary)';
