@@ -76,6 +76,23 @@
                     LOADING...
                 </div>
                 <p id="app-status-message" style="color: var(--text-main); margin-bottom: 2rem; font-size: 0.95rem; line-height: 1.5; max-width: 500px; margin-left: auto; margin-right: auto;">Please wait while we securely check your application status in the system.</p>
+                
+                <!-- Chat History Section -->
+                <div id="app-chat-section" style="display: none; text-align: left; max-width: 650px; margin: 2rem auto 2rem; padding: 0 1rem;">
+                    <h4 style="font-size: 1.1rem; color: var(--primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; font-family: var(--font-heading); text-transform: uppercase; letter-spacing: 1px;">
+                        Admin Communications
+                    </h4>
+                    <div class="glass chat-wall" style="border-radius: 8px; overflow: hidden; height: 350px; display: flex; flex-direction: column; padding: 0; background: rgba(0, 0, 0, 0.3); border: 1px solid var(--glass-border);">
+                        <div id="app-chat-messages" style="flex: 1; padding: 1.25rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.8rem; height: 100%;">
+                            <!-- Messages populated by JS -->
+                        </div>
+                        <div class="chat-input-area" style="display: flex; gap: 10px; padding: 1rem; background: rgba(15, 18, 24, 0.9); border-top: 1px solid var(--glass-border); align-items: center;">
+                            <input type="text" id="app-chat-input" placeholder="Type a message to the admin team..." style="flex: 1; margin: 0; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.6rem 0.8rem; border-radius: 6px; font-size: 0.85rem;" onkeydown="if(event.key === 'Enter') sendAppMessageReply()">
+                            <button onclick="sendAppMessageReply()" class="btn btn-primary" style="padding: 0.5rem 1.5rem; border-radius: 6px; font-size: 0.85rem; height: auto;">Send</button>
+                        </div>
+                    </div>
+                </div>
+
                 <button id="withdraw-app-btn" onclick="withdrawApplication()" class="btn btn-outline" style="border-color: #ff3333; color: #ff3333; display: none;">Withdraw Application</button>
             </div>
 
@@ -293,47 +310,119 @@
                     if (!snap.empty) {
                         const doc = snap.docs[0];
                         CURRENT_APP_ID = doc.id;
-                        const status = doc.data().status || 'pending';
                         
                         document.getElementById('application-form').style.display = 'none';
                         document.getElementById('application-status-tracker').style.display = 'block';
                         
-                        const badge = document.getElementById('app-status-badge');
-                        const msg = document.getElementById('app-status-message');
-                        const withdrawBtn = document.getElementById('withdraw-app-btn');
-                        
-                        badge.innerText = status;
-                        
-                        if (status === 'pending') {
-                            badge.style.borderColor = 'orange';
-                            badge.style.color = 'orange';
-                            badge.style.background = 'rgba(255, 165, 0, 0.1)';
-                            msg.innerText = "Your application has been received and is waiting for an admin to review it. Thank you for your patience!";
-                            withdrawBtn.style.display = 'inline-block';
-                        } else if (status === 'processing') {
-                            badge.style.borderColor = '#00CFFF';
-                            badge.style.color = '#00CFFF';
-                            badge.style.background = 'rgba(0, 207, 255, 0.1)';
-                            msg.innerText = "An admin is currently reviewing your application. Keep an eye on your Discord DMs!";
-                            withdrawBtn.style.display = 'none';
-                        } else if (status === 'approved') {
-                            badge.style.borderColor = '#00ff88';
-                            badge.style.color = '#00ff88';
-                            badge.style.background = 'rgba(0, 255, 136, 0.1)';
-                            msg.innerText = "Congratulations! Your application has been approved. Welcome to the GRiD UP Endurance team!";
-                            withdrawBtn.style.display = 'none';
-                        } else if (status === 'denied') {
-                            badge.style.borderColor = '#ff3333';
-                            badge.style.color = '#ff3333';
-                            badge.style.background = 'rgba(255, 51, 51, 0.1)';
-                            msg.innerText = "Unfortunately, your application has been denied at this time. Thank you for your interest in GRiD UP.";
-                            withdrawBtn.style.display = 'none';
-                        }
+                        // Start live listener for chat and status updates
+                        loadAppChat(CURRENT_APP_ID);
                     }
                 } catch (e) {
                     console.error("Error checking application status:", e);
                 }
             }
+
+        let unsubAppChat = null;
+        function loadAppChat(appId) {
+            if (unsubAppChat) unsubAppChat();
+            
+            const container = document.getElementById('app-chat-messages');
+            const chatSection = document.getElementById('app-chat-section');
+            const badge = document.getElementById('app-status-badge');
+            const msg = document.getElementById('app-status-message');
+            const withdrawBtn = document.getElementById('withdraw-app-btn');
+
+            unsubAppChat = db.collection("applications").doc(appId)
+                .onSnapshot(doc => {
+                    if (!doc.exists) return;
+                    const data = doc.data();
+                    
+                    // Clear unread applicant flag if set
+                    if (data.unreadApplicant) {
+                        db.collection("applications").doc(appId).update({
+                            unreadApplicant: false
+                        }).catch(e => console.warn("Failed to clear unread applicant flag:", e));
+                    }
+
+                    const status = data.status || 'pending';
+                    badge.innerText = status;
+
+                    if (status === 'pending') {
+                        badge.style.borderColor = 'orange';
+                        badge.style.color = 'orange';
+                        badge.style.background = 'rgba(255, 165, 0, 0.1)';
+                        msg.innerText = "Your application has been received and is waiting for an admin to review it. Thank you for your patience!";
+                        withdrawBtn.style.display = 'inline-block';
+                    } else if (status === 'processing') {
+                        badge.style.borderColor = '#00CFFF';
+                        badge.style.color = '#00CFFF';
+                        badge.style.background = 'rgba(0, 207, 255, 0.1)';
+                        msg.innerText = "An admin is currently reviewing your application. Keep an eye on your Discord DMs!";
+                        withdrawBtn.style.display = 'none';
+                    } else if (status === 'approved') {
+                        badge.style.borderColor = '#00ff88';
+                        badge.style.color = '#00ff88';
+                        badge.style.background = 'rgba(0, 255, 136, 0.1)';
+                        msg.innerText = "Congratulations! Your application has been approved. Welcome to the GRiD UP Endurance team!";
+                        withdrawBtn.style.display = 'none';
+                    } else if (status === 'denied') {
+                        badge.style.borderColor = '#ff3333';
+                        badge.style.color = '#ff3333';
+                        badge.style.background = 'rgba(255, 51, 51, 0.1)';
+                        msg.innerText = "Unfortunately, your application has been denied at this time. Thank you for your interest in GRiD UP.";
+                        withdrawBtn.style.display = 'none';
+                    }
+
+                    // Render Messages
+                    if (container && chatSection) {
+                        chatSection.style.display = 'block';
+                        container.innerHTML = '';
+                        const messages = data.messages || [];
+                        
+                        if (messages.length === 0) {
+                            container.innerHTML = `<p style="text-align: center; color: var(--text-muted); margin-top: 5rem; font-size: 0.85rem;">No messages yet. Send a message to start the conversation with admins!</p>`;
+                        } else {
+                            messages.forEach(m => {
+                                const dateObj = m.timestamp ? (m.timestamp.toDate ? m.timestamp.toDate() : new Date(m.timestamp)) : new Date();
+                                const time = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' ' + dateObj.toLocaleDateString();
+                                const isMe = m.uid === auth.currentUser.uid;
+
+                                container.innerHTML += `
+                                    <div class="message ${isMe ? 'sent' : 'received'}" style="display: flex; flex-direction: column; padding: 0.6rem 1rem; margin-bottom: 0.5rem; background: ${isMe ? 'rgba(0, 207, 255, 0.05)' : 'rgba(255,255,255,0.02)'}; border-left: 2px solid ${isMe ? 'var(--primary)' : 'rgba(255,255,255,0.05)'}; border-radius: 4px; max-width: 80%; align-self: ${isMe ? 'flex-end' : 'flex-start'};">
+                                        <span style="font-weight: 700; color: ${isMe ? 'var(--primary)' : 'var(--text-muted)'}; font-size: 0.75rem; margin-bottom: 0.2rem;">${m.author}</span>
+                                        <span style="font-size: 0.85rem; color: var(--text-main); word-break: break-word;">${m.text}</span>
+                                        <span style="font-size: 0.6rem; color: var(--text-muted); opacity: 0.5; margin-top: 0.4rem; align-self: flex-end;">${time}</span>
+                                    </div>
+                                `;
+                            });
+                        }
+                        container.scrollTop = container.scrollHeight;
+                    }
+                });
+        }
+
+        async function sendAppMessageReply() {
+            const input = document.getElementById('app-chat-input');
+            if (!input || !CURRENT_APP_ID || !auth.currentUser) return;
+            const text = input.value.trim();
+            if (!text) return;
+
+            try {
+                await db.collection('applications').doc(CURRENT_APP_ID).update({
+                    messages: firebase.firestore.FieldValue.arrayUnion({
+                        author: auth.currentUser.displayName || 'Applicant',
+                        uid: auth.currentUser.uid,
+                        text: text,
+                        timestamp: new Date()
+                    }),
+                    unreadAdmin: true
+                });
+                input.value = '';
+            } catch (err) {
+                console.error("Error sending applicant reply:", err);
+                alert("Could not send message: " + err.message);
+            }
+        }
 
         async function withdrawApplication() {
             if (!CURRENT_APP_ID) return;
