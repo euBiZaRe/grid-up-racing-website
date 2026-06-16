@@ -630,20 +630,17 @@
 
             let database;
             try {
-                if (!firebase.apps || firebase.apps.length === 0) {
-                    firebase.initializeApp({
-                        apiKey: "AIzaSyAomPdMD_IrBw52m0Nc2l-cuDKNmH_qqAk",
-                        authDomain: "grid-up.firebaseapp.com",
-                        projectId: "grid-up",
-                        storageBucket: "grid-up.firebasestorage.app",
-                        messagingSenderId: "649006432736",
-                        appId: "1:649006432736:web:5220f500a5e53cb7276b85",
-                        measurementId: "G-956CFQ680Q"
-                    });
+                // Initialize a secondary, independent app named "telemetry" to avoid credential
+                // collisions with the main "grid-up" authenticated app.
+                let telemetryApp = firebase.apps.find(app => app.name === "telemetry");
+                if (!telemetryApp) {
+                    telemetryApp = firebase.initializeApp({
+                        databaseURL: "https://grid-up-racedash-default-rtdb.europe-west1.firebasedatabase.app"
+                    }, "telemetry");
                 }
-                database = firebase.app().database("https://grid-up-racedash-default-rtdb.europe-west1.firebasedatabase.app");
+                database = telemetryApp.database();
             } catch (err) {
-                console.error("Firebase init fallback failed:", err);
+                console.error("Firebase secondary app init failed:", err);
                 database = firebase.database();
             }
 
