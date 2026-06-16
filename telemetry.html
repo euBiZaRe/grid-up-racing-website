@@ -127,16 +127,54 @@
             border-t: 5px solid var(--text-muted);
         }
 
-        .telemetry-grid {
+        .telemetry-layout {
             display: grid;
             grid-template-columns: 1fr;
             gap: 2rem;
         }
 
         @media (min-width: 1024px) {
-            .telemetry-grid {
-                grid-template-columns: repeat(2, 1fr);
+            .telemetry-layout {
+                grid-template-columns: 1.2fr 1fr;
+                align-items: start;
             }
+        }
+
+        .drivers-column {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .race-info-column {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            position: sticky;
+            top: 2rem;
+        }
+
+        .info-widget {
+            background: rgba(20, 20, 20, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+            padding: 1.5rem;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .info-widget-title {
+            font-size: 0.75rem;
+            font-weight: 850;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 0.5rem;
         }
 
         .driver-card {
@@ -743,7 +781,7 @@
                     const stream = currentStreams[mid];
                     const presence = currentDrivers[mid] || {};
                     const isOnline = presence.status === 'online';
-                    const isRecent = presence.lastActive && (now - presence.lastActive) < 15000; // 15 seconds heartbeat check
+                    const isRecent = presence.lastActive && (now - presence.lastActive) < 15000;
                     return stream && isOnline && isRecent;
                 });
                 
@@ -759,7 +797,8 @@
                     return;
                 }
 
-                let cardsHtml = '<div class="telemetry-grid">';
+                // 1. Render Driver Telemetry Cards (LEFT column)
+                let driversHtml = '<div class="drivers-column">';
                 activeMids.forEach(mid => {
                     const streamData = currentStreams[mid];
                     const tel = streamData.telemetry || {};
@@ -770,9 +809,6 @@
                     const speedKmh = Math.round((tel.speed || 0) * 3.6);
                     const gearText = tel.gear === 0 ? "N" : tel.gear === -1 ? "R" : tel.gear;
                     const progressPct = Math.min(Math.max((tel.progress || 0) * 100, 0), 100);
-
-                    // Active tab state lookup
-                    const activeTab = activeTabs[mid] || 'standings';
 
                     // Pedals
                     const throttleVal = tel.throttle || 0;
@@ -785,74 +821,7 @@
                     const lr = tyres.LR || {};
                     const rr = tyres.RR || {};
 
-                    // Build Standings Rows
-                    let standingsRows = '';
-                    if (tel.drivers) {
-                        const sortedDrivers = Object.values(tel.drivers)
-                            .filter(d => d && d.pos > 0)
-                            .sort((a, b) => a.pos - b.pos);
-                        
-                        sortedDrivers.forEach(d => {
-                            const isPlayerRow = d.isPlayer ? 'class="standings-row-player"' : '';
-                            const classIndicator = d.classColor ? `<span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#${d.classColor}; margin-right:4px;"></span>` : '';
-                            
-                            standingsRows += `
-                                <tr ${isPlayerRow}>
-                                    <td style="text-align: center; font-weight: bold;">${d.classPos || d.pos}</td>
-                                    <td><span class="car-num-tag">${d.carNum}</span></td>
-                                    <td><div style="display:flex; align-items:center; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${classIndicator}${d.name}</div></td>
-                                    <td style="text-align: center;">${d.lap || 0}</td>
-                                    <td style="text-align: right;" class="laptime-mono">${formatLapTime(d.lastLap)}</td>
-                                    <td style="text-align: right; color:#f3f4f6;" class="laptime-mono">${formatLapTime(d.bestLap)}</td>
-                                </tr>
-                            `;
-                        });
-                    }
-                    if (!standingsRows) {
-                        standingsRows = '<tr><td colspan="6" style="text-align:center; padding:1rem; color:var(--text-muted);">No standings data available</td></tr>';
-                    }
-
-                    // Build Relative Rows
-                    let relativeRows = '';
-                    if (tel.drivers) {
-                        const relativeDrivers = Object.values(tel.drivers)
-                            .filter(d => d && d.f2Time !== undefined)
-                            .sort((a, b) => b.f2Time - a.f2Time);
-
-                        relativeDrivers.forEach(d => {
-                            const isPlayerRow = d.isPlayer ? 'class="standings-row-player"' : '';
-                            const classIndicator = d.classColor ? `<span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#${d.classColor}; margin-right:4px;"></span>` : '';
-                            
-                            let gapStr = '--';
-                            let gapColor = '#e5e7eb';
-                            if (d.isPlayer) {
-                                gapStr = 'SELF';
-                                gapColor = '#34d399';
-                            } else if (d.f2Time > 0) {
-                                gapStr = `+${d.f2Time.toFixed(1)}s`;
-                                gapColor = '#f97316';
-                            } else if (d.f2Time < 0) {
-                                gapStr = `${d.f2Time.toFixed(1)}s`;
-                                gapColor = '#3b82f6';
-                            }
-
-                            relativeRows += `
-                                <tr ${isPlayerRow}>
-                                    <td style="text-align: center; font-weight: bold;">${d.classPos || d.pos}</td>
-                                    <td><span class="car-num-tag">${d.carNum}</span></td>
-                                    <td><div style="display:flex; align-items:center; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${classIndicator}${d.name}</div></td>
-                                    <td style="text-align: center; font-weight: bold; color: ${gapColor};">${gapStr}</td>
-                                    <td style="text-align: right;" class="laptime-mono">${formatLapTime(d.lastLap)}</td>
-                                    <td style="text-align: right; color:#f3f4f6;" class="laptime-mono">${formatLapTime(d.bestLap)}</td>
-                                </tr>
-                            `;
-                        });
-                    }
-                    if (!relativeRows) {
-                        relativeRows = '<tr><td colspan="6" style="text-align:center; padding:1rem; color:var(--text-muted);">No relative track data available</td></tr>';
-                    }
-
-                    cardsHtml += `
+                    driversHtml += `
                         <div class="driver-card" id="card-${mid}">
                             <!-- Card Header -->
                             <div class="card-header">
@@ -965,53 +934,148 @@
                                     </div>
                                 </div>
                             </div>
-
-                            <!-- Premium Tabs & Tables -->
-                            <div class="standings-container">
-                                <div class="telemetry-tabs">
-                                    <button class="telemetry-tab-btn ${activeTab === 'standings' ? 'active' : ''}" data-tab="standings" onclick="switchTab('${mid}', 'standings')">
-                                        <i data-lucide="list-ordered" style="width: 12px; height: 12px;"></i> Standings
-                                    </button>
-                                    <button class="telemetry-tab-btn ${activeTab === 'relative' ? 'active' : ''}" data-tab="relative" onclick="switchTab('${mid}', 'relative')">
-                                        <i data-lucide="arrow-up-down" style="width: 12px; height: 12px;"></i> Relative (F3)
-                                    </button>
-                                </div>
-
-                                <div class="table-scroll-container">
-                                    <table class="standings-table">
-                                        <thead>
-                                            <tr>
-                                                <th style="text-align: center; width: 40px;">Pos</th>
-                                                <th style="width: 50px;">Car</th>
-                                                <th>Driver</th>
-                                                ${activeTab === 'relative' 
-                                                    ? '<th style="text-align: center; width: 60px;">Gap</th>' 
-                                                    : '<th style="text-align: center; width: 40px;">Lap</th>'}
-                                                <th style="text-align: right; width: 80px;">Last</th>
-                                                <th style="text-align: right; width: 80px;">Best</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            ${activeTab === 'relative' ? relativeRows : standingsRows}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-                            <!-- Footer Stats -->
-                            <div class="card-footer">
-                                <span>Refreshed: 60Hz</span>
-                                <span style="display: flex; align-items: center; gap: 4px;">
-                                    <i data-lucide="compass" style="width: 10px; height: 10px;"></i>
-                                    <span>Track Temp: ${tel.track_temp || 0} °C</span>
-                                </span>
-                            </div>
                         </div>
                     `;
                 });
+                driversHtml += '</div>';
+
+                // 2. Render Session Standings & Relative Gaps (RIGHT column)
+                const primaryMid = activeMids[0];
+                const primaryStream = currentStreams[primaryMid];
+                const primaryTel = primaryStream.telemetry || {};
+                const primaryPresence = currentDrivers[primaryMid] || {};
+                const primaryDriverName = primaryPresence.name || primaryTel.drivers?.[primaryTel.playerIdx]?.name || "Active Driver";
+
+                // Build Standings Rows
+                let standingsRows = '';
+                if (primaryTel.drivers) {
+                    const sortedDrivers = Object.values(primaryTel.drivers)
+                        .filter(d => d && d.pos > 0)
+                        .sort((a, b) => a.pos - b.pos);
+                    
+                    sortedDrivers.forEach(d => {
+                        const isPlayerRow = d.isPlayer ? 'class="standings-row-player"' : '';
+                        const classIndicator = d.classColor ? `<span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#${d.classColor}; margin-right:4px;"></span>` : '';
+                        
+                        standingsRows += `
+                            <tr ${isPlayerRow}>
+                                <td style="text-align: center; font-weight: bold;">${d.classPos || d.pos}</td>
+                                <td><span class="car-num-tag">${d.carNum}</span></td>
+                                <td><div style="display:flex; align-items:center; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${classIndicator}${d.name}</div></td>
+                                <td style="text-align: center;">${d.lap || 0}</td>
+                                <td style="text-align: right;" class="laptime-mono">${formatLapTime(d.lastLap)}</td>
+                                <td style="text-align: right; color:#f3f4f6;" class="laptime-mono">${formatLapTime(d.bestLap)}</td>
+                            </tr>
+                        `;
+                    });
+                }
+                if (!standingsRows) {
+                    standingsRows = '<tr><td colspan="6" style="text-align:center; padding:1.5rem; color:var(--text-muted);">No standings data available</td></tr>';
+                }
+
+                // Build Relative Rows
+                let relativeRows = '';
+                if (primaryTel.drivers) {
+                    const relativeDrivers = Object.values(primaryTel.drivers)
+                        .filter(d => d && d.f2Time !== undefined)
+                        .sort((a, b) => b.f2Time - a.f2Time);
+
+                    relativeDrivers.forEach(d => {
+                        const isPlayerRow = d.isPlayer ? 'class="standings-row-player"' : '';
+                        const classIndicator = d.classColor ? `<span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#${d.classColor}; margin-right:4px;"></span>` : '';
+                        
+                        let gapStr = '--';
+                        let gapColor = '#e5e7eb';
+                        if (d.isPlayer) {
+                            gapStr = 'SELF';
+                            gapColor = '#34d399';
+                        } else if (d.f2Time > 0) {
+                            gapStr = `+${d.f2Time.toFixed(1)}s`;
+                            gapColor = '#f97316';
+                        } else if (d.f2Time < 0) {
+                            gapStr = `${d.f2Time.toFixed(1)}s`;
+                            gapColor = '#3b82f6';
+                        }
+
+                        relativeRows += `
+                            <tr ${isPlayerRow}>
+                                <td style="text-align: center; font-weight: bold;">${d.classPos || d.pos}</td>
+                                <td><span class="car-num-tag">${d.carNum}</span></td>
+                                <td><div style="display:flex; align-items:center; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${classIndicator}${d.name}</div></td>
+                                <td style="text-align: center; font-weight: bold; color: ${gapColor};">${gapStr}</td>
+                                <td style="text-align: right;" class="laptime-mono">${formatLapTime(d.lastLap)}</td>
+                                <td style="text-align: right; color:#f3f4f6;" class="laptime-mono">${formatLapTime(d.bestLap)}</td>
+                            </tr>
+                        `;
+                    });
+                }
+                if (!relativeRows) {
+                    relativeRows = '<tr><td colspan="6" style="text-align:center; padding:1.5rem; color:var(--text-muted);">No relative track data available</td></tr>';
+                }
+
+                let raceInfoHtml = `
+                    <div class="race-info-column">
+                        <!-- Live Standings Widget -->
+                        <div class="info-widget">
+                            <h3 class="info-widget-title">
+                                <i data-lucide="list-ordered" style="width: 16px; height: 16px;"></i> Live Session Standings
+                            </h3>
+                            <div class="table-scroll-container">
+                                <table class="standings-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="text-align: center; width: 40px;">Pos</th>
+                                            <th style="width: 50px;">Car</th>
+                                            <th>Driver</th>
+                                            <th style="text-align: center; width: 40px;">Lap</th>
+                                            <th style="text-align: right; width: 80px;">Last</th>
+                                            <th style="text-align: right; width: 80px;">Best</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${standingsRows}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Relative black box widget -->
+                        <div class="info-widget">
+                            <h3 class="info-widget-title" style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <i data-lucide="arrow-up-down" style="width: 16px; height: 16px;"></i> Relative (F3 Black Box)
+                                </span>
+                                <span style="font-size: 0.65rem; font-weight: 500; text-transform: none; color: var(--text-muted);">Relative to: ${primaryDriverName}</span>
+                            </h3>
+                            <div class="table-scroll-container">
+                                <table class="standings-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="text-align: center; width: 40px;">Pos</th>
+                                            <th style="width: 50px;">Car</th>
+                                            <th>Driver</th>
+                                            <th style="text-align: center; width: 60px;">Gap</th>
+                                            <th style="text-align: right; width: 80px;">Last</th>
+                                            <th style="text-align: right; width: 80px;">Best</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${relativeRows}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                telemetryContent.innerHTML = `
+                    <div class="telemetry-layout">
+                        ${driversHtml}
+                        ${raceInfoHtml}
+                    </div>
+                `;
+
                 window.forceRenderDashboard = renderDashboard;
-                cardsHtml += '</div>';
-                telemetryContent.innerHTML = cardsHtml;
                 lucide.createIcons();
             }
 
