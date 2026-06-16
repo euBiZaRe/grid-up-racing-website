@@ -621,12 +621,17 @@
         
         let streamsRef = null;
         let driversRef = null;
+        let presenceCheckInterval = null;
 
         // Start listening to Firebase database events
         function setupFirebaseListeners(teamId) {
             // Unsubscribe existing listeners if any
             if (streamsRef) streamsRef.off();
             if (driversRef) driversRef.off();
+            if (presenceCheckInterval) clearInterval(presenceCheckInterval);
+            presenceCheckInterval = setInterval(() => {
+                if (typeof renderDashboard === "function") renderDashboard();
+            }, 5000);
 
             let database;
             try {
@@ -652,7 +657,14 @@
 
             // Render updates helper
             function renderDashboard() {
-                const activeMids = Object.keys(currentStreams).filter(mid => currentStreams[mid] && currentStreams[mid].is_live);
+                const now = Date.now();
+                const activeMids = Object.keys(currentStreams).filter(mid => {
+                    const stream = currentStreams[mid];
+                    const presence = currentDrivers[mid] || {};
+                    const isOnline = presence.status === 'online';
+                    const isRecent = presence.lastActive && (now - presence.lastActive) < 15000; // 15 seconds heartbeat check
+                    return stream && isOnline && isRecent;
+                });
                 
                 if (activeMids.length === 0) {
                     telemetryContent.innerHTML = `
