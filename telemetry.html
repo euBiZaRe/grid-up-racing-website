@@ -859,11 +859,23 @@
             streamsRef.on('value', snapshot => {
                 currentStreams = snapshot.val() || {};
                 renderDashboard();
+            }, error => {
+                console.error("Streams subscription failed:", error);
+                telemetryContent.innerHTML = `
+                    <div class="empty-wrapper">
+                        <i data-lucide="alert-triangle" class="empty-icon" style="width: 48px; height: 48px; color: #ef4444;"></i>
+                        <div class="empty-title" style="color: #ef4444;">Connection Error</div>
+                        <div class="empty-desc">Failed to subscribe to streams: ${error.message}</div>
+                    </div>
+                `;
+                lucide.createIcons();
             });
 
             driversRef.on('value', snapshot => {
                 currentDrivers = snapshot.val() || {};
                 renderDashboard();
+            }, error => {
+                console.error("Drivers subscription failed:", error);
             });
         }
 
