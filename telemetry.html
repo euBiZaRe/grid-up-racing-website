@@ -628,7 +628,7 @@
             if (driversRef) driversRef.off();
 
             // Establish Firebase App DB instance pointing to correct European endpoint
-            const database = firebase.database("https://grid-up-racedash-default-rtdb.europe-west1.firebasedatabase.app");
+            const database = firebase.app().database("https://grid-up-racedash-default-rtdb.europe-west1.firebasedatabase.app");
             streamsRef = database.ref(`teams/${teamId}/streams`);
             driversRef = database.ref(`teams/${teamId}/drivers`);
 
@@ -875,7 +875,7 @@
         // Trigger on DOM Loaded
         document.addEventListener('DOMContentLoaded', () => {
             const dbCheckInterval = setInterval(() => {
-                if (window.firebase) {
+                if (window.firebase && firebase.apps && firebase.apps.length > 0) {
                     clearInterval(dbCheckInterval);
                     setupFirebaseListeners(teamSelect.value);
                 }
