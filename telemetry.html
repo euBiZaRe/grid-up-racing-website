@@ -1013,79 +1013,83 @@
                     relativeRows = '<tr><td colspan="6" style="text-align:center; padding:1.5rem; color:var(--text-muted);">No relative track data available</td></tr>';
                 }
 
-                let raceInfoHtml = `
-                    <div class="race-info-column">
-                        <!-- Live Standings Widget -->
-                        <div class="info-widget">
-                            <h3 class="info-widget-title">
-                                <i data-lucide="list-ordered" style="width: 16px; height: 16px;"></i> Live Session Standings
-                            </h3>
-                            <div class="table-scroll-container" id="standings-scroll">
-                                <table class="standings-table">
-                                    <thead>
-                                        <tr>
-                                            <th style="text-align: center; width: 40px;">Pos</th>
-                                            <th style="width: 50px;">Car</th>
-                                            <th>Driver</th>
-                                            <th style="text-align: center; width: 40px;">Lap</th>
-                                            <th style="text-align: right; width: 80px;">Last</th>
-                                            <th style="text-align: right; width: 80px;">Best</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${standingsRows}
-                                    </tbody>
-                                </table>
+                // Verify if static layout structure is initialized
+                let layout = document.getElementById('telemetry-layout-container');
+                if (!layout) {
+                    telemetryContent.innerHTML = `
+                        <div class="telemetry-layout" id="telemetry-layout-container">
+                            <div class="drivers-column" id="drivers-container"></div>
+                            <div class="race-info-column" id="race-info-container">
+                                <!-- Live Standings Widget -->
+                                <div class="info-widget">
+                                    <h3 class="info-widget-title">
+                                        <i data-lucide="list-ordered" style="width: 16px; height: 16px;"></i> Live Session Standings
+                                    </h3>
+                                    <div class="table-scroll-container" id="standings-scroll">
+                                        <table class="standings-table">
+                                            <thead>
+                                                <tr>
+                                                    <th style="text-align: center; width: 40px;">Pos</th>
+                                                    <th style="width: 50px;">Car</th>
+                                                    <th>Driver</th>
+                                                    <th style="text-align: center; width: 40px;">Lap</th>
+                                                    <th style="text-align: right; width: 80px;">Last</th>
+                                                    <th style="text-align: right; width: 80px;">Best</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="standings-body"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- Relative black box widget -->
+                                <div class="info-widget">
+                                    <h3 class="info-widget-title" style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <i data-lucide="arrow-up-down" style="width: 16px; height: 16px;"></i> Relative (F3 Black Box)
+                                        </span>
+                                        <span id="relative-driver-meta" style="font-size: 0.65rem; font-weight: 500; text-transform: none; color: var(--text-muted);">Relative</span>
+                                    </h3>
+                                    <div class="table-scroll-container" id="relative-scroll">
+                                        <table class="standings-table">
+                                            <thead>
+                                                <tr>
+                                                    <th style="text-align: center; width: 40px;">Pos</th>
+                                                    <th style="width: 50px;">Car</th>
+                                                    <th>Driver</th>
+                                                    <th style="text-align: center; width: 60px;">Gap</th>
+                                                    <th style="text-align: right; width: 80px;">Last</th>
+                                                    <th style="text-align: right; width: 80px;">Best</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="relative-body"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                    `;
+                    lucide.createIcons();
+                }
 
-                        <!-- Relative black box widget -->
-                        <div class="info-widget">
-                            <h3 class="info-widget-title" style="display: flex; justify-content: space-between; align-items: center;">
-                                <span style="display: flex; align-items: center; gap: 0.5rem;">
-                                    <i data-lucide="arrow-up-down" style="width: 16px; height: 16px;"></i> Relative (F3 Black Box)
-                                </span>
-                                <span style="font-size: 0.65rem; font-weight: 500; text-transform: none; color: var(--text-muted);">Relative to: ${primaryDriverName}</span>
-                            </h3>
-                            <div class="table-scroll-container" id="relative-scroll">
-                                <table class="standings-table">
-                                    <thead>
-                                        <tr>
-                                            <th style="text-align: center; width: 40px;">Pos</th>
-                                            <th style="width: 50px;">Car</th>
-                                            <th>Driver</th>
-                                            <th style="text-align: center; width: 60px;">Gap</th>
-                                            <th style="text-align: right; width: 80px;">Last</th>
-                                            <th style="text-align: right; width: 80px;">Best</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${relativeRows}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                `;
+                // Update only dynamic bodies so the scroll containers are preserved in the DOM
+                const driversContainer = document.getElementById('drivers-container');
+                const standingsBody = document.getElementById('standings-body');
+                const relativeBody = document.getElementById('relative-body');
+                const relativeDriverMeta = document.getElementById('relative-driver-meta');
 
-                // Capture scroll positions before replacement to prevent jump-to-top
-                const standingsScroll = document.getElementById('standings-scroll');
-                const relativeScroll = document.getElementById('relative-scroll');
-                const standingsScrollTop = standingsScroll ? standingsScroll.scrollTop : 0;
-                const relativeScrollTop = relativeScroll ? relativeScroll.scrollTop : 0;
-
-                telemetryContent.innerHTML = `
-                    <div class="telemetry-layout">
-                        ${driversHtml}
-                        ${raceInfoHtml}
-                    </div>
-                `;
-
-                // Restore scroll positions immediately
-                const newStandingsScroll = document.getElementById('standings-scroll');
-                const newRelativeScroll = document.getElementById('relative-scroll');
-                if (newStandingsScroll) newStandingsScroll.scrollTop = standingsScrollTop;
-                if (newRelativeScroll) newRelativeScroll.scrollTop = relativeScrollTop;
+                if (driversContainer) {
+                    driversContainer.innerHTML = driversHtml;
+                }
+                if (standingsBody) {
+                    standingsBody.innerHTML = standingsRows;
+                }
+                if (relativeBody) {
+                    relativeBody.innerHTML = relativeRows;
+                }
+                if (relativeDriverMeta) {
+                    relativeDriverMeta.innerText = `Relative to: ${primaryDriverName}`;
+                }
 
                 window.forceRenderDashboard = renderDashboard;
                 lucide.createIcons();
