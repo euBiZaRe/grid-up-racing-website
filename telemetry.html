@@ -902,14 +902,20 @@
         });
 
         // Trigger on DOM Loaded
-        document.addEventListener('DOMContentLoaded', () => {
+        function initDashboard() {
             const dbCheckInterval = setInterval(() => {
                 if (window.firebase) {
                     clearInterval(dbCheckInterval);
                     setupFirebaseListeners(teamSelect.value);
                 }
             }, 100);
-        });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initDashboard);
+        } else {
+            initDashboard();
+        }
     </script>
 </body>
 </html>
