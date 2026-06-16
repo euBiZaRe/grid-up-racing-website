@@ -1020,7 +1020,7 @@
                             <h3 class="info-widget-title">
                                 <i data-lucide="list-ordered" style="width: 16px; height: 16px;"></i> Live Session Standings
                             </h3>
-                            <div class="table-scroll-container">
+                            <div class="table-scroll-container" id="standings-scroll">
                                 <table class="standings-table">
                                     <thead>
                                         <tr>
@@ -1047,7 +1047,7 @@
                                 </span>
                                 <span style="font-size: 0.65rem; font-weight: 500; text-transform: none; color: var(--text-muted);">Relative to: ${primaryDriverName}</span>
                             </h3>
-                            <div class="table-scroll-container">
+                            <div class="table-scroll-container" id="relative-scroll">
                                 <table class="standings-table">
                                     <thead>
                                         <tr>
@@ -1068,12 +1068,24 @@
                     </div>
                 `;
 
+                // Capture scroll positions before replacement to prevent jump-to-top
+                const standingsScroll = document.getElementById('standings-scroll');
+                const relativeScroll = document.getElementById('relative-scroll');
+                const standingsScrollTop = standingsScroll ? standingsScroll.scrollTop : 0;
+                const relativeScrollTop = relativeScroll ? relativeScroll.scrollTop : 0;
+
                 telemetryContent.innerHTML = `
                     <div class="telemetry-layout">
                         ${driversHtml}
                         ${raceInfoHtml}
                     </div>
                 `;
+
+                // Restore scroll positions immediately
+                const newStandingsScroll = document.getElementById('standings-scroll');
+                const newRelativeScroll = document.getElementById('relative-scroll');
+                if (newStandingsScroll) newStandingsScroll.scrollTop = standingsScrollTop;
+                if (newRelativeScroll) newRelativeScroll.scrollTop = relativeScrollTop;
 
                 window.forceRenderDashboard = renderDashboard;
                 lucide.createIcons();
