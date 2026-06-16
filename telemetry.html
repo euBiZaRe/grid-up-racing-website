@@ -903,10 +903,26 @@
 
         // Trigger on DOM Loaded
         function initDashboard() {
+            let attempts = 0;
             const dbCheckInterval = setInterval(() => {
+                attempts++;
                 if (window.firebase) {
                     clearInterval(dbCheckInterval);
                     setupFirebaseListeners(teamSelect.value);
+                } else if (attempts > 30) { // 3 seconds timeout
+                    clearInterval(dbCheckInterval);
+                    console.error("Firebase SDK failed to load within 3 seconds.");
+                    telemetryContent.innerHTML = `
+                        <div class="empty-wrapper">
+                            <i data-lucide="alert-triangle" class="empty-icon" style="width: 48px; height: 48px; color: #ef4444;"></i>
+                            <div class="empty-title" style="color: #ef4444;">SDK Load Error</div>
+                            <div class="empty-desc">
+                                The Firebase Database SDK failed to load. If you are using an adblocker (like uBlock Origin, Brave Shield, or AdBlock), 
+                                please disable it or whitelist this domain so the telemetry dashboard can connect.
+                            </div>
+                        </div>
+                    `;
+                    lucide.createIcons();
                 }
             }, 100);
         }
