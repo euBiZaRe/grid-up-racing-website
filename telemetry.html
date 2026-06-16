@@ -627,8 +627,25 @@
             if (streamsRef) streamsRef.off();
             if (driversRef) driversRef.off();
 
-            // Establish Firebase App DB instance pointing to correct European endpoint
-            const database = firebase.app().database("https://grid-up-racedash-default-rtdb.europe-west1.firebasedatabase.app");
+            let database;
+            try {
+                if (!firebase.apps || firebase.apps.length === 0) {
+                    firebase.initializeApp({
+                        apiKey: "AIzaSyAomPdMD_IrBw52m0Nc2l-cuDKNmH_qqAk",
+                        authDomain: "grid-up.firebaseapp.com",
+                        projectId: "grid-up",
+                        storageBucket: "grid-up.firebasestorage.app",
+                        messagingSenderId: "649006432736",
+                        appId: "1:649006432736:web:5220f500a5e53cb7276b85",
+                        measurementId: "G-956CFQ680Q"
+                    });
+                }
+                database = firebase.app().database("https://grid-up-racedash-default-rtdb.europe-west1.firebasedatabase.app");
+            } catch (err) {
+                console.error("Firebase init fallback failed:", err);
+                database = firebase.database();
+            }
+
             streamsRef = database.ref(`teams/${teamId}/streams`);
             driversRef = database.ref(`teams/${teamId}/drivers`);
 
@@ -887,7 +904,7 @@
         // Trigger on DOM Loaded
         document.addEventListener('DOMContentLoaded', () => {
             const dbCheckInterval = setInterval(() => {
-                if (window.firebase && firebase.apps && firebase.apps.length > 0) {
+                if (window.firebase) {
                     clearInterval(dbCheckInterval);
                     setupFirebaseListeners(teamSelect.value);
                 }
