@@ -627,8 +627,8 @@
             if (streamsRef) streamsRef.off();
             if (driversRef) driversRef.off();
 
-            // Establish Firebase App DB instance
-            const database = firebase.database();
+            // Establish Firebase App DB instance pointing to correct European endpoint
+            const database = firebase.database("https://grid-up-racedash-default-rtdb.europe-west1.firebasedatabase.app");
             streamsRef = database.ref(`teams/${teamId}/streams`);
             driversRef = database.ref(`teams/${teamId}/drivers`);
 
