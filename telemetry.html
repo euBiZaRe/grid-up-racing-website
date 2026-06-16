@@ -471,39 +471,109 @@
             padding-top: 1.5rem;
         }
 
+        .table-scroll-container {
+            max-height: 320px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            background: rgba(10, 10, 10, 0.4);
+        }
+
+        .table-scroll-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        .table-scroll-container::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 999px;
+        }
+        .table-scroll-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 999px;
+        }
+        .table-scroll-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
         .standings-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.75rem;
+            font-size: 0.825rem;
             text-align: left;
         }
 
         .standings-table th {
             color: var(--text-muted);
             font-weight: 700;
-            padding: 0.5rem 0.25rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 0.65rem 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             text-transform: uppercase;
             font-size: 0.65rem;
+            letter-spacing: 0.05em;
+            position: sticky;
+            top: 0;
+            background: #141414;
+            z-index: 10;
         }
 
         .standings-table td {
-            padding: 0.5rem 0.25rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.02);
-            color: #d1d5db;
+            padding: 0.65rem 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            color: #e5e7eb;
         }
 
         .standings-row-player {
-            background: rgba(16, 185, 129, 0.08) !important;
+            background: rgba(16, 185, 129, 0.12) !important;
         }
 
         .standings-row-player td {
             color: #34d399 !important;
-            font-weight: 700;
+            font-weight: 800;
         }
 
         .laptime-mono {
             font-family: monospace;
+            font-weight: 600;
+        }
+
+        /* PREMIUM TAB BAR */
+        .telemetry-tabs {
+            display: flex;
+            gap: 0.35rem;
+            margin-bottom: 1rem;
+            background: rgba(10, 10, 10, 0.6);
+            padding: 0.25rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            width: fit-content;
+        }
+
+        .telemetry-tab-btn {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.45rem 0.9rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .telemetry-tab-btn:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .telemetry-tab-btn.active {
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+            box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
         }
     </style>
 </head>
@@ -603,6 +673,17 @@
 
     <!-- Realtime Telemetry Sync Logic -->
     <script>
+        // Tab state tracking (mid -> tab name: 'standings' or 'relative')
+        let activeTabs = {};
+
+        window.switchTab = function(mid, tabName) {
+            activeTabs[mid] = tabName;
+            // Force re-render of dashboard
+            if (window.forceRenderDashboard) {
+                window.forceRenderDashboard();
+            }
+        };
+
         // Formatter for lap times (secs -> m:ss.ms)
         function formatLapTime(secs) {
             if (!secs || secs <= 0) return "--:--.---";
@@ -690,6 +771,9 @@
                     const gearText = tel.gear === 0 ? "N" : tel.gear === -1 ? "R" : tel.gear;
                     const progressPct = Math.min(Math.max((tel.progress || 0) * 100, 0), 100);
 
+                    // Active tab state lookup
+                    const activeTab = activeTabs[mid] || 'standings';
+
                     // Pedals
                     const throttleVal = tel.throttle || 0;
                     const brakeVal = tel.brake || 0;
@@ -728,8 +812,48 @@
                         standingsRows = '<tr><td colspan="6" style="text-align:center; padding:1rem; color:var(--text-muted);">No standings data available</td></tr>';
                     }
 
+                    // Build Relative Rows
+                    let relativeRows = '';
+                    if (tel.drivers) {
+                        const relativeDrivers = Object.values(tel.drivers)
+                            .filter(d => d && d.f2Time !== undefined)
+                            .sort((a, b) => b.f2Time - a.f2Time);
+
+                        relativeDrivers.forEach(d => {
+                            const isPlayerRow = d.isPlayer ? 'class="standings-row-player"' : '';
+                            const classIndicator = d.classColor ? `<span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#${d.classColor}; margin-right:4px;"></span>` : '';
+                            
+                            let gapStr = '--';
+                            let gapColor = '#e5e7eb';
+                            if (d.isPlayer) {
+                                gapStr = 'SELF';
+                                gapColor = '#34d399';
+                            } else if (d.f2Time > 0) {
+                                gapStr = `+${d.f2Time.toFixed(1)}s`;
+                                gapColor = '#f97316';
+                            } else if (d.f2Time < 0) {
+                                gapStr = `${d.f2Time.toFixed(1)}s`;
+                                gapColor = '#3b82f6';
+                            }
+
+                            relativeRows += `
+                                <tr ${isPlayerRow}>
+                                    <td style="text-align: center; font-weight: bold;">${d.classPos || d.pos}</td>
+                                    <td><span class="car-num-tag">${d.carNum}</span></td>
+                                    <td><div style="display:flex; align-items:center; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${classIndicator}${d.name}</div></td>
+                                    <td style="text-align: center; font-weight: bold; color: ${gapColor};">${gapStr}</td>
+                                    <td style="text-align: right;" class="laptime-mono">${formatLapTime(d.lastLap)}</td>
+                                    <td style="text-align: right; color:#f3f4f6;" class="laptime-mono">${formatLapTime(d.bestLap)}</td>
+                                </tr>
+                            `;
+                        });
+                    }
+                    if (!relativeRows) {
+                        relativeRows = '<tr><td colspan="6" style="text-align:center; padding:1rem; color:var(--text-muted);">No relative track data available</td></tr>';
+                    }
+
                     cardsHtml += `
-                        <div class="driver-card">
+                        <div class="driver-card" id="card-${mid}">
                             <!-- Card Header -->
                             <div class="card-header">
                                 <div class="driver-info-block">
@@ -842,25 +966,33 @@
                                 </div>
                             </div>
 
-                            <!-- Live Standings Table -->
+                            <!-- Premium Tabs & Tables -->
                             <div class="standings-container">
-                                <h4 class="metric-title" style="margin-bottom: 0.75rem;">
-                                    <i data-lucide="list-ordered" style="width: 14px; height: 14px;"></i> Live Session Standings
-                                </h4>
-                                <div style="max-height: 250px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.03); border-radius: 12px; background: rgba(10,10,10,0.3);">
+                                <div class="telemetry-tabs">
+                                    <button class="telemetry-tab-btn ${activeTab === 'standings' ? 'active' : ''}" data-tab="standings" onclick="switchTab('${mid}', 'standings')">
+                                        <i data-lucide="list-ordered" style="width: 12px; height: 12px;"></i> Standings
+                                    </button>
+                                    <button class="telemetry-tab-btn ${activeTab === 'relative' ? 'active' : ''}" data-tab="relative" onclick="switchTab('${mid}', 'relative')">
+                                        <i data-lucide="arrow-up-down" style="width: 12px; height: 12px;"></i> Relative (F3)
+                                    </button>
+                                </div>
+
+                                <div class="table-scroll-container">
                                     <table class="standings-table">
                                         <thead>
                                             <tr>
                                                 <th style="text-align: center; width: 40px;">Pos</th>
                                                 <th style="width: 50px;">Car</th>
                                                 <th>Driver</th>
-                                                <th style="text-align: center; width: 40px;">Lap</th>
+                                                ${activeTab === 'relative' 
+                                                    ? '<th style="text-align: center; width: 60px;">Gap</th>' 
+                                                    : '<th style="text-align: center; width: 40px;">Lap</th>'}
                                                 <th style="text-align: right; width: 80px;">Last</th>
                                                 <th style="text-align: right; width: 80px;">Best</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            ${standingsRows}
+                                            ${activeTab === 'relative' ? relativeRows : standingsRows}
                                         </tbody>
                                     </table>
                                 </div>
@@ -877,6 +1009,7 @@
                         </div>
                     `;
                 });
+                window.forceRenderDashboard = renderDashboard;
                 cardsHtml += '</div>';
                 telemetryContent.innerHTML = cardsHtml;
                 lucide.createIcons();
