@@ -465,6 +465,46 @@
             color: var(--text-muted);
             line-height: 1.6;
         }
+
+        .standings-container {
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 1.5rem;
+        }
+
+        .standings-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+            text-align: left;
+        }
+
+        .standings-table th {
+            color: var(--text-muted);
+            font-weight: 700;
+            padding: 0.5rem 0.25rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            text-transform: uppercase;
+            font-size: 0.65rem;
+        }
+
+        .standings-table td {
+            padding: 0.5rem 0.25rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+            color: #d1d5db;
+        }
+
+        .standings-row-player {
+            background: rgba(16, 185, 129, 0.08) !important;
+        }
+
+        .standings-row-player td {
+            color: #34d399 !important;
+            font-weight: 700;
+        }
+
+        .laptime-mono {
+            font-family: monospace;
+        }
     </style>
 </head>
 <body class="telemetry-page">
@@ -524,7 +564,6 @@
                         <option value="gridUp_red">GRiD UP Red</option>
                         <option value="gridUp_white">GRiD UP White</option>
                         <option value="gridUp_practice">PRACTICE SERVER</option>
-                        <option value="solo">SOLO Mode</option>
                     </select>
                     <div class="select-arrow"></div>
                 </div>
@@ -563,6 +602,15 @@
 
     <!-- Realtime Telemetry Sync Logic -->
     <script>
+        // Formatter for lap times (secs -> m:ss.ms)
+        function formatLapTime(secs) {
+            if (!secs || secs <= 0) return "--:--.---";
+            const minutes = Math.floor(secs / 60);
+            const seconds = Math.floor(secs % 60);
+            const milliseconds = Math.floor((secs % 1) * 1000);
+            return `${minutes}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
+        }
+
         // Init Lucide Icons
         lucide.createIcons();
 
@@ -625,6 +673,33 @@
                     const rf = tyres.RF || {};
                     const lr = tyres.LR || {};
                     const rr = tyres.RR || {};
+
+                    // Build Standings Rows
+                    let standingsRows = '';
+                    if (tel.drivers) {
+                        const sortedDrivers = Object.values(tel.drivers)
+                            .filter(d => d && d.pos > 0)
+                            .sort((a, b) => a.pos - b.pos);
+                        
+                        sortedDrivers.forEach(d => {
+                            const isPlayerRow = d.isPlayer ? 'class="standings-row-player"' : '';
+                            const classIndicator = d.classColor ? `<span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#${d.classColor}; margin-right:4px;"></span>` : '';
+                            
+                            standingsRows += `
+                                <tr ${isPlayerRow}>
+                                    <td style="text-align: center; font-weight: bold;">${d.classPos || d.pos}</td>
+                                    <td><span class="car-num-tag">${d.carNum}</span></td>
+                                    <td><div style="display:flex; align-items:center; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${classIndicator}${d.name}</div></td>
+                                    <td style="text-align: center;">${d.lap || 0}</td>
+                                    <td style="text-align: right;" class="laptime-mono">${formatLapTime(d.lastLap)}</td>
+                                    <td style="text-align: right; color:#f3f4f6;" class="laptime-mono">${formatLapTime(d.bestLap)}</td>
+                                </tr>
+                            `;
+                        });
+                    }
+                    if (!standingsRows) {
+                        standingsRows = '<tr><td colspan="6" style="text-align:center; padding:1rem; color:var(--text-muted);">No standings data available</td></tr>';
+                    }
 
                     cardsHtml += `
                         <div class="driver-card">
@@ -737,6 +812,30 @@
                                         <div class="tyre-press">${rr.p || 0} psi</div>
                                         <div class="tyre-temp">${rr.t || 0} °C</div>
                                     </div>
+                                </div>
+                            </div>
+
+                            <!-- Live Standings Table -->
+                            <div class="standings-container">
+                                <h4 class="metric-title" style="margin-bottom: 0.75rem;">
+                                    <i data-lucide="list-ordered" style="width: 14px; height: 14px;"></i> Live Session Standings
+                                </h4>
+                                <div style="max-height: 250px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.03); border-radius: 12px; background: rgba(10,10,10,0.3);">
+                                    <table class="standings-table">
+                                        <thead>
+                                            <tr>
+                                                <th style="text-align: center; width: 40px;">Pos</th>
+                                                <th style="width: 50px;">Car</th>
+                                                <th>Driver</th>
+                                                <th style="text-align: center; width: 40px;">Lap</th>
+                                                <th style="text-align: right; width: 80px;">Last</th>
+                                                <th style="text-align: right; width: 80px;">Best</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${standingsRows}
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
 
