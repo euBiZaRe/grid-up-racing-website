@@ -767,23 +767,21 @@
 
     <!-- Realtime Telemetry Sync Logic -->
     <script>
-        // ===== TRACK MAP ENGINE (60fps Interpolated) =====
-        let trackMapData = null; // Loaded from track-maps.json
+        // ===== TRACK MAP ENGINE (60fps Progress-Interpolated) =====
+        let trackMapData = null;
         let trackMapSvgNS = 'http://www.w3.org/2000/svg';
-        let trackMapCurrentId = null; // Currently rendered trackId
-        let trackMapPathEl = null; // Off-screen SVG <path> for getPointAtLength
+        let trackMapCurrentId = null;
+        let trackMapPathEl = null;
         let trackMapPathLength = 0;
-        let trackMapBBox = null; // Bounding box of the track path
+        let trackMapBBox = null;
         let trackMapAnimFrame = null;
-        let trackMapSmoothed = {}; // {carIdx: {x, y}} — current rendered positions
-        let trackMapTargets = {}; // {carIdx: {x, y}} — target positions from latest data
-        let trackMapDriverMeta = {}; // {carIdx: {isPlayer, classColor, carNum}} — metadata
-        let trackMapActiveTrackData = null; // Current track data ref
-        let trackMapCanvasEl = null; // Cached canvas ref
-        // Pre-computed static layers
+        let trackMapActiveTrackData = null;
+        let trackMapCanvasEl = null;
         let trackMapStaticCanvas = null;
         let trackMapStaticW = 0;
         let trackMapStaticH = 0;
+        // Per-driver state keyed by carNum: { progress, targetProgress, isPlayer, classColor, carNum }
+        let trackMapDrivers = {};
 
         // Load track map data
         fetch('js/track-maps.json')
@@ -810,12 +808,11 @@
             trackMapPathEl.setAttribute('d', svgPathD);
             trackMapPathLength = trackMapPathEl.getTotalLength();
             trackMapBBox = trackMapPathEl.getBBox();
-            // Invalidate static cache when track changes
             trackMapStaticCanvas = null;
         }
 
-        // Calculate driver position on the track path
-        function trackMapGetPosition(progress, trackData) {
+        // Convert progress (0-1) to x,y on the track path
+        function trackMapProgressToXY(progress, trackData) {
             if (!trackMapPathEl || !trackData) return null;
             const totalLength = trackMapPathLength;
             const sfLength = trackData.sp ? trackData.sp.l : 0;
@@ -831,40 +828,73 @@
             return { x: pt.x, y: pt.y };
         }
 
-        // Called by renderDashboard() — updates targets, does NOT draw
+        // Called by renderDashboard() — sets target progress, does NOT draw
         function trackMapUpdateTargets(drivers, trackData) {
             if (!drivers || !trackData) return;
             trackMapActiveTrackData = trackData;
 
+            const now = Date.now();
+            const activeKeys = new Set();
             Object.entries(drivers).forEach(([idx, d]) => {
-                if (!d || d.progress < 0) return;
-                const pos = trackMapGetPosition(d.progress, trackData);
-                if (!pos) return;
-
+                if (!d || typeof d.progress !== 'number' || d.progress < 0) return;
                 const key = d.carNum || idx;
-                trackMapTargets[key] = { x: pos.x, y: pos.y };
-                trackMapDriverMeta[key] = {
-                    isPlayer: d.isPlayer,
-                    classColor: d.classColor,
-                    carNum: d.carNum || '',
-                };
+                activeKeys.add(key);
 
-                // Seed smoothed position on first appearance (no lerp jump)
-                if (!trackMapSmoothed[key]) {
-                    trackMapSmoothed[key] = { x: pos.x, y: pos.y };
+                if (!trackMapDrivers[key]) {
+                    trackMapDrivers[key] = {
+                        progress: d.progress,
+                        targetProgress: d.progress,
+                        lastUpdateTime: now,
+                        progressVelocity: 0,
+                        isPlayer: d.isPlayer,
+                        classColor: d.classColor,
+                        carNum: d.carNum || '',
+                    };
+                } else {
+                    const dState = trackMapDrivers[key];
+                    const oldTarget = dState.targetProgress;
+                    const oldTime = dState.lastUpdateTime;
+
+                    let diff = d.progress - oldTarget;
+                    if (diff > 0.5) diff -= 1.0;
+                    if (diff < -0.5) diff += 1.0;
+
+                    const dt = now - oldTime;
+                    if (dt > 0 && dt < 3000) {
+                        const instantVelocity = diff / dt;
+                        if (dState.progressVelocity === 0) {
+                            dState.progressVelocity = instantVelocity;
+                        } else {
+                            // Smooth the velocity estimate to filter out jitter
+                            dState.progressVelocity = dState.progressVelocity * 0.3 + instantVelocity * 0.7;
+                        }
+                    }
+
+                    dState.targetProgress = d.progress;
+                    dState.lastUpdateTime = now;
+                    dState.isPlayer = d.isPlayer;
+                    dState.classColor = d.classColor;
+                    dState.carNum = d.carNum || '';
                 }
             });
 
-            // Remove drivers that left
-            Object.keys(trackMapSmoothed).forEach(key => {
-                if (!trackMapTargets[key]) {
-                    delete trackMapSmoothed[key];
-                    delete trackMapDriverMeta[key];
-                }
+            Object.keys(trackMapDrivers).forEach(key => {
+                if (!activeKeys.has(key)) delete trackMapDrivers[key];
             });
         }
 
-        // Draw the static track layers (outline, glow, S/F line) into an offscreen canvas
+        // Lerp progress with circular wraparound (handles 0.99 → 0.01 correctly)
+        function lerpProgressCircular(current, target, factor) {
+            let diff = target - current;
+            if (diff > 0.5) diff -= 1.0;
+            if (diff < -0.5) diff += 1.0;
+            let result = current + diff * factor;
+            if (result < 0) result += 1.0;
+            if (result >= 1.0) result -= 1.0;
+            return result;
+        }
+
+        // Draw static track layers into an offscreen canvas (cached)
         function trackMapBuildStaticLayer(cw, ch, trackData, scale, offsetX, offsetY) {
             const offscreen = document.createElement('canvas');
             const dpr = window.devicePixelRatio || 1;
@@ -877,7 +907,6 @@
             ctx.translate(offsetX, offsetY);
             ctx.scale(scale, scale);
 
-            // Track glow
             const path = new Path2D(trackData.i);
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
             ctx.lineWidth = 28 / scale;
@@ -885,12 +914,10 @@
             ctx.lineJoin = 'round';
             ctx.stroke(path);
 
-            // Track line
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
             ctx.lineWidth = 12 / scale;
             ctx.stroke(path);
 
-            // Start/finish marker
             if (trackData.sp) {
                 const sfSvgLen = (trackData.sp.l / trackData.l) * trackMapPathLength;
                 const sfPt = trackMapPathEl.getPointAtLength(sfSvgLen);
@@ -915,7 +942,7 @@
             return offscreen;
         }
 
-        // 60fps animation loop
+        // 60fps animation loop — interpolates progress along the track path
         function trackMapAnimLoop() {
             trackMapAnimFrame = requestAnimationFrame(trackMapAnimLoop);
 
@@ -923,23 +950,25 @@
             if (!canvas || !trackMapBBox || !trackMapActiveTrackData) return;
             trackMapCanvasEl = canvas;
 
+            const parentEl = canvas.parentElement;
+            if (!parentEl) return;
             const ctx = canvas.getContext('2d');
             const dpr = window.devicePixelRatio || 1;
-            const rect = canvas.parentElement.getBoundingClientRect();
+            const rect = parentEl.getBoundingClientRect();
             if (rect.width === 0 || rect.height === 0) return;
 
             const cw = rect.width;
             const ch = rect.height;
 
-            // Resize canvas if needed
-            if (canvas.width !== Math.round(cw * dpr) || canvas.height !== Math.round(ch * dpr)) {
-                canvas.width = Math.round(cw * dpr);
-                canvas.height = Math.round(ch * dpr);
-                trackMapStaticCanvas = null; // Invalidate cache on resize
+            const targetW = Math.round(cw * dpr);
+            const targetH = Math.round(ch * dpr);
+            if (canvas.width !== targetW || canvas.height !== targetH) {
+                canvas.width = targetW;
+                canvas.height = targetH;
+                trackMapStaticCanvas = null;
             }
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-            // Compute transform
             const pad = 30;
             const bbox = trackMapBBox;
             const scaleX = (cw - pad * 2) / bbox.width;
@@ -948,72 +977,70 @@
             const offsetX = (cw - bbox.width * scale) / 2 - bbox.x * scale;
             const offsetY = (ch - bbox.height * scale) / 2 - bbox.y * scale;
 
-            // Build static layer cache (track outline + S/F)
             if (!trackMapStaticCanvas || trackMapStaticW !== cw || trackMapStaticH !== ch) {
                 trackMapStaticCanvas = trackMapBuildStaticLayer(cw, ch, trackMapActiveTrackData, scale, offsetX, offsetY);
                 trackMapStaticW = cw;
                 trackMapStaticH = ch;
             }
 
-            // Clear and stamp static layer
             ctx.clearRect(0, 0, cw, ch);
             ctx.drawImage(trackMapStaticCanvas, 0, 0, cw, ch);
 
-            // Lerp smoothed positions toward targets
-            const lerpFactor = 0.18; // Smooth but responsive
-            Object.keys(trackMapSmoothed).forEach(key => {
-                const s = trackMapSmoothed[key];
-                const t = trackMapTargets[key];
-                if (!t) return;
-                s.x += (t.x - s.x) * lerpFactor;
-                s.y += (t.y - s.y) * lerpFactor;
-            });
+            const lerpFactor = 0.15;
+            const tData = trackMapActiveTrackData;
+            const now = Date.now();
 
-            // Draw drivers
             ctx.save();
             ctx.translate(offsetX, offsetY);
             ctx.scale(scale, scale);
 
-            // Sort: player drawn last (on top)
-            const sortedKeys = Object.keys(trackMapSmoothed).sort((a, b) => {
-                const aP = trackMapDriverMeta[a]?.isPlayer ? 1 : 0;
-                const bP = trackMapDriverMeta[b]?.isPlayer ? 1 : 0;
-                return aP - bP;
+            const sortedKeys = Object.keys(trackMapDrivers).sort((a, b) => {
+                return (trackMapDrivers[a].isPlayer ? 1 : 0) - (trackMapDrivers[b].isPlayer ? 1 : 0);
             });
 
             sortedKeys.forEach(key => {
-                const pos = trackMapSmoothed[key];
-                const meta = trackMapDriverMeta[key];
-                if (!pos || !meta) return;
+                const d = trackMapDrivers[key];
+                if (!d) return;
 
-                const radius = meta.isPlayer ? (16 / scale) : (11 / scale);
-                const fontSize = (meta.isPlayer ? 11 : 8.5) / scale;
+                // Dead-reckon/extrapolate progress based on velocity and elapsed time
+                const timeSinceTelemetry = now - d.lastUpdateTime;
+                const clampedTime = Math.min(timeSinceTelemetry, 1500); // limit to 1.5s max extrapolation
+                
+                let extrapolatedProgress = d.targetProgress + d.progressVelocity * clampedTime;
+                extrapolatedProgress = (extrapolatedProgress % 1.0 + 1.0) % 1.0;
 
-                // Driver circle
-                if (meta.isPlayer) {
+                // Smoothly interpolate progress toward extrapolated position
+                d.progress = lerpProgressCircular(d.progress, extrapolatedProgress, lerpFactor);
+
+                // Compute x,y from smoothed progress
+                const pos = trackMapProgressToXY(d.progress, tData);
+                if (!pos) return;
+
+                const radius = d.isPlayer ? (16 / scale) : (11 / scale);
+                const fontSize = (d.isPlayer ? 11 : 8.5) / scale;
+
+                if (d.isPlayer) {
                     ctx.shadowColor = '#f59e0b';
                     ctx.shadowBlur = 12 / scale;
                     ctx.fillStyle = '#f59e0b';
                 } else {
                     ctx.shadowColor = 'transparent';
                     ctx.shadowBlur = 0;
-                    ctx.fillStyle = meta.classColor ? `#${meta.classColor}` : '#6b7280';
+                    ctx.fillStyle = d.classColor ? `#${d.classColor}` : '#6b7280';
                 }
 
                 ctx.beginPath();
                 ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Reset shadow
                 ctx.shadowColor = 'transparent';
                 ctx.shadowBlur = 0;
 
-                // Car number
                 ctx.fillStyle = '#ffffff';
                 ctx.font = `bold ${fontSize}px sans-serif`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(meta.carNum, pos.x, pos.y);
+                ctx.fillText(d.carNum, pos.x, pos.y);
             });
 
             ctx.restore();
@@ -1449,9 +1476,7 @@
                         trackMapInitPath(tData.i);
                         trackMapCurrentId = currentTrackId;
                         // Reset smoothed positions on track change
-                        trackMapSmoothed = {};
-                        trackMapTargets = {};
-                        trackMapDriverMeta = {};
+                        trackMapDrivers = {};
                         trackMapCanvasEl = null;
                     }
 
