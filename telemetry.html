@@ -868,8 +868,8 @@
                         if (dState.progressVelocity === 0) {
                             dState.progressVelocity = instantVelocity;
                         } else {
-                            // Smooth the velocity estimate with a low-pass filter
-                            dState.progressVelocity = dState.progressVelocity * 0.75 + instantVelocity * 0.25;
+                            // High-damping low-pass filter to keep speed estimate extremely stable
+                            dState.progressVelocity = dState.progressVelocity * 0.88 + instantVelocity * 0.12;
                         }
                     }
 
@@ -1015,8 +1015,10 @@
                 let nextProgress = d.progress + d.progressVelocity * clampedDt;
                 nextProgress = (nextProgress % 1.0 + 1.0) % 1.0;
 
-                // 2. Gently correct the position to align with iRacing updates
-                d.progress = lerpProgressCircular(nextProgress, d.targetProgress, 0.05);
+                // 2. Gently correct the position using a time-independent soft lerp (lambda = 1.2)
+                const dtSec = clampedDt / 1000;
+                const correctionFactor = 1 - Math.exp(-1.2 * dtSec);
+                d.progress = lerpProgressCircular(nextProgress, d.targetProgress, correctionFactor);
 
                 // Compute x,y from smoothed progress
                 const pos = trackMapProgressToXY(d.progress, tData);
