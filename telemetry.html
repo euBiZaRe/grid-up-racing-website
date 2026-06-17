@@ -768,6 +768,7 @@
     <!-- Realtime Telemetry Sync Logic -->
     <script>
         // ===== TRACK MAP ENGINE (60fps Progress-Interpolated) =====
+        let serverTimeOffset = 0;
         let trackMapData = null;
         let trackMapSvgNS = 'http://www.w3.org/2000/svg';
         let trackMapCurrentId = null;
@@ -789,6 +790,7 @@
             .then(data => {
                 trackMapData = data;
                 console.log(`[TrackMap] Loaded ${Object.keys(data).length} track maps`);
+                if (typeof renderDashboard === 'function') renderDashboard();
             })
             .catch(err => console.warn('[TrackMap] Failed to load track maps:', err));
 
@@ -1122,6 +1124,11 @@
                 database = firebase.database();
             }
 
+            // Listen to server time offset to correct local clock drift
+            database.ref(".info/serverTimeOffset").on("value", (snap) => {
+                serverTimeOffset = snap.val() || 0;
+            });
+
             streamsRef = database.ref(`teams/${teamId}/streams`);
             driversRef = database.ref(`teams/${teamId}/drivers`);
 
@@ -1130,7 +1137,7 @@
 
             // Render updates helper
             function renderDashboard() {
-                const now = Date.now();
+                const now = Date.now() + serverTimeOffset;
                 const activeMids = Object.keys(currentStreams).filter(mid => {
                     const stream = currentStreams[mid];
                     const presence = currentDrivers[mid] || {};
@@ -1464,6 +1471,14 @@
                 if (trackMapData && currentTrackId && trackMapData[currentTrackId]) {
                     const tData = trackMapData[currentTrackId];
 
+                    // Ensure canvas element exists in the DOM (restores canvas if fallback overwrote it)
+                    let canvas = document.getElementById('track-map-canvas');
+                    if (!canvas && trackWrapper) {
+                        trackWrapper.innerHTML = '<canvas id="track-map-canvas"></canvas>';
+                        trackMapCanvasEl = null;
+                        trackMapStaticCanvas = null;
+                    }
+
                     // Initialize path if track changed
                     if (trackMapCurrentId !== currentTrackId) {
                         trackMapInitPath(tData.i);
@@ -1471,6 +1486,7 @@
                         // Reset smoothed positions on track change
                         trackMapDrivers = {};
                         trackMapCanvasEl = null;
+                        trackMapStaticCanvas = null;
                     }
 
                     // Feed new target positions to the animation loop
