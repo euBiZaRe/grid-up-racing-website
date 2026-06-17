@@ -846,20 +846,35 @@
                 if (!trackMapDrivers[key]) {
                     trackMapDrivers[key] = {
                         progress: d.progress,
-                        history: [{ t: now, p: d.progress }],
+                        targetProgress: d.progress,
+                        progressVelocity: 0,
+                        lastUpdateTime: now,
                         isPlayer: d.isPlayer,
                         classColor: d.classColor,
                         carNum: d.carNum || '',
                     };
                 } else {
                     const dState = trackMapDrivers[key];
-                    dState.history.push({ t: now, p: d.progress });
-                    
-                    // Keep history bounded to avoid memory leaks (approx 3 seconds of history)
-                    while (dState.history.length > 25) {
-                        dState.history.shift();
+                    const oldTarget = dState.targetProgress;
+                    const oldTime = dState.lastUpdateTime;
+                    const dt = now - oldTime;
+
+                    if (dt > 50 && dt < 2000) {
+                        let diff = d.progress - oldTarget;
+                        if (diff > 0.5) diff -= 1.0;
+                        if (diff < -0.5) diff += 1.0;
+
+                        const instantVelocity = diff / dt; // progress per ms
+                        if (dState.progressVelocity === 0) {
+                            dState.progressVelocity = instantVelocity;
+                        } else {
+                            // Smooth the velocity estimate with a low-pass filter
+                            dState.progressVelocity = dState.progressVelocity * 0.75 + instantVelocity * 0.25;
+                        }
                     }
-                    
+
+                    dState.targetProgress = d.progress;
+                    dState.lastUpdateTime = now;
                     dState.isPlayer = d.isPlayer;
                     dState.classColor = d.classColor;
                     dState.carNum = d.carNum || '';
@@ -930,6 +945,8 @@
             return offscreen;
         }
 
+        let trackMapLastFrameTime = Date.now();
+
         // 60fps animation loop — interpolates progress along the track path
         function trackMapAnimLoop() {
             trackMapAnimFrame = requestAnimationFrame(trackMapAnimLoop);
@@ -976,8 +993,11 @@
 
             const tData = trackMapActiveTrackData;
             const now = Date.now();
-            const renderDelay = 600; // 600ms render buffer to absorb network jitter and packet drops
-            const renderTime = now - renderDelay;
+            const dt = now - trackMapLastFrameTime;
+            trackMapLastFrameTime = now;
+
+            // Clamp dt to avoid physics jumps when tab goes out of focus
+            const clampedDt = Math.min(dt, 100);
 
             ctx.save();
             ctx.translate(offsetX, offsetY);
@@ -989,36 +1009,14 @@
 
             sortedKeys.forEach(key => {
                 const d = trackMapDrivers[key];
-                if (!d || !d.history || d.history.length === 0) return;
+                if (!d) return;
 
-                const hist = d.history;
+                // 1. Integrate visual position at the estimated velocity
+                let nextProgress = d.progress + d.progressVelocity * clampedDt;
+                nextProgress = (nextProgress % 1.0 + 1.0) % 1.0;
 
-                if (hist.length === 1 || renderTime <= hist[0].t) {
-                    d.progress = hist[0].p;
-                } else if (renderTime >= hist[hist.length - 1].t) {
-                    d.progress = hist[hist.length - 1].p;
-                } else {
-                    // Find the segment containing renderTime
-                    let i = 0;
-                    for (; i < hist.length - 1; i++) {
-                        if (renderTime >= hist[i].t && renderTime <= hist[i + 1].t) {
-                            break;
-                        }
-                    }
-                    const p0 = hist[i];
-                    const p1 = hist[i + 1];
-
-                    const segDuration = p1.t - p0.t;
-                    const elapsed = renderTime - p0.t;
-                    const t = segDuration > 0 ? (elapsed / segDuration) : 0;
-
-                    let diff = p1.p - p0.p;
-                    if (diff > 0.5) diff -= 1.0;
-                    if (diff < -0.5) diff += 1.0;
-
-                    let nextProgress = p0.p + diff * t;
-                    d.progress = (nextProgress % 1.0 + 1.0) % 1.0;
-                }
+                // 2. Gently correct the position to align with iRacing updates
+                d.progress = lerpProgressCircular(nextProgress, d.targetProgress, 0.05);
 
                 // Compute x,y from smoothed progress
                 const pos = trackMapProgressToXY(d.progress, tData);
