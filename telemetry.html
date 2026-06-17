@@ -783,6 +783,7 @@
         let trackMapStaticH = 0;
         // Per-driver state keyed by carNum: { progress, targetProgress, isPlayer, classColor, carNum }
         let trackMapDrivers = {};
+        let trackMapLastTimestamp = null;
 
         // Load track map data
         fetch('js/track-maps.json')
@@ -1499,10 +1500,14 @@
                         trackMapDrivers = {};
                         trackMapCanvasEl = null;
                         trackMapStaticCanvas = null;
+                        trackMapLastTimestamp = null;
                     }
 
-                    // Feed new target positions to the animation loop
-                    trackMapUpdateTargets(primaryTel.drivers, tData);
+                    // Feed new target positions to the animation loop (only on new telemetry frames)
+                    if (primaryTel.timestamp && primaryTel.timestamp !== trackMapLastTimestamp) {
+                        trackMapUpdateTargets(primaryTel.drivers, tData);
+                        trackMapLastTimestamp = primaryTel.timestamp;
+                    }
                     trackMapUpdateLegend(primaryTel.drivers);
                     if (trackWrapper) trackWrapper.style.display = '';
                 } else if (trackWrapper) {
