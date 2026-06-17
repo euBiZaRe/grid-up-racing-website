@@ -843,34 +843,27 @@
                 if (!trackMapDrivers[key]) {
                     trackMapDrivers[key] = {
                         progress: d.progress,
-                        targetProgress: d.progress,
+                        startProgress: d.progress,
+                        endProgress: d.progress,
+                        startTime: now,
                         lastUpdateTime: now,
-                        progressVelocity: 0,
+                        duration: 200, // default update interval estimate (5Hz)
                         isPlayer: d.isPlayer,
                         classColor: d.classColor,
                         carNum: d.carNum || '',
                     };
                 } else {
                     const dState = trackMapDrivers[key];
-                    const oldTarget = dState.targetProgress;
                     const oldTime = dState.lastUpdateTime;
-
-                    let diff = d.progress - oldTarget;
-                    if (diff > 0.5) diff -= 1.0;
-                    if (diff < -0.5) diff += 1.0;
-
                     const dt = now - oldTime;
-                    if (dt > 0 && dt < 3000) {
-                        const instantVelocity = diff / dt;
-                        if (dState.progressVelocity === 0) {
-                            dState.progressVelocity = instantVelocity;
-                        } else {
-                            // Smooth the velocity estimate to filter out jitter
-                            dState.progressVelocity = dState.progressVelocity * 0.3 + instantVelocity * 0.7;
-                        }
+
+                    if (dt > 50 && dt < 2000) {
+                        dState.duration = dState.duration * 0.3 + dt * 0.7;
                     }
 
-                    dState.targetProgress = d.progress;
+                    dState.startProgress = dState.progress; // start from current visual position for seamless continuity
+                    dState.endProgress = d.progress;
+                    dState.startTime = now;
                     dState.lastUpdateTime = now;
                     dState.isPlayer = d.isPlayer;
                     dState.classColor = d.classColor;
@@ -986,7 +979,6 @@
             ctx.clearRect(0, 0, cw, ch);
             ctx.drawImage(trackMapStaticCanvas, 0, 0, cw, ch);
 
-            const lerpFactor = 0.15;
             const tData = trackMapActiveTrackData;
             const now = Date.now();
 
@@ -1002,15 +994,16 @@
                 const d = trackMapDrivers[key];
                 if (!d) return;
 
-                // Dead-reckon/extrapolate progress based on velocity and elapsed time
-                const timeSinceTelemetry = now - d.lastUpdateTime;
-                const clampedTime = Math.min(timeSinceTelemetry, 1500); // limit to 1.5s max extrapolation
-                
-                let extrapolatedProgress = d.targetProgress + d.progressVelocity * clampedTime;
-                extrapolatedProgress = (extrapolatedProgress % 1.0 + 1.0) % 1.0;
+                // Linearly interpolate between startProgress and endProgress over the estimated duration
+                const elapsed = now - d.startTime;
+                const t = Math.min(elapsed / (d.duration || 200), 1.5); // extrapolate up to 1.5x duration if late
 
-                // Smoothly interpolate progress toward extrapolated position
-                d.progress = lerpProgressCircular(d.progress, extrapolatedProgress, lerpFactor);
+                let diff = d.endProgress - d.startProgress;
+                if (diff > 0.5) diff -= 1.0;
+                if (diff < -0.5) diff += 1.0;
+
+                let nextProgress = d.startProgress + diff * t;
+                d.progress = (nextProgress % 1.0 + 1.0) % 1.0;
 
                 // Compute x,y from smoothed progress
                 const pos = trackMapProgressToXY(d.progress, tData);
