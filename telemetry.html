@@ -797,38 +797,51 @@
 
         // Create off-screen SVG for path calculations
         function trackMapInitPath(svgPathD) {
-            if (!trackMapPathEl) {
-                const svg = document.createElementNS(trackMapSvgNS, 'svg');
-                svg.setAttribute('width', '0');
-                svg.setAttribute('height', '0');
-                svg.style.position = 'absolute';
-                svg.style.visibility = 'hidden';
-                svg.style.pointerEvents = 'none';
-                document.body.appendChild(svg);
-                trackMapPathEl = document.createElementNS(trackMapSvgNS, 'path');
-                svg.appendChild(trackMapPathEl);
+            if (!svgPathD) return;
+            try {
+                if (!trackMapPathEl) {
+                    const svg = document.createElementNS(trackMapSvgNS, 'svg');
+                    svg.setAttribute('width', '0');
+                    svg.setAttribute('height', '0');
+                    svg.style.position = 'absolute';
+                    svg.style.visibility = 'hidden';
+                    svg.style.pointerEvents = 'none';
+                    document.body.appendChild(svg);
+                    trackMapPathEl = document.createElementNS(trackMapSvgNS, 'path');
+                    svg.appendChild(trackMapPathEl);
+                }
+                trackMapPathEl.setAttribute('d', svgPathD);
+                trackMapPathLength = trackMapPathEl.getTotalLength() || 0;
+                trackMapBBox = trackMapPathEl.getBBox() || { x: 0, y: 0, width: 100, height: 100 };
+                trackMapStaticCanvas = null;
+            } catch (e) {
+                console.error("[TrackMap] Failed to init SVG path:", e);
+                trackMapPathLength = 0;
+                trackMapBBox = { x: 0, y: 0, width: 100, height: 100 };
             }
-            trackMapPathEl.setAttribute('d', svgPathD);
-            trackMapPathLength = trackMapPathEl.getTotalLength();
-            trackMapBBox = trackMapPathEl.getBBox();
-            trackMapStaticCanvas = null;
         }
 
         // Convert progress (0-1) to x,y on the track path
         function trackMapProgressToXY(progress, trackData) {
-            if (!trackMapPathEl || !trackData) return null;
-            const totalLength = trackMapPathLength;
-            const sfLength = trackData.sp ? trackData.sp.l : 0;
-            const direction = trackData.sd || 'clockwise';
+            if (!trackMapPathEl || !trackData || !trackData.l || !trackMapPathLength) return null;
+            try {
+                const totalLength = trackMapPathLength;
+                const sfLength = trackData.sp ? trackData.sp.l : 0;
+                const direction = trackData.sd || 'clockwise';
 
-            const adjustedLength = (totalLength * progress) % totalLength;
-            const length = (direction === 'anticlockwise')
-                ? (sfLength + adjustedLength) % totalLength
-                : (sfLength - adjustedLength + totalLength) % totalLength;
+                const adjustedLength = (totalLength * progress) % totalLength;
+                const length = (direction === 'anticlockwise')
+                    ? (sfLength + adjustedLength) % totalLength
+                    : (sfLength - adjustedLength + totalLength) % totalLength;
 
-            const svgLength = (length / trackData.l) * trackMapPathLength;
-            const pt = trackMapPathEl.getPointAtLength(svgLength);
-            return { x: pt.x, y: pt.y };
+                const svgLength = (length / trackData.l) * trackMapPathLength;
+                if (isNaN(svgLength) || !isFinite(svgLength)) return null;
+
+                const pt = trackMapPathEl.getPointAtLength(svgLength);
+                return pt ? { x: pt.x, y: pt.y } : null;
+            } catch (e) {
+                return null;
+            }
         }
 
         // Called by renderDashboard() — sets target progress, does NOT draw
@@ -906,42 +919,50 @@
             const ctx = offscreen.getContext('2d');
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-            ctx.save();
-            ctx.translate(offsetX, offsetY);
-            ctx.scale(scale, scale);
+            try {
+                ctx.save();
+                ctx.translate(offsetX, offsetY);
+                ctx.scale(scale, scale);
 
-            const path = new Path2D(trackData.i);
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
-            ctx.lineWidth = 28 / scale;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            ctx.stroke(path);
+                const path = new Path2D(trackData.i);
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
+                ctx.lineWidth = 28 / scale;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.stroke(path);
 
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
-            ctx.lineWidth = 12 / scale;
-            ctx.stroke(path);
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+                ctx.lineWidth = 12 / scale;
+                ctx.stroke(path);
 
-            if (trackData.sp) {
-                const sfSvgLen = (trackData.sp.l / trackData.l) * trackMapPathLength;
-                const sfPt = trackMapPathEl.getPointAtLength(sfSvgLen);
-                const sfPt2 = trackMapPathEl.getPointAtLength(sfSvgLen + 1);
-                const dx = sfPt2.x - sfPt.x;
-                const dy = sfPt2.y - sfPt.y;
-                const mag = Math.sqrt(dx * dx + dy * dy) || 1;
-                const perpX = -dy / mag;
-                const perpY = dx / mag;
-                const lineLen = 25;
+                if (trackData.sp && trackData.l && trackMapPathLength) {
+                    const sfSvgLen = (trackData.sp.l / trackData.l) * trackMapPathLength;
+                    if (!isNaN(sfSvgLen) && isFinite(sfSvgLen)) {
+                        const sfPt = trackMapPathEl.getPointAtLength(sfSvgLen);
+                        const sfPt2 = trackMapPathEl.getPointAtLength(sfSvgLen + 1);
+                        if (sfPt && sfPt2) {
+                            const dx = sfPt2.x - sfPt.x;
+                            const dy = sfPt2.y - sfPt.y;
+                            const mag = Math.sqrt(dx * dx + dy * dy) || 1;
+                            const perpX = -dy / mag;
+                            const perpY = dx / mag;
+                            const lineLen = 25;
 
-                ctx.strokeStyle = '#ef4444';
-                ctx.lineWidth = 5 / scale;
-                ctx.lineCap = 'butt';
-                ctx.beginPath();
-                ctx.moveTo(sfPt.x - perpX * lineLen, sfPt.y - perpY * lineLen);
-                ctx.lineTo(sfPt.x + perpX * lineLen, sfPt.y + perpY * lineLen);
-                ctx.stroke();
+                            ctx.strokeStyle = '#ef4444';
+                            ctx.lineWidth = 5 / scale;
+                            ctx.lineCap = 'butt';
+                            ctx.beginPath();
+                            ctx.moveTo(sfPt.x - perpX * lineLen, sfPt.y - perpY * lineLen);
+                            ctx.lineTo(sfPt.x + perpX * lineLen, sfPt.y + perpY * lineLen);
+                            ctx.stroke();
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("[TrackMap] Failed to build static layer:", e);
+            } finally {
+                ctx.restore();
             }
-
-            ctx.restore();
             return offscreen;
         }
 
@@ -951,9 +972,10 @@
         function trackMapAnimLoop() {
             trackMapAnimFrame = requestAnimationFrame(trackMapAnimLoop);
 
-            const canvas = trackMapCanvasEl || document.getElementById('track-map-canvas');
-            if (!canvas || !trackMapBBox || !trackMapActiveTrackData) return;
-            trackMapCanvasEl = canvas;
+            try {
+                const canvas = trackMapCanvasEl || document.getElementById('track-map-canvas');
+                if (!canvas || !trackMapBBox || !trackMapActiveTrackData) return;
+                trackMapCanvasEl = canvas;
 
             const parentEl = canvas.parentElement;
             if (!parentEl) return;
@@ -1052,6 +1074,9 @@
             });
 
             ctx.restore();
+            } catch (err) {
+                console.error("[TrackMap] Loop render error:", err);
+            }
         }
 
         // Start the animation loop
