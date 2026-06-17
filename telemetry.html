@@ -845,28 +845,20 @@
                 if (!trackMapDrivers[key]) {
                     trackMapDrivers[key] = {
                         progress: d.progress,
-                        startProgress: d.progress,
-                        endProgress: d.progress,
-                        startTime: now,
-                        lastUpdateTime: now,
-                        duration: 200, // default update interval estimate (5Hz)
+                        history: [{ t: now, p: d.progress }],
                         isPlayer: d.isPlayer,
                         classColor: d.classColor,
                         carNum: d.carNum || '',
                     };
                 } else {
                     const dState = trackMapDrivers[key];
-                    const oldTime = dState.lastUpdateTime;
-                    const dt = now - oldTime;
-
-                    if (dt > 50 && dt < 2000) {
-                        dState.duration = dState.duration * 0.3 + dt * 0.7;
+                    dState.history.push({ t: now, p: d.progress });
+                    
+                    // Keep history bounded to avoid memory leaks (approx 3 seconds of history)
+                    while (dState.history.length > 25) {
+                        dState.history.shift();
                     }
-
-                    dState.startProgress = dState.progress; // start from current visual position for seamless continuity
-                    dState.endProgress = d.progress;
-                    dState.startTime = now;
-                    dState.lastUpdateTime = now;
+                    
                     dState.isPlayer = d.isPlayer;
                     dState.classColor = d.classColor;
                     dState.carNum = d.carNum || '';
@@ -983,6 +975,8 @@
 
             const tData = trackMapActiveTrackData;
             const now = Date.now();
+            const renderDelay = 600; // 600ms render buffer to absorb network jitter and packet drops
+            const renderTime = now - renderDelay;
 
             ctx.save();
             ctx.translate(offsetX, offsetY);
@@ -994,18 +988,36 @@
 
             sortedKeys.forEach(key => {
                 const d = trackMapDrivers[key];
-                if (!d) return;
+                if (!d || !d.history || d.history.length === 0) return;
 
-                // Linearly interpolate between startProgress and endProgress over the estimated duration
-                const elapsed = now - d.startTime;
-                const t = Math.min(elapsed / (d.duration || 200), 1.5); // extrapolate up to 1.5x duration if late
+                const hist = d.history;
 
-                let diff = d.endProgress - d.startProgress;
-                if (diff > 0.5) diff -= 1.0;
-                if (diff < -0.5) diff += 1.0;
+                if (hist.length === 1 || renderTime <= hist[0].t) {
+                    d.progress = hist[0].p;
+                } else if (renderTime >= hist[hist.length - 1].t) {
+                    d.progress = hist[hist.length - 1].p;
+                } else {
+                    // Find the segment containing renderTime
+                    let i = 0;
+                    for (; i < hist.length - 1; i++) {
+                        if (renderTime >= hist[i].t && renderTime <= hist[i + 1].t) {
+                            break;
+                        }
+                    }
+                    const p0 = hist[i];
+                    const p1 = hist[i + 1];
 
-                let nextProgress = d.startProgress + diff * t;
-                d.progress = (nextProgress % 1.0 + 1.0) % 1.0;
+                    const segDuration = p1.t - p0.t;
+                    const elapsed = renderTime - p0.t;
+                    const t = segDuration > 0 ? (elapsed / segDuration) : 0;
+
+                    let diff = p1.p - p0.p;
+                    if (diff > 0.5) diff -= 1.0;
+                    if (diff < -0.5) diff += 1.0;
+
+                    let nextProgress = p0.p + diff * t;
+                    d.progress = (nextProgress % 1.0 + 1.0) % 1.0;
+                }
 
                 // Compute x,y from smoothed progress
                 const pos = trackMapProgressToXY(d.progress, tData);
