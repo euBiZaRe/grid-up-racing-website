@@ -1521,6 +1521,7 @@
                     if (trackMapCurrentId !== currentTrackId) {
                         trackMapInitPath(tData.i);
                         trackMapCurrentId = currentTrackId;
+                        trackMapActiveTrackData = tData; // Swap active track structure immediately
                         // Reset smoothed positions on track change
                         trackMapDrivers = {};
                         trackMapCanvasEl = null;
