@@ -767,7 +767,7 @@
 
     <!-- Realtime Telemetry Sync Logic -->
     <script>
-        // ===== TRACK MAP ENGINE =====
+        // ===== TRACK MAP ENGINE (60fps Interpolated) =====
         let trackMapData = null; // Loaded from track-maps.json
         let trackMapSvgNS = 'http://www.w3.org/2000/svg';
         let trackMapCurrentId = null; // Currently rendered trackId
@@ -775,8 +775,15 @@
         let trackMapPathLength = 0;
         let trackMapBBox = null; // Bounding box of the track path
         let trackMapAnimFrame = null;
-        let trackMapDriverPositions = {}; // {carIdx: {x, y, targetX, targetY}}
-        let trackMapLastDrivers = null; // Last drivers data for animation
+        let trackMapSmoothed = {}; // {carIdx: {x, y}} — current rendered positions
+        let trackMapTargets = {}; // {carIdx: {x, y}} — target positions from latest data
+        let trackMapDriverMeta = {}; // {carIdx: {isPlayer, classColor, carNum}} — metadata
+        let trackMapActiveTrackData = null; // Current track data ref
+        let trackMapCanvasEl = null; // Cached canvas ref
+        // Pre-computed static layers
+        let trackMapStaticCanvas = null;
+        let trackMapStaticW = 0;
+        let trackMapStaticH = 0;
 
         // Load track map data
         fetch('js/track-maps.json')
@@ -803,6 +810,8 @@
             trackMapPathEl.setAttribute('d', svgPathD);
             trackMapPathLength = trackMapPathEl.getTotalLength();
             trackMapBBox = trackMapPathEl.getBBox();
+            // Invalidate static cache when track changes
+            trackMapStaticCanvas = null;
         }
 
         // Calculate driver position on the track path
@@ -817,44 +826,58 @@
                 ? (sfLength + adjustedLength) % totalLength
                 : (sfLength - adjustedLength + totalLength) % totalLength;
 
-            // Map from stored totalLength ratio to actual SVG path length
             const svgLength = (length / trackData.l) * trackMapPathLength;
             const pt = trackMapPathEl.getPointAtLength(svgLength);
             return { x: pt.x, y: pt.y };
         }
 
-        // Render the track map on canvas
-        function trackMapRender(canvas, drivers, trackData, playerIdx) {
-            if (!canvas || !trackData || !trackMapBBox) return;
-            const ctx = canvas.getContext('2d');
+        // Called by renderDashboard() — updates targets, does NOT draw
+        function trackMapUpdateTargets(drivers, trackData) {
+            if (!drivers || !trackData) return;
+            trackMapActiveTrackData = trackData;
+
+            Object.entries(drivers).forEach(([idx, d]) => {
+                if (!d || d.progress < 0) return;
+                const pos = trackMapGetPosition(d.progress, trackData);
+                if (!pos) return;
+
+                const key = d.carNum || idx;
+                trackMapTargets[key] = { x: pos.x, y: pos.y };
+                trackMapDriverMeta[key] = {
+                    isPlayer: d.isPlayer,
+                    classColor: d.classColor,
+                    carNum: d.carNum || '',
+                };
+
+                // Seed smoothed position on first appearance (no lerp jump)
+                if (!trackMapSmoothed[key]) {
+                    trackMapSmoothed[key] = { x: pos.x, y: pos.y };
+                }
+            });
+
+            // Remove drivers that left
+            Object.keys(trackMapSmoothed).forEach(key => {
+                if (!trackMapTargets[key]) {
+                    delete trackMapSmoothed[key];
+                    delete trackMapDriverMeta[key];
+                }
+            });
+        }
+
+        // Draw the static track layers (outline, glow, S/F line) into an offscreen canvas
+        function trackMapBuildStaticLayer(cw, ch, trackData, scale, offsetX, offsetY) {
+            const offscreen = document.createElement('canvas');
             const dpr = window.devicePixelRatio || 1;
-            const rect = canvas.parentElement.getBoundingClientRect();
-
-            // Set canvas resolution
-            canvas.width = rect.width * dpr;
-            canvas.height = rect.height * dpr;
+            offscreen.width = cw * dpr;
+            offscreen.height = ch * dpr;
+            const ctx = offscreen.getContext('2d');
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-            const cw = rect.width;
-            const ch = rect.height;
-
-            // Clear
-            ctx.clearRect(0, 0, cw, ch);
-
-            // Calculate scale and offset to fit the track in the canvas with padding
-            const pad = 30;
-            const bbox = trackMapBBox;
-            const scaleX = (cw - pad * 2) / bbox.width;
-            const scaleY = (ch - pad * 2) / bbox.height;
-            const scale = Math.min(scaleX, scaleY);
-            const offsetX = (cw - bbox.width * scale) / 2 - bbox.x * scale;
-            const offsetY = (ch - bbox.height * scale) / 2 - bbox.y * scale;
 
             ctx.save();
             ctx.translate(offsetX, offsetY);
             ctx.scale(scale, scale);
 
-            // Draw track outline (glow layer)
+            // Track glow
             const path = new Path2D(trackData.i);
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
             ctx.lineWidth = 28 / scale;
@@ -862,16 +885,15 @@
             ctx.lineJoin = 'round';
             ctx.stroke(path);
 
-            // Draw track (white)
+            // Track line
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
             ctx.lineWidth = 12 / scale;
             ctx.stroke(path);
 
-            // Draw start/finish marker
+            // Start/finish marker
             if (trackData.sp) {
                 const sfSvgLen = (trackData.sp.l / trackData.l) * trackMapPathLength;
                 const sfPt = trackMapPathEl.getPointAtLength(sfSvgLen);
-                // Get perpendicular direction
                 const sfPt2 = trackMapPathEl.getPointAtLength(sfSvgLen + 1);
                 const dx = sfPt2.x - sfPt.x;
                 const dy = sfPt2.y - sfPt.y;
@@ -889,52 +911,116 @@
                 ctx.stroke();
             }
 
+            ctx.restore();
+            return offscreen;
+        }
+
+        // 60fps animation loop
+        function trackMapAnimLoop() {
+            trackMapAnimFrame = requestAnimationFrame(trackMapAnimLoop);
+
+            const canvas = trackMapCanvasEl || document.getElementById('track-map-canvas');
+            if (!canvas || !trackMapBBox || !trackMapActiveTrackData) return;
+            trackMapCanvasEl = canvas;
+
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.parentElement.getBoundingClientRect();
+            if (rect.width === 0 || rect.height === 0) return;
+
+            const cw = rect.width;
+            const ch = rect.height;
+
+            // Resize canvas if needed
+            if (canvas.width !== Math.round(cw * dpr) || canvas.height !== Math.round(ch * dpr)) {
+                canvas.width = Math.round(cw * dpr);
+                canvas.height = Math.round(ch * dpr);
+                trackMapStaticCanvas = null; // Invalidate cache on resize
+            }
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+            // Compute transform
+            const pad = 30;
+            const bbox = trackMapBBox;
+            const scaleX = (cw - pad * 2) / bbox.width;
+            const scaleY = (ch - pad * 2) / bbox.height;
+            const scale = Math.min(scaleX, scaleY);
+            const offsetX = (cw - bbox.width * scale) / 2 - bbox.x * scale;
+            const offsetY = (ch - bbox.height * scale) / 2 - bbox.y * scale;
+
+            // Build static layer cache (track outline + S/F)
+            if (!trackMapStaticCanvas || trackMapStaticW !== cw || trackMapStaticH !== ch) {
+                trackMapStaticCanvas = trackMapBuildStaticLayer(cw, ch, trackMapActiveTrackData, scale, offsetX, offsetY);
+                trackMapStaticW = cw;
+                trackMapStaticH = ch;
+            }
+
+            // Clear and stamp static layer
+            ctx.clearRect(0, 0, cw, ch);
+            ctx.drawImage(trackMapStaticCanvas, 0, 0, cw, ch);
+
+            // Lerp smoothed positions toward targets
+            const lerpFactor = 0.18; // Smooth but responsive
+            Object.keys(trackMapSmoothed).forEach(key => {
+                const s = trackMapSmoothed[key];
+                const t = trackMapTargets[key];
+                if (!t) return;
+                s.x += (t.x - s.x) * lerpFactor;
+                s.y += (t.y - s.y) * lerpFactor;
+            });
+
             // Draw drivers
-            if (drivers) {
-                const driverArr = Object.values(drivers).filter(d => d && d.progress >= 0);
-                // Sort: player last so it renders on top
-                driverArr.sort((a, b) => (a.isPlayer ? 1 : 0) - (b.isPlayer ? 1 : 0));
+            ctx.save();
+            ctx.translate(offsetX, offsetY);
+            ctx.scale(scale, scale);
 
-                driverArr.forEach(d => {
-                    const pos = trackMapGetPosition(d.progress, trackData);
-                    if (!pos) return;
+            // Sort: player drawn last (on top)
+            const sortedKeys = Object.keys(trackMapSmoothed).sort((a, b) => {
+                const aP = trackMapDriverMeta[a]?.isPlayer ? 1 : 0;
+                const bP = trackMapDriverMeta[b]?.isPlayer ? 1 : 0;
+                return aP - bP;
+            });
 
-                    const radius = d.isPlayer ? (16 / scale) : (11 / scale);
-                    const fontSize = (d.isPlayer ? 11 : 8.5) / scale;
+            sortedKeys.forEach(key => {
+                const pos = trackMapSmoothed[key];
+                const meta = trackMapDriverMeta[key];
+                if (!pos || !meta) return;
 
-                    // Driver circle
-                    let fillColor;
-                    if (d.isPlayer) {
-                        fillColor = '#f59e0b'; // Amber for player
-                        // Glow
-                        ctx.shadowColor = '#f59e0b';
-                        ctx.shadowBlur = 12 / scale;
-                    } else {
-                        fillColor = d.classColor ? `#${d.classColor}` : '#6b7280';
-                        ctx.shadowColor = 'transparent';
-                        ctx.shadowBlur = 0;
-                    }
+                const radius = meta.isPlayer ? (16 / scale) : (11 / scale);
+                const fontSize = (meta.isPlayer ? 11 : 8.5) / scale;
 
-                    ctx.fillStyle = fillColor;
-                    ctx.beginPath();
-                    ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    // Reset shadow
+                // Driver circle
+                if (meta.isPlayer) {
+                    ctx.shadowColor = '#f59e0b';
+                    ctx.shadowBlur = 12 / scale;
+                    ctx.fillStyle = '#f59e0b';
+                } else {
                     ctx.shadowColor = 'transparent';
                     ctx.shadowBlur = 0;
+                    ctx.fillStyle = meta.classColor ? `#${meta.classColor}` : '#6b7280';
+                }
 
-                    // Car number text
-                    ctx.fillStyle = '#ffffff';
-                    ctx.font = `bold ${fontSize}px sans-serif`;
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(d.carNum || '', pos.x, pos.y);
-                });
-            }
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Reset shadow
+                ctx.shadowColor = 'transparent';
+                ctx.shadowBlur = 0;
+
+                // Car number
+                ctx.fillStyle = '#ffffff';
+                ctx.font = `bold ${fontSize}px sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(meta.carNum, pos.x, pos.y);
+            });
 
             ctx.restore();
         }
+
+        // Start the animation loop
+        trackMapAnimLoop();
 
         // Update the track map legend
         function trackMapUpdateLegend(drivers) {
@@ -1353,22 +1439,26 @@
                 // ===== UPDATE TRACK MAP =====
                 const primarySession = primaryStream.session || {};
                 const currentTrackId = String(primarySession.trackId || '');
-                const trackCanvas = document.getElementById('track-map-canvas');
                 const trackWrapper = document.getElementById('track-map-wrapper');
 
-                if (trackMapData && currentTrackId && trackMapData[currentTrackId] && trackCanvas) {
+                if (trackMapData && currentTrackId && trackMapData[currentTrackId]) {
                     const tData = trackMapData[currentTrackId];
 
                     // Initialize path if track changed
                     if (trackMapCurrentId !== currentTrackId) {
                         trackMapInitPath(tData.i);
                         trackMapCurrentId = currentTrackId;
+                        // Reset smoothed positions on track change
+                        trackMapSmoothed = {};
+                        trackMapTargets = {};
+                        trackMapDriverMeta = {};
+                        trackMapCanvasEl = null;
                     }
 
-                    // Render track with drivers
-                    trackMapRender(trackCanvas, primaryTel.drivers, tData, primaryTel.playerIdx);
+                    // Feed new target positions to the animation loop
+                    trackMapUpdateTargets(primaryTel.drivers, tData);
                     trackMapUpdateLegend(primaryTel.drivers);
-                    trackWrapper.style.display = '';
+                    if (trackWrapper) trackWrapper.style.display = '';
                 } else if (trackWrapper) {
                     // Show fallback
                     if (!trackMapData) {
