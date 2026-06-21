@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Race Analytics Report | GRiD UP Sim Racing</title>
+    <link rel="stylesheet" href="style.css?v=7">
+    <link rel="icon" type="image/png" href="assets/G_2.png">
+    
+    <!-- Lucide Icons & Chart.js -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        .report-section {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-premium);
+            backdrop-filter: blur(10px);
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: var(--transition-fast);
+        }
+        .stat-card:hover {
+            border-color: var(--primary-gradient);
+            background: rgba(14, 165, 233, 0.04);
+            transform: translateY(-2px);
+        }
+        .stat-val {
+            font-family: var(--font-heading);
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: #ffffff;
+            margin: 0.5rem 0;
+            text-shadow: 0 0 10px rgba(255,255,255,0.1);
+        }
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .stint-bar-container {
+            display: flex;
+            height: 32px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            margin: 1.5rem 0;
+        }
+        .stint-segment {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-heading);
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #ffffff;
+            transition: opacity 0.2s ease;
+            cursor: pointer;
+        }
+        .stint-segment:hover {
+            opacity: 0.85;
+            filter: brightness(1.2);
+        }
+        .tab-scroll-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+        }
+        .analytics-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+        .analytics-table th, .analytics-table td {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .analytics-table th {
+            background: rgba(255, 255, 255, 0.02);
+            font-family: var(--font-heading);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+        }
+        .analytics-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.01);
+        }
+        .lap-best {
+            color: var(--accent-gold) !important;
+            font-weight: 700;
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .badge-primary {
+            background: rgba(14, 165, 233, 0.15);
+            color: var(--primary);
+            border: 1px solid rgba(14, 165, 233, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <nav id="navbar" class="scrolled">
+        <div class="container nav-content">
+            <a href="index.html" class="logo">
+                <img src="assets/logo.png" alt="GRiD UP" style="height: 40px; vertical-align: middle;">
+            </a>
+            <div class="menu-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html#home">Home</a></li>
+                <li><a href="index.html#about">About</a></li>
+                <li><a href="roster.html">Roster</a></li>
+                <li><a href="events.html">Events</a></li>
+                <li><a href="reports.html">Race Reports</a></li>
+                <li><a href="league.html">League</a></li>
+                <li><a href="shop.html">Shop</a></li>
+                <li><a href="team-app.html">Apply</a></li>
+                <li><a href="https://discord.gg/gridup" target="_blank"><img src="assets/discord_header.png" alt="Discord" style="height: 25px; vertical-align: middle;"></a></li>
+                <li><a href="login.html" id="login-link" class="btn btn-outline" style="padding: 0.5rem 1.25rem; font-size: 0.8rem; margin-left: 1rem;">Login</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <header class="hero hero-small">
+        <div class="hero-overlay"></div>
+        <div class="hero-content container" style="text-align: left; padding-top: 5rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                <span class="badge badge-primary" id="report-type-badge">Race Session</span>
+                <span style="color: var(--text-muted); font-size: 0.8rem;" id="report-date-txt">Date</span>
+            </div>
+            <h1 id="report-title" class="glow-text" style="font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 900; margin-bottom: 0.5rem; text-align: left;">Race Telemetry Analysis</h1>
+            <p id="report-track-txt" style="color: var(--primary); font-family: var(--font-heading); font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px;">Track Name</p>
+        </div>
+    </header>
+
+    <main class="container section" style="padding-top: 3rem; padding-bottom: 5rem; max-width: 1200px; margin: 0 auto;">
+        
+        <!-- Summary stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <i data-lucide="award" style="color: var(--accent-gold); width: 24px; height: 24px;"></i>
+                <div class="stat-val" id="stat-total-laps">--</div>
+                <div class="stat-label">Total Laps</div>
+            </div>
+            <div class="stat-card">
+                <i data-lucide="zap" style="color: var(--primary); width: 24px; height: 24px;"></i>
+                <div class="stat-val" id="stat-best-lap">--:--.---</div>
+                <div class="stat-label">Fastest Lap</div>
+            </div>
+            <div class="stat-card">
+                <i data-lucide="gauge" style="color: #34d399; width: 24px; height: 24px;"></i>
+                <div class="stat-val" id="stat-avg-lap">--:--.---</div>
+                <div class="stat-label">Average Pace</div>
+            </div>
+            <div class="stat-card">
+                <i data-lucide="droplet" style="color: #f87171; width: 24px; height: 24px;"></i>
+                <div class="stat-val" id="stat-fuel">-- L</div>
+                <div class="stat-label">Fuel Burned</div>
+            </div>
+        </div>
+
+        <!-- Stints timeline -->
+        <div class="report-section">
+            <h2 style="font-family: var(--font-heading); font-size: 1.25rem; color: #ffffff; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                <i data-lucide="git-commit" style="color: var(--primary);"></i> Driver Stints & Timelines
+            </h2>
+            <div class="stint-bar-container" id="stints-timeline-bar"></div>
+            <div class="tab-scroll-container">
+                <table class="analytics-table">
+                    <thead>
+                        <tr>
+                            <th>Stint</th>
+                            <th>Driver</th>
+                            <th>Laps</th>
+                            <th>Avg Pace</th>
+                            <th>Best Lap</th>
+                            <th>Fuel Used</th>
+                            <th>Stint Time</th>
+                            <th>Ending Reason</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stints-table-body">
+                        <tr>
+                            <td colspan="8" style="text-align: center; color: var(--text-muted);">No stint data registered.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Lap chart graph -->
+        <div class="report-section">
+            <h2 style="font-family: var(--font-heading); font-size: 1.25rem; color: #ffffff; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                <i data-lucide="trending-up" style="color: var(--primary);"></i> Lap-by-Lap Consistency
+            </h2>
+            <div style="position: relative; height: 350px; width: 100%;">
+                <canvas id="lapChartCanvas"></canvas>
+            </div>
+        </div>
+
+        <!-- Detailed lap list -->
+        <div class="report-section">
+            <h2 style="font-family: var(--font-heading); font-size: 1.25rem; color: #ffffff; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem;">
+                <i data-lucide="list" style="color: var(--primary);"></i> Detailed Lap Log
+            </h2>
+            <div class="tab-scroll-container" style="max-height: 500px; overflow-y: auto;">
+                <table class="analytics-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 80px; text-align: center;">Lap</th>
+                            <th>Lap Time</th>
+                            <th>Fuel Remaining</th>
+                            <th>Fuel Burn</th>
+                            <th>Position</th>
+                            <th>Stint Marker</th>
+                        </tr>
+                    </thead>
+                    <tbody id="laps-table-body">
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: var(--text-muted);">Loading session telemetry...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Notable Events Log -->
+        <div class="report-section">
+            <h2 style="font-family: var(--font-heading); font-size: 1.25rem; color: #ffffff; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem;">
+                <i data-lucide="bell" style="color: var(--primary);"></i> Event Log (Overtakes, Incidents & Impacts)
+            </h2>
+            <div class="tab-scroll-container" style="max-height: 400px; overflow-y: auto;">
+                <table class="analytics-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 80px; text-align: center;">Lap</th>
+                            <th style="width: 150px;">Event Type</th>
+                            <th>Description</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="events-table-body">
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: var(--text-muted);">No key race events registered. Clean race!</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 3rem;">
+            <a href="reports.html" class="btn btn-outline" style="min-width: 200px;">Back to Reports</a>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div style="display: flex; justify-content: center; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <a href="https://discord.gg/gridup" target="_blank" style="opacity: 0.6; transition: opacity 0.3s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 127.14 96.36" fill="#ffffff"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a67.55,67.55,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.31,60,73.31,53s5-12.74,11.43-12.74S96.2,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
+                </a>
+                <a href="https://www.youtube.com/@griduptv" target="_blank" style="opacity: 0.6; transition: opacity 0.3s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="#ffffff" style="margin-top: -1px;"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+                </a>
+            </div>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin: 0; padding-bottom: 1rem;">&copy; 2026 GRiD UP SIM RACING. ALL RIGHTS RESERVED.</p>
+        </div>
+    </footer>
+
+    <!-- Firebase SDKs compat -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="script.js?v=5"></script>
+    <script src="js/auth.js?v=4"></script>
+
+    <script>
+        // Formatter for lap times (secs -> m:ss.ms)
+        function formatLapTime(secs) {
+            if (!secs || secs <= 0) return "--:--.---";
+            const minutes = Math.floor(secs / 60);
+            const seconds = Math.floor(secs % 60);
+            const milliseconds = Math.floor((secs % 1) * 1000);
+            return `${minutes}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
+        }
+
+        // Formatter for duration (secs -> h:mm:ss or m:ss)
+        function formatDuration(totalSecs) {
+            const h = Math.floor(totalSecs / 3600);
+            const m = Math.floor((totalSecs % 3600) / 60);
+            const s = totalSecs % 60;
+            if (h > 0) {
+                return `${h}h ${m.toString().padStart(2, '0')}m ${s.toString().padStart(2, '0')}s`;
+            }
+            return `${m}m ${s.toString().padStart(2, '0')}s`;
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const params = new URLSearchParams(window.location.search);
+            const sessionId = params.get('id');
+            if (!sessionId) {
+                window.location.href = 'reports.html';
+                return;
+            }
+
+            // Wait for Firebase to load
+            let attempts = 0;
+            while (typeof db === 'undefined' && attempts < 20) {
+                await new Promise(r => setTimeout(r, 200));
+                attempts++;
+            }
+            if (typeof db === 'undefined') return;
+
+            try {
+                // Fetch from Firestore race_logs collection
+                const docSnap = await db.collection('race_logs').doc(sessionId).get();
+                if (!docSnap.exists) {
+                    document.getElementById('laps-table-body').innerHTML = `
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: #ff3333; padding: 2rem;">
+                                Race report not found. Verify Session ID.
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                const data = docSnap.data();
+                
+                // Set text fields
+                document.getElementById('report-title').textContent = `${data.session_info.sessionType} Telemetry Report`;
+                document.getElementById('report-track-txt').textContent = data.session_info.trackName;
+                document.getElementById('report-date-txt').textContent = data.session_info.date;
+                document.getElementById('report-type-badge').textContent = data.session_info.sessionType;
+
+                // Set summaries
+                const summ = data.summary || {};
+                document.getElementById('stat-total-laps').textContent = summ.total_laps || 0;
+                document.getElementById('stat-best-lap').textContent = formatLapTime(summ.fastest_lap);
+                document.getElementById('stat-avg-lap').textContent = formatLapTime(summ.avg_lap_time);
+                document.getElementById('stat-fuel').textContent = `${summ.fuel_used || 0} L`;
+
+                // Populate Stints timeline and table
+                const stints = data.stints || [];
+                const stintsTimeline = document.getElementById('stints-timeline-bar');
+                const stintsTableBody = document.getElementById('stints-table-body');
+                
+                const stintColors = ['#0ea5e9', '#e11d48', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+
+                if (stints.length > 0) {
+                    stintsTableBody.innerHTML = '';
+                    stintsTimeline.innerHTML = '';
+                    
+                    const totalLaps = stints.reduce((acc, curr) => acc + (curr.total_laps || 0), 0) || 1;
+
+                    stints.forEach((s, idx) => {
+                        const color = stintColors[idx % stintColors.length];
+                        
+                        // Add stint timeline segment
+                        const segment = document.createElement('div');
+                        segment.className = 'stint-segment';
+                        const weight = ((s.total_laps || 0) / totalLaps) * 100;
+                        segment.style.width = `${weight}%`;
+                        segment.style.background = color;
+                        segment.innerHTML = `S${s.stint_num}`;
+                        segment.title = `${s.driver} (Laps: ${s.start_lap}-${s.end_lap})`;
+                        stintsTimeline.appendChild(segment);
+
+                        // Add stint table row
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td><span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:${color}; margin-right:6px;"></span>Stint ${s.stint_num}</td>
+                            <td style="font-weight:600;">${s.driver}</td>
+                            <td>${s.total_laps} <span style="color:var(--text-muted); font-size:0.8rem;">(L${s.start_lap}-${s.end_lap})</span></td>
+                            <td class="laptime-mono">${formatLapTime(s.avg_lap_time)}</td>
+                            <td class="laptime-mono">${formatLapTime(s.best_lap_time)}</td>
+                            <td>${s.fuel_used} L</td>
+                            <td>${formatDuration(s.duration_secs)}</td>
+                            <td><span class="badge" style="background:rgba(255,255,255,0.03); color:var(--text-muted); border:1px solid var(--glass-border);">${s.reason_ended}</span></td>
+                        `;
+                        stintsTableBody.appendChild(tr);
+                    });
+                }
+
+                // Populate Lap log table
+                const laps = data.laps || [];
+                const lapsTableBody = document.getElementById('laps-table-body');
+                if (laps.length > 0) {
+                    lapsTableBody.innerHTML = '';
+                    laps.forEach(l => {
+                        const tr = document.createElement('tr');
+                        const isFastest = l.lap_time === summ.fastest_lap;
+                        const lapTimeClass = isFastest ? 'class="laptime-mono lap-best"' : 'class="laptime-mono"';
+                        
+                        // Find which stint this lap belongs to
+                        let stintBadge = '';
+                        stints.forEach((s, idx) => {
+                            if (l.lap_num >= s.start_lap && l.lap_num <= s.end_lap) {
+                                const color = stintColors[idx % stintColors.length];
+                                stintBadge = `<span class="badge" style="background: ${color}20; color: ${color}; border: 1px solid ${color}40;">Stint ${s.stint_num}</span>`;
+                            }
+                        });
+
+                        tr.innerHTML = `
+                            <td style="text-align: center; font-weight: bold; color: var(--primary);">${l.lap_num}</td>
+                            <td ${lapTimeClass}>${formatLapTime(l.lap_time)}</td>
+                            <td>${l.fuel_level} L</td>
+                            <td>${l.fuel_used > 0 ? `${l.fuel_used} L` : '--'}</td>
+                            <td style="font-weight:600;">P${l.position || '--'}</td>
+                            <td>${stintBadge}</td>
+                        `;
+                        lapsTableBody.appendChild(tr);
+                    });
+                }
+
+                // Render Chart.js lap time consistency chart
+                const labels = laps.map(l => `L${l.lap_num}`);
+                const lapTimesSecs = laps.map(l => l.lap_time > 0 ? l.lap_time : null);
+
+                // Build a nice colored dataset mapped to driver stints
+                const datasetColors = laps.map(l => {
+                    let color = 'rgba(14, 165, 233, 0.4)'; // default theme primary
+                    stints.forEach((s, idx) => {
+                        if (l.lap_num >= s.start_lap && l.lap_num <= s.end_lap) {
+                            color = stintColors[idx % stintColors.length];
+                        }
+                    });
+                    return color;
+                });
+
+                new Chart(document.getElementById('lapChartCanvas').getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Lap Time',
+                            data: lapTimesSecs,
+                            borderColor: '#0ea5e9',
+                            borderWidth: 2,
+                            pointBackgroundColor: datasetColors,
+                            pointBorderColor: datasetColors,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            tension: 0.15,
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Lap Time: ${formatLapTime(context.raw)}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                                ticks: {
+                                    color: '#94a3b8',
+                                    callback: function(value) {
+                                        return formatLapTime(value);
+                                    }
+                                }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { color: '#94a3b8' }
+                            }
+                        }
+                    }
+                });
+
+                // Populate Event Log
+                const events = data.events || [];
+                const eventsTableBody = document.getElementById('events-table-body');
+                
+                function getEventBadge(type) {
+                    let color = '#94a3b8';
+                    let bg = 'rgba(148, 163, 184, 0.1)';
+                    let border = 'rgba(148, 163, 184, 0.3)';
+                    
+                    switch(type) {
+                        case 'overtake':
+                            color = '#34d399';
+                            bg = 'rgba(52, 211, 153, 0.15)';
+                            border = 'rgba(52, 211, 153, 0.3)';
+                            break;
+                        case 'lost_position':
+                            color = '#f59e0b';
+                            bg = 'rgba(245, 158, 11, 0.15)';
+                            border = 'rgba(245, 158, 11, 0.3)';
+                            break;
+                        case 'offtrack':
+                            color = '#facc15';
+                            bg = 'rgba(250, 204, 21, 0.15)';
+                            border = 'rgba(250, 204, 21, 0.3)';
+                            break;
+                        case 'spin':
+                            color = '#f472b6';
+                            bg = 'rgba(244, 114, 182, 0.15)';
+                            border = 'rgba(244, 114, 182, 0.3)';
+                            break;
+                        case 'crash':
+                        case 'impact':
+                            color = '#f87171';
+                            bg = 'rgba(248, 113, 113, 0.15)';
+                            border = 'rgba(248, 113, 113, 0.3)';
+                            break;
+                    }
+                    return `<span class="badge" style="background: ${bg}; color: ${color}; border: 1px solid ${border};">${type.toUpperCase().replace('_', ' ')}</span>`;
+                }
+
+                if (events.length > 0) {
+                    eventsTableBody.innerHTML = '';
+                    events.forEach(e => {
+                        const tr = document.createElement('tr');
+                        let timeStr = '--';
+                        if (e.timestamp) {
+                            const dateObj = new Date(e.timestamp * 1000);
+                            timeStr = dateObj.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                        }
+                        tr.innerHTML = `
+                            <td style="text-align: center; font-weight: bold; color: var(--primary);">${e.lap_num}</td>
+                            <td>${getEventBadge(e.type)}</td>
+                            <td style="color: #ffffff; font-weight: 500;">${e.description}</td>
+                            <td style="color: var(--text-muted); font-size: 0.85rem;">${timeStr}</td>
+                        `;
+                        eventsTableBody.appendChild(tr);
+                    });
+                }
+
+                lucide.createIcons();
+
+            } catch (err) {
+                console.error('Error loading race analysis:', err);
+                document.getElementById('laps-table-body').innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: #ff3333; padding: 2rem;">
+                            Error loading race report analytics.
+                        </td>
+                    </tr>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

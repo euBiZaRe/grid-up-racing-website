@@ -65,6 +65,16 @@
     <main class="container section" style="position: relative; overflow: hidden; padding-bottom: 5rem; min-height: 50vh;">
         <div class="tread-overlay" style="opacity: 0.05;"></div>
         
+        <!-- Tab Selector -->
+        <div class="tabs-wrapper" style="display: flex; justify-content: center; gap: 1rem; margin-bottom: 3rem; position: relative; z-index: 10;">
+            <button class="tab-btn active" id="btn-editorial" style="background: rgba(14,165,233,0.1); border: 1px solid var(--primary); color: #ffffff; padding: 0.75rem 1.5rem; border-radius: 8px; font-family: var(--font-heading); font-weight: 700; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; box-shadow: 0 0 15px rgba(14,165,233,0.2);">
+                Editorial Recaps
+            </button>
+            <button class="tab-btn" id="btn-telemetry" style="background: transparent; border: 1px solid var(--glass-border); color: var(--text-muted); padding: 0.75rem 1.5rem; border-radius: 8px; font-family: var(--font-heading); font-weight: 700; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem;">
+                Telemetry Logs
+            </button>
+        </div>
+        
         <div id="reports-feed" class="driver-grid">
             <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 3rem;">
                 <p>Loading recent reports...</p>
@@ -97,9 +107,21 @@
     <script src="script.js?v=5"></script>
     <script src="js/auth.js?v=4"></script>
     <script>
+    function formatLapTime(secs) {
+        if (!secs || secs <= 0) return "--:--.---";
+        const minutes = Math.floor(secs / 60);
+        const seconds = Math.floor(secs % 60);
+        const milliseconds = Math.floor((secs % 1) * 1000);
+        return `${minutes}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
+    }
+
     document.addEventListener('DOMContentLoaded', async () => {
         const feed = document.getElementById('reports-feed');
+        const btnEditorial = document.getElementById('btn-editorial');
+        const btnTelemetry = document.getElementById('btn-telemetry');
         if (!feed) return;
+
+        let activeTab = 'editorial';
 
         // Wait for Firebase db from script.js
         let attempts = 0;
@@ -112,49 +134,172 @@
             return;
         }
 
-        try {
-            const snap = await db.collection('reports').orderBy('date', 'desc').get();
-            if (snap.empty) {
-                feed.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:3rem;"><p>No race reports yet. Check back after our next event!</p></div>';
-                return;
-            }
-            feed.innerHTML = '';
-            snap.forEach(doc => {
-                const data = doc.data();
-                const id = doc.id;
-                const slug = data.slug || id;
-                const rawDate = data.date && data.date.toDate ? data.date.toDate() : new Date();
-                const dateStr = rawDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-                const banner = data.bannerUrl || 'assets/bg-banner.png';
+        async function loadEditorialReports() {
+            feed.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 3rem;"><p>Loading editorial recaps...</p></div>';
+            try {
+                const snap = await db.collection('reports').orderBy('date', 'desc').get();
+                if (snap.empty) {
+                    feed.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:3rem;"><p>No editorial reports yet.</p></div>';
+                    return;
+                }
+                feed.innerHTML = '';
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    const id = doc.id;
+                    const slug = data.slug || id;
+                    const rawDate = data.date && data.date.toDate ? data.date.toDate() : new Date();
+                    const dateStr = rawDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+                    const banner = data.bannerUrl || 'assets/bg-banner.png';
 
-                const card = document.createElement('div');
-                card.className = 'glass';
-                card.style.cssText = 'border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.4s cubic-bezier(0.23,1,0.32,1), box-shadow 0.4s ease; cursor: pointer; border: 1px solid var(--glass-border);';
-                card.onmouseover = () => { card.style.transform = 'translateY(-8px)'; card.style.boxShadow = '0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(0,207,255,0.15)'; card.style.borderColor = 'rgba(0,207,255,0.4)'; };
-                card.onmouseout = () => { card.style.transform = ''; card.style.boxShadow = ''; card.style.borderColor = 'var(--glass-border)'; };
-                card.onclick = () => window.location.href = `report-detail.html?id=${slug}`;
+                    const card = document.createElement('div');
+                    card.className = 'glass';
+                    card.style.cssText = 'border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.4s cubic-bezier(0.23,1,0.32,1), box-shadow 0.4s ease; cursor: pointer; border: 1px solid var(--glass-border);';
+                    card.onmouseover = () => { card.style.transform = 'translateY(-8px)'; card.style.boxShadow = '0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(0,207,255,0.15)'; card.style.borderColor = 'rgba(0,207,255,0.4)'; };
+                    card.onmouseout = () => { card.style.transform = ''; card.style.boxShadow = ''; card.style.borderColor = 'var(--glass-border)'; };
+                    card.onclick = () => window.location.href = `report-detail.html?id=${slug}`;
 
-                card.innerHTML = `
-                    <div style="height: 200px; overflow: hidden; position: relative;">
-                        <img src="${banner}" alt="${data.title}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease;" onerror="this.src='assets/bg-banner.png'">
-                        <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(10,12,16,0.9) 0%, transparent 60%);"></div>
-                    </div>
-                    <div style="padding: 1.5rem; flex: 1; display: flex; flex-direction: column;">
-                        <p style="color: var(--primary); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.5rem;">${dateStr}</p>
-                        <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.75rem; font-family: var(--font-heading); letter-spacing: 0.05em;">${data.title}</h3>
-                        <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; flex: 1;">${data.summary || ''}</p>
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--glass-border);">
-                            <span style="font-size: 0.75rem; color: var(--text-muted);">By ${data.author || 'GRiD UP'}</span>
-                            <span style="font-size: 0.75rem; color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Read Report ?</span>
+                    card.innerHTML = `
+                        <div style="height: 200px; overflow: hidden; position: relative;">
+                            <img src="${banner}" alt="${data.title}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease;" onerror="this.src='assets/bg-banner.png'">
+                            <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(10,12,16,0.9) 0%, transparent 60%);"></div>
                         </div>
-                    </div>
-                `;
-                feed.appendChild(card);
-            });
-        } catch (e) {
-            console.error('Error loading reports:', e);
-            feed.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#ff3333;padding:3rem;"><p>Error loading reports.</p></div>';
+                        <div style="padding: 1.5rem; flex: 1; display: flex; flex-direction: column;">
+                            <p style="color: var(--primary); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.5rem;">${dateStr}</p>
+                            <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.75rem; font-family: var(--font-heading); letter-spacing: 0.05em;">${data.title}</h3>
+                            <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; flex: 1;">${data.summary || ''}</p>
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--glass-border);">
+                                <span style="font-size: 0.75rem; color: var(--text-muted);">By ${data.author || 'GRiD UP'}</span>
+                                <span style="font-size: 0.75rem; color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Read Report &rarr;</span>
+                            </div>
+                        </div>
+                    `;
+                    feed.appendChild(card);
+                });
+            } catch (e) {
+                console.error('Error loading editorial reports:', e);
+                feed.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#ff3333;padding:3rem;"><p>Error loading reports.</p></div>';
+            }
         }
+
+        async function loadTelemetryReports() {
+            feed.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 3rem;"><p>Loading telemetry reports...</p></div>';
+            try {
+                const snap = await db.collection('race_logs').get();
+                if (snap.empty) {
+                    feed.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:3rem;"><p>No telemetry logs found.</p></div>';
+                    return;
+                }
+                
+                let logs = [];
+                snap.forEach(doc => {
+                    logs.push({ id: doc.id, ...doc.data() });
+                });
+                
+                // Sort by date string descending
+                logs.sort((a, b) => {
+                    const dateA = a.session_info?.date || '';
+                    const dateB = b.session_info?.date || '';
+                    return dateB.localeCompare(dateA);
+                });
+
+                feed.innerHTML = '';
+                logs.forEach(data => {
+                    const id = data.id;
+                    const dateStr = data.session_info?.date || 'Unknown Date';
+                    const trackName = data.session_info?.trackName || 'iRacing Track';
+                    const sessionType = data.session_info?.sessionType || 'Session';
+                    const driverName = data.session_info?.driverName || 'Driver';
+                    const summary = data.summary || {};
+                    const totalLaps = summary.total_laps || 0;
+                    const fastestLap = formatLapTime(summary.fastest_lap);
+                    const avgLap = formatLapTime(summary.avg_lap_time);
+
+                    const card = document.createElement('div');
+                    card.className = 'glass';
+                    card.style.cssText = 'border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.4s cubic-bezier(0.23,1,0.32,1), box-shadow 0.4s ease; cursor: pointer; border: 1px solid var(--glass-border);';
+                    card.onmouseover = () => { card.style.transform = 'translateY(-8px)'; card.style.boxShadow = '0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(0,207,255,0.15)'; card.style.borderColor = 'rgba(0,207,255,0.4)'; };
+                    card.onmouseout = () => { card.style.transform = ''; card.style.boxShadow = ''; card.style.borderColor = 'var(--glass-border)'; };
+                    card.onclick = () => window.location.href = `race-report.html?id=${id}`;
+
+                    card.innerHTML = `
+                        <div style="height: 140px; overflow: hidden; position: relative; background: linear-gradient(135deg, rgba(14,165,233,0.15) 0%, rgba(225,29,72,0.05) 100%); display:flex; align-items:center; justify-content:center;">
+                            <div style="text-align:center; padding: 1rem;">
+                                <span class="badge badge-primary" style="margin-bottom:0.5rem; display:inline-block; font-size:0.65rem; background:rgba(14,165,233,0.2); border:1px solid rgba(14,165,233,0.4); color:#ffffff;">${sessionType}</span>
+                                <h4 style="font-family: var(--font-heading); color:#ffffff; font-size:1.1rem; margin:0; font-weight:800; text-transform:uppercase; letter-spacing:1px; line-height:1.2;">${trackName}</h4>
+                            </div>
+                            <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: var(--glass-border);"></div>
+                        </div>
+                        <div style="padding: 1.5rem; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <p style="color: var(--primary); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.75rem;">${dateStr}</p>
+                                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.75rem; margin-bottom:1rem; font-size:0.8rem;">
+                                    <div>
+                                        <span style="color:var(--text-muted); display:block; font-size:0.7rem; text-transform:uppercase;">Total Laps</span>
+                                        <strong style="color:#ffffff; font-size:0.95rem;">${totalLaps} Laps</strong>
+                                    </div>
+                                    <div>
+                                        <span style="color:var(--text-muted); display:block; font-size:0.7rem; text-transform:uppercase;">Fuel Burned</span>
+                                        <strong style="color:#ffffff; font-size:0.95rem;">${summary.fuel_used || 0} L</strong>
+                                    </div>
+                                    <div>
+                                        <span style="color:var(--text-muted); display:block; font-size:0.7rem; text-transform:uppercase;">Fastest Lap</span>
+                                        <strong style="color:var(--accent-gold); font-size:0.95rem; font-family: monospace;">${fastestLap}</strong>
+                                    </div>
+                                    <div>
+                                        <span style="color:var(--text-muted); display:block; font-size:0.7rem; text-transform:uppercase;">Avg Pace</span>
+                                        <strong style="color:#34d399; font-size:0.95rem; font-family: monospace;">${avgLap}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--glass-border);">
+                                <span style="font-size: 0.75rem; color: var(--text-muted);">Driver: ${driverName}</span>
+                                <span style="font-size: 0.75rem; color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">View Stats &rarr;</span>
+                            </div>
+                        </div>
+                    `;
+                    feed.appendChild(card);
+                });
+            } catch (e) {
+                console.error('Error loading telemetry reports:', e);
+                feed.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#ff3333;padding:3rem;"><p>Error loading telemetry logs.</p></div>';
+            }
+        }
+
+        // Tab click listeners
+        btnEditorial.addEventListener('click', () => {
+            if (activeTab === 'editorial') return;
+            activeTab = 'editorial';
+            btnEditorial.style.background = 'rgba(14,165,233,0.1)';
+            btnEditorial.style.borderColor = 'var(--primary)';
+            btnEditorial.style.color = '#ffffff';
+            btnEditorial.style.boxShadow = '0 0 15px rgba(14,165,233,0.2)';
+
+            btnTelemetry.style.background = 'transparent';
+            btnTelemetry.style.borderColor = 'var(--glass-border)';
+            btnTelemetry.style.color = 'var(--text-muted)';
+            btnTelemetry.style.boxShadow = 'none';
+
+            loadEditorialReports();
+        });
+
+        btnTelemetry.addEventListener('click', () => {
+            if (activeTab === 'telemetry') return;
+            activeTab = 'telemetry';
+            btnTelemetry.style.background = 'rgba(14,165,233,0.1)';
+            btnTelemetry.style.borderColor = 'var(--primary)';
+            btnTelemetry.style.color = '#ffffff';
+            btnTelemetry.style.boxShadow = '0 0 15px rgba(14,165,233,0.2)';
+
+            btnEditorial.style.background = 'transparent';
+            btnEditorial.style.borderColor = 'var(--glass-border)';
+            btnEditorial.style.color = 'var(--text-muted)';
+            btnEditorial.style.boxShadow = 'none';
+
+            loadTelemetryReports();
+        });
+
+        // Load default tab
+        loadEditorialReports();
     });
     </script>
 </body>
