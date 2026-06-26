@@ -138,33 +138,35 @@
                 <!-- Q4 -->
                 <div class="form-group">
                     <label>4. Where are you located?<span class="required">*</span></label>
-                    <div class="radio-group">
-                        <label class="radio-label">
-                            <input type="radio" name="location" value="pacific" required>
-                            <span class="radio-custom"></span>
-                            Pacific Region
-                        </label>
-                        <label class="radio-label">
-                            <input type="radio" name="location" value="western-na">
-                            <span class="radio-custom"></span>
-                            Western North America
-                        </label>
-                        <label class="radio-label">
-                            <input type="radio" name="location" value="central-na">
-                            <span class="radio-custom"></span>
-                            Central North America
-                        </label>
-                        <label class="radio-label">
-                            <input type="radio" name="location" value="eastern-na">
-                            <span class="radio-custom"></span>
-                            Eastern North America
-                        </label>
-                        <label class="radio-label">
-                            <input type="radio" name="location" value="uk-europe">
-                            <span class="radio-custom"></span>
-                            U.K. / Europe
-                        </label>
-                    </div>
+                    <p class="form-help">Type your country (e.g. United Kingdom, United States, Germany)</p>
+                    <input type="text" name="location" list="countries" placeholder="Type or select your country..." required style="width: 100%; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.8rem 1rem; border-radius: 8px; font-size: 1rem;">
+                    <datalist id="countries">
+                        <option value="United Kingdom">
+                        <option value="United States">
+                        <option value="Germany">
+                        <option value="Netherlands">
+                        <option value="Canada">
+                        <option value="Australia">
+                        <option value="New Zealand">
+                        <option value="France">
+                        <option value="Belgium">
+                        <option value="Ireland">
+                        <option value="Austria">
+                        <option value="Switzerland">
+                        <option value="Spain">
+                        <option value="Italy">
+                        <option value="Portugal">
+                        <option value="Sweden">
+                        <option value="Norway">
+                        <option value="Finland">
+                        <option value="Denmark">
+                        <option value="South Africa">
+                        <option value="Brazil">
+                        <option value="Argentina">
+                        <option value="Japan">
+                        <option value="Singapore">
+                        <!-- Additional countries can be typed freely by the user -->
+                    </datalist>
                 </div>
 
                 <!-- Q5 -->
