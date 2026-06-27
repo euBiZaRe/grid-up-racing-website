@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5JMPYRH8H9"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-5JMPYRH8H9');
+    </script>
+
+    <meta name="keywords" content="iRacing, schedule, sim racing, endurance, oval, formula, sports car, dirt oval, dirt road, weekly races">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://raw.githubusercontent.com/gridup/gridup.github.io/main/assets/bg-banner.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iRacing Schedule | GRiD UP Sim Racing</title>
+    <link rel="stylesheet" href="style.css?v=7">
+    <link rel="icon" type="image/png" href="assets/G_2.png">
+    <style>
+        .schedule-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .category-toggles {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .category-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            color: var(--text-muted);
+            padding: 0.6rem 1.25rem;
+            border-radius: 8px;
+            font-family: var(--font-heading);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            outline: none;
+        }
+
+        .category-btn:hover {
+            background: rgba(0, 207, 255, 0.1);
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .category-btn.active {
+            background: var(--primary-gradient);
+            color: #000;
+            border: 1px solid var(--primary);
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+
+        .search-week-container {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .schedule-search {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 0.6rem 1.2rem;
+            color: var(--text-main);
+            font-family: inherit;
+            width: 250px;
+            transition: var(--transition-fast);
+        }
+
+        .schedule-search:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .week-select-dropdown {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 0.6rem 2.5rem 0.6rem 1.2rem;
+            color: #fff;
+            font-family: inherit;
+            cursor: pointer;
+        }
+
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .series-card {
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 2rem;
+            background: rgba(20, 20, 22, 0.5);
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .series-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 10px 30px rgba(0, 207, 255, 0.05);
+            transform: translateY(-4px);
+        }
+
+        .series-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .series-name {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #fff;
+            line-height: 1.2;
+        }
+
+        .license-lbl {
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 0.25rem 0.6rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .license-lbl.rookie { background: rgba(188, 188, 188, 0.1); color: #9ca3af; border: 1px solid rgba(188, 188, 188, 0.2); }
+        .license-lbl.class-d { background: rgba(252, 106, 3, 0.2); color: #fb923c; border: 1px solid rgba(252, 106, 3, 0.4); }
+        .license-lbl.class-c { background: rgba(247, 209, 23, 0.2); color: #facc15; border: 1px solid rgba(247, 209, 23, 0.4); }
+        .license-lbl.class-b { background: rgba(0, 143, 31, 0.2); color: #4ade80; border: 1px solid rgba(0, 143, 31, 0.4); }
+        .license-lbl.class-a { background: rgba(0, 66, 209, 0.2); color: #4DA3FF; border: 1px solid rgba(0, 66, 209, 0.4); }
+
+        .cars-list {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            line-height: 1.4;
+        }
+
+        .current-track-block {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .current-track-lbl {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .current-track-name {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .expand-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            width: 100%;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            transition: color 0.2s;
+        }
+
+        .expand-btn:hover {
+            color: var(--primary);
+        }
+
+        .full-schedule-drawer {
+            display: none;
+            margin-top: 1rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            max-height: 250px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .full-schedule-drawer::-webkit-scrollbar {
+            width: 4px;
+        }
+        .full-schedule-drawer::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+        }
+
+        .week-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.4rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.02);
+        }
+
+        .week-row.active-week {
+            color: var(--primary);
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body class="events-page">
+    <nav id="navbar" class="scrolled">
+        <div class="container nav-content">
+            <a href="index.html" class="logo">
+                <img src="assets/logo.png" alt="GRiD UP" style="height: 40px; vertical-align: middle;">
+            </a>
+            <div class="menu-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html#home">Home</a></li>
+                <li><a href="roster.html">Roster</a></li>
+                <li><a href="events.html">Events</a></li>
+                <li><a href="reports.html">Race Reports</a></li>
+                <li><a href="league.html">League</a></li>
+                <li><a href="schedule.html" class="active">Schedule</a></li>
+                <li><a href="shop.html">Shop</a></li>
+                <li><a href="team-app.html">Apply</a></li>
+                <li><a href="https://discord.gg/gridup" target="_blank"><img src="assets/discord_header.png" alt="Discord" style="height: 25px; vertical-align: middle;"></a></li>
+                <li><a href="login.html" id="login-link" class="btn btn-outline" style="padding: 0.5rem 1.25rem; font-size: 0.8rem; margin-left: 1rem;">Login</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <header class="hero hero-small">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1 class="glow-text" style="font-size: clamp(3rem, 8vw, 5rem); font-weight: 900;">iRacing Schedule</h1>
+            <p style="color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 2px;">Weekly Official Series Track Finder</p>
+        </div>
+    </header>
+
+    <main class="container section" style="position: relative; overflow: hidden; padding-bottom: 5rem; min-height: 50vh;">
+        <div class="tread-overlay" style="opacity: 0.05;"></div>
+        
+        <div class="schedule-controls">
+            <!-- Category Selector -->
+            <div class="category-toggles">
+                <button class="category-btn active" onclick="setCategory('Oval')">Oval</button>
+                <button class="category-btn" onclick="setCategory('Sports Car')">Sports Car</button>
+                <button class="category-btn" onclick="setCategory('Formula')">Formula</button>
+                <button class="category-btn" onclick="setCategory('Dirt Oval')">Dirt Oval</button>
+                <button class="category-btn" onclick="setCategory('Dirt Road')">Dirt Road</button>
+            </div>
+
+            <!-- Search and Week Select -->
+            <div class="search-week-container">
+                <input type="text" id="schedule-search-input" class="schedule-search" placeholder="Search series or cars..." oninput="filterSchedule()">
+                <select id="week-select" class="week-select-dropdown" onchange="changeWeek(this.value)">
+                    <option value="1">Week 1 (June 16)</option>
+                    <option value="2" selected>Week 2 (June 23) - Current</option>
+                    <option value="3">Week 3 (June 30)</option>
+                    <option value="4">Week 4 (July 07)</option>
+                    <option value="5">Week 5 (July 14)</option>
+                    <option value="6">Week 6 (July 21)</option>
+                    <option value="7">Week 7 (July 28)</option>
+                    <option value="8">Week 8 (August 04)</option>
+                    <option value="9">Week 9 (August 11)</option>
+                    <option value="10">Week 10 (August 18)</option>
+                    <option value="11">Week 11 (August 25)</option>
+                    <option value="12">Week 12 (September 01)</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="schedule-grid" class="schedule-grid">
+            <p style="text-align: center; color: var(--text-muted); width: 100%; grid-column: 1/-1;">Loading official series schedule data...</p>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div style="display: flex; justify-content: center; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <a href="https://discord.gg/gridup" target="_blank" style="opacity: 0.6; transition: opacity 0.3s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 127.14 96.36" fill="#ffffff"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a67.55,67.55,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.31,60,73.31,53s5-12.74,11.43-12.74S96.2,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
+                </a>
+                <a href="https://www.youtube.com/@griduptv" target="_blank" style="opacity: 0.6; transition: opacity 0.3s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="#ffffff" style="margin-top: -1px;"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+                </a>
+            </div>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin: 0; padding-bottom: 1rem;">&copy; 2026 GRiD UP SIM RACING. ALL RIGHTS RESERVED.</p>
+        </div>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="script.js?v=5"></script>
+    <script src="js/auth.js?v=4"></script>
+    <script>
+        let allSchedules = [];
+        let activeCategory = "Oval";
+        let activeWeek = 2; // Default to Week 2 (Current)
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Fetch the parsed schedule JSON
+            fetch('scripts/iracing_schedule.json')
+                .then(res => res.json())
+                .then(data => {
+                    allSchedules = data;
+                    renderSchedule();
+                })
+                .catch(err => {
+                    console.error("Error loading schedule data:", err);
+                    document.getElementById('schedule-grid').innerHTML = '<p style="text-align: center; color: var(--secondary); grid-column: 1/-1;">Could not load schedule database.</p>';
+                });
+        });
+
+        function setCategory(cat) {
+            activeCategory = cat;
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent.trim() === cat);
+            });
+            renderSchedule();
+        }
+
+        function changeWeek(week) {
+            activeWeek = parseInt(week);
+            renderSchedule();
+        }
+
+        function getLicenseClass(lic) {
+            const l = String(lic).toLowerCase();
+            if (l.includes('rookie')) return 'rookie';
+            if (l.includes('class d')) return 'class-d';
+            if (l.includes('class c')) return 'class-c';
+            if (l.includes('class b')) return 'class-b';
+            if (l.includes('class a')) return 'class-a';
+            return 'rookie';
+        }
+
+        function filterSchedule() {
+            renderSchedule();
+        }
+
+        function toggleDrawer(id) {
+            const drawer = document.getElementById(`drawer-${id}`);
+            const btn = document.getElementById(`btn-${id}`);
+            if (!drawer || !btn) return;
+            
+            const isHidden = window.getComputedStyle(drawer).display === 'none';
+            drawer.style.display = isHidden ? 'block' : 'none';
+            btn.innerHTML = isHidden 
+                ? 'Hide Season Schedule <span>▲</span>' 
+                : 'Show Season Schedule <span>▼</span>';
+        }
+
+        function renderSchedule() {
+            const grid = document.getElementById('schedule-grid');
+            if (!grid) return;
+
+            const searchQuery = document.getElementById('schedule-search-input').value.toLowerCase().trim();
+
+            // Filter data
+            const filtered = allSchedules.filter(item => {
+                const matchesCat = item.category === activeCategory;
+                const matchesSearch = !searchQuery || 
+                                     item.seriesName.toLowerCase().includes(searchQuery) || 
+                                     item.cars.toLowerCase().includes(searchQuery);
+                return matchesCat && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<p style="text-align: center; color: var(--text-muted); grid-column: 1/-1; padding: 4rem;">No matching series found.</p>';
+                return;
+            }
+
+            grid.innerHTML = '';
+            filtered.forEach((item, index) => {
+                // Find active week track
+                const activeWeekData = item.schedule.find(w => w.week === activeWeek) || { track: "Off Week" };
+                const licenseClass = getLicenseClass(item.license);
+
+                // Build weeks list for drawer
+                let weeksHtml = '';
+                item.schedule.forEach(w => {
+                    const isActive = w.week === activeWeek;
+                    weeksHtml += `
+                        <div class="week-row ${isActive ? 'active-week' : ''}">
+                            <span>Week ${w.week}</span>
+                            <span>${w.track}</span>
+                        </div>
+                    `;
+                });
+
+                const card = document.createElement('div');
+                card.className = 'series-card';
+                card.innerHTML = `
+                    <div>
+                        <div class="series-header">
+                            <span class="series-name">${item.seriesName}</span>
+                            <span class="license-lbl ${licenseClass}">${item.license}</span>
+                        </div>
+                        <div class="cars-list">${item.cars}</div>
+                        <div class="current-track-block">
+                            <div class="current-track-lbl">Week ${activeWeek} Track</div>
+                            <div class="current-track-name">${activeWeekData.track}</div>
+                        </div>
+                    </div>
+                    <div>
+                        <button id="btn-${index}" class="expand-btn" onclick="toggleDrawer(${index})">
+                            Show Season Schedule <span>▼</span>
+                        </button>
+                        <div id="drawer-${index}" class="full-schedule-drawer">
+                            ${weeksHtml}
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>
