@@ -1061,7 +1061,7 @@ footer p {
     scroll-snap-align: start;
 }
 
-.carousel-btn {
+.old-carousel-btn-legacy {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
@@ -1080,14 +1080,14 @@ footer p {
     backdrop-filter: blur(5px);
 }
 
-.carousel-btn:hover {
+.old-carousel-btn-legacy:hover {
     background: var(--primary);
     color: #000;
     box-shadow: 0 0 15px var(--primary-glow);
 }
 
-.carousel-btn.prev { left: 1rem; }
-.carousel-btn.next { right: 1rem; }
+.old-carousel-btn-legacy.prev { left: 1rem; }
+.old-carousel-btn-legacy.next { right: 1rem; }
 
 @media (max-width: 768px) {
     .section {
@@ -1392,6 +1392,9 @@ footer p {
 }
 
 .carousel-btn {
+    position: absolute !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
     width: 45px;
     height: 45px;
     border-radius: 50%;
@@ -1408,6 +1411,15 @@ footer p {
     font-size: 1.2rem;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5) !important;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 100 !important;
+}
+
+.carousel-btn.prev-btn {
+    left: 1rem !important;
+}
+
+.carousel-btn.next-btn {
+    right: 1rem !important;
 }
 
 .carousel-btn:hover {
