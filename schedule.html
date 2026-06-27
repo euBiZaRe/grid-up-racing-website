@@ -232,6 +232,74 @@
             color: var(--primary);
             font-weight: 700;
         }
+
+        .license-toggles {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+            width: 100%;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 1.5rem;
+        }
+
+        .license-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            color: var(--text-muted);
+            padding: 0.4rem 0.9rem;
+            border-radius: 6px;
+            font-family: var(--font-heading);
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            outline: none;
+        }
+
+        .license-btn:hover {
+            background: rgba(255, 255, 255, 0.07);
+            color: #fff;
+        }
+
+        .license-btn.active[data-license="all"] {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #fff;
+            color: #fff;
+        }
+        .license-btn.active[data-license="Rookie"] {
+            background: rgba(188, 188, 188, 0.15);
+            color: #fff;
+            border-color: #9ca3af;
+            box-shadow: 0 0 10px rgba(188, 188, 188, 0.15);
+        }
+        .license-btn.active[data-license="Class D"] {
+            background: rgba(252, 106, 3, 0.2);
+            color: #fff;
+            border-color: #fb923c;
+            box-shadow: 0 0 10px rgba(252, 106, 3, 0.2);
+        }
+        .license-btn.active[data-license="Class C"] {
+            background: rgba(247, 209, 23, 0.2);
+            color: #fff;
+            border-color: #facc15;
+            box-shadow: 0 0 10px rgba(247, 209, 23, 0.2);
+        }
+        .license-btn.active[data-license="Class B"] {
+            background: rgba(0, 143, 31, 0.2);
+            color: #fff;
+            border-color: #4ade80;
+            box-shadow: 0 0 10px rgba(0, 143, 31, 0.2);
+        }
+        .license-btn.active[data-license="Class A"] {
+            background: rgba(0, 66, 209, 0.2);
+            color: #fff;
+            border-color: #4DA3FF;
+            box-shadow: 0 0 10px rgba(0, 66, 209, 0.2);
+        }
     </style>
 </head>
 <body class="events-page">
@@ -299,6 +367,17 @@
                     <option value="12">Week 12 (September 01)</option>
                 </select>
             </div>
+
+            <!-- License Selector -->
+            <div class="license-toggles">
+                <span style="font-family: var(--font-heading); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); display: flex; align-items: center; margin-right: 0.5rem;">License Class:</span>
+                <button class="license-btn active" data-license="all" onclick="toggleLicense('all')">All</button>
+                <button class="license-btn" data-license="Rookie" onclick="toggleLicense('Rookie')">Rookie</button>
+                <button class="license-btn" data-license="Class D" onclick="toggleLicense('Class D')">Class D</button>
+                <button class="license-btn" data-license="Class C" onclick="toggleLicense('Class C')">Class C</button>
+                <button class="license-btn" data-license="Class B" onclick="toggleLicense('Class B')">Class B</button>
+                <button class="license-btn" data-license="Class A" onclick="toggleLicense('Class A')">Class A</button>
+            </div>
         </div>
 
         <div id="schedule-grid" class="schedule-grid">
@@ -328,6 +407,7 @@
     <script>
         let allSchedules = [];
         let activeCategory = "Oval";
+        let activeLicense = "all";
         let activeWeek = 2; // Default to Week 2 (Current)
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -348,6 +428,14 @@
             activeCategory = cat;
             document.querySelectorAll('.category-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.textContent.trim() === cat);
+            });
+            renderSchedule();
+        }
+
+        function toggleLicense(lic) {
+            activeLicense = lic;
+            document.querySelectorAll('.license-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-license') === lic);
             });
             renderSchedule();
         }
@@ -392,10 +480,12 @@
             // Filter data
             const filtered = allSchedules.filter(item => {
                 const matchesCat = item.category === activeCategory;
+                const matchesLicense = activeLicense === 'all' || 
+                                       getLicenseClass(item.license) === getLicenseClass(activeLicense);
                 const matchesSearch = !searchQuery || 
                                      item.seriesName.toLowerCase().includes(searchQuery) || 
                                      item.cars.toLowerCase().includes(searchQuery);
-                return matchesCat && matchesSearch;
+                return matchesCat && matchesLicense && matchesSearch;
             });
 
             if (filtered.length === 0) {
