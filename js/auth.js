@@ -362,15 +362,16 @@ async function checkClaimStatus(driverName, user) {
     const claimSection = document.getElementById('claim-section');
     if (!claimSection) return;
     
-    console.log("Checking claim status for:", driverName);
+    const cleanDriverName = String(driverName).trim();
+    console.log("Checking claim status for:", cleanDriverName);
 
     if (!db) {
-        setTimeout(() => checkClaimStatus(driverName, user), 500);
+        setTimeout(() => checkClaimStatus(cleanDriverName, user), 500);
         return;
     }
 
     try {
-        const docSnapshot = await db.collection("claims").doc(driverName).get();
+        const docSnapshot = await db.collection("claims").doc(cleanDriverName).get();
         claimSection.style.display = 'block';
         
         if (docSnapshot.exists) {
@@ -395,6 +396,8 @@ async function claimProfile(driverName, iracingId) {
     const user = auth.currentUser;
     if (!user) return alert("Please login first.");
 
+    const cleanDriverName = String(driverName).trim();
+
     try {
         const userDoc = await db.collection("users").doc(user.uid).get();
         const userData = userDoc.exists ? userDoc.data() : {};
@@ -403,7 +406,7 @@ async function claimProfile(driverName, iracingId) {
         const avatar = user.photoURL || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
         const driverIdentity = userData.driverName || discordName;
         
-        await db.collection("claims").doc(driverName).set({
+        await db.collection("claims").doc(cleanDriverName).set({
             discordId: user.uid,
             discordName: discordName,
             driverIdentity: driverIdentity,
