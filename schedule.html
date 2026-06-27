@@ -342,11 +342,11 @@
         <div class="schedule-controls">
             <!-- Category Selector -->
             <div class="category-toggles">
-                <button class="category-btn active" onclick="setCategory('Oval')">Oval</button>
-                <button class="category-btn" onclick="setCategory('Sports Car')">Sports Car</button>
-                <button class="category-btn" onclick="setCategory('Formula')">Formula</button>
-                <button class="category-btn" onclick="setCategory('Dirt Oval')">Dirt Oval</button>
-                <button class="category-btn" onclick="setCategory('Dirt Road')">Dirt Road</button>
+                <button class="category-btn active" data-category="Oval" onclick="toggleCategory('Oval')">Oval</button>
+                <button class="category-btn active" data-category="Sports Car" onclick="toggleCategory('Sports Car')">Sports Car</button>
+                <button class="category-btn active" data-category="Formula" onclick="toggleCategory('Formula')">Formula</button>
+                <button class="category-btn active" data-category="Dirt Oval" onclick="toggleCategory('Dirt Oval')">Dirt Oval</button>
+                <button class="category-btn active" data-category="Dirt Road" onclick="toggleCategory('Dirt Road')">Dirt Road</button>
             </div>
 
             <!-- Search and Week Select -->
@@ -372,11 +372,11 @@
             <div class="license-toggles">
                 <span style="font-family: var(--font-heading); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); display: flex; align-items: center; margin-right: 0.5rem;">License Class:</span>
                 <button class="license-btn active" data-license="all" onclick="toggleLicense('all')">All</button>
-                <button class="license-btn" data-license="Rookie" onclick="toggleLicense('Rookie')">Rookie</button>
-                <button class="license-btn" data-license="Class D" onclick="toggleLicense('Class D')">Class D</button>
-                <button class="license-btn" data-license="Class C" onclick="toggleLicense('Class C')">Class C</button>
-                <button class="license-btn" data-license="Class B" onclick="toggleLicense('Class B')">Class B</button>
-                <button class="license-btn" data-license="Class A" onclick="toggleLicense('Class A')">Class A</button>
+                <button class="license-btn active" data-license="Rookie" onclick="toggleLicense('Rookie')">Rookie</button>
+                <button class="license-btn active" data-license="Class D" onclick="toggleLicense('Class D')">Class D</button>
+                <button class="license-btn active" data-license="Class C" onclick="toggleLicense('Class C')">Class C</button>
+                <button class="license-btn active" data-license="Class B" onclick="toggleLicense('Class B')">Class B</button>
+                <button class="license-btn active" data-license="Class A" onclick="toggleLicense('Class A')">Class A</button>
             </div>
         </div>
 
@@ -406,8 +406,8 @@
     <script src="js/auth.js?v=4"></script>
     <script>
         let allSchedules = [];
-        let activeCategory = "Oval";
-        let activeLicense = "all";
+        let activeCategories = ["Oval", "Sports Car", "Formula", "Dirt Oval", "Dirt Road"];
+        let activeLicenses = ["Rookie", "Class D", "Class C", "Class B", "Class A"];
         let activeWeek = 2; // Default to Week 2 (Current)
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -424,18 +424,45 @@
                 });
         });
 
-        function setCategory(cat) {
-            activeCategory = cat;
+        function toggleCategory(cat) {
+            const index = activeCategories.indexOf(cat);
+            if (index > -1) {
+                activeCategories.splice(index, 1);
+            } else {
+                activeCategories.push(cat);
+            }
+            
             document.querySelectorAll('.category-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.textContent.trim() === cat);
+                const btnCat = btn.getAttribute('data-category');
+                btn.classList.toggle('active', activeCategories.includes(btnCat));
             });
             renderSchedule();
         }
 
         function toggleLicense(lic) {
-            activeLicense = lic;
+            const allLicenses = ["Rookie", "Class D", "Class C", "Class B", "Class A"];
+            if (lic === 'all') {
+                if (activeLicenses.length === allLicenses.length) {
+                    activeLicenses = [];
+                } else {
+                    activeLicenses = [...allLicenses];
+                }
+            } else {
+                const index = activeLicenses.indexOf(lic);
+                if (index > -1) {
+                    activeLicenses.splice(index, 1);
+                } else {
+                    activeLicenses.push(lic);
+                }
+            }
+            
             document.querySelectorAll('.license-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.getAttribute('data-license') === lic);
+                const btnLic = btn.getAttribute('data-license');
+                if (btnLic === 'all') {
+                    btn.classList.toggle('active', activeLicenses.length === allLicenses.length);
+                } else {
+                    btn.classList.toggle('active', activeLicenses.includes(btnLic));
+                }
             });
             renderSchedule();
         }
@@ -479,9 +506,9 @@
 
             // Filter data
             const filtered = allSchedules.filter(item => {
-                const matchesCat = item.category === activeCategory;
-                const matchesLicense = activeLicense === 'all' || 
-                                       getLicenseClass(item.license) === getLicenseClass(activeLicense);
+                const matchesCat = activeCategories.includes(item.category);
+                const itemLicClass = getLicenseClass(item.license);
+                const matchesLicense = activeLicenses.some(lic => getLicenseClass(lic) === itemLicClass);
                 const matchesSearch = !searchQuery || 
                                      item.seriesName.toLowerCase().includes(searchQuery) || 
                                      item.cars.toLowerCase().includes(searchQuery);
