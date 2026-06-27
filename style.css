@@ -1387,7 +1387,7 @@ footer p {
     display: flex;
     justify-content: space-between;
     pointer-events: none;
-    z-index: 10;
+    z-index: 100; /* Ensure it is above cards */
     padding: 0 1rem;
 }
 
@@ -1395,26 +1395,32 @@ footer p {
     width: 45px;
     height: 45px;
     border-radius: 50%;
-    background: rgba(20, 20, 22, 0.85);
+    background: rgba(20, 20, 22, 0.85) !important; /* Force override */
     backdrop-filter: blur(8px);
-    border: 1px solid var(--glass-border);
-    color: #fff;
+    border: 1px solid var(--glass-border) !important;
+    color: #fff !important;
     cursor: pointer;
     pointer-events: auto;
-    opacity: 1;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex;
+    opacity: 1 !important; /* Force keep visible */
+    display: flex !important;
     align-items: center;
     justify-content: center;
     font-size: 1.2rem;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative; /* Re-position inside flexbox flow of .carousel-nav */
+    top: auto;
+    transform: none;
+    left: auto;
+    right: auto;
 }
 
 .carousel-btn:hover {
-    background: var(--primary);
-    border-color: var(--primary);
+    background: var(--primary) !important;
+    border-color: var(--primary) !important;
+    color: #000 !important;
     transform: scale(1.1);
-    box-shadow: 0 0 15px var(--primary-glow);
+    box-shadow: 0 0 15px var(--primary-glow) !important;
 }
 
 /* Necessary Wrapper for Hover Context */
