@@ -1395,19 +1395,19 @@ footer p {
     width: 45px;
     height: 45px;
     border-radius: 50%;
-    background: rgba(20, 20, 22, 0.6);
+    background: rgba(20, 20, 22, 0.85);
     backdrop-filter: blur(8px);
     border: 1px solid var(--glass-border);
     color: #fff;
     cursor: pointer;
     pointer-events: auto;
-    opacity: 0;
+    opacity: 1;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.2rem;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
 }
 
 .carousel-btn:hover {
@@ -1415,10 +1415,6 @@ footer p {
     border-color: var(--primary);
     transform: scale(1.1);
     box-shadow: 0 0 15px var(--primary-glow);
-}
-
-.carousel-wrapper:hover .carousel-btn {
-    opacity: 1;
 }
 
 /* Necessary Wrapper for Hover Context */
