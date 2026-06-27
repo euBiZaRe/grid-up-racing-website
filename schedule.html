@@ -473,11 +473,11 @@
         }
 
         function getLicenseClass(lic) {
-            const l = String(lic).toLowerCase();
-            if (l.includes('class b (4.0)')) return 'class-a';
-            if (l.includes('class c (4.0)')) return 'class-b';
-            if (l.includes('class d (4.0)')) return 'class-c';
-            if (l.includes('rookie (4.0)')) return 'class-d';
+            const l = String(lic).toLowerCase().replace(/\(|\)/g, '');
+            if (l.includes('class b 4.0')) return 'class-a';
+            if (l.includes('class c 4.0')) return 'class-b';
+            if (l.includes('class d 4.0')) return 'class-c';
+            if (l.includes('rookie 4.0')) return 'class-d';
             if (l.includes('rookie')) return 'rookie';
             if (l.includes('class d')) return 'class-d';
             if (l.includes('class c')) return 'class-c';
@@ -487,12 +487,12 @@
         }
 
         function getLicenseLabel(lic) {
-            const l = String(lic).toLowerCase();
-            if (l.includes('class b (4.0)')) return 'Class A';
-            if (l.includes('class c (4.0)')) return 'Class B';
-            if (l.includes('class d (4.0)')) return 'Class C';
-            if (l.includes('rookie (4.0)')) return 'Class D';
-            if (l.includes('rookie (1.0)')) return 'Rookie';
+            const l = String(lic).toLowerCase().replace(/\(|\)/g, '');
+            if (l.includes('class b 4.0')) return 'Class A';
+            if (l.includes('class c 4.0')) return 'Class B';
+            if (l.includes('class d 4.0')) return 'Class C';
+            if (l.includes('rookie 4.0')) return 'Class D';
+            if (l.includes('rookie 1.0')) return 'Rookie';
             return lic;
         }
 
