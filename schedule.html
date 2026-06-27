@@ -474,12 +474,19 @@
 
         function getLicenseClass(lic) {
             const l = String(lic).toLowerCase();
+            if (l.includes('class b (4.0)')) return 'class-a';
             if (l.includes('rookie')) return 'rookie';
             if (l.includes('class d')) return 'class-d';
             if (l.includes('class c')) return 'class-c';
             if (l.includes('class b')) return 'class-b';
             if (l.includes('class a')) return 'class-a';
             return 'rookie';
+        }
+
+        function getLicenseLabel(lic) {
+            const l = String(lic).toLowerCase();
+            if (l.includes('class b (4.0)')) return 'Class A';
+            return lic;
         }
 
         function filterSchedule() {
@@ -544,7 +551,7 @@
                     <div>
                         <div class="series-header">
                             <span class="series-name">${item.seriesName}</span>
-                            <span class="license-lbl ${licenseClass}">${item.license}</span>
+                            <span class="license-lbl ${licenseClass}">${getLicenseLabel(item.license)}</span>
                         </div>
                         <div class="cars-list">${item.cars}</div>
                         <div class="current-track-block">
