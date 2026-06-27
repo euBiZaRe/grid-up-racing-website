@@ -780,6 +780,40 @@ function renderEventsUI(upcomingEvents, pastEvents = null, featuredOverride = nu
             'production-car-challenge': 'Multi-hour Endurance'
         };
 
+        const eventSeriesNames = {
+            'iracing-roar': 'iRacing Roar Before the 24',
+            'daytona-24': 'iRacing Daytona 24',
+            'daytona-500': 'iRacing Daytona 500',
+            'bathurst-12': 'iRacing Bathurst 12 Hour',
+            'sebring-12hr': 'iRacing Sebring 12 Hour',
+            'nurburgring-24h': 'iRacing Nürburgring 24h',
+            'imsa-classic-500': 'iRacing IMSA Classic 500',
+            'indy-500': 'iRacing Indy 500',
+            'world-600': 'iRacing World 600',
+            'thruxton-4h': 'iRacing 4 Hours at Thruxton',
+            'watkins-glen-6h': 'iRacing Watkins Glen 6 Hour',
+            'spa-24hr': 'iRacing Spa 24 Hour',
+            'brickyard-400': 'iRacing Brickyard 400',
+            'road-america-6h': 'iRacing Road America 6 Hour',
+            'knoxville-nationals': 'iRacing Knoxville Nationals',
+            'portimao-1000': 'iRacing Portimao 1000',
+            'suzuka-1000km': 'iRacing Suzuka 1000km',
+            'crandon-championship': 'iRacing Crandon Championship',
+            'southern-500': 'iRacing Southern 500',
+            'britcar-24hr': 'iRacing Britcar 24',
+            'petit-le-mans': 'iRacing Petit Le Mans',
+            'bathurst-1000': 'iRacing Bathurst 1000',
+            'indy-8h': 'iRacing Indianapolis 8 Hour',
+            'ff1600-festival': 'iRacing FF1600 Festival',
+            'homestead-championship': 'iRacing Homestead Championship',
+            'sfl-mountain-showdown': 'iRacing SFL Mountain Showdown',
+            'scca-runoffs': 'iRacing SCCA Runoffs',
+            '992-endurance-cup': 'iRacing 992 Endurance Cup',
+            'winter-derby': 'iRacing Winter Derby',
+            'chili-bowl': 'iRacing Chili Bowl',
+            'production-car-challenge': 'iRacing Production Car Challenge'
+        };
+
         if (upcomingTrack) {
             upcomingTrack.innerHTML = '';
             const colors = ['blue', 'pink', 'green'];
@@ -810,6 +844,7 @@ function renderEventsUI(upcomingEvents, pastEvents = null, featuredOverride = nu
                     ${bannerUrl ? `<div class="event-card-banner" style="background-image: url('${bannerUrl}')"></div>` : ''}
                     <div class="event-info">
                         <h3>${e.name || 'TBA'}</h3>
+                        ${eventSeriesNames[e.id] ? `<p style="color: var(--primary); font-size: 0.8rem; font-weight: 700; margin-top: -0.25rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">Series: ${eventSeriesNames[e.id]}</p>` : ''}
                         <p class="event-meta">${e.date}${eventLengths[e.id] ? ` &bull; ${eventLengths[e.id]}` : ''}</p>
                         <p class="event-desc">${Array.isArray(e.classes) ? 'Classes: ' + e.classes.join(', ') : (e.classes ? 'Classes: ' + e.classes : 'Details coming soon.')}</p>
                     </div>
@@ -839,6 +874,7 @@ function renderEventsUI(upcomingEvents, pastEvents = null, featuredOverride = nu
                 ${bannerUrl ? `<div class="event-card-banner" style="background-image: url('${bannerUrl}')"></div>` : ''}
                 <div class="event-info">
                     <h3>${e.name || 'TBA'}</h3>
+                    ${eventSeriesNames[e.id] ? `<p style="color: var(--primary); font-size: 0.8rem; font-weight: 700; margin-top: -0.25rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">Series: ${eventSeriesNames[e.id]}</p>` : ''}
                     <p class="event-meta">${e.date}${eventLengths[e.id] ? ` &bull; ${eventLengths[e.id]}` : ''}</p>
                     <p class="event-desc">${Array.isArray(e.classes) ? 'Classes: ' + e.classes.join(', ') : (e.classes ? 'Classes: ' + e.classes : 'Race event completed.')}</p>
                 </div>
