@@ -746,6 +746,40 @@ function renderEventsUI(upcomingEvents, pastEvents = null, featuredOverride = nu
         
         updateCountdown(nextEvent.startDate, endTime, nextEvent.broadcastUrl, nextEvent.practiceStart);
 
+        const eventLengths = {
+            'iracing-roar': '2.4 Hours',
+            'daytona-24': '24 Hours',
+            'daytona-500': '500 Miles',
+            'bathurst-12': '12 Hours',
+            'sebring-12hr': '12 Hours',
+            'nurburgring-24h': '24 Hours',
+            'imsa-classic-500': '500 Miles',
+            'indy-500': '500 Miles',
+            'world-600': '600 Miles',
+            'thruxton-4h': '4 Hours',
+            'watkins-glen-6h': '6 Hours',
+            'spa-24hr': '24 Hours',
+            'brickyard-400': '400 Miles',
+            'road-america-6h': '6 Hours',
+            'knoxville-nationals': 'Sprint Format',
+            'portimao-1000': '8 Hours (1000km)',
+            'suzuka-1000km': '7 Hours (1000km)',
+            'crandon-championship': 'Off-road Format',
+            'southern-500': '500 Miles',
+            'britcar-24hr': '24 Hours',
+            'petit-le-mans': '10 Hours',
+            'bathurst-1000': '1000km',
+            'indy-8h': '8 Hours',
+            'ff1600-festival': 'Festival Format',
+            'homestead-championship': '400 Miles',
+            'sfl-mountain-showdown': 'Sprint/Feature Format',
+            'scca-runoffs': 'Championship Format',
+            '992-endurance-cup': 'Endurance',
+            'winter-derby': 'Derby Format',
+            'chili-bowl': 'National Format',
+            'production-car-challenge': 'Multi-hour Endurance'
+        };
+
         if (upcomingTrack) {
             upcomingTrack.innerHTML = '';
             const colors = ['blue', 'pink', 'green'];
@@ -757,7 +791,7 @@ function renderEventsUI(upcomingEvents, pastEvents = null, featuredOverride = nu
                 tile.innerHTML = `
                     ${bannerUrl ? `<div class="tile-banner" style="background-image: url('${bannerUrl}')"></div>` : ''}
                     <h3>${(e.name || 'TBA').toUpperCase()}</h3>
-                    <div class="race-meta">${e.date}</div>
+                    <div class="race-meta">${e.date}${eventLengths[e.id] ? ` | ${eventLengths[e.id]}` : ''}</div>
                 `;
                 upcomingTrack.appendChild(tile);
             });
@@ -776,7 +810,7 @@ function renderEventsUI(upcomingEvents, pastEvents = null, featuredOverride = nu
                     ${bannerUrl ? `<div class="event-card-banner" style="background-image: url('${bannerUrl}')"></div>` : ''}
                     <div class="event-info">
                         <h3>${e.name || 'TBA'}</h3>
-                        <p class="event-meta">${e.date}</p>
+                        <p class="event-meta">${e.date}${eventLengths[e.id] ? ` &bull; ${eventLengths[e.id]}` : ''}</p>
                         <p class="event-desc">${Array.isArray(e.classes) ? 'Classes: ' + e.classes.join(', ') : (e.classes ? 'Classes: ' + e.classes : 'Details coming soon.')}</p>
                     </div>
                     <div class="event-action">
@@ -805,7 +839,7 @@ function renderEventsUI(upcomingEvents, pastEvents = null, featuredOverride = nu
                 ${bannerUrl ? `<div class="event-card-banner" style="background-image: url('${bannerUrl}')"></div>` : ''}
                 <div class="event-info">
                     <h3>${e.name || 'TBA'}</h3>
-                    <p class="event-meta">${e.date}</p>
+                    <p class="event-meta">${e.date}${eventLengths[e.id] ? ` &bull; ${eventLengths[e.id]}` : ''}</p>
                     <p class="event-desc">${Array.isArray(e.classes) ? 'Classes: ' + e.classes.join(', ') : (e.classes ? 'Classes: ' + e.classes : 'Race event completed.')}</p>
                 </div>
                 <div class="event-action">
