@@ -496,6 +496,18 @@
             return lic;
         }
 
+        function getCleanSeriesName(name) {
+            let clean = name.replace(/\s*-\s*\d{4}\s+Season\s+\d+\s*/gi, ' ');
+            clean = clean.replace(/\s*-\s*\d{4}\s+Season\s*/gi, ' ');
+            clean = clean.replace(/\s*\d{4}\s+Season\s+\d+\s*/gi, ' ');
+            clean = clean.replace(/\s*\d{4}\s+Season\s*/gi, ' ');
+            clean = clean.replace(/\s*-\s*-\s*/g, ' - ');
+            if (clean.includes('Fixed') && !clean.includes('- Fixed')) {
+                clean = clean.replace(/\s*Fixed/g, ' - Fixed');
+            }
+            return clean.trim().replace(/^-\s*|\s*-$/g, '').trim();
+        }
+
         function filterSchedule() {
             renderSchedule();
         }
@@ -557,7 +569,7 @@
                 card.innerHTML = `
                     <div>
                         <div class="series-header">
-                            <span class="series-name">${item.seriesName}</span>
+                            <span class="series-name">${getCleanSeriesName(item.seriesName)}</span>
                             <span class="license-lbl ${licenseClass}">${getLicenseLabel(item.license)}</span>
                         </div>
                         <div class="cars-list">${item.cars}</div>
