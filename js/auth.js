@@ -620,6 +620,285 @@ function updateNotificationBadge() {
 // Initialize on page load
 initAuth();
 
+// Initialize Bug/Suggestion Reporter
+(function initBugReporter() {
+    if (typeof document === 'undefined') return;
+
+    // Helper to inject modal HTML, CSS and logic
+    const setupReporter = () => {
+        // Find or wait for footer
+        const footerContainer = document.querySelector('footer .container');
+        if (!footerContainer) return;
+
+        // Check if already injected
+        if (document.getElementById('bug-report-trigger')) return;
+
+        // Add CSS styles
+        const style = document.createElement('style');
+        style.textContent = `
+            .bug-report-footer-link {
+                color: var(--text-muted);
+                opacity: 0.6;
+                text-decoration: none;
+                font-size: 0.8rem;
+                transition: opacity 0.3s ease, color 0.3s ease;
+                cursor: pointer;
+                display: inline-block;
+                margin-top: 0.5rem;
+            }
+            .bug-report-footer-link:hover {
+                opacity: 1;
+                color: #ff0055;
+            }
+            .bug-modal-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.85);
+                z-index: 10005;
+                align-items: center;
+                justify-content: center;
+                backdrop-filter: blur(10px);
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+            .bug-modal-overlay.active {
+                display: flex;
+                opacity: 1;
+            }
+            .bug-modal-card {
+                background: rgba(18, 18, 18, 0.95);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 12px;
+                max-width: 500px;
+                width: 90%;
+                padding: 2rem;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 0, 85, 0.15);
+                position: relative;
+                transform: scale(0.9);
+                transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            }
+            .bug-modal-overlay.active .bug-modal-card {
+                transform: scale(1);
+            }
+            .bug-modal-close {
+                position: absolute;
+                top: 1rem;
+                right: 1rem;
+                background: none;
+                border: none;
+                color: var(--text-muted);
+                font-size: 1.5rem;
+                cursor: pointer;
+                transition: color 0.2s;
+            }
+            .bug-modal-close:hover {
+                color: #fff;
+            }
+            .bug-form-group {
+                margin-bottom: 1.25rem;
+            }
+            .bug-form-group label {
+                display: block;
+                color: #fff;
+                font-size: 0.85rem;
+                font-weight: 600;
+                margin-bottom: 0.5rem;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+            .bug-form-input, .bug-form-textarea, .bug-form-select {
+                width: 100%;
+                background: rgba(255, 255, 255, 0.05);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                color: #fff;
+                padding: 0.75rem;
+                border-radius: 6px;
+                font-family: inherit;
+                font-size: 0.9rem;
+                transition: border-color 0.2s, background 0.2s;
+            }
+            .bug-form-input:focus, .bug-form-textarea:focus, .bug-form-select:focus {
+                outline: none;
+                border-color: #ff0055;
+                background: rgba(255, 255, 255, 0.08);
+            }
+            .bug-form-textarea {
+                height: 120px;
+                resize: vertical;
+            }
+            .bug-submit-btn {
+                background: #ff0055;
+                color: #fff;
+                border: none;
+                padding: 0.75rem 1.5rem;
+                font-weight: 700;
+                border-radius: 6px;
+                cursor: pointer;
+                transition: background 0.2s, transform 0.1s;
+                width: 100%;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+            .bug-submit-btn:hover {
+                background: #ff2a73;
+            }
+            .bug-submit-btn:active {
+                transform: scale(0.98);
+            }
+            .bug-submit-btn:disabled {
+                background: rgba(255, 255, 255, 0.1);
+                color: var(--text-muted);
+                cursor: not-allowed;
+            }
+            .bug-form-select option {
+                background: #121212;
+                color: #fff;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Inject Link to Footer
+        const linkContainer = document.createElement('div');
+        linkContainer.style.textAlign = 'center';
+        linkContainer.style.marginTop = '0.5rem';
+        
+        const link = document.createElement('span');
+        link.id = 'bug-report-trigger';
+        link.className = 'bug-report-footer-link';
+        link.textContent = 'Report a Bug / Suggestion';
+        
+        linkContainer.appendChild(link);
+        
+        // Find copyright para or append to footer container
+        const copyrightPara = footerContainer.querySelector('p');
+        if (copyrightPara) {
+            copyrightPara.parentNode.insertBefore(linkContainer, copyrightPara.nextSibling);
+        } else {
+            footerContainer.appendChild(linkContainer);
+        }
+
+        // Create and Inject Modal HTML
+        const modalHtml = `
+            <div id="bug-report-modal" class="bug-modal-overlay">
+                <div class="bug-modal-card">
+                    <button class="bug-modal-close" id="bug-modal-close-btn">&times;</button>
+                    <h3 style="color: #fff; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 800;">Report Bug / Suggestion</h3>
+                    
+                    <form id="bug-report-form">
+                        <div class="bug-form-group">
+                            <label for="bug-type">Type</label>
+                            <select id="bug-type" class="bug-form-select" required>
+                                <option value="Suggestion">Suggestion</option>
+                                <option value="Bug Report">Bug Report</option>
+                                <option value="Driver Profile Update">Driver Profile Update</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="bug-form-group">
+                            <label for="bug-discord">Discord Username (Optional)</label>
+                            <input type="text" id="bug-discord" class="bug-form-input" placeholder="e.g. username#1234">
+                        </div>
+                        
+                        <div class="bug-form-group">
+                            <label for="bug-message">Message</label>
+                            <textarea id="bug-message" class="bug-form-textarea" placeholder="Provide details about your bug or suggestion..." required></textarea>
+                        </div>
+                        
+                        <button type="submit" class="bug-submit-btn" id="bug-submit-btn">Submit Report</button>
+                        
+                        <div id="bug-feedback-msg" style="margin-top: 1rem; text-align: center; font-size: 0.85rem; display: none;"></div>
+                    </form>
+                </div>
+            </div>
+        `;
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = modalHtml;
+        document.body.appendChild(tempDiv.firstElementChild);
+
+        // Modal Functionality
+        const modal = document.getElementById('bug-report-modal');
+        const closeBtn = document.getElementById('bug-modal-close-btn');
+        const form = document.getElementById('bug-report-form');
+        const feedbackMsg = document.getElementById('bug-feedback-msg');
+        const submitBtn = document.getElementById('bug-submit-btn');
+
+        const openModal = () => {
+            modal.classList.add('active');
+            // Pre-populate discord if user logged in
+            if (AUTH_USER && AUTH_USER.displayName) {
+                document.getElementById('bug-discord').value = AUTH_USER.displayName;
+            }
+        };
+
+        const closeModal = () => {
+            modal.classList.remove('active');
+            form.reset();
+            feedbackMsg.style.display = 'none';
+        };
+
+        link.addEventListener('click', openModal);
+        closeBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const type = document.getElementById('bug-type').value;
+            const discord = document.getElementById('bug-discord').value.trim();
+            const message = document.getElementById('bug-message').value.trim();
+            
+            if (!message) return;
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+            
+            try {
+                if (!window.db) {
+                    throw new Error("Database not initialized yet.");
+                }
+                
+                await window.db.collection('suggestions').add({
+                    type,
+                    discord,
+                    message,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    userId: AUTH_USER ? AUTH_USER.uid : null,
+                    pageUrl: window.location.href,
+                    status: 'new'
+                });
+                
+                feedbackMsg.style.color = '#10B981';
+                feedbackMsg.textContent = 'Thank you! Your feedback has been submitted successfully.';
+                feedbackMsg.style.display = 'block';
+                
+                setTimeout(() => {
+                    closeModal();
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Submit Report';
+                }, 3000);
+                
+            } catch (err) {
+                console.error("Error submitting bug/suggestion:", err);
+                feedbackMsg.style.color = '#EF4444';
+                feedbackMsg.textContent = 'Failed to submit report. Please try again.';
+                feedbackMsg.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Report';
+            }
+        });
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupReporter);
+    } else {
+        setupReporter();
+    }
+})();
+
 async function loadDriverCustomInfo(driverName) {
     const dbInterval = setInterval(async () => {
         if (window.db) {
