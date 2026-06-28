@@ -16,6 +16,8 @@ if (typeof firebase !== 'undefined') {
     firebase.initializeApp(firebaseConfig);
     var auth = firebase.auth();
     var db = firebase.firestore();
+    window.db = db;
+    window.auth = auth;
 }
 
 // Global Auth State
