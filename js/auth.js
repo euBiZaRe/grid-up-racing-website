@@ -617,3 +617,48 @@ function updateNotificationBadge() {
 
 // Initialize on page load
 initAuth();
+
+async function loadDriverCustomInfo(driverName) {
+    const dbInterval = setInterval(async () => {
+        if (window.db) {
+            clearInterval(dbInterval);
+            try {
+                const claimDoc = await window.db.collection("claims").doc(driverName).get();
+                if (claimDoc.exists && claimDoc.data().status === 'verified') {
+                    const discordId = claimDoc.data().discordId;
+                    if (discordId) {
+                        const userDoc = await window.db.collection("users").doc(discordId).get();
+                        if (userDoc.exists) {
+                            const userData = userDoc.data();
+                            
+                            if (userData.age) {
+                                const ageEl = document.getElementById("profile-age");
+                                if (ageEl) ageEl.textContent = userData.age;
+                            }
+                            if (userData.country) {
+                                const countryEl = document.getElementById("profile-country");
+                                if (countryEl) countryEl.textContent = userData.country;
+                            }
+                            if (userData.favCar) {
+                                const favCarEl = document.getElementById("profile-fav-car");
+                                if (favCarEl) favCarEl.textContent = userData.favCar;
+                            }
+                            if (userData.favTrack) {
+                                const favTrackEl = document.getElementById("profile-fav-track");
+                                if (favTrackEl) favTrackEl.textContent = userData.favTrack;
+                            }
+                            if (userData.advice) {
+                                const adviceEl = document.getElementById("profile-advice");
+                                if (adviceEl) adviceEl.textContent = `"${userData.advice}"`;
+                            }
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("Error loading driver custom info:", e);
+            }
+        }
+    }, 100);
+}
+
+window.loadDriverCustomInfo = loadDriverCustomInfo;

@@ -168,23 +168,23 @@
                     <h3 class="section-title" style="margin-bottom: 2.5rem;">Driver Information</h3>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
                         <div>
-                            <div style="font-size: 1.5rem; font-weight: 700; color: #fff;">N/A</div>
+                            <div id="profile-age" style="font-size: 1.5rem; font-weight: 700; color: #fff;">N/A</div>
                             <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-top: 0.5rem;">Age</div>
                         </div>
                         <div>
-                            <div style="font-size: 1.5rem; font-weight: 700; color: #fff;">N/A</div>
+                            <div id="profile-country" style="font-size: 1.5rem; font-weight: 700; color: #fff;">N/A</div>
                             <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-top: 0.5rem;">Country</div>
                         </div>
                         <div style="grid-column: span 2;">
-                            <div style="font-size: 1.2rem; font-weight: 500; color: #fff;">N/A</div>
+                            <div id="profile-fav-car" style="font-size: 1.2rem; font-weight: 500; color: #fff;">N/A</div>
                             <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-top: 0.5rem;">Favourite Car (In iRacing)</div>
                         </div>
                         <div style="grid-column: span 2;">
-                            <div style="font-size: 1.2rem; font-weight: 500; color: #fff;">N/A</div>
+                            <div id="profile-fav-track" style="font-size: 1.2rem; font-weight: 500; color: #fff;">N/A</div>
                             <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-top: 0.5rem;">Favourite Track</div>
                         </div>
                         <div style="grid-column: span 2;">
-                            <div style="font-size: 1rem; line-height: 1.6; color: rgba(255,255,255,0.9); font-style: italic;">"N/A"</div>
+                            <div id="profile-advice" style="font-size: 1rem; line-height: 1.6; color: rgba(255,255,255,0.9); font-style: italic;">"N/A"</div>
                             <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-top: 0.5rem;">Advice for New Sim Racers</div>
                         </div>
                     </div>
@@ -216,6 +216,19 @@
             if (confirm("Are you sure you want to claim this driver profile?")) {
                 claimProfile("David Shreve");
             }
+        }
+
+        // Load custom profile information on page load if defined
+        if (window.loadDriverCustomInfo) {
+            loadDriverCustomInfo("David Shreve");
+        } else {
+            // Fallback interval if auth.js loads later
+            const checkLoader = setInterval(() => {
+                if (window.loadDriverCustomInfo) {
+                    clearInterval(checkLoader);
+                    loadDriverCustomInfo("David Shreve");
+                }
+            }, 50);
         }
     </script>
 </body>
