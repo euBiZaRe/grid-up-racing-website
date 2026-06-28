@@ -27,6 +27,27 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://gridup.online/roster.html">
     <meta property="og:image" content="https://gridup.online/assets/G_2.png">
+    <style>
+        /* Switch slider styles */
+        .switch .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        .switch input:checked + .slider {
+            background-color: var(--primary) !important;
+            border-color: var(--primary) !important;
+        }
+        .switch input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+    </style>
 </head>
 <body class="roster-page">
     <nav id="navbar" class="scrolled">
@@ -54,7 +75,7 @@
             </ul>
         </div>
     </nav>
-
+ 
     <header class="hero hero-small">
         <div class="hero-overlay"></div>
         <div class="hero-content">
@@ -62,8 +83,17 @@
             <p style="color: var(--text-muted); font-weight: 400; text-transform: uppercase; letter-spacing: 4px; font-size: 0.8rem;">Elite Talent Behind the Wheel</p>
         </div>
     </header>
-
+ 
     <main class="container section" style="padding-top: 2rem;">
+        <!-- Admin Toggle for Verified Drivers -->
+        <div id="admin-verified-toggle-container" style="display: none; justify-content: flex-end; margin-bottom: 2rem; align-items: center; gap: 0.75rem;">
+            <span style="font-size: 0.9rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 1px;">Show Verified Drivers (Admin)</span>
+            <label class="switch" style="position: relative; display: inline-block; width: 50px; height: 26px; margin: 0;">
+                <input type="checkbox" id="admin-verified-toggle" style="opacity: 0; width: 0; height: 0;">
+                <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.1); transition: .4s; border-radius: 34px; border: 1px solid rgba(255,255,255,0.2);"></span>
+            </label>
+        </div>
+
         <section class="roster-section" id="leadership-section" style="display: none;">
             <h2 class="section-title">Leadership</h2>
             <div class="driver-grid" id="leadership-grid">
@@ -131,8 +161,11 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
     <script src="script.js?v=5"></script>
-    <script src="js/auth.js?v=4"></script>
+    <script src="js/auth.js?v=7"></script>
     <script>
+        // Store verified drivers
+        const verifiedDrivers = new Set();
+
         // Wait for DB to be initialized by auth.js
         const dbCheckInterval = setInterval(() => {
             if (window.db) {
@@ -140,6 +173,27 @@
                 loadRoster();
             }
         }, 100);
+
+        // Define onAuthEnriched hook for admin checks
+        window.onAuthEnriched = function(user, authInfo) {
+            if (authInfo && authInfo.isAdmin) {
+                const toggleContainer = document.getElementById('admin-verified-toggle-container');
+                if (toggleContainer) {
+                    toggleContainer.style.display = 'flex';
+                }
+                
+                // Set up toggle change listener
+                const toggle = document.getElementById('admin-verified-toggle');
+                if (toggle) {
+                    toggle.addEventListener('change', (e) => {
+                        const checks = document.querySelectorAll('.verified-check');
+                        checks.forEach(check => {
+                            check.style.display = e.target.checked ? 'inline-block' : 'none';
+                        });
+                    });
+                }
+            }
+        };
 
         async function loadRoster() {
             const leadershipGrid = document.getElementById('leadership-grid');
@@ -149,6 +203,16 @@
             const rosterGrid = document.getElementById('roster-grid');
 
             try {
+                // Fetch claims to identify verified profiles
+                try {
+                    const claimsSnap = await db.collection("claims").where("status", "==", "verified").get();
+                    claimsSnap.forEach(doc => {
+                        verifiedDrivers.add(doc.id.trim().toLowerCase());
+                    });
+                } catch (err) {
+                    console.warn("Failed to load claims:", err);
+                }
+
                 const snap = await db.collection("drivers").orderBy("name").get();
                 
                 leadershipGrid.innerHTML = '';
@@ -169,6 +233,15 @@
                 let hasLeadership = false;
                 let hasEndurance = false;
 
+                // Helper to render checkmark if verified
+                const getCheckmarkHTML = (name) => {
+                    const isVerified = name && verifiedDrivers.has(name.trim().toLowerCase());
+                    // Check if toggle is currently checked (if admin loaded later/toggled already)
+                    const toggle = document.getElementById('admin-verified-toggle');
+                    const displayStyle = (toggle && toggle.checked && isVerified) ? 'inline-block' : 'none';
+                    return isVerified ? `<span class="verified-check" style="display: ${displayStyle}; color: #10B981; margin-left: 0.5rem; font-size: 1.1rem; font-weight: 700;" title="Verified Driver">✓</span>` : '';
+                };
+
                 activeDrivers.forEach(d => {
                     let cat = d.category;
                     
@@ -187,11 +260,13 @@
                     card.href = profileSlug ? `drivers/${profileSlug.toLowerCase()}.html` : '#';
                     card.className = isLeadership ? 'glass-premium driver-card' : 'glass driver-card';
                     
+                    const checkmark = getCheckmarkHTML(d.name);
+
                     if (isLeadership) {
                         hasLeadership = true;
                         card.innerHTML = `
                             <div class="driver-info">
-                                <h3>${d.name}</h3>
+                                <h3>${d.name}${checkmark}</h3>
                                 <p class="role">${d.role || 'Team Leadership'}</p>
                             </div>
                         `;
@@ -200,7 +275,7 @@
                         hasEndurance = true;
                         card.innerHTML = `
                             <div class="driver-info">
-                                <h3>${d.name}</h3>
+                                <h3>${d.name}${checkmark}</h3>
                                 <p class="role">${d.role || 'Endurance Driver'}</p>
                             </div>
                         `;
@@ -208,7 +283,7 @@
                     } else {
                         card.innerHTML = `
                             <div class="driver-info">
-                                <h3>${d.name}</h3>
+                                <h3>${d.name}${checkmark}</h3>
                                 <p class="role">Driver</p>
                             </div>
                         `;
