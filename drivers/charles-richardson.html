@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anthony Savignano III | Driver Profile | GRiD UP Sim Racing</title>
+    <title>Charles Richardson | Driver Profile | GRiD UP Sim Racing</title>
     <link rel="stylesheet" href="../style.css?v=6">
     <link rel="icon" type="image/png" href="../assets/logo.png">
     <style>
@@ -113,7 +113,7 @@
     <header class="profile-header">
         <div class="container">
             <span class="profile-nickname"></span>
-            <h1 class="glow-text" style="font-size: 3.5rem;">Anthony Savignano III</h1>
+            <h1 class="glow-text" style="font-size: 3.5rem;">Charles Richardson</h1>
             <p style="color: var(--text-muted); margin-top: 1rem;">Official GRiD UP Driver | Member since N/A</p>
             
             <!-- Claim Section (Hidden by default, shown by auth.js) -->
@@ -190,7 +190,7 @@
                     </div>
                 </div>
                 <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1);">
-                    <a href="https://garage61.net/app/drivers/anthony-savignano-iii" target="_blank" class="btn btn-outline" style="width: 100%; text-align: center;">View on Garage 61</a>
+                    <a href="https://garage61.net/app/drivers/charles-richardson" target="_blank" class="btn btn-outline" style="width: 100%; text-align: center;">View on Garage 61</a>
                 </div>
             </div>
         </div>
@@ -213,9 +213,8 @@
     <script src="../js/auth.js"></script>
     <script>
         function openClaimModal() {
-            const iracingId = prompt("Please enter your iRacing ID to verify ownership:");
-            if (iracingId) {
-                claimProfile("Anthony Savignano III", iracingId);
+            if (confirm("Are you sure you want to claim this driver profile?")) {
+                claimProfile("Charles Richardson");
             }
         }
     </script>

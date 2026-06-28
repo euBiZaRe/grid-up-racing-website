@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -213,9 +213,8 @@
     <script src="../js/auth.js"></script>
     <script>
         function openClaimModal() {
-            const iracingId = prompt("Please enter your iRacing ID to verify ownership:");
-            if (iracingId) {
-                claimProfile("David Shreve", iracingId);
+            if (confirm("Are you sure you want to claim this driver profile?")) {
+                claimProfile("David Shreve");
             }
         }
     </script>

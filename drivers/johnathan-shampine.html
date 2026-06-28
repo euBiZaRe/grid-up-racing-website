@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -131,7 +131,15 @@
                 
                 <div class="rating-group">
                     <div class="rating-label">
-                        <span>Sports Car <span class="license-badge license-r">R 2.50</span></span>
+                        <span>Sports Car <span class="license-badge license-b">B 3.51</span></span>
+                        <span>2403</span>
+                    </div>
+                    <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 40%;"></div></div>
+                </div>
+
+                <div class="rating-group">
+                    <div class="rating-label">
+                        <span>Formula <span class="license-badge license-r">R 2.65</span></span>
                         <span>---</span>
                     </div>
                     <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 0%;"></div></div>
@@ -139,26 +147,18 @@
 
                 <div class="rating-group">
                     <div class="rating-label">
-                        <span>Formula <span class="license-badge license-r">R 2.50</span></span>
-                        <span>---</span>
+                        <span>Oval <span class="license-badge license-a">A 2.62</span></span>
+                        <span>2427</span>
                     </div>
-                    <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 0%;"></div></div>
+                    <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 40%;"></div></div>
                 </div>
 
                 <div class="rating-group">
                     <div class="rating-label">
-                        <span>Oval <span class="license-badge license-r">R 2.50</span></span>
-                        <span>---</span>
+                        <span>Dirt <span class="license-badge license-c">C 3.36</span></span>
+                        <span>1697</span>
                     </div>
-                    <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 0%;"></div></div>
-                </div>
-
-                <div class="rating-group">
-                    <div class="rating-label">
-                        <span>Dirt <span class="license-badge license-r">R 2.50</span></span>
-                        <span>---</span>
-                    </div>
-                    <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 0%;"></div></div>
+                    <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 28%;"></div></div>
                 </div>
             </div>
 
@@ -213,9 +213,8 @@
     <script src="../js/auth.js"></script>
     <script>
         function openClaimModal() {
-            const iracingId = prompt("Please enter your iRacing ID to verify ownership:");
-            if (iracingId) {
-                claimProfile("Johnathan Shampine", iracingId);
+            if (confirm("Are you sure you want to claim this driver profile?")) {
+                claimProfile("Johnathan Shampine");
             }
         }
     </script>
