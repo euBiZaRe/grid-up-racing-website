@@ -282,9 +282,8 @@
 
             // Initialize claim event
             window.openClaimModal = function() {
-                const iracingId = prompt("Please enter your iRacing ID to verify ownership:");
-                if (iracingId) {
-                    claimProfile(name, iracingId);
+                if (confirm("Are you sure you want to claim this driver profile?")) {
+                    claimProfile(name);
                 }
             };
             

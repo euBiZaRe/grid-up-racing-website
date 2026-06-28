@@ -392,7 +392,7 @@ async function checkClaimStatus(driverName, user) {
 }
 
 // Profile Claiming Logic
-async function claimProfile(driverName, iracingId) {
+async function claimProfile(driverName, iracingId = "") {
     const user = auth.currentUser;
     if (!user) return alert("Please login first.");
 
