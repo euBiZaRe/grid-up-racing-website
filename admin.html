@@ -499,9 +499,16 @@
                 <!-- Driver List -->
                 <div class="glass" style="padding: 1.5rem;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                        <div style="display: flex; align-items: center; gap: 2rem;">
+                        <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
                             <h3 style="color: var(--primary);">Current Team Members</h3>
-                            <button onclick="showDriverModal()" class="btn btn-primary" style="padding: 0.6rem 1.2rem; font-size: 0.75rem;">+ ADD MEMBER</button>
+                            <button onclick="showDriverModal()" class="btn btn-primary" style="padding: 0.6rem 1.2rem; font-size: 0.75rem; border-radius: 6px;">+ ADD MEMBER</button>
+                            <select id="roster-filter-category" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.75rem; border-radius: 6px; width: auto;" onchange="renderRosterUI()">
+                                <option value="all">All Categories</option>
+                                <option value="Driver">Driver</option>
+                                <option value="GRiD UP Endurance">GRiD UP Endurance</option>
+                                <option value="Owner">Owner</option>
+                                <option value="Custom">Custom</option>
+                            </select>
                         </div>
                         <span id="roster-count" style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700;">0 Members</span>
                     </div>
@@ -2267,44 +2274,70 @@
 
         async function loadRoster() {
             const list = document.getElementById('admin-roster-list');
-            const countEl = document.getElementById('roster-count');
             if (!list) return;
 
             list.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 2rem;">Loading roster...</td></tr>';
 
             try {
                 const snap = await db.collection("drivers").orderBy("name").get();
-                list.innerHTML = '';
-                countEl.textContent = `${snap.size} Members`;
-
-                if (snap.empty) {
-                    list.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 2rem;">No drivers found.</td></tr>';
-                    return;
-                }
-
                 ROSTER_CACHE = {};
                 snap.forEach(doc => {
-                    const d = doc.data();
-                    ROSTER_CACHE[doc.id] = d;
-                    
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td><strong>${d.name}</strong></td>
-                        <td>${d.role || 'Driver'}</td>
-                        <td style="font-size: 0.7rem; color: var(--primary);">${d.category || 'Driver'}</td>
-                        <td style="font-family: monospace; font-size: 0.7rem; opacity: 0.7;">${d.iracingId || '-'}</td>
-                        <td><span class="status-badge ${d.active ? 'status-verified' : 'status-denied'}">${d.active ? 'ACTIVE' : 'INACTIVE'}</span></td>
-                        <td style="text-align: right;">
-                            <div class="action-btns" style="justify-content: flex-end;">
-                                <button onclick="prepareEdit('${doc.id}')" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem;">EDIT</button>
-                                <button onclick="deleteDriver('${doc.id}')" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; color: #ff4444; border-color: rgba(255,68,68,0.2);">DEL</button>
-                            </div>
-                        </td>
-                    `;
-                    list.appendChild(row);
+                    ROSTER_CACHE[doc.id] = doc.data();
                 });
+                renderRosterUI();
             } catch (e) {
                 list.innerHTML = `<tr><td colspan="5" style="text-align:center; color: #ff4444; padding: 2rem;">Error: ${e.message}</td></tr>`;
+            }
+        }
+
+        function renderRosterUI() {
+            const list = document.getElementById('admin-roster-list');
+            const countEl = document.getElementById('roster-count');
+            const filterCategory = document.getElementById('roster-filter-category')?.value || 'all';
+            if (!list) return;
+
+            list.innerHTML = '';
+            
+            let count = 0;
+            const sortedIds = Object.keys(ROSTER_CACHE).sort((a, b) => {
+                const nameA = ROSTER_CACHE[a].name || '';
+                const nameB = ROSTER_CACHE[b].name || '';
+                return nameA.localeCompare(nameB);
+            });
+
+            sortedIds.forEach(id => {
+                const d = ROSTER_CACHE[id];
+                const driverCategory = d.category || 'Driver';
+                
+                // Apply Category Filter
+                if (filterCategory !== 'all' && driverCategory !== filterCategory) {
+                    return;
+                }
+                
+                count++;
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${d.name}</strong></td>
+                    <td>${d.role || 'Driver'}</td>
+                    <td style="font-size: 0.7rem; color: var(--primary);">${driverCategory}</td>
+                    <td style="font-family: monospace; font-size: 0.7rem; opacity: 0.7;">${d.iracingId || '-'}</td>
+                    <td><span class="status-badge ${d.active ? 'status-verified' : 'status-denied'}">${d.active ? 'ACTIVE' : 'INACTIVE'}</span></td>
+                    <td style="text-align: right;">
+                        <div class="action-btns" style="justify-content: flex-end;">
+                            <button onclick="prepareEdit('${id}')" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem;">EDIT</button>
+                            <button onclick="deleteDriver('${id}')" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; color: #ff4444; border-color: rgba(255,68,68,0.2);">DEL</button>
+                        </div>
+                    </td>
+                `;
+                list.appendChild(row);
+            });
+
+            if (count === 0) {
+                list.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 2rem;">No drivers match the selected category.</td></tr>';
+            }
+            
+            if (countEl) {
+                countEl.textContent = `${count} Members`;
             }
         }
 
