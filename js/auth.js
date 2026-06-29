@@ -626,8 +626,13 @@ initAuth();
 
     // Helper to inject modal HTML, CSS and logic
     const setupReporter = () => {
-        // Find or wait for footer
-        const footerContainer = document.querySelector('footer .container');
+        // Find or wait for footer container, fallback to footer itself
+        let footerContainer = document.querySelector('footer .container');
+        let fallback = false;
+        if (!footerContainer) {
+            footerContainer = document.querySelector('footer');
+            fallback = true;
+        }
         if (!footerContainer) return;
 
         // Check if already injected
