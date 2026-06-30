@@ -2600,7 +2600,11 @@
                             <p style="font-size: 0.8rem; color: var(--text-muted);">Applied on: ${data.timestamp ? data.timestamp.toDate().toLocaleString() : 'Unknown'}</p>
                         </div>
                         
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                            <div>
+                                <p style="font-size: 0.7rem; color: var(--primary); margin-bottom: 0.2rem;">IRATING</p>
+                                <p style="font-size: 0.9rem; font-weight: 700;">${data.irating || 'N/A'}</p>
+                            </div>
                             <div>
                                 <p style="font-size: 0.7rem; color: var(--primary); margin-bottom: 0.2rem;">EXPERIENCE</p>
                                 <p style="font-size: 0.9rem;">${data.experience || 'N/A'}</p>
