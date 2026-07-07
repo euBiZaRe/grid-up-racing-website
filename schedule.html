@@ -10,7 +10,7 @@
       gtag('config', 'G-5JMPYRH8H9');
     </script>
 
-    <meta name="keywords" content="iRacing, schedule, sim racing, endurance, oval, formula, sports car, dirt oval, dirt road, weekly races">
+    <meta name="keywords" content="iRacing, schedule, sim racing, endurance, oval, sports car, weekly races, race calendar">
     <meta property="og:type" content="website">
     <meta property="og:image" content="https://raw.githubusercontent.com/gridup/gridup.github.io/main/assets/bg-banner.png">
     <meta charset="UTF-8">
@@ -21,234 +21,49 @@
     <style>
         .schedule-controls {
             display: flex;
-            flex-wrap: wrap;
+            flex-direction: column;
             gap: 1.5rem;
             margin-bottom: 3rem;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .category-toggles {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.75rem;
-        }
-
-        .category-btn {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--glass-border);
-            color: var(--text-muted);
-            padding: 0.6rem 1.25rem;
-            border-radius: 8px;
-            font-family: var(--font-heading);
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            cursor: pointer;
-            transition: var(--transition-fast);
-            outline: none;
-        }
-
-        .category-btn:hover {
-            background: rgba(0, 207, 255, 0.1);
-            color: var(--primary);
-            border-color: var(--primary);
-        }
-
-        .category-btn.active {
-            background: var(--primary-gradient);
-            color: #000;
-            border: 1px solid var(--primary);
-            box-shadow: 0 0 20px var(--primary-glow);
-        }
-
-        .search-week-container {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .schedule-search {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--glass-border);
-            border-radius: 8px;
-            padding: 0.6rem 1.2rem;
-            color: var(--text-main);
-            font-family: inherit;
-            width: 250px;
-            transition: var(--transition-fast);
-        }
-
-        .schedule-search:focus {
-            outline: none;
-            border-color: var(--primary);
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .week-select-dropdown {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--glass-border);
-            border-radius: 8px;
-            padding: 0.6rem 2.5rem 0.6rem 1.2rem;
-            color: #fff;
-            font-family: inherit;
-            cursor: pointer;
-        }
-
-        .schedule-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 2rem;
-        }
-
-        .series-card {
+            background: rgba(20, 20, 22, 0.4);
             border: 1px solid var(--glass-border);
             border-radius: 16px;
             padding: 2rem;
-            background: rgba(20, 20, 22, 0.5);
             backdrop-filter: blur(10px);
-            transition: var(--transition);
+        }
+
+        .filter-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .filter-group {
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            gap: 0.5rem;
         }
 
-        .series-card:hover {
-            border-color: var(--primary);
-            box-shadow: 0 10px 30px rgba(0, 207, 255, 0.05);
-            transform: translateY(-4px);
-        }
-
-        .series-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .series-name {
-            font-size: 1.25rem;
-            font-weight: 800;
-            color: #fff;
-            line-height: 1.2;
-        }
-
-        .license-lbl {
-            font-size: 0.7rem;
-            font-weight: 800;
-            padding: 0.25rem 0.6rem;
-            border-radius: 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-        }
-
-        .license-lbl.rookie { background: rgba(188, 188, 188, 0.1); color: #9ca3af; border: 1px solid rgba(188, 188, 188, 0.2); }
-        .license-lbl.class-d { background: rgba(252, 106, 3, 0.2); color: #fb923c; border: 1px solid rgba(252, 106, 3, 0.4); }
-        .license-lbl.class-c { background: rgba(247, 209, 23, 0.2); color: #facc15; border: 1px solid rgba(247, 209, 23, 0.4); }
-        .license-lbl.class-b { background: rgba(0, 143, 31, 0.2); color: #4ade80; border: 1px solid rgba(0, 143, 31, 0.4); }
-        .license-lbl.class-a { background: rgba(0, 66, 209, 0.2); color: #4DA3FF; border: 1px solid rgba(0, 66, 209, 0.4); }
-
-        .cars-list {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin-bottom: 1.5rem;
-            line-height: 1.4;
-        }
-
-        .current-track-block {
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.05);
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1.5rem;
-        }
-
-        .current-track-lbl {
+        .filter-group label {
+            font-family: var(--font-heading);
             font-size: 0.65rem;
+            font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 2px;
-            color: var(--primary);
-            font-weight: 700;
-            margin-bottom: 0.25rem;
-        }
-
-        .current-track-name {
-            font-size: 0.95rem;
-            font-weight: 700;
-            color: #fff;
-        }
-
-        .expand-btn {
-            background: none;
-            border: none;
             color: var(--text-muted);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            width: 100%;
-            font-size: 0.8rem;
-            font-weight: 600;
-            padding-top: 1rem;
-            border-top: 1px solid rgba(255,255,255,0.05);
-            transition: color 0.2s;
         }
 
-        .expand-btn:hover {
-            color: var(--primary);
-        }
-
-        .full-schedule-drawer {
-            display: none;
-            margin-top: 1rem;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            max-height: 250px;
-            overflow-y: auto;
-            padding-right: 0.5rem;
-        }
-
-        .full-schedule-drawer::-webkit-scrollbar {
-            width: 4px;
-        }
-        .full-schedule-drawer::-webkit-scrollbar-thumb {
-            background: rgba(255,255,255,0.1);
-            border-radius: 2px;
-        }
-
-        .week-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.4rem 0;
-            border-bottom: 1px solid rgba(255,255,255,0.02);
-        }
-
-        .week-row.active-week {
-            color: var(--primary);
-            font-weight: 700;
-        }
-
-        .license-toggles {
+        .filter-buttons {
             display: flex;
             flex-wrap: wrap;
             gap: 0.5rem;
-            margin-top: 1.5rem;
-            width: 100%;
-            align-items: center;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            padding-top: 1.5rem;
         }
 
-        .license-btn {
+        .filter-btn {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--glass-border);
             color: var(--text-muted);
-            padding: 0.4rem 0.9rem;
+            padding: 0.5rem 1rem;
             border-radius: 6px;
             font-family: var(--font-heading);
             font-size: 0.7rem;
@@ -260,45 +75,244 @@
             outline: none;
         }
 
-        .license-btn:hover {
+        .filter-btn:hover {
             background: rgba(255, 255, 255, 0.07);
             color: #fff;
         }
 
-        .license-btn.active[data-license="all"] {
-            background: rgba(255, 255, 255, 0.15);
-            border-color: #fff;
-            color: #fff;
+        .filter-btn.active {
+            background: var(--primary-gradient);
+            color: #000;
+            border-color: var(--primary);
+            box-shadow: 0 0 15px var(--primary-glow);
         }
-        .license-btn.active[data-license="Rookie"] {
+
+        /* Specific license colors when active */
+        .filter-btn.active[data-license="Rookie"] {
             background: rgba(188, 188, 188, 0.15);
             color: #fff;
             border-color: #9ca3af;
             box-shadow: 0 0 10px rgba(188, 188, 188, 0.15);
         }
-        .license-btn.active[data-license="Class D"] {
+        .filter-btn.active[data-license="Class D"] {
             background: rgba(252, 106, 3, 0.2);
             color: #fff;
             border-color: #fb923c;
             box-shadow: 0 0 10px rgba(252, 106, 3, 0.2);
         }
-        .license-btn.active[data-license="Class C"] {
+        .filter-btn.active[data-license="Class C"] {
             background: rgba(247, 209, 23, 0.2);
             color: #fff;
             border-color: #facc15;
             box-shadow: 0 0 10px rgba(247, 209, 23, 0.2);
         }
-        .license-btn.active[data-license="Class B"] {
+        .filter-btn.active[data-license="Class B"] {
             background: rgba(0, 143, 31, 0.2);
             color: #fff;
             border-color: #4ade80;
             box-shadow: 0 0 10px rgba(0, 143, 31, 0.2);
         }
-        .license-btn.active[data-license="Class A"] {
+        .filter-btn.active[data-license="Class A"] {
             background: rgba(0, 66, 209, 0.2);
             color: #fff;
             border-color: #4DA3FF;
             box-shadow: 0 0 10px rgba(0, 66, 209, 0.2);
+        }
+
+        .schedule-search {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 0.85rem;
+            width: 280px;
+            transition: var(--transition-fast);
+        }
+
+        .schedule-search:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .schedule-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .event-card {
+            display: grid;
+            grid-template-columns: 90px 1fr;
+            gap: 1.5rem;
+            align-items: center;
+            border: 1px solid var(--glass-border);
+            background: rgba(20, 20, 22, 0.4);
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .event-card:hover {
+            border-color: var(--primary);
+            transform: translateX(4px);
+            box-shadow: 0 5px 25px rgba(0, 207, 255, 0.05);
+        }
+
+        .date-badge {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 0.5rem;
+            text-align: center;
+            min-height: 80px;
+        }
+
+        /* Color code left border of date-badge by license */
+        .date-badge.rookie { border-left: 4px solid #9ca3af; }
+        .date-badge.class-d { border-left: 4px solid #fb923c; }
+        .date-badge.class-c { border-left: 4px solid #facc15; }
+        .date-badge.class-b { border-left: 4px solid #4ade80; }
+        .date-badge.class-a { border-left: 4px solid #4DA3FF; }
+
+        .date-badge .month {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .date-badge .day {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #fff;
+            line-height: 1;
+            margin-top: 0.25rem;
+        }
+
+        .event-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .event-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .series-name {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #fff;
+            margin: 0;
+        }
+
+        .event-meta-row {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .event-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .event-meta-item svg {
+            opacity: 0.6;
+        }
+
+        .cars-label {
+            font-size: 0.75rem;
+            line-height: 1.4;
+            color: var(--text-muted);
+        }
+
+        .badge-container {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .meta-badge {
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .meta-badge.license {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .meta-badge.license.rookie { color: #9ca3af; border-color: rgba(156, 163, 175, 0.3); }
+        .meta-badge.license.class-d { color: #fb923c; border-color: rgba(251, 146, 60, 0.3); }
+        .meta-badge.license.class-c { color: #facc15; border-color: rgba(250, 204, 21, 0.3); }
+        .meta-badge.license.class-b { color: #4ade80; border-color: rgba(74, 222, 128, 0.3); }
+        .meta-badge.license.class-a { color: #4DA3FF; border-color: rgba(77, 163, 255, 0.3); }
+
+        .meta-badge.length {
+            background: rgba(0, 207, 255, 0.1);
+            color: var(--primary);
+            border: 1px solid rgba(0, 207, 255, 0.2);
+        }
+
+        .meta-badge.team {
+            background: rgba(255, 0, 85, 0.1);
+            color: #ff0055;
+            border: 1px solid rgba(255, 0, 85, 0.2);
+        }
+
+        .meta-badge.multiclass {
+            background: rgba(168, 85, 247, 0.1);
+            color: #a855f7;
+            border: 1px solid rgba(168, 85, 247, 0.2);
+        }
+        
+        .no-events {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 4rem 2rem;
+            background: rgba(20, 20, 22, 0.2);
+            border: 1px dashed rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .event-card {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            .date-badge {
+                flex-direction: row;
+                justify-content: flex-start;
+                gap: 10px;
+                min-height: auto;
+                padding: 0.5rem 1rem;
+            }
+            .date-badge .day {
+                margin: 0;
+                font-size: 1.25rem;
+            }
         }
     </style>
 </head>
@@ -332,7 +346,7 @@
         <div class="hero-overlay"></div>
         <div class="hero-content">
             <h1 class="glow-text" style="font-size: clamp(3rem, 8vw, 5rem); font-weight: 900;">iRacing Schedule</h1>
-            <p style="color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 2px;">Weekly Official Series Track Finder</p>
+            <p style="color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 2px;">Official Endurance & Special Events Calendar</p>
         </div>
     </header>
 
@@ -340,48 +354,81 @@
         <div class="tread-overlay" style="opacity: 0.05;"></div>
         
         <div class="schedule-controls">
-            <!-- Category Selector -->
-            <div class="category-toggles">
-                <button class="category-btn active" data-category="Oval" onclick="toggleCategory('Oval')">Oval</button>
-                <button class="category-btn active" data-category="Sports Car" onclick="toggleCategory('Sports Car')">Sports Car</button>
-                <button class="category-btn active" data-category="Formula" onclick="toggleCategory('Formula')">Formula</button>
-                <button class="category-btn active" data-category="Dirt Oval" onclick="toggleCategory('Dirt Oval')">Dirt Oval</button>
-                <button class="category-btn active" data-category="Dirt Road" onclick="toggleCategory('Dirt Road')">Dirt Road</button>
+            <!-- Search & Category -->
+            <div class="filter-row" style="justify-content: space-between;">
+                <div class="filter-group">
+                    <label>Search Events</label>
+                    <input type="text" id="schedule-search-input" class="schedule-search" placeholder="Search series, tracks or cars..." oninput="filterSchedule()">
+                </div>
+                <div class="filter-group">
+                    <label>Category</label>
+                    <div class="filter-buttons" id="category-filters">
+                        <button class="filter-btn active" data-category="all" onclick="toggleCategory('all')">All Categories</button>
+                        <button class="filter-btn" data-category="Oval" onclick="toggleCategory('Oval')">Oval</button>
+                        <button class="filter-btn" data-category="Sports Car" onclick="toggleCategory('Sports Car')">Sports Car</button>
+                    </div>
+                </div>
             </div>
 
-            <!-- Search and Week Select -->
-            <div class="search-week-container">
-                <input type="text" id="schedule-search-input" class="schedule-search" placeholder="Search series or cars..." oninput="filterSchedule()">
-                <select id="week-select" class="week-select-dropdown" onchange="changeWeek(this.value)">
-                    <option value="1">Week 1 (June 16)</option>
-                    <option value="2" selected>Week 2 (June 23) - Current</option>
-                    <option value="3">Week 3 (June 30)</option>
-                    <option value="4">Week 4 (July 07)</option>
-                    <option value="5">Week 5 (July 14)</option>
-                    <option value="6">Week 6 (July 21)</option>
-                    <option value="7">Week 7 (July 28)</option>
-                    <option value="8">Week 8 (August 04)</option>
-                    <option value="9">Week 9 (August 11)</option>
-                    <option value="10">Week 10 (August 18)</option>
-                    <option value="11">Week 11 (August 25)</option>
-                    <option value="12">Week 12 (September 01)</option>
-                </select>
+            <!-- License Filters -->
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label>License Class</label>
+                    <div class="filter-buttons" id="license-filters">
+                        <button class="filter-btn active" data-license="all" onclick="toggleLicense('all')">All Classes</button>
+                        <button class="filter-btn" data-license="Rookie" onclick="toggleLicense('Rookie')">Rookie</button>
+                        <button class="filter-btn" data-license="Class D" onclick="toggleLicense('Class D')">Class D</button>
+                        <button class="filter-btn" data-license="Class C" onclick="toggleLicense('Class C')">Class C</button>
+                        <button class="filter-btn" data-license="Class B" onclick="toggleLicense('Class B')">Class B</button>
+                        <button class="filter-btn" data-license="Class A" onclick="toggleLicense('Class A')">Class A</button>
+                    </div>
+                </div>
             </div>
 
-            <!-- License Selector -->
-            <div class="license-toggles">
-                <span style="font-family: var(--font-heading); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); display: flex; align-items: center; margin-right: 0.5rem;">License Class:</span>
-                <button class="license-btn active" data-license="all" onclick="toggleLicense('all')">All</button>
-                <button class="license-btn active" data-license="Rookie" onclick="toggleLicense('Rookie')">Rookie</button>
-                <button class="license-btn active" data-license="Class D" onclick="toggleLicense('Class D')">Class D</button>
-                <button class="license-btn active" data-license="Class C" onclick="toggleLicense('Class C')">Class C</button>
-                <button class="license-btn active" data-license="Class B" onclick="toggleLicense('Class B')">Class B</button>
-                <button class="license-btn active" data-license="Class A" onclick="toggleLicense('Class A')">Class A</button>
+            <!-- Format Filters -->
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label>Team Format</label>
+                    <div class="filter-buttons" id="team-filters">
+                        <button class="filter-btn active" data-team="all" onclick="toggleTeam('all')">All formats</button>
+                        <button class="filter-btn" data-team="yes" onclick="toggleTeam('yes')">Team Event</button>
+                        <button class="filter-btn" data-team="no" onclick="toggleTeam('no')">Solo Event</button>
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label>Class Format</label>
+                    <div class="filter-buttons" id="multiclass-filters">
+                        <button class="filter-btn active" data-multiclass="all" onclick="toggleMulticlass('all')">All Classes</button>
+                        <button class="filter-btn" data-multiclass="yes" onclick="toggleMulticlass('yes')">Multiclass</button>
+                        <button class="filter-btn" data-multiclass="no" onclick="toggleMulticlass('no')">Single Class</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Month Filters -->
+            <div class="filter-row" style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.25rem;">
+                <div class="filter-group" style="width: 100%;">
+                    <label>Month Filter</label>
+                    <div class="filter-buttons" id="month-filters">
+                        <button class="filter-btn active" data-month="all" onclick="toggleMonth('all')">All Months</button>
+                        <button class="filter-btn" data-month="Jan" onclick="toggleMonth('Jan')">Jan</button>
+                        <button class="filter-btn" data-month="Feb" onclick="toggleMonth('Feb')">Feb</button>
+                        <button class="filter-btn" data-month="Mar" onclick="toggleMonth('Mar')">Mar</button>
+                        <button class="filter-btn" data-month="Apr" onclick="toggleMonth('Apr')">Apr</button>
+                        <button class="filter-btn" data-month="May" onclick="toggleMonth('May')">May</button>
+                        <button class="filter-btn" data-month="Jun" onclick="toggleMonth('Jun')">Jun</button>
+                        <button class="filter-btn" data-month="Jul" onclick="toggleMonth('Jul')">Jul</button>
+                        <button class="filter-btn" data-month="Aug" onclick="toggleMonth('Aug')">Aug</button>
+                        <button class="filter-btn" data-month="Sep" onclick="toggleMonth('Sep')">Sep</button>
+                        <button class="filter-btn" data-month="Oct" onclick="toggleMonth('Oct')">Oct</button>
+                        <button class="filter-btn" data-month="Nov" onclick="toggleMonth('Nov')">Nov</button>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div id="schedule-grid" class="schedule-grid">
-            <p style="text-align: center; color: var(--text-muted); width: 100%; grid-column: 1/-1;">Loading official series schedule data...</p>
+        <div id="schedule-grid" class="schedule-list">
+            <p style="text-align: center; color: var(--text-muted); width: 100%;">Loading official race schedule calendar...</p>
         </div>
     </main>
 
@@ -397,7 +444,7 @@
             </div>
             <p style="color: var(--text-muted); font-size: 0.8rem; margin: 0; padding-bottom: 1rem;">&copy; 2026 GRiD UP SIM RACING. ALL RIGHTS RESERVED.</p>
         </div>
-    </footer>
+    <div style="display: none;"><a href="https://www.sigmatraffic.com?ref=328509">Free website hits</a></div></footer>
 
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
@@ -405,123 +452,77 @@
     <script src="script.js?v=5"></script>
     <script src="js/auth.js?v=4"></script>
     <script>
-        let allSchedules = [];
-        let activeCategories = ["Oval", "Sports Car", "Formula", "Dirt Oval", "Dirt Road"];
-        let activeLicenses = ["Rookie", "Class D", "Class C", "Class B", "Class A"];
-        let activeWeek = 2; // Default to Week 2 (Current)
+        let allEvents = [];
+        let activeCategory = "all";
+        let activeLicense = "all";
+        let activeTeam = "all";
+        let activeMulticlass = "all";
+        let activeMonth = "all";
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Fetch the parsed schedule JSON
-            fetch('scripts/iracing_schedule.json')
+            fetch('scripts/schedule_events.json')
                 .then(res => res.json())
                 .then(data => {
-                    allSchedules = data;
+                    allEvents = data;
                     renderSchedule();
                 })
                 .catch(err => {
                     console.error("Error loading schedule data:", err);
-                    document.getElementById('schedule-grid').innerHTML = '<p style="text-align: center; color: var(--secondary); grid-column: 1/-1;">Could not load schedule database.</p>';
+                    document.getElementById('schedule-grid').innerHTML = '<div class="no-events"><p style="color: var(--secondary); font-weight: 700;">Could not load schedule database.</p></div>';
                 });
         });
 
         function toggleCategory(cat) {
-            const index = activeCategories.indexOf(cat);
-            if (index > -1) {
-                activeCategories.splice(index, 1);
-            } else {
-                activeCategories.push(cat);
-            }
-            
-            document.querySelectorAll('.category-btn').forEach(btn => {
-                const btnCat = btn.getAttribute('data-category');
-                btn.classList.toggle('active', activeCategories.includes(btnCat));
+            activeCategory = cat;
+            document.querySelectorAll('#category-filters .filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-category') === cat);
             });
             renderSchedule();
         }
 
         function toggleLicense(lic) {
-            const allLicenses = ["Rookie", "Class D", "Class C", "Class B", "Class A"];
-            if (lic === 'all') {
-                if (activeLicenses.length === allLicenses.length) {
-                    activeLicenses = [];
-                } else {
-                    activeLicenses = [...allLicenses];
-                }
-            } else {
-                const index = activeLicenses.indexOf(lic);
-                if (index > -1) {
-                    activeLicenses.splice(index, 1);
-                } else {
-                    activeLicenses.push(lic);
-                }
-            }
-            
-            document.querySelectorAll('.license-btn').forEach(btn => {
-                const btnLic = btn.getAttribute('data-license');
-                if (btnLic === 'all') {
-                    btn.classList.toggle('active', activeLicenses.length === allLicenses.length);
-                } else {
-                    btn.classList.toggle('active', activeLicenses.includes(btnLic));
-                }
+            activeLicense = lic;
+            document.querySelectorAll('#license-filters .filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-license') === lic);
             });
             renderSchedule();
         }
 
-        function changeWeek(week) {
-            activeWeek = parseInt(week);
+        function toggleTeam(teamVal) {
+            activeTeam = teamVal;
+            document.querySelectorAll('#team-filters .filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-team') === teamVal);
+            });
             renderSchedule();
         }
 
-        function getLicenseClass(lic) {
-            const l = String(lic).toLowerCase().replace(/\(|\)/g, '');
-            if (l.includes('class b 4.0')) return 'class-a';
-            if (l.includes('class c 4.0')) return 'class-b';
-            if (l.includes('class d 4.0')) return 'class-c';
-            if (l.includes('rookie 4.0')) return 'class-d';
-            if (l.includes('rookie')) return 'rookie';
-            if (l.includes('class d')) return 'class-d';
-            if (l.includes('class c')) return 'class-c';
-            if (l.includes('class b')) return 'class-b';
-            if (l.includes('class a')) return 'class-a';
-            return 'rookie';
+        function toggleMulticlass(mcVal) {
+            activeMulticlass = mcVal;
+            document.querySelectorAll('#multiclass-filters .filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-multiclass') === mcVal);
+            });
+            renderSchedule();
         }
 
-        function getLicenseLabel(lic) {
-            const l = String(lic).toLowerCase().replace(/\(|\)/g, '');
-            if (l.includes('class b 4.0')) return 'Class A';
-            if (l.includes('class c 4.0')) return 'Class B';
-            if (l.includes('class d 4.0')) return 'Class C';
-            if (l.includes('rookie 4.0')) return 'Class D';
-            if (l.includes('rookie 1.0')) return 'Rookie';
-            return lic;
-        }
-
-        function getCleanSeriesName(name) {
-            let clean = name.replace(/\s*-\s*\d{4}\s+Season\s+\d+\s*/gi, ' ');
-            clean = clean.replace(/\s*-\s*\d{4}\s+Season\s*/gi, ' ');
-            clean = clean.replace(/\s*\d{4}\s+Season\s+\d+\s*/gi, ' ');
-            clean = clean.replace(/\s*\d{4}\s+Season\s*/gi, ' ');
-            clean = clean.replace(/\s*-\s*-\s*/g, ' - ');
-            if (clean.includes('Fixed') && !clean.includes('- Fixed')) {
-                clean = clean.replace(/\s*Fixed/g, ' - Fixed');
-            }
-            return clean.trim().replace(/^-\s*|\s*-$/g, '').trim();
+        function toggleMonth(month) {
+            activeMonth = month;
+            document.querySelectorAll('#month-filters .filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-month') === month);
+            });
+            renderSchedule();
         }
 
         function filterSchedule() {
             renderSchedule();
         }
 
-        function toggleDrawer(id) {
-            const drawer = document.getElementById(`drawer-${id}`);
-            const btn = document.getElementById(`btn-${id}`);
-            if (!drawer || !btn) return;
-            
-            const isHidden = window.getComputedStyle(drawer).display === 'none';
-            drawer.style.display = isHidden ? 'block' : 'none';
-            btn.innerHTML = isHidden 
-                ? 'Hide Season Schedule <span>▲</span>' 
-                : 'Show Season Schedule <span>▼</span>';
+        function getLicenseClass(lic) {
+            const l = String(lic).toLowerCase().replace(/\(|\)/g, '');
+            if (l.includes('class b 4.0') || l.includes('class a')) return 'class-a';
+            if (l.includes('class c 4.0') || l.includes('class b')) return 'class-b';
+            if (l.includes('class d 4.0') || l.includes('class c')) return 'class-c';
+            if (l.includes('rookie 4.0') || l.includes('class d')) return 'class-d';
+            return 'rookie';
         }
 
         function renderSchedule() {
@@ -530,61 +531,77 @@
 
             const searchQuery = document.getElementById('schedule-search-input').value.toLowerCase().trim();
 
-            // Filter data
-            const filtered = allSchedules.filter(item => {
-                const matchesCat = activeCategories.includes(item.category);
-                const itemLicClass = getLicenseClass(item.license);
-                const matchesLicense = activeLicenses.some(lic => getLicenseClass(lic) === itemLicClass);
+            const filtered = allEvents.filter(event => {
+                // Category Filter
+                const matchesCat = activeCategory === 'all' || event.category === activeCategory;
+                
+                // License Filter
+                const matchesLic = activeLicense === 'all' || event.license.toLowerCase().includes(activeLicense.toLowerCase());
+                
+                // Team Format Filter
+                const matchesTeam = activeTeam === 'all' || 
+                                    (activeTeam === 'yes' && event.team) || 
+                                    (activeTeam === 'no' && !event.team);
+                                    
+                // Multiclass Filter
+                const matchesMulticlass = activeMulticlass === 'all' || 
+                                         (activeMulticlass === 'yes' && event.multiclass) || 
+                                         (activeMulticlass === 'no' && !event.multiclass);
+                                         
+                // Month Filter
+                const matchesMonth = activeMonth === 'all' || event.date.toLowerCase().includes(activeMonth.toLowerCase());
+                
+                // Search Query Filter
                 const matchesSearch = !searchQuery || 
-                                     item.seriesName.toLowerCase().includes(searchQuery) || 
-                                     item.cars.toLowerCase().includes(searchQuery);
-                return matchesCat && matchesLicense && matchesSearch;
+                                     event.seriesName.toLowerCase().includes(searchQuery) || 
+                                     event.track.toLowerCase().includes(searchQuery) || 
+                                     event.cars.toLowerCase().includes(searchQuery);
+
+                return matchesCat && matchesLic && matchesTeam && matchesMulticlass && matchesMonth && matchesSearch;
             });
 
             if (filtered.length === 0) {
-                grid.innerHTML = '<p style="text-align: center; color: var(--text-muted); grid-column: 1/-1; padding: 4rem;">No matching series found.</p>';
+                grid.innerHTML = '<div class="no-events"><p style="margin:0;">No matching race events found.</p></div>';
                 return;
             }
 
             grid.innerHTML = '';
-            filtered.forEach((item, index) => {
-                // Find active week track
-                const activeWeekData = item.schedule.find(w => w.week === activeWeek) || { track: "Off Week" };
-                const licenseClass = getLicenseClass(item.license);
-
-                // Build weeks list for drawer
-                let weeksHtml = '';
-                item.schedule.forEach(w => {
-                    const isActive = w.week === activeWeek;
-                    weeksHtml += `
-                        <div class="week-row ${isActive ? 'active-week' : ''}">
-                            <span>Week ${w.week}</span>
-                            <span>${w.track}</span>
-                        </div>
-                    `;
-                });
+            filtered.forEach(event => {
+                const licenseClass = getLicenseClass(event.license);
+                
+                // Parse date string like "Jun 20" or "Jul 11" into Month and Day
+                const dateParts = event.date.split(' ');
+                const monthText = dateParts[0] || 'JUN';
+                const dayText = dateParts[1] || '16';
 
                 const card = document.createElement('div');
-                card.className = 'series-card';
+                card.className = 'event-card';
                 card.innerHTML = `
-                    <div>
-                        <div class="series-header">
-                            <span class="series-name">${getCleanSeriesName(item.seriesName)}</span>
-                            <span class="license-lbl ${licenseClass}">${getLicenseLabel(item.license)}</span>
-                        </div>
-                        <div class="cars-list">${item.cars}</div>
-                        <div class="current-track-block">
-                            <div class="current-track-lbl">Week ${activeWeek} Track</div>
-                            <div class="current-track-name">${activeWeekData.track}</div>
-                        </div>
+                    <div class="date-badge ${licenseClass}">
+                        <span class="month">${monthText}</span>
+                        <span class="day">${dayText}</span>
                     </div>
-                    <div>
-                        <button id="btn-${index}" class="expand-btn" onclick="toggleDrawer(${index})">
-                            Show Season Schedule <span>▼</span>
-                        </button>
-                        <div id="drawer-${index}" class="full-schedule-drawer">
-                            ${weeksHtml}
+                    <div class="event-info">
+                        <div class="event-header">
+                            <h3 class="series-name">${event.seriesName}</h3>
+                            <div class="badge-container">
+                                <span class="meta-badge license ${licenseClass}">${event.license}</span>
+                                <span class="meta-badge length">${event.length}</span>
+                                ${event.team ? '<span class="meta-badge team">Team</span>' : '<span class="meta-badge team" style="background: rgba(255,255,255,0.05); color: var(--text-muted); border-color: rgba(255,255,255,0.1);">Solo</span>'}
+                                ${event.multiclass ? '<span class="meta-badge multiclass">Multiclass</span>' : ''}
+                            </div>
                         </div>
+                        <div class="event-meta-row">
+                            <div class="event-meta-item">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
+                                <span>Week ${event.week}</span>
+                            </div>
+                            <div class="event-meta-item">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                                <span>${event.track}</span>
+                            </div>
+                        </div>
+                        <div class="cars-label"><strong>Cars:</strong> ${event.cars}</div>
                     </div>
                 `;
                 grid.appendChild(card);
