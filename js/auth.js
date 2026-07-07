@@ -918,7 +918,7 @@ async function loadDriverCustomInfo(driverName) {
                             const userData = userDoc.data();
                             
                             if (userData.customAvatarUrl) {
-                                const avatarEl = document.getElementById("driver-avatar-container");
+                                const avatarEl = document.getElementById("driver-avatar-container") || document.querySelector(".driver-avatar-container");
                                 if (avatarEl) {
                                     avatarEl.innerHTML = `<img src="${userData.customAvatarUrl}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
                                 }
