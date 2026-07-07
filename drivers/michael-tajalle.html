@@ -9,22 +9,26 @@
     <style>
         .profile-container {
             display: grid;
-            grid-template-columns: 320px 1fr;
-            gap: 2.5rem;
-            margin-top: 2rem;
-            align-items: start;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+            margin-top: 1.5rem;
+            align-items: stretch;
         }
 
         .driver-hero-card {
             background: rgba(20, 20, 22, 0.45);
             border: 1px solid var(--glass-border);
             border-radius: 16px;
-            padding: 2.5rem 2rem;
+            padding: 2rem 1.5rem;
             text-align: center;
             backdrop-filter: blur(15px);
             position: relative;
             overflow: hidden;
             box-shadow: 0 10px 45px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
         }
 
         .driver-hero-card::before {
@@ -39,9 +43,9 @@
 
         .driver-avatar-container {
             position: relative;
-            width: 120px;
-            height: 120px;
-            margin: 0 auto 1.5rem;
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 1rem;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.02);
             border: 2px solid rgba(255, 255, 255, 0.05);
@@ -52,8 +56,8 @@
         }
 
         .driver-avatar-placeholder {
-            width: 70px;
-            height: 70px;
+            width: 50px;
+            height: 50px;
             color: rgba(255, 255, 255, 0.15);
         }
 
@@ -86,14 +90,14 @@
         }
 
         .driver-meta-list {
-            margin: 2rem 0;
-            padding: 1.5rem 0;
+            margin: 1.25rem 0;
+            padding: 1rem 0;
             border-top: 1px solid rgba(255, 255, 255, 0.05);
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             text-align: left;
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: 0.75rem;
         }
 
         .driver-meta-item {
@@ -115,27 +119,30 @@
         }
 
         .dashboard-container {
-            display: flex;
-            flex-direction: column;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 2rem;
+            align-items: stretch;
         }
 
         .dashboard-card {
             background: rgba(20, 20, 22, 0.35);
             border: 1px solid var(--glass-border);
             border-radius: 16px;
-            padding: 2.5rem;
+            padding: 2rem;
             backdrop-filter: blur(10px);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
         }
 
         .card-header-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            padding-bottom: 1rem;
+            padding-bottom: 0.75rem;
         }
 
         .card-title-text {
@@ -151,7 +158,7 @@
         }
 
         .rating-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
         }
 
         .rating-group:last-child {
@@ -216,16 +223,18 @@
         .bio-info-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 2rem;
+            gap: 1rem;
+            flex-grow: 1;
         }
 
         .bio-item {
             border: 1px solid rgba(255, 255, 255, 0.02);
             background: rgba(255, 255, 255, 0.01);
-            padding: 1.25rem;
+            padding: 0.85rem 1rem;
             border-radius: 8px;
             display: flex;
             flex-direction: column;
+            justify-content: center;
             gap: 0.25rem;
         }
 
@@ -263,6 +272,10 @@
                 max-width: 450px;
                 margin: 0 auto;
                 width: 100%;
+                height: auto;
+            }
+            .dashboard-container {
+                grid-template-columns: 1fr;
             }
         }
     </style>
