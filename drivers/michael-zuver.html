@@ -4,88 +4,266 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Michael Zuver | Driver Profile | GRiD UP Sim Racing</title>
-    <link rel="stylesheet" href="../style.css?v=6">
+    <link rel="stylesheet" href="../style.css?v=7">
     <link rel="icon" type="image/png" href="../assets/logo.png">
     <style>
-        .profile-header {
-            text-align: center;
-            padding: 5rem 0 3rem;
-            background: radial-gradient(circle at 50% 100%, rgba(0,207,255,0.05) 0%, transparent 70%);
-        }
-        .profile-nickname {
-            color: var(--text-muted);
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 5px;
-            font-size: 0.8rem;
-            margin-bottom: 0.75rem;
-            display: block;
-        }
-        .stats-container {
+        .profile-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            grid-template-columns: 320px 1fr;
             gap: 2.5rem;
-            margin-top: 3rem;
+            margin-top: 2rem;
+            align-items: start;
         }
-        .stat-card {
-            padding: 2.5rem;
+
+        .driver-hero-card {
+            background: rgba(20, 20, 22, 0.45);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            backdrop-filter: blur(15px);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 45px rgba(0, 0, 0, 0.3);
+        }
+
+        .driver-hero-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
+        }
+
+        .driver-avatar-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 1.5rem;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.02);
+            border: 2px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 30px rgba(0, 207, 255, 0.1);
+        }
+
+        .driver-avatar-placeholder {
+            width: 70px;
+            height: 70px;
+            color: rgba(255, 255, 255, 0.15);
+        }
+
+        .driver-name-wrap {
+            margin-bottom: 0.5rem;
+        }
+
+        .driver-main-name {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: #fff;
+            line-height: 1.2;
+            margin-bottom: 0.25rem;
+        }
+
+        .verified-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: #10B981;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 0.5rem;
+            background: rgba(16, 185, 129, 0.1);
+            padding: 0.2rem 0.6rem;
+            border-radius: 30px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .driver-meta-list {
+            margin: 2rem 0;
+            padding: 1.5rem 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            text-align: left;
             display: flex;
             flex-direction: column;
-            gap: 1.25rem;
+            gap: 1rem;
+        }
+
+        .driver-meta-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+        }
+
+        .driver-meta-label {
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .driver-meta-val {
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .dashboard-container {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .dashboard-card {
+            background: rgba(20, 20, 22, 0.35);
             border: 1px solid var(--glass-border);
-            background: rgba(255, 255, 255, 0.015);
+            border-radius: 16px;
+            padding: 2.5rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
+
+        .card-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 1rem;
+        }
+
+        .card-title-text {
+            font-size: 1.2rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #fff;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
         .rating-group {
-            margin-bottom: 1.75rem;
+            margin-bottom: 1.5rem;
         }
+
+        .rating-group:last-child {
+            margin-bottom: 0;
+        }
+
         .rating-label {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 0.75rem;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
+            margin-bottom: 0.6rem;
+            font-size: 0.85rem;
+            color: var(--text-main);
+            font-weight: 700;
         }
+
+        .rating-label-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .rating-score {
+            font-family: monospace;
+            font-size: 0.95rem;
+            color: var(--primary);
+            font-weight: 800;
+        }
+
         .rating-bar-bg {
-            height: 4px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 2px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 3px;
             overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.02);
         }
+
         .rating-bar-fill {
             height: 100%;
             background: linear-gradient(90deg, var(--secondary), var(--primary));
-            box-shadow: 0 0 12px rgba(0, 207, 255, 0.2);
+            box-shadow: 0 0 12px rgba(0, 207, 255, 0.25);
+            border-radius: 3px;
         }
+
         .license-badge {
             display: inline-block;
-            padding: 0.25rem 0.75rem;
+            padding: 0.2rem 0.5rem;
             border-radius: 4px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            margin-left: 0.75rem;
+            font-size: 0.65rem;
+            font-weight: 800;
             letter-spacing: 0.5px;
-        }
-        .license-a { background: rgba(0, 66, 209, 0.2); color: #4DA3FF; border: 1px solid rgba(0, 66, 209, 0.4); }
-        .license-b { background: rgba(0, 143, 31, 0.2); color: #4ade80; border: 1px solid rgba(0, 143, 31, 0.4); }
-        .license-c { background: rgba(247, 209, 23, 0.2); color: #facc15; border: 1px solid rgba(247, 209, 23, 0.4); }
-        .license-d { background: rgba(252, 106, 3, 0.2); color: #fb923c; border: 1px solid rgba(252, 106, 3, 0.4); }
-        .license-r { background: rgba(188, 188, 188, 0.1); color: #9ca3af; border: 1px solid rgba(188, 188, 188, 0.2); }
-
-        .big-stat {
-            font-size: 2.75rem;
-            font-weight: 700;
-            color: var(--text-main);
-            line-height: 1;
-        }
-        .big-stat-label {
-            color: var(--text-muted);
-            font-size: 0.75rem;
             text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-top: 0.75rem;
+            white-space: nowrap;
+        }
+
+        .license-a { background: rgba(0, 66, 209, 0.15); color: #4DA3FF; border: 1px solid rgba(0, 66, 209, 0.3); }
+        .license-b { background: rgba(0, 143, 31, 0.15); color: #4ade80; border: 1px solid rgba(0, 143, 31, 0.3); }
+        .license-c { background: rgba(247, 209, 23, 0.15); color: #facc15; border: 1px solid rgba(247, 209, 23, 0.3); }
+        .license-d { background: rgba(252, 106, 3, 0.15); color: #fb923c; border: 1px solid rgba(252, 106, 3, 0.3); }
+        .license-r { background: rgba(188, 188, 188, 0.08); color: #9ca3af; border: 1px solid rgba(188, 188, 188, 0.15); }
+
+        .bio-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .bio-item {
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            background: rgba(255, 255, 255, 0.01);
+            padding: 1.25rem;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .bio-item.span-2 {
+            grid-column: span 2;
+        }
+
+        .bio-lbl {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .bio-val {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .bio-val.advice-text {
+            font-size: 0.95rem;
+            font-style: italic;
+            font-weight: 500;
+            line-height: 1.5;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        @media (max-width: 992px) {
+            .profile-container {
+                grid-template-columns: 1fr;
+            }
+            .driver-hero-card {
+                max-width: 450px;
+                margin: 0 auto;
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -95,9 +273,8 @@
             <a href="../index.html" class="logo">
                 <img src="../assets/logo.png" alt="GRiD UP" style="height: 40px; vertical-align: middle;">
             </a>
-                        <ul class="nav-links">
+            <ul class="nav-links">
                 <li><a href="../index.html#home">Home</a></li>
-                
                 <li><a href="../roster.html">Roster</a></li>
                 <li><a href="../events.html">Events</a></li>
                 <li><a href="../reports.html">Race Reports</a></li>
@@ -110,101 +287,155 @@
         </div>
     </nav>
 
-    <header class="profile-header">
-        <div class="container">
-            <span class="profile-nickname"></span>
-            <h1 class="glow-text" style="font-size: 3.5rem;">Michael Zuver</h1>
-            <p style="color: var(--text-muted); margin-top: 1rem;">Official GRiD UP Driver | Member since N/A</p>
+    <main class="container section">
+        <div class="profile-container">
             
-            <!-- Claim Section (Hidden by default, shown by auth.js) -->
-            <div id="claim-section" style="margin-top: 2rem; display: none;">
-                <button class="btn btn-outline claim-btn" onclick="openClaimModal()" style="font-size: 0.75rem; padding: 0.6rem 1.5rem;">Claim This Driver Profile</button>
-            </div>
-        </div>
-    </header>
-
-    <main class="container section" style="padding-top: 0;">
-        <div class="stats-container">
-            <!-- iRatings Section -->
-            <div class="glass stat-card">
-            <h3 class="section-title" style="margin-bottom: 2.5rem;">iRacing Ratings</h3>
+            <!-- Left Panel: Driver Card -->
+            <div class="driver-hero-card">
+                <div class="driver-avatar-container">
+                    <svg class="driver-avatar-placeholder" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+                    </svg>
+                </div>
                 
-                <div class="rating-group">
-                    <div class="rating-label">
-                        <span>Sports Car <span class="license-badge license-a">A 3.54</span></span>
-                        <span>1896</span>
+                <div class="driver-name-wrap">
+                    <span class="profile-nickname" style="color: var(--primary); font-weight: 700; text-transform: uppercase; letter-spacing: 3px; font-size: 0.75rem; margin-bottom: 0.25rem; display: block;"></span>
+                    <h1 class="driver-main-name">Michael Zuver</h1>
+                    <div id="verified-badge-container" style="display: none; justify-content: center;">
+                        <span class="verified-badge">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            Verified
+                        </span>
                     </div>
-                    <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 31%;"></div></div>
                 </div>
 
-                <div class="rating-group">
-                    <div class="rating-label">
-                        <span>Formula <span class="license-badge license-r">R 2.04</span></span>
-                        <span>1668</span>
+                <div class="driver-meta-list">
+                    <div class="driver-meta-item">
+                        <span class="driver-meta-label">Team Role</span>
+                        <span class="driver-meta-val">Driver</span>
                     </div>
-                    <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 27%;"></div></div>
+                    <div class="driver-meta-item">
+                        <span class="driver-meta-label">Member Since</span>
+                        <span class="driver-meta-val">N/A</span>
+                    </div>
                 </div>
 
-                <div class="rating-group">
-                    <div class="rating-label">
-                        <span>Oval <span class="license-badge license-r">R 2.50</span></span>
-                        <span>---</span>
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    <a href="https://garage61.net/app/drivers/michael-zuver" target="_blank" class="btn" style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); width: 100%; font-size: 0.75rem; padding: 0.6rem; text-align: center; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Garage 61 Profile</a>
+                    
+                    <!-- Claim Section (Hidden by default, shown by auth.js) -->
+                    <div id="claim-section" style="display: none; width: 100%;">
+                        <button class="btn btn-outline claim-btn" onclick="openClaimModal()" style="font-size: 0.75rem; padding: 0.6rem; width: 100%; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Claim Profile</button>
                     </div>
-                    <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 0%;"></div></div>
-                </div>
-
-                <div class="rating-group">
-                    <div class="rating-label">
-                        <span>Dirt Oval <span class="license-badge license-r">R 2.45</span></span>
-                        <span>1395</span>
-                    </div>
-                    <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 23%;"></div></div>
-                </div>
-
-                <div class="rating-group">
-                    <div class="rating-label">
-                        <span>Dirt Road <span class="license-badge license-r">R 2.66</span></span>
-                        <span>1382</span>
-                    </div>
-                    <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 23%;"></div></div>
                 </div>
             </div>
 
-                        <!-- Driver Information Section -->
-            <div class="glass stat-card" style="display: flex; flex-direction: column; justify-content: space-between;">
-                <div>
-                    <h3 class="section-title" style="margin-bottom: 2.5rem;">Driver Information</h3>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                        <div>
-                            <div id="profile-age" style="font-size: 1.5rem; font-weight: 700; color: #fff;">N/A</div>
-                            <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-top: 0.5rem;">Age</div>
+            <!-- Right Panel: Dashboard -->
+            <div class="dashboard-container">
+                
+                <!-- iRacing Ratings Card -->
+                <div class="dashboard-card">
+                    <div class="card-header-row">
+                        <h3 class="card-title-text">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                            iRacing Ratings
+                        </h3>
+                    </div>
+
+                    <div class="rating-group">
+                        <div class="rating-label">
+                            <div class="rating-label-left">
+                                <span>Sports Car</span>
+                                <span class="license-badge license-a">A 3.54</span>
+                            </div>
+                            <span class="rating-score">1896</span>
                         </div>
-                        <div>
-                            <div id="profile-country" style="font-size: 1.5rem; font-weight: 700; color: #fff;">N/A</div>
-                            <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-top: 0.5rem;">Country</div>
+                        <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 31%;"></div></div>
+                    </div>
+
+                    <div class="rating-group">
+                        <div class="rating-label">
+                            <div class="rating-label-left">
+                                <span>Formula</span>
+                                <span class="license-badge license-r">R 2.04</span>
+                            </div>
+                            <span class="rating-score">1668</span>
                         </div>
-                        <div style="grid-column: span 2;">
-                            <div id="profile-fav-car" style="font-size: 1.2rem; font-weight: 500; color: #fff;">N/A</div>
-                            <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-top: 0.5rem;">Favourite Car (In iRacing)</div>
+                        <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 27%;"></div></div>
+                    </div>
+
+                    <div class="rating-group">
+                        <div class="rating-label">
+                            <div class="rating-label-left">
+                                <span>Oval</span>
+                                <span class="license-badge license-r">R 2.50</span>
+                            </div>
+                            <span class="rating-score">---</span>
                         </div>
-                        <div style="grid-column: span 2;">
-                            <div id="profile-fav-track" style="font-size: 1.2rem; font-weight: 500; color: #fff;">N/A</div>
-                            <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-top: 0.5rem;">Favourite Track</div>
+                        <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 0%;"></div></div>
+                    </div>
+
+                    <div class="rating-group">
+                        <div class="rating-label">
+                            <div class="rating-label-left">
+                                <span>Dirt Oval</span>
+                                <span class="license-badge license-r">R 2.45</span>
+                            </div>
+                            <span class="rating-score">1395</span>
                         </div>
-                        <div style="grid-column: span 2;">
-                            <div id="profile-advice" style="font-size: 1rem; line-height: 1.6; color: rgba(255,255,255,0.9); font-style: italic;">"N/A"</div>
-                            <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-top: 0.5rem;">Advice for New Sim Racers</div>
+                        <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 23%;"></div></div>
+                    </div>
+
+                    <div class="rating-group">
+                        <div class="rating-label">
+                            <div class="rating-label-left">
+                                <span>Dirt Road</span>
+                                <span class="license-badge license-r">R 2.66</span>
+                            </div>
+                            <span class="rating-score">1382</span>
+                        </div>
+                        <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 23%;"></div></div>
+                    </div>
+                </div>
+
+                <!-- Driver Bio Info Card -->
+                <div class="dashboard-card">
+                    <div class="card-header-row">
+                        <h3 class="card-title-text">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                            Driver Profile Details
+                        </h3>
+                    </div>
+
+                    <div class="bio-info-grid">
+                        <div class="bio-item">
+                            <span class="bio-lbl">Age</span>
+                            <span class="bio-val" id="profile-age">N/A</span>
+                        </div>
+                        <div class="bio-item">
+                            <span class="bio-lbl">Country</span>
+                            <span class="bio-val" id="profile-country">N/A</span>
+                        </div>
+                        <div class="bio-item span-2">
+                            <span class="bio-lbl">Favourite Car</span>
+                            <span class="bio-val" id="profile-fav-car">N/A</span>
+                        </div>
+                        <div class="bio-item span-2">
+                            <span class="bio-lbl">Favourite Track</span>
+                            <span class="bio-val" id="profile-fav-track">N/A</span>
+                        </div>
+                        <div class="bio-item span-2">
+                            <span class="bio-lbl">Advice for New Sim Racers</span>
+                            <span class="bio-val advice-text" id="profile-advice">"N/A"</span>
                         </div>
                     </div>
                 </div>
-                <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1);">
-                    <a href="https://garage61.net/app/drivers/michael-zuver" target="_blank" class="btn btn-outline" style="width: 100%; text-align: center;">View on Garage 61</a>
-                </div>
+
             </div>
         </div>
 
-        <div style="text-align: center; margin-top: 8rem;">
-            <a href="../roster.html" class="btn btn-outline" style="padding: 1rem 3rem;">← Back to Roster</a>
+        <div style="text-align: center; margin-top: 5rem;">
+            <a href="../roster.html" class="btn btn-outline" style="padding: 0.8rem 2.5rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; font-size: 0.8rem;">← Back to Roster</a>
         </div>
     </main>
 
@@ -217,8 +448,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-    <script src="../script.js?v=6"></script>
-    <script src="../js/auth.js?v=7"></script>
+    <script src="../script.js?v=7"></script>
+    <script src="../js/auth.js?v=8"></script>
     <script>
         function openClaimModal() {
             if (confirm("Are you sure you want to claim this driver profile?")) {
@@ -238,7 +469,24 @@
                 }
             }, 50);
         }
+
+        // Check if verified and show verified badge
+        setInterval(() => {
+            const rosterChecked = document.querySelector('.verified-check');
+            const badge = document.getElementById('verified-badge-container');
+            if (badge) {
+                // If this profile name exists as verified in roster or claimed database,
+                // window.db is checking and loading verified status.
+                // We'll hook into window.db claim document checks.
+                if (window.db) {
+                    window.db.collection("claims").doc("Michael Zuver").get().then(doc => {
+                        if (doc.exists && doc.data().status === 'verified') {
+                            badge.style.display = 'flex';
+                        }
+                    }).catch(e => {});
+                }
+            }
+        }, 1000);
     </script>
 </body>
 </html>
-
