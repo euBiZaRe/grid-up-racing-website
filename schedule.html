@@ -354,19 +354,11 @@
         <div class="tread-overlay" style="opacity: 0.05;"></div>
         
         <div class="schedule-controls">
-            <!-- Search & Category -->
-            <div class="filter-row" style="justify-content: space-between;">
-                <div class="filter-group">
+            <!-- Search -->
+            <div class="filter-row" style="justify-content: flex-start;">
+                <div class="filter-group" style="width: 100%; max-width: 400px;">
                     <label>Search Events</label>
-                    <input type="text" id="schedule-search-input" class="schedule-search" placeholder="Search series, tracks or cars..." oninput="filterSchedule()">
-                </div>
-                <div class="filter-group">
-                    <label>Category</label>
-                    <div class="filter-buttons" id="category-filters">
-                        <button class="filter-btn active" data-category="all" onclick="toggleCategory('all')">All Categories</button>
-                        <button class="filter-btn" data-category="Oval" onclick="toggleCategory('Oval')">Oval</button>
-                        <button class="filter-btn" data-category="Sports Car" onclick="toggleCategory('Sports Car')">Sports Car</button>
-                    </div>
+                    <input type="text" id="schedule-search-input" class="schedule-search" placeholder="Search series, tracks or cars..." oninput="filterSchedule()" style="width: 100%;">
                 </div>
             </div>
 
@@ -449,7 +441,6 @@
     <script src="js/auth.js?v=4"></script>
     <script>
         let allEvents = [];
-        let activeCategory = "all";
         let activeLicense = "all";
         let activeMulticlass = "all";
         let activeMonth = "all";
@@ -468,13 +459,7 @@
                 });
         });
 
-        function toggleCategory(cat) {
-            activeCategory = cat;
-            document.querySelectorAll('#category-filters .filter-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.getAttribute('data-category') === cat);
-            });
-            renderSchedule();
-        }
+
 
         function toggleLicense(lic) {
             activeLicense = lic;
@@ -533,9 +518,6 @@
                 if (!showPastEvents && event.isoDate < todayStr) {
                     return false;
                 }
-
-                // Category Filter
-                const matchesCat = activeCategory === 'all' || event.category === activeCategory;
                 
                 // License Filter
                 const matchesLic = activeLicense === 'all' || event.license.toLowerCase().includes(activeLicense.toLowerCase());
@@ -554,7 +536,7 @@
                                      event.track.toLowerCase().includes(searchQuery) || 
                                      event.cars.toLowerCase().includes(searchQuery);
 
-                return matchesCat && matchesLic && matchesMulticlass && matchesMonth && matchesSearch;
+                return matchesLic && matchesMulticlass && matchesMonth && matchesSearch;
             });
 
             if (filtered.length === 0) {
