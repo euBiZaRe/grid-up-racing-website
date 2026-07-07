@@ -917,6 +917,12 @@ async function loadDriverCustomInfo(driverName) {
                         if (userDoc.exists) {
                             const userData = userDoc.data();
                             
+                            if (userData.customAvatarUrl) {
+                                const avatarEl = document.getElementById("driver-avatar-container");
+                                if (avatarEl) {
+                                    avatarEl.innerHTML = `<img src="${userData.customAvatarUrl}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                                }
+                            }
                             if (userData.age) {
                                 const ageEl = document.getElementById("profile-age");
                                 if (ageEl) ageEl.textContent = userData.age;
