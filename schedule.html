@@ -388,20 +388,16 @@
             <!-- Format Filters -->
             <div class="filter-row">
                 <div class="filter-group">
-                    <label>Team Format</label>
-                    <div class="filter-buttons" id="team-filters">
-                        <button class="filter-btn active" data-team="all" onclick="toggleTeam('all')">All formats</button>
-                        <button class="filter-btn" data-team="yes" onclick="toggleTeam('yes')">Team Event</button>
-                        <button class="filter-btn" data-team="no" onclick="toggleTeam('no')">Solo Event</button>
-                    </div>
-                </div>
-                <div class="filter-group">
                     <label>Class Format</label>
                     <div class="filter-buttons" id="multiclass-filters">
                         <button class="filter-btn active" data-multiclass="all" onclick="toggleMulticlass('all')">All Classes</button>
                         <button class="filter-btn" data-multiclass="yes" onclick="toggleMulticlass('yes')">Multiclass</button>
                         <button class="filter-btn" data-multiclass="no" onclick="toggleMulticlass('no')">Single Class</button>
                     </div>
+                </div>
+                <div class="filter-group">
+                    <label>Past Races</label>
+                    <button class="filter-btn" id="toggle-past-btn" onclick="togglePastEvents()">Show Past Events</button>
                 </div>
             </div>
             
@@ -455,9 +451,9 @@
         let allEvents = [];
         let activeCategory = "all";
         let activeLicense = "all";
-        let activeTeam = "all";
         let activeMulticlass = "all";
         let activeMonth = "all";
+        let showPastEvents = false;
 
         document.addEventListener('DOMContentLoaded', () => {
             fetch('scripts/schedule_events.json')
@@ -488,11 +484,10 @@
             renderSchedule();
         }
 
-        function toggleTeam(teamVal) {
-            activeTeam = teamVal;
-            document.querySelectorAll('#team-filters .filter-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.getAttribute('data-team') === teamVal);
-            });
+        function togglePastEvents() {
+            showPastEvents = !showPastEvents;
+            const btn = document.getElementById('toggle-past-btn');
+            btn.classList.toggle('active', showPastEvents);
             renderSchedule();
         }
 
@@ -531,17 +526,19 @@
 
             const searchQuery = document.getElementById('schedule-search-input').value.toLowerCase().trim();
 
+            const todayStr = new Date().toISOString().split('T')[0];
+
             const filtered = allEvents.filter(event => {
+                // Past Events Filter (hide by default)
+                if (!showPastEvents && event.isoDate < todayStr) {
+                    return false;
+                }
+
                 // Category Filter
                 const matchesCat = activeCategory === 'all' || event.category === activeCategory;
                 
                 // License Filter
                 const matchesLic = activeLicense === 'all' || event.license.toLowerCase().includes(activeLicense.toLowerCase());
-                
-                // Team Format Filter
-                const matchesTeam = activeTeam === 'all' || 
-                                    (activeTeam === 'yes' && event.team) || 
-                                    (activeTeam === 'no' && !event.team);
                                     
                 // Multiclass Filter
                 const matchesMulticlass = activeMulticlass === 'all' || 
@@ -557,7 +554,7 @@
                                      event.track.toLowerCase().includes(searchQuery) || 
                                      event.cars.toLowerCase().includes(searchQuery);
 
-                return matchesCat && matchesLic && matchesTeam && matchesMulticlass && matchesMonth && matchesSearch;
+                return matchesCat && matchesLic && matchesMulticlass && matchesMonth && matchesSearch;
             });
 
             if (filtered.length === 0) {
