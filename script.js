@@ -705,6 +705,74 @@ function renderEventsUI(upcomingEvents, pastEvents = null, featuredOverride = nu
         return new Date(d);
     };
 
+    const eventLengths = {
+        'iracing-roar': '2.4 Hours',
+        'daytona-24': '24 Hours',
+        'daytona-500': '500 Miles',
+        'bathurst-12': '12 Hours',
+        'sebring-12hr': '12 Hours',
+        'nurburgring-24h': '24 Hours',
+        'imsa-classic-500': '500 Miles',
+        'indy-500': '500 Miles',
+        'world-600': '600 Miles',
+        'thruxton-4h': '4 Hours',
+        'watkins-glen-6h': '6 Hours',
+        'spa-24hr': '24 Hours',
+        'brickyard-400': '400 Miles',
+        'road-america-6h': '6 Hours',
+        'knoxville-nationals': 'Sprint Format',
+        'portimao-1000': '8 Hours (1000km)',
+        'suzuka-1000km': '7 Hours (1000km)',
+        'crandon-championship': 'Off-road Format',
+        'southern-500': '500 Miles',
+        'britcar-24hr': '24 Hours',
+        'petit-le-mans': '10 Hours',
+        'bathurst-1000': '1000km',
+        'indy-8h': '8 Hours',
+        'ff1600-festival': 'Festival Format',
+        'homestead-championship': '400 Miles',
+        'sfl-mountain-showdown': 'Sprint/Feature Format',
+        'scca-runoffs': 'Championship Format',
+        '992-endurance-cup': 'Endurance',
+        'winter-derby': 'Derby Format',
+        'chili-bowl': 'National Format',
+        'production-car-challenge': 'Multi-hour Endurance'
+    };
+
+    const eventSeriesNames = {
+        'iracing-roar': 'iRacing Roar Before the 24',
+        'daytona-24': 'iRacing Daytona 24',
+        'daytona-500': 'iRacing Daytona 500',
+        'bathurst-12': 'iRacing Bathurst 12 Hour',
+        'sebring-12hr': 'iRacing Sebring 12 Hour',
+        'nurburgring-24h': 'iRacing Nürburgring 24h',
+        'imsa-classic-500': 'iRacing IMSA Classic 500',
+        'indy-500': 'iRacing Indy 500',
+        'world-600': 'iRacing World 600',
+        'thruxton-4h': 'iRacing 4 Hours at Thruxton',
+        'watkins-glen-6h': 'iRacing Watkins Glen 6 Hour',
+        'spa-24hr': 'iRacing Spa 24 Hour',
+        'brickyard-400': 'iRacing Brickyard 400',
+        'road-america-6h': 'iRacing Road America 6 Hour',
+        'knoxville-nationals': 'iRacing Knoxville Nationals',
+        'portimao-1000': 'iRacing Portimao 1000',
+        'suzuka-1000km': 'iRacing Suzuka 1000km',
+        'crandon-championship': 'iRacing Crandon Championship',
+        'southern-500': 'iRacing Southern 500',
+        'britcar-24hr': 'iRacing Britcar 24',
+        'petit-le-mans': 'iRacing Petit Le Mans',
+        'bathurst-1000': 'iRacing Bathurst 1000',
+        'indy-8h': 'iRacing Indianapolis 8 Hour',
+        'ff1600-festival': 'iRacing FF1600 Festival',
+        'homestead-championship': 'iRacing Homestead Championship',
+        'sfl-mountain-showdown': 'iRacing SFL Mountain Showdown',
+        'scca-runoffs': 'iRacing SCCA Runoffs',
+        '992-endurance-cup': 'iRacing 992 Endurance Cup',
+        'winter-derby': 'iRacing Winter Derby',
+        'chili-bowl': 'iRacing Chili Bowl',
+        'production-car-challenge': 'iRacing Production Car Challenge'
+    };
+
     // A. Update Upcoming UI
     const nextEvent = featuredOverride || (upcomingEvents.length > 0 ? upcomingEvents[0] : null);
     if (!nextEvent) {
@@ -713,6 +781,7 @@ function renderEventsUI(upcomingEvents, pastEvents = null, featuredOverride = nu
         if (heroSubtitle) heroSubtitle.textContent = 'Next Major Race: TBA';
         if (heroTitle) heroTitle.textContent = 'GRiD UP';
     } else {
+
         const startTime = parseDate(nextEvent.startDate);
         const endTime = nextEvent.endDate ? parseDate(nextEvent.endDate) : (startTime ? new Date(startTime) : null);
         if (endTime && !nextEvent.endDate) {
@@ -746,73 +815,6 @@ function renderEventsUI(upcomingEvents, pastEvents = null, featuredOverride = nu
         
         updateCountdown(nextEvent.startDate, endTime, nextEvent.broadcastUrl, nextEvent.practiceStart);
 
-        const eventLengths = {
-            'iracing-roar': '2.4 Hours',
-            'daytona-24': '24 Hours',
-            'daytona-500': '500 Miles',
-            'bathurst-12': '12 Hours',
-            'sebring-12hr': '12 Hours',
-            'nurburgring-24h': '24 Hours',
-            'imsa-classic-500': '500 Miles',
-            'indy-500': '500 Miles',
-            'world-600': '600 Miles',
-            'thruxton-4h': '4 Hours',
-            'watkins-glen-6h': '6 Hours',
-            'spa-24hr': '24 Hours',
-            'brickyard-400': '400 Miles',
-            'road-america-6h': '6 Hours',
-            'knoxville-nationals': 'Sprint Format',
-            'portimao-1000': '8 Hours (1000km)',
-            'suzuka-1000km': '7 Hours (1000km)',
-            'crandon-championship': 'Off-road Format',
-            'southern-500': '500 Miles',
-            'britcar-24hr': '24 Hours',
-            'petit-le-mans': '10 Hours',
-            'bathurst-1000': '1000km',
-            'indy-8h': '8 Hours',
-            'ff1600-festival': 'Festival Format',
-            'homestead-championship': '400 Miles',
-            'sfl-mountain-showdown': 'Sprint/Feature Format',
-            'scca-runoffs': 'Championship Format',
-            '992-endurance-cup': 'Endurance',
-            'winter-derby': 'Derby Format',
-            'chili-bowl': 'National Format',
-            'production-car-challenge': 'Multi-hour Endurance'
-        };
-
-        const eventSeriesNames = {
-            'iracing-roar': 'iRacing Roar Before the 24',
-            'daytona-24': 'iRacing Daytona 24',
-            'daytona-500': 'iRacing Daytona 500',
-            'bathurst-12': 'iRacing Bathurst 12 Hour',
-            'sebring-12hr': 'iRacing Sebring 12 Hour',
-            'nurburgring-24h': 'iRacing Nürburgring 24h',
-            'imsa-classic-500': 'iRacing IMSA Classic 500',
-            'indy-500': 'iRacing Indy 500',
-            'world-600': 'iRacing World 600',
-            'thruxton-4h': 'iRacing 4 Hours at Thruxton',
-            'watkins-glen-6h': 'iRacing Watkins Glen 6 Hour',
-            'spa-24hr': 'iRacing Spa 24 Hour',
-            'brickyard-400': 'iRacing Brickyard 400',
-            'road-america-6h': 'iRacing Road America 6 Hour',
-            'knoxville-nationals': 'iRacing Knoxville Nationals',
-            'portimao-1000': 'iRacing Portimao 1000',
-            'suzuka-1000km': 'iRacing Suzuka 1000km',
-            'crandon-championship': 'iRacing Crandon Championship',
-            'southern-500': 'iRacing Southern 500',
-            'britcar-24hr': 'iRacing Britcar 24',
-            'petit-le-mans': 'iRacing Petit Le Mans',
-            'bathurst-1000': 'iRacing Bathurst 1000',
-            'indy-8h': 'iRacing Indianapolis 8 Hour',
-            'ff1600-festival': 'iRacing FF1600 Festival',
-            'homestead-championship': 'iRacing Homestead Championship',
-            'sfl-mountain-showdown': 'iRacing SFL Mountain Showdown',
-            'scca-runoffs': 'iRacing SCCA Runoffs',
-            '992-endurance-cup': 'iRacing 992 Endurance Cup',
-            'winter-derby': 'iRacing Winter Derby',
-            'chili-bowl': 'iRacing Chili Bowl',
-            'production-car-challenge': 'iRacing Production Car Challenge'
-        };
 
         if (upcomingTrack) {
             upcomingTrack.innerHTML = '';
