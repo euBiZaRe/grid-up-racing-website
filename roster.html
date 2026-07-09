@@ -88,6 +88,7 @@
         <!-- Admin Toggle for Verified Drivers -->
         <div id="admin-verified-toggle-container" style="display: none; justify-content: flex-end; margin-bottom: 2rem; align-items: center; gap: 0.75rem;">
             <span style="font-size: 0.9rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 1px;">Show Verified Drivers (Admin)</span>
+            <span id="roster-verified-count" style="font-size: 0.75rem; font-weight: 700; color: var(--primary); background: rgba(0,207,255,0.1); border: 1px solid rgba(0,207,255,0.25); border-radius: 20px; padding: 0.2rem 0.75rem; letter-spacing: 0.5px;"></span>
             <label class="switch" style="position: relative; display: inline-block; width: 50px; height: 26px; margin: 0;">
                 <input type="checkbox" id="admin-verified-toggle" style="opacity: 0; width: 0; height: 0;">
                 <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.1); transition: .4s; border-radius: 34px; border: 1px solid rgba(255,255,255,0.2);"></span>
@@ -224,6 +225,13 @@
                     const d = doc.data();
                     if (d.active !== false) activeDrivers.push(d);
                 });
+
+                // Update the verified count pill for admins
+                const countPill = document.getElementById('roster-verified-count');
+                if (countPill) {
+                    const verifiedCount = activeDrivers.filter(d => d.name && verifiedDrivers.has(d.name.trim().toLowerCase())).length;
+                    countPill.textContent = `${verifiedCount} / ${activeDrivers.length} verified`;
+                }
 
                 if (activeDrivers.length === 0) {
                     rosterGrid.innerHTML = '<p style="text-align: center; color: var(--text-muted); grid-column: 1/-1;">No active drivers found.</p>';
