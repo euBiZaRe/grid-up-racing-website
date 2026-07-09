@@ -201,6 +201,21 @@
 
             <!-- Claims Section -->
             <div id="section-claims" class="tab-content" style="display: none;">
+                <!-- Claims Count Summary -->
+                <div style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                    <div class="glass" style="padding: 1rem 1.5rem; display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 140px;">
+                        <div style="font-size: 1.8rem; font-weight: 800; color: var(--primary); line-height: 1;" id="claims-count-total">—</div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Total<br>Claims</div>
+                    </div>
+                    <div class="glass" style="padding: 1rem 1.5rem; display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 140px;">
+                        <div style="font-size: 1.8rem; font-weight: 800; color: #00e676; line-height: 1;" id="claims-count-verified">—</div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Verified<br>Members</div>
+                    </div>
+                    <div class="glass" style="padding: 1rem 1.5rem; display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 140px;">
+                        <div style="font-size: 1.8rem; font-weight: 800; color: #ffab40; line-height: 1;" id="claims-count-pending">—</div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Pending<br>Review</div>
+                    </div>
+                </div>
                 <div class="glass" style="padding: 1.5rem; overflow-x: auto;">
                 <table class="claims-table mobile-table">
                     <thead>
@@ -773,6 +788,21 @@
 
                 const snapshot = await db.collection("claims").orderBy("timestamp", "desc").get();
                 console.log("Admin: Firestore snapshot received, size:", snapshot.size);
+
+                // Update count badges
+                let countVerified = 0, countPending = 0;
+                snapshot.forEach(doc => {
+                    const st = doc.data().status;
+                    if (st === 'verified') countVerified++;
+                    else if (st === 'pending') countPending++;
+                });
+                const elTotal    = document.getElementById('claims-count-total');
+                const elVerified = document.getElementById('claims-count-verified');
+                const elPending  = document.getElementById('claims-count-pending');
+                if (elTotal)    elTotal.textContent    = snapshot.size;
+                if (elVerified) elVerified.textContent = countVerified;
+                if (elPending)  elPending.textContent  = countPending;
+
                 if (snapshot.empty) {
                     list.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No claim requests found.</td></tr>';
                     return;
