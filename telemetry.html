@@ -725,15 +725,7 @@
         }
 
         .driver-card-body {
-            display: grid;
-            grid-template-columns: 1.3fr 1fr;
-            gap: 1.25rem;
-        }
-
-        @media (max-width: 768px) {
-            .driver-card-body {
-                grid-template-columns: 1fr;
-            }
+            display: block;
         }
 
         .controls-progression-layout {
@@ -910,6 +902,17 @@
                     </div>
                 </div>
 
+                <!-- Measurement Units Toggle -->
+                <div>
+                    <label class="selector-label">Measurement Units</label>
+                    <div style="display: flex; align-items: center; gap: 0.5rem; background: rgba(20, 20, 20, 0.6); border: 1px solid rgba(255, 255, 255, 0.05); padding: 0.75rem 1rem; border-radius: 12px; height: 42px;">
+                        <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 0; user-select: none;">
+                            <input type="checkbox" id="units-toggle" style="width: 14px; height: 14px; cursor: pointer; accent-color: #3b82f6;">
+                            <span>Imperial (MPH/Gal/°F)</span>
+                        </label>
+                    </div>
+                </div>
+
                 <!-- Team Selector -->
                 <div>
                     <label class="selector-label">Select Active Team</label>
@@ -982,6 +985,7 @@
         let trackMapLastTimestamp = null;
         let lockToPlayer = localStorage.getItem('lock_to_player') !== 'false'; // default to true
         let hasAutoScrolled = false;
+        let useImperial = localStorage.getItem('use_imperial') === 'true';
 
         // Load track map data
         fetch('js/track-maps.json')
@@ -1365,6 +1369,18 @@
                 }
             });
         }
+
+        const unitsToggle = document.getElementById('units-toggle');
+        if (unitsToggle) {
+            unitsToggle.checked = useImperial;
+            unitsToggle.addEventListener('change', (e) => {
+                useImperial = e.target.checked;
+                localStorage.setItem('use_imperial', useImperial);
+                if (typeof window.forceRenderDashboard === 'function') {
+                    window.forceRenderDashboard();
+                }
+            });
+        }
         
         let streamsRef = null;
         let driversRef = null;
@@ -1440,20 +1456,22 @@
                     const presence = currentDrivers[mid] || {};
                     const driverName = presence.name || tel.drivers?.[tel.playerIdx]?.name || "Active Driver";
 
-                    const speedKmh = Math.round((tel.speed || 0) * 3.6);
+                    let speedVal = 0;
+                    let speedUnit = "km/h";
+                    if (useImperial) {
+                        speedVal = Math.round((tel.speed || 0) * 2.23694);
+                        speedUnit = "mph";
+                    } else {
+                        speedVal = Math.round((tel.speed || 0) * 3.6);
+                        speedUnit = "km/h";
+                    }
+
                     const gearText = tel.gear === 0 ? "N" : tel.gear === -1 ? "R" : tel.gear;
                     const progressPct = Math.min(Math.max((tel.progress || 0) * 100, 0), 100);
 
                     // Pedals
                     const throttleVal = tel.throttle || 0;
                     const brakeVal = tel.brake || 0;
-
-                    // Tyres
-                    const tyres = tel.health?.tyres || {};
-                    const lf = tyres.LF || {};
-                    const rf = tyres.RF || {};
-                    const lr = tyres.LR || {};
-                    const rr = tyres.RR || {};
 
                     driversHtml += `
                         <div class="driver-card" id="card-${mid}">
@@ -1488,7 +1506,7 @@
                                     <div class="metrics-grid">
                                         <div class="metric-card">
                                             <span class="metric-title"><i data-lucide="gauge" style="width: 12px; height: 12px;"></i> Speed</span>
-                                            <div class="metric-val">${speedKmh}<span>km/h</span></div>
+                                            <div class="metric-val">${speedVal}<span>${speedUnit}</span></div>
                                         </div>
                                         <div class="metric-card">
                                             <span class="metric-title"><i data-lucide="zap" style="width: 12px; height: 12px;"></i> Gear</span>
@@ -1496,7 +1514,7 @@
                                         </div>
                                         <div class="metric-card">
                                             <span class="metric-title"><i data-lucide="droplet" style="width: 12px; height: 12px;"></i> Fuel</span>
-                                            <div class="metric-val">${tel.fuel || 0}<span>L</span></div>
+                                            <div class="metric-val">${useImperial ? ((tel.fuel || 0) * 0.264172).toFixed(1) : (tel.fuel || 0).toFixed(1)}<span>${useImperial ? "gal" : "L"}</span></div>
                                         </div>
                                         <div class="metric-card">
                                             <span class="metric-title"><i data-lucide="check-circle-2" style="width: 12px; height: 12px;"></i> Position</span>
@@ -1539,38 +1557,6 @@
                                             <div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--text-muted); margin-top: 0.5rem; font-family: monospace;">
                                                 <span>Start / Finish</span>
                                                 <span>Lap ${tel.lap || 0}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="driver-tyres-specs">
-                                    <!-- Tyre Temperatures and Pressures -->
-                                    <div class="tyre-container">
-                                        <h4 class="metric-title" style="margin-bottom: 0.75rem; justify-content: center;">
-                                            <i data-lucide="thermometer" style="width: 14px; height: 14px;"></i> Tyre Telemetry (Psi / Temp)
-                                        </h4>
-                                        <div class="tyre-grid">
-                                            <div class="car-outline"></div>
-                                            <div class="tyre-card">
-                                                <div class="tyre-name">LF</div>
-                                                <div class="tyre-press">${lf.p || 0} psi</div>
-                                                <div class="tyre-temp">${lf.t || 0} °C</div>
-                                            </div>
-                                            <div class="tyre-card">
-                                                <div class="tyre-name">RF</div>
-                                                <div class="tyre-press">${rf.p || 0} psi</div>
-                                                <div class="tyre-temp">${rf.t || 0} °C</div>
-                                            </div>
-                                            <div class="tyre-card">
-                                                <div class="tyre-name">LR</div>
-                                                <div class="tyre-press">${lr.p || 0} psi</div>
-                                                <div class="tyre-temp">${lr.t || 0} °C</div>
-                                            </div>
-                                            <div class="tyre-card">
-                                                <div class="tyre-name">RR</div>
-                                                <div class="tyre-press">${rr.p || 0} psi</div>
-                                                <div class="tyre-temp">${rr.t || 0} °C</div>
                                             </div>
                                         </div>
                                     </div>
@@ -1779,12 +1765,40 @@
 
                 if (condBar && primaryTel) {
                     condBar.style.display = 'flex';
-                    if (condAir) condAir.innerText = primaryTel.air_temp !== undefined ? primaryTel.air_temp : '--';
-                    if (condTrack) condTrack.innerText = primaryTel.track_temp !== undefined ? primaryTel.track_temp : '--';
-                    if (condWind) {
-                        const windSpd = primaryTel.wind_vel !== undefined ? `${primaryTel.wind_vel} km/h` : '--';
-                        condWind.innerText = windSpd;
+                    
+                    let airVal = '--';
+                    if (primaryTel.air_temp !== undefined) {
+                        airVal = useImperial ? Math.round(primaryTel.air_temp * 1.8 + 32) : primaryTel.air_temp;
                     }
+                    if (condAir) {
+                        condAir.innerText = airVal;
+                        const airSpan = condAir.closest('div');
+                        if (airSpan) airSpan.innerHTML = `<i data-lucide="thermometer" style="width: 15px; height: 15px; color: #3b82f6;"></i><span>Air: <strong id="cond-air-temp" style="color: #fff; font-size: 0.8rem;">${airVal}</strong>°${useImperial ? "F" : "C"}</span>`;
+                    }
+
+                    let trackVal = '--';
+                    if (primaryTel.track_temp !== undefined) {
+                        trackVal = useImperial ? Math.round(primaryTel.track_temp * 1.8 + 32) : primaryTel.track_temp;
+                    }
+                    if (condTrack) {
+                        condTrack.innerText = trackVal;
+                        const trackSpan = condTrack.closest('div');
+                        if (trackSpan) trackSpan.innerHTML = `<i data-lucide="sun" style="width: 15px; height: 15px; color: #f59e0b;"></i><span>Track: <strong id="cond-track-temp" style="color: #fff; font-size: 0.8rem;">${trackVal}</strong>°${useImperial ? "F" : "C"}</span>`;
+                    }
+
+                    if (condWind) {
+                        let windSpd = '--';
+                        if (primaryTel.wind_vel !== undefined) {
+                            windSpd = useImperial 
+                                ? `${Math.round(primaryTel.wind_vel / 1.60934)} MPH` 
+                                : `${primaryTel.wind_vel} KM/H`;
+                        }
+                        condWind.innerText = windSpd;
+                        const windSpan = condWind.closest('div');
+                        if (windSpan) windSpan.innerHTML = `<i data-lucide="wind" style="width: 15px; height: 15px; color: #10b981;"></i><span>Wind: <strong id="cond-wind" style="color: #fff; font-size: 0.8rem;">${windSpd}</strong></span>`;
+                    }
+                    
+                    lucide.createIcons();
                 }
 
                 // Auto-scroll on initial load of active telemetry streams
