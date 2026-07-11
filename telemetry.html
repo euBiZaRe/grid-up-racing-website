@@ -897,21 +897,35 @@
                  </div>
             </div>
 
-            <!-- Team Selector -->
-            <div>
-                <label class="selector-label">Select Active Team</label>
-                <div class="team-selector-wrapper">
-                    <i data-lucide="users" style="width: 18px; height: 18px; color: var(--text-muted);"></i>
-                    <select id="team-select">
-                        <option value="gridUp_sim">GRiD UP Sim Racing</option>
-                        <option value="gridUp_black">GRiD UP Black</option>
-                        <option value="gridUp_blue">GRiD UP Blue</option>
-                        <option value="gridUp_red">GRiD UP Red</option>
-                        <option value="gridUp_white">GRiD UP White</option>
-                        <option value="gridUp_practice">PRACTICE SERVER</option>
-                        <option value="solo">SOLO Mode / Personal</option>
-                    </select>
-                    <div class="select-arrow"></div>
+            <!-- Toolbar Actions Container -->
+            <div style="display: flex; gap: 1rem; align-items: flex-end;">
+                <!-- Lock to My Driver Toggle -->
+                <div>
+                    <label class="selector-label">Focus Target</label>
+                    <div style="display: flex; align-items: center; gap: 0.5rem; background: rgba(20, 20, 20, 0.6); border: 1px solid rgba(255, 255, 255, 0.05); padding: 0.75rem 1rem; border-radius: 12px; height: 42px;">
+                        <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 0; user-select: none;">
+                            <input type="checkbox" id="lock-player-toggle" style="width: 14px; height: 14px; cursor: pointer; accent-color: #3b82f6;">
+                            <span>Lock My Driver</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Team Selector -->
+                <div>
+                    <label class="selector-label">Select Active Team</label>
+                    <div class="team-selector-wrapper">
+                        <i data-lucide="users" style="width: 18px; height: 18px; color: var(--text-muted);"></i>
+                        <select id="team-select">
+                            <option value="gridUp_sim">GRiD UP Sim Racing</option>
+                            <option value="gridUp_black">GRiD UP Black</option>
+                            <option value="gridUp_blue">GRiD UP Blue</option>
+                            <option value="gridUp_red">GRiD UP Red</option>
+                            <option value="gridUp_white">GRiD UP White</option>
+                            <option value="gridUp_practice">PRACTICE SERVER</option>
+                            <option value="solo">SOLO Mode / Personal</option>
+                        </select>
+                        <div class="select-arrow"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -966,6 +980,7 @@
         // Per-driver state keyed by carNum: { progress, targetProgress, isPlayer, classColor, carNum }
         let trackMapDrivers = {};
         let trackMapLastTimestamp = null;
+        let lockToPlayer = localStorage.getItem('lock_to_player') === 'true';
 
         // Load track map data
         fetch('js/track-maps.json')
@@ -1319,6 +1334,18 @@
         // Target references
         const teamSelect = document.getElementById('team-select');
         const telemetryContent = document.getElementById('telemetry-content');
+        const lockPlayerToggle = document.getElementById('lock-player-toggle');
+
+        if (lockPlayerToggle) {
+            lockPlayerToggle.checked = lockToPlayer;
+            lockPlayerToggle.addEventListener('change', (e) => {
+                lockToPlayer = e.target.checked;
+                localStorage.setItem('lock_to_player', lockToPlayer);
+                if (typeof window.forceRenderDashboard === 'function') {
+                    window.forceRenderDashboard();
+                }
+            });
+        }
         
         let streamsRef = null;
         let driversRef = null;
@@ -1536,7 +1563,20 @@
                 driversHtml += '</div>';
 
                 // 2. Render Session Standings & Relative Gaps (RIGHT column)
-                const primaryMid = activeMids[0];
+                let primaryMid = activeMids[0];
+                if (lockToPlayer) {
+                    const foundPlayerMid = activeMids.find(mid => {
+                        const stream = currentStreams[mid];
+                        const tel = stream?.telemetry || {};
+                        if (tel.drivers) {
+                            return Object.values(tel.drivers).some(d => d && d.isPlayer);
+                        }
+                        return false;
+                    });
+                    if (foundPlayerMid) {
+                        primaryMid = foundPlayerMid;
+                    }
+                }
                 const primaryStream = currentStreams[primaryMid];
                 const primaryTel = primaryStream.telemetry || {};
                 const primaryPresence = currentDrivers[primaryMid] || {};
