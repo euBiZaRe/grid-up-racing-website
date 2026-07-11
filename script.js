@@ -812,6 +812,12 @@ function renderEventsUI(upcomingEvents, pastEvents = null, featuredOverride = nu
                 heroLink.href = staticIds.includes(nextEvent.id) ? getEventLink(nextEvent.id, true) : getEventLink(nextEvent.id);
             }
         }
+
+        // Show Live Telemetry button only for Spa 24HR
+        const telemetryBtn = document.getElementById('hero-telemetry-btn');
+        if (telemetryBtn) {
+            telemetryBtn.style.display = (nextEvent.id === 'spa-24hr') ? 'inline-flex' : 'none';
+        }
         
         updateCountdown(nextEvent.startDate, endTime, nextEvent.broadcastUrl, nextEvent.practiceStart);
 
