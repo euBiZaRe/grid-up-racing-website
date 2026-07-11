@@ -437,6 +437,11 @@ async function loadDynamicContent() {
     const fullEventList = document.getElementById('full-event-list');
     
     // Attempt to load from cache first for instant UI
+    const SCRIPT_VER = '6';
+    if (localStorage.getItem('gridup_script_ver') !== SCRIPT_VER) {
+        localStorage.removeItem('gridup_upcoming_events');
+        localStorage.setItem('gridup_script_ver', SCRIPT_VER);
+    }
     const cachedEvents = localStorage.getItem('gridup_upcoming_events');
     let cacheLoaded = false;
     if (cachedEvents && !window.dynamicContentLoaded) {
