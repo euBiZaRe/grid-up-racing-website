@@ -669,6 +669,159 @@
             border-radius: 50%;
             flex-shrink: 0;
         }
+
+        /* --- COMPACT HUD LAYOUT OVERRIDES --- */
+        .hero-small {
+            display: none !important;
+        }
+
+        .telemetry-container {
+            max-width: 1650px !important;
+            margin: 0 auto;
+            padding: 1.25rem 1.5rem !important;
+            margin-top: 75px !important; /* offset fixed header */
+        }
+        
+        .dashboard-header {
+            margin-bottom: 1.25rem !important;
+            padding-bottom: 0.75rem !important;
+            gap: 1rem !important;
+        }
+
+        @media (min-width: 1024px) {
+            .telemetry-layout {
+                grid-template-columns: 1.4fr 1fr !important;
+                gap: 1.5rem !important;
+                max-height: calc(100vh - 170px);
+                overflow: hidden;
+            }
+            .drivers-column {
+                max-height: calc(100vh - 170px);
+                overflow-y: auto;
+                padding-right: 0.25rem;
+            }
+            .race-info-column {
+                max-height: calc(100vh - 170px);
+                overflow-y: auto;
+                position: sticky;
+                top: 0;
+            }
+            /* Custom sleek scrollbars */
+            .drivers-column::-webkit-scrollbar,
+            .race-info-column::-webkit-scrollbar {
+                width: 6px;
+            }
+            .drivers-column::-webkit-scrollbar-thumb,
+            .race-info-column::-webkit-scrollbar-thumb {
+                background: rgba(255, 255, 255, 0.08);
+                border-radius: 3px;
+            }
+        }
+
+        /* Compact Driver Card Styles */
+        .driver-card {
+            padding: 1.25rem !important;
+            gap: 1rem !important;
+        }
+
+        .driver-card-body {
+            display: grid;
+            grid-template-columns: 1.3fr 1fr;
+            gap: 1.25rem;
+        }
+
+        @media (max-width: 768px) {
+            .driver-card-body {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .controls-progression-layout {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 1rem;
+            margin-top: 1rem;
+            align-items: stretch;
+        }
+
+        @media (max-width: 480px) {
+            .controls-progression-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .pedals-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 0.75rem !important;
+            background: rgba(10, 10, 10, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            padding: 0.85rem 1rem !important;
+        }
+
+        .progression-container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 0.85rem 1rem !important;
+        }
+
+        .tyre-container {
+            border-top: none !important;
+            padding-top: 0 !important;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .tyre-grid {
+            margin-top: 0.5rem !important;
+            padding: 0.75rem !important;
+            gap: 0.65rem !important;
+            max-width: 270px !important;
+        }
+
+        .car-outline {
+            height: 50px !important;
+            width: 12px !important;
+        }
+
+        .tyre-card {
+            padding: 0.4rem 0.5rem !important;
+            border-radius: 8px !important;
+        }
+
+        .tyre-press {
+            font-size: 0.75rem !important;
+        }
+
+        .tyre-temp {
+            font-size: 0.65rem !important;
+        }
+
+        /* Widgets Height optimization */
+        .info-widget {
+            padding: 1.25rem !important;
+            gap: 0.75rem !important;
+        }
+
+        #track-map-wrapper {
+            height: 280px !important; /* Make track map more compact to fit with standings */
+        }
+        
+        #track-map-canvas {
+            height: 100% !important;
+            width: 100% !important;
+        }
+
+        .table-scroll-container {
+            max-height: 220px !important;
+            overflow-y: auto;
+        }
     </style>
 </head>
 <body class="telemetry-page">
@@ -729,6 +882,7 @@
                         <option value="gridUp_red">GRiD UP Red</option>
                         <option value="gridUp_white">GRiD UP White</option>
                         <option value="gridUp_practice">PRACTICE SERVER</option>
+                        <option value="solo">SOLO Mode / Personal</option>
                     </select>
                     <div class="select-arrow"></div>
                 </div>
@@ -802,10 +956,11 @@
             try {
                 if (!trackMapPathEl) {
                     const svg = document.createElementNS(trackMapSvgNS, 'svg');
-                    svg.setAttribute('width', '0');
-                    svg.setAttribute('height', '0');
+                    svg.setAttribute('width', '2000');
+                    svg.setAttribute('height', '2000');
                     svg.style.position = 'absolute';
-                    svg.style.visibility = 'hidden';
+                    svg.style.left = '-9999px';
+                    svg.style.top = '-9999px';
                     svg.style.pointerEvents = 'none';
                     document.body.appendChild(svg);
                     trackMapPathEl = document.createElementNS(trackMapSvgNS, 'path');
@@ -813,12 +968,17 @@
                 }
                 trackMapPathEl.setAttribute('d', svgPathD);
                 trackMapPathLength = trackMapPathEl.getTotalLength() || 0;
-                trackMapBBox = trackMapPathEl.getBBox() || { x: 0, y: 0, width: 100, height: 100 };
+                
+                let box = trackMapPathEl.getBBox();
+                if (!box || box.width === 0 || box.height === 0) {
+                    box = { x: -1000, y: -1000, width: 2000, height: 2000 };
+                }
+                trackMapBBox = box;
                 trackMapStaticCanvas = null;
             } catch (e) {
                 console.error("[TrackMap] Failed to init SVG path:", e);
                 trackMapPathLength = 0;
-                trackMapBBox = { x: 0, y: 0, width: 100, height: 100 };
+                trackMapBBox = { x: -1000, y: -1000, width: 2000, height: 2000 };
             }
         }
 
@@ -1181,7 +1341,7 @@
                     const stream = currentStreams[mid];
                     const presence = currentDrivers[mid] || {};
                     const isOnline = presence.status === 'online';
-                    const isRecent = presence.lastActive && (now - presence.lastActive) < 15000;
+                    const isRecent = presence.lastActive && (now - presence.lastActive) < 120000;
                     return stream && isOnline && isRecent;
                 });
                 
@@ -1248,89 +1408,97 @@
                                 </div>
                             </div>
 
-                            <!-- Metrics Core -->
-                            <div class="metrics-grid">
-                                <div class="metric-card">
-                                    <span class="metric-title"><i data-lucide="gauge" style="width: 12px; height: 12px;"></i> Speed</span>
-                                    <div class="metric-val">${speedKmh}<span>km/h</span></div>
-                                </div>
-                                <div class="metric-card">
-                                    <span class="metric-title"><i data-lucide="zap" style="width: 12px; height: 12px;"></i> Gear</span>
-                                    <div class="metric-val" style="color: #34d399;">${gearText} <span style="font-size: 0.65rem; font-weight: 500;">(${tel.rpm || 0} RPM)</span></div>
-                                </div>
-                                <div class="metric-card">
-                                    <span class="metric-title"><i data-lucide="droplet" style="width: 12px; height: 12px;"></i> Fuel</span>
-                                    <div class="metric-val">${tel.fuel || 0}<span>L</span></div>
-                                </div>
-                                <div class="metric-card">
-                                    <span class="metric-title"><i data-lucide="check-circle-2" style="width: 12px; height: 12px;"></i> Position</span>
-                                    <div class="metric-val">${tel.position || "P-"}<span>Class</span></div>
-                                </div>
-                            </div>
+                            <div class="driver-card-body">
+                                <div class="driver-main-specs">
+                                    <!-- Metrics Core -->
+                                    <div class="metrics-grid">
+                                        <div class="metric-card">
+                                            <span class="metric-title"><i data-lucide="gauge" style="width: 12px; height: 12px;"></i> Speed</span>
+                                            <div class="metric-val">${speedKmh}<span>km/h</span></div>
+                                        </div>
+                                        <div class="metric-card">
+                                            <span class="metric-title"><i data-lucide="zap" style="width: 12px; height: 12px;"></i> Gear</span>
+                                            <div class="metric-val" style="color: #34d399;">${gearText} <span style="font-size: 0.65rem; font-weight: 500;">(${tel.rpm || 0} RPM)</span></div>
+                                        </div>
+                                        <div class="metric-card">
+                                            <span class="metric-title"><i data-lucide="droplet" style="width: 12px; height: 12px;"></i> Fuel</span>
+                                            <div class="metric-val">${tel.fuel || 0}<span>L</span></div>
+                                        </div>
+                                        <div class="metric-card">
+                                            <span class="metric-title"><i data-lucide="check-circle-2" style="width: 12px; height: 12px;"></i> Position</span>
+                                            <div class="metric-val">${tel.position || "P-"}<span>Class</span></div>
+                                        </div>
+                                    </div>
 
-                            <!-- Throttle / Brake Pedals -->
-                            <div class="pedals-container">
-                                <div class="pedal-bar-wrapper">
-                                    <div class="pedal-label">
-                                        <span>Throttle</span>
-                                        <span style="color: #34d399;">${throttleVal}%</span>
-                                    </div>
-                                    <div class="pedal-bar-bg">
-                                        <div class="pedal-bar-fill throttle-fill" style="width: ${throttleVal}%;"></div>
-                                    </div>
-                                </div>
-                                <div class="pedal-bar-wrapper">
-                                    <div class="pedal-label">
-                                        <span>Brake</span>
-                                        <span style="color: #f87171;">${brakeVal}%</span>
-                                    </div>
-                                    <div class="pedal-bar-bg">
-                                        <div class="pedal-bar-fill brake-fill" style="width: ${brakeVal}%;"></div>
-                                    </div>
-                                </div>
-                            </div>
+                                    <div class="controls-progression-layout">
+                                        <!-- Throttle / Brake Pedals -->
+                                        <div class="pedals-container">
+                                            <div class="pedal-bar-wrapper">
+                                                <div class="pedal-label">
+                                                    <span>Throttle</span>
+                                                    <span style="color: #34d399;">${throttleVal}%</span>
+                                                </div>
+                                                <div class="pedal-bar-bg">
+                                                    <div class="pedal-bar-fill throttle-fill" style="width: ${throttleVal}%;"></div>
+                                                </div>
+                                            </div>
+                                            <div class="pedal-bar-wrapper">
+                                                <div class="pedal-label">
+                                                    <span>Brake</span>
+                                                    <span style="color: #f87171;">${brakeVal}%</span>
+                                                </div>
+                                                <div class="pedal-bar-bg">
+                                                    <div class="pedal-bar-fill brake-fill" style="width: ${brakeVal}%;"></div>
+                                                </div>
+                                            </div>
+                                        </div>
 
-                            <!-- Progression Bar -->
-                            <div class="progression-container">
-                                <div class="pedal-label">
-                                    <span>Lap Progression</span>
-                                    <span style="color: #60a5fa;">${Math.round(progressPct)}%</span>
+                                        <!-- Progression Bar -->
+                                        <div class="progression-container">
+                                            <div class="pedal-label">
+                                                <span>Lap Progression</span>
+                                                <span style="color: #60a5fa;">${Math.round(progressPct)}%</span>
+                                            </div>
+                                            <div class="progression-bar-bg">
+                                                <div class="progression-bar-fill" style="width: ${progressPct}%;"></div>
+                                            </div>
+                                            <div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--text-muted); margin-top: 0.5rem; font-family: monospace;">
+                                                <span>Start / Finish</span>
+                                                <span>Lap ${tel.lap || 0}</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="progression-bar-bg">
-                                    <div class="progression-bar-fill" style="width: ${progressPct}%;"></div>
-                                </div>
-                                <div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--text-muted); margin-top: 0.5rem; font-family: monospace;">
-                                    <span>Start / Finish</span>
-                                    <span>Lap ${tel.lap || 0}</span>
-                                </div>
-                            </div>
 
-                            <!-- Tyre Temperatures and Pressures -->
-                            <div class="tyre-container">
-                                <h4 class="metric-title" style="margin-bottom: 0.75rem;">
-                                    <i data-lucide="thermometer" style="width: 14px; height: 14px;"></i> Tyre Telemetry (Psi / Temp)
-                                </h4>
-                                <div class="tyre-grid">
-                                    <div class="car-outline"></div>
-                                    <div class="tyre-card">
-                                        <div class="tyre-name">LF</div>
-                                        <div class="tyre-press">${lf.p || 0} psi</div>
-                                        <div class="tyre-temp">${lf.t || 0} °C</div>
-                                    </div>
-                                    <div class="tyre-card">
-                                        <div class="tyre-name">RF</div>
-                                        <div class="tyre-press">${rf.p || 0} psi</div>
-                                        <div class="tyre-temp">${rf.t || 0} °C</div>
-                                    </div>
-                                    <div class="tyre-card">
-                                        <div class="tyre-name">LR</div>
-                                        <div class="tyre-press">${lr.p || 0} psi</div>
-                                        <div class="tyre-temp">${lr.t || 0} °C</div>
-                                    </div>
-                                    <div class="tyre-card">
-                                        <div class="tyre-name">RR</div>
-                                        <div class="tyre-press">${rr.p || 0} psi</div>
-                                        <div class="tyre-temp">${rr.t || 0} °C</div>
+                                <div class="driver-tyres-specs">
+                                    <!-- Tyre Temperatures and Pressures -->
+                                    <div class="tyre-container">
+                                        <h4 class="metric-title" style="margin-bottom: 0.75rem; justify-content: center;">
+                                            <i data-lucide="thermometer" style="width: 14px; height: 14px;"></i> Tyre Telemetry (Psi / Temp)
+                                        </h4>
+                                        <div class="tyre-grid">
+                                            <div class="car-outline"></div>
+                                            <div class="tyre-card">
+                                                <div class="tyre-name">LF</div>
+                                                <div class="tyre-press">${lf.p || 0} psi</div>
+                                                <div class="tyre-temp">${lf.t || 0} °C</div>
+                                            </div>
+                                            <div class="tyre-card">
+                                                <div class="tyre-name">RF</div>
+                                                <div class="tyre-press">${rf.p || 0} psi</div>
+                                                <div class="tyre-temp">${rf.t || 0} °C</div>
+                                            </div>
+                                            <div class="tyre-card">
+                                                <div class="tyre-name">LR</div>
+                                                <div class="tyre-press">${lr.p || 0} psi</div>
+                                                <div class="tyre-temp">${lr.t || 0} °C</div>
+                                            </div>
+                                            <div class="tyre-card">
+                                                <div class="tyre-name">RR</div>
+                                                <div class="tyre-press">${rr.p || 0} psi</div>
+                                                <div class="tyre-temp">${rr.t || 0} °C</div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
