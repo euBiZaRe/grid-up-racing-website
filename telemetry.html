@@ -810,7 +810,7 @@
         }
 
         #track-map-wrapper {
-            height: 280px !important; /* Make track map more compact to fit with standings */
+            height: 520px !important; /* Standalone tall high-fidelity track map */
         }
         
         #track-map-canvas {
@@ -819,7 +819,7 @@
         }
 
         .table-scroll-container {
-            max-height: 220px !important;
+            max-height: 250px !important;
             overflow-y: auto;
         }
 
@@ -1614,19 +1614,9 @@
                 if (!layout) {
                     telemetryContent.innerHTML = `
                         <div class="telemetry-layout" id="telemetry-layout-container">
-                            <div class="drivers-column" id="drivers-container"></div>
-                            <div class="race-info-column" id="race-info-container">
-                                <!-- Live Track Map Widget -->
-                                <div class="info-widget" id="track-map-widget">
-                                    <h3 class="info-widget-title">
-                                        <i data-lucide="map-pin" style="width: 16px; height: 16px;"></i> Live Track Map
-                                    </h3>
-                                    <div class="track-map-canvas-wrapper" id="track-map-wrapper">
-                                        <canvas id="track-map-canvas"></canvas>
-                                    </div>
-                                    <div class="track-map-legend" id="track-map-legend"></div>
-                                </div>
-
+                            <div class="drivers-column">
+                                <div id="drivers-container"></div>
+                                
                                 <div class="standings-relative-grid">
                                     <!-- Live Standings Widget -->
                                     <div class="info-widget">
@@ -1674,6 +1664,18 @@
                                             </table>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+                            <div class="race-info-column" id="race-info-container">
+                                <!-- Live Track Map Widget -->
+                                <div class="info-widget" id="track-map-widget">
+                                    <h3 class="info-widget-title">
+                                        <i data-lucide="map-pin" style="width: 16px; height: 16px;"></i> Live Track Map
+                                    </h3>
+                                    <div class="track-map-canvas-wrapper" id="track-map-wrapper">
+                                        <canvas id="track-map-canvas"></canvas>
+                                    </div>
+                                    <div class="track-map-legend" id="track-map-legend"></div>
                                 </div>
                             </div>
                         </div>
