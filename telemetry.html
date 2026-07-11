@@ -822,6 +822,17 @@
             max-height: 220px !important;
             overflow-y: auto;
         }
+
+        .standings-relative-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+        }
+        @media (min-width: 1300px) {
+            .standings-relative-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
     </style>
 </head>
 <body class="telemetry-page">
@@ -868,6 +879,22 @@
                     <span class="live-text">Live Sync Connected</span>
                 </div>
                 <h2 style="font-size: 1.75rem; font-weight: 900; margin: 0; color: #ffffff;">Sim Racing Stream</h2>
+            </div>
+
+            <!-- Global Weather & Track Conditions Status Bar -->
+            <div id="global-conditions-bar" style="display: none; gap: 1.25rem; align-items: center; background: rgba(15, 15, 15, 0.45); border: 1px solid rgba(255, 255, 255, 0.05); padding: 0.6rem 1.25rem; border-radius: 14px; backdrop-filter: blur(10px);">
+                 <div style="display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
+                     <i data-lucide="thermometer" style="width: 15px; height: 15px; color: #3b82f6;"></i>
+                     <span>Air: <strong id="cond-air-temp" style="color: #fff; font-size: 0.8rem;">--</strong>°C</span>
+                 </div>
+                 <div style="display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
+                     <i data-lucide="sun" style="width: 15px; height: 15px; color: #f59e0b;"></i>
+                     <span>Track: <strong id="cond-track-temp" style="color: #fff; font-size: 0.8rem;">--</strong>°C</span>
+                 </div>
+                 <div style="display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
+                     <i data-lucide="wind" style="width: 15px; height: 15px; color: #10b981;"></i>
+                     <span>Wind: <strong id="cond-wind" style="color: #fff; font-size: 0.8rem;">--</strong></span>
+                 </div>
             </div>
 
             <!-- Team Selector -->
@@ -1336,7 +1363,8 @@
 
             // Render updates helper
             function renderDashboard() {
-                const now = Date.now() + serverTimeOffset;
+                try {
+                    const now = Date.now() + serverTimeOffset;
                 const activeMids = Object.keys(currentStreams).filter(mid => {
                     const stream = currentStreams[mid];
                     const presence = currentDrivers[mid] || {};
@@ -1599,50 +1627,52 @@
                                     <div class="track-map-legend" id="track-map-legend"></div>
                                 </div>
 
-                                <!-- Live Standings Widget -->
-                                <div class="info-widget">
-                                    <h3 class="info-widget-title">
-                                        <i data-lucide="list-ordered" style="width: 16px; height: 16px;"></i> Live Session Standings
-                                    </h3>
-                                    <div class="table-scroll-container" id="standings-scroll">
-                                        <table class="standings-table">
-                                            <thead>
-                                                <tr>
-                                                    <th style="text-align: center; width: 40px;">Pos</th>
-                                                    <th style="width: 50px;">Car</th>
-                                                    <th>Driver</th>
-                                                    <th style="text-align: center; width: 40px;">Lap</th>
-                                                    <th style="text-align: right; width: 80px;">Last</th>
-                                                    <th style="text-align: right; width: 80px;">Best</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="standings-body"></tbody>
-                                        </table>
+                                <div class="standings-relative-grid">
+                                    <!-- Live Standings Widget -->
+                                    <div class="info-widget">
+                                        <h3 class="info-widget-title">
+                                            <i data-lucide="list-ordered" style="width: 16px; height: 16px;"></i> Live Session Standings
+                                        </h3>
+                                        <div class="table-scroll-container" id="standings-scroll">
+                                            <table class="standings-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th style="text-align: center; width: 40px;">Pos</th>
+                                                        <th style="width: 50px;">Car</th>
+                                                        <th>Driver</th>
+                                                        <th style="text-align: center; width: 40px;">Lap</th>
+                                                        <th style="text-align: right; width: 80px;">Last</th>
+                                                        <th style="text-align: right; width: 80px;">Best</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="standings-body"></tbody>
+                                            </table>
+                                        </div>
                                     </div>
-                                </div>
 
-                                <!-- Relative black box widget -->
-                                <div class="info-widget">
-                                    <h3 class="info-widget-title" style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="display: flex; align-items: center; gap: 0.5rem;">
-                                            <i data-lucide="arrow-up-down" style="width: 16px; height: 16px;"></i> Relative
-                                        </span>
-                                        <span id="relative-driver-meta" style="font-size: 0.65rem; font-weight: 500; text-transform: none; color: var(--text-muted);">Relative</span>
-                                    </h3>
-                                    <div class="table-scroll-container" id="relative-scroll">
-                                        <table class="standings-table">
-                                            <thead>
-                                                <tr>
-                                                    <th style="text-align: center; width: 40px;">Pos</th>
-                                                    <th style="width: 50px;">Car</th>
-                                                    <th>Driver</th>
-                                                    <th style="text-align: center; width: 60px;">Gap</th>
-                                                    <th style="text-align: right; width: 80px;">Last</th>
-                                                    <th style="text-align: right; width: 80px;">Best</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="relative-body"></tbody>
-                                        </table>
+                                    <!-- Relative black box widget -->
+                                    <div class="info-widget">
+                                        <h3 class="info-widget-title" style="display: flex; justify-content: space-between; align-items: center;">
+                                            <span style="display: flex; align-items: center; gap: 0.5rem;">
+                                                <i data-lucide="arrow-up-down" style="width: 16px; height: 16px;"></i> Relative
+                                            </span>
+                                            <span id="relative-driver-meta" style="font-size: 0.65rem; font-weight: 500; text-transform: none; color: var(--text-muted);">Relative</span>
+                                        </h3>
+                                        <div class="table-scroll-container" id="relative-scroll">
+                                            <table class="standings-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th style="text-align: center; width: 40px;">Pos</th>
+                                                        <th style="width: 50px;">Car</th>
+                                                        <th>Driver</th>
+                                                        <th style="text-align: center; width: 60px;">Gap</th>
+                                                        <th style="text-align: right; width: 80px;">Last</th>
+                                                        <th style="text-align: right; width: 80px;">Best</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="relative-body"></tbody>
+                                            </table>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1668,6 +1698,22 @@
                 }
                 if (relativeDriverMeta) {
                     relativeDriverMeta.innerText = `Relative to: ${primaryDriverName}`;
+                }
+
+                // Update Global Weather & Conditions
+                const condBar = document.getElementById('global-conditions-bar');
+                const condAir = document.getElementById('cond-air-temp');
+                const condTrack = document.getElementById('cond-track-temp');
+                const condWind = document.getElementById('cond-wind');
+
+                if (condBar && primaryTel) {
+                    condBar.style.display = 'flex';
+                    if (condAir) condAir.innerText = primaryTel.air_temp !== undefined ? primaryTel.air_temp : '--';
+                    if (condTrack) condTrack.innerText = primaryTel.track_temp !== undefined ? primaryTel.track_temp : '--';
+                    if (condWind) {
+                        const windSpd = primaryTel.wind_vel !== undefined ? `${primaryTel.wind_vel} km/h` : '--';
+                        condWind.innerText = windSpd;
+                    }
                 }
 
                 // ===== UPDATE TRACK MAP =====
@@ -1716,6 +1762,18 @@
 
                 window.forceRenderDashboard = renderDashboard;
                 lucide.createIcons();
+                } catch (dashboardError) {
+                    console.error("Dashboard render crash:", dashboardError);
+                    const errorContainer = document.getElementById('telemetry-content');
+                    if (errorContainer && !document.getElementById('render-error-msg')) {
+                        errorContainer.insertAdjacentHTML('afterbegin', `
+                            <div id="render-error-msg" class="glass" style="margin-bottom:1.5rem; border:1px solid #ef4444; background:rgba(239,68,68,0.1); padding:1rem; border-radius:12px; color:#fca5a5; font-family:monospace; font-size:0.8rem;">
+                                <strong>Dashboard Rendering Error:</strong> ${dashboardError.message}<br>
+                                <pre style="margin-top:0.5rem; overflow-x:auto;">${dashboardError.stack}</pre>
+                            </div>
+                        `);
+                    }
+                }
             }
 
             // Bind values
