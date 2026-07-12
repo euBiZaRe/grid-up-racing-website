@@ -1628,35 +1628,43 @@
                     standingsRows = '<tr><td colspan="6" style="text-align:center; padding:1.5rem; color:var(--text-muted);">No standings data available</td></tr>';
                 }
 
-                // Build Relative Rows
+                // Build Relative Rows — closest cars to player on track
                 let relativeRows = '';
                 if (primaryTel.drivers) {
-                    const relativeDrivers = Object.values(primaryTel.drivers)
-                        .filter(d => d && d.name)
-                        .sort((a, b) => {
-                            // Sort by f2Time descending (ahead = positive f2Time at top, behind = negative at bottom)
-                            // Fall back to position if f2Time is missing
-                            if (a.f2Time !== undefined && b.f2Time !== undefined) return b.f2Time - a.f2Time;
-                            if (a.f2Time !== undefined) return -1;
-                            if (b.f2Time !== undefined) return 1;
-                            return (a.classPos || a.pos || 99) - (b.classPos || b.pos || 99);
-                        });
+                    const allDrivers = Object.values(primaryTel.drivers).filter(d => d && d.name);
+
+                    // Separate player, cars ahead (f2Time > 0), cars behind (f2Time < 0)
+                    const playerDriver  = allDrivers.find(d => d.isPlayer);
+                    const carsAhead     = allDrivers
+                        .filter(d => !d.isPlayer && d.f2Time !== undefined && d.f2Time > 0)
+                        .sort((a, b) => a.f2Time - b.f2Time);   // smallest gap first (closest ahead)
+                    const carsBehind    = allDrivers
+                        .filter(d => !d.isPlayer && d.f2Time !== undefined && d.f2Time < 0)
+                        .sort((a, b) => b.f2Time - a.f2Time);   // least negative first (closest behind)
+
+                    // Take 4 closest ahead and 4 closest behind, then sandwich the player
+                    const WINDOW = 4;
+                    const relativeDrivers = [
+                        ...carsAhead.slice(0, WINDOW).reverse(),  // furthest ahead → closest ahead
+                        ...(playerDriver ? [playerDriver] : []),
+                        ...carsBehind.slice(0, WINDOW),            // closest behind → furthest behind
+                    ];
 
                     relativeDrivers.forEach(d => {
                         const isPlayerRow = d.isPlayer ? 'class="standings-row-player"' : '';
                         const classIndicator = d.classColor ? `<span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#${d.classColor}; margin-right:4px;"></span>` : '';
-                        
+
                         let gapStr = '--';
                         let gapColor = '#e5e7eb';
                         if (d.isPlayer) {
-                            gapStr = 'SELF';
+                            gapStr = '— SELF —';
                             gapColor = '#34d399';
                         } else if (d.f2Time > 0) {
                             gapStr = `+${d.f2Time.toFixed(1)}s`;
-                            gapColor = '#f97316';
+                            gapColor = '#f97316';  // orange = ahead of player
                         } else if (d.f2Time < 0) {
                             gapStr = `${d.f2Time.toFixed(1)}s`;
-                            gapColor = '#3b82f6';
+                            gapColor = '#3b82f6';  // blue = behind player
                         }
 
                         relativeRows += `
@@ -1672,6 +1680,7 @@
                 if (!relativeRows) {
                     relativeRows = '<tr><td colspan="4" style="text-align:center; padding:1.5rem; color:var(--text-muted);">No relative track data available</td></tr>';
                 }
+
 
                 // Verify if static layout structure is initialized
                 let layout = document.getElementById('telemetry-layout-container');
