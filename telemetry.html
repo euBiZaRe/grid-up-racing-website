@@ -1633,16 +1633,28 @@
                 if (primaryTel.drivers) {
                     const allDrivers = Object.values(primaryTel.drivers).filter(d => d && d.name);
 
-                    // Separate player, cars ahead (f2Time > 0), cars behind (f2Time < 0)
-                    const playerDriver  = allDrivers.find(d => d.isPlayer);
-                    const carsAhead     = allDrivers
-                        .filter(d => !d.isPlayer && d.f2Time !== undefined && d.f2Time > 0)
-                        .sort((a, b) => a.f2Time - b.f2Time);   // smallest gap first (closest ahead)
-                    const carsBehind    = allDrivers
-                        .filter(d => !d.isPlayer && d.f2Time !== undefined && d.f2Time < 0)
-                        .sort((a, b) => b.f2Time - a.f2Time);   // least negative first (closest behind)
+                    // The bridge sends f2Time relative to the race leader (CarIdxF2Time).
+                    // Normalise to player-relative by subtracting the player's own f2Time,
+                    // so the result is: positive = that car is ahead of the player, negative = behind.
+                    const playerDriver = allDrivers.find(d => d.isPlayer);
+                    const playerF2 = (playerDriver && playerDriver.f2Time !== undefined) ? playerDriver.f2Time : 0;
+                    allDrivers.forEach(d => {
+                        if (!d.isPlayer && d.f2Time !== undefined) {
+                            d._relGap = parseFloat((d.f2Time - playerF2).toFixed(1));
+                        } else {
+                            d._relGap = 0;
+                        }
+                    });
 
-                    // Take 4 closest ahead and 4 closest behind, then sandwich the player
+                    // Separate cars ahead (relGap > 0) and behind (relGap < 0) using normalised value
+                    const carsAhead  = allDrivers
+                        .filter(d => !d.isPlayer && d._relGap > 0)
+                        .sort((a, b) => a._relGap - b._relGap);   // smallest gap first (closest ahead)
+                    const carsBehind = allDrivers
+                        .filter(d => !d.isPlayer && d._relGap < 0)
+                        .sort((a, b) => b._relGap - a._relGap);   // least negative first (closest behind)
+
+                    // Take 4 closest ahead and 4 closest behind, player in the middle
                     const WINDOW = 4;
                     const relativeDrivers = [
                         ...carsAhead.slice(0, WINDOW).reverse(),  // furthest ahead → closest ahead
@@ -1659,11 +1671,11 @@
                         if (d.isPlayer) {
                             gapStr = '— SELF —';
                             gapColor = '#34d399';
-                        } else if (d.f2Time > 0) {
-                            gapStr = `+${d.f2Time.toFixed(1)}s`;
+                        } else if (d._relGap > 0) {
+                            gapStr = `+${d._relGap.toFixed(1)}s`;
                             gapColor = '#f97316';  // orange = ahead of player
-                        } else if (d.f2Time < 0) {
-                            gapStr = `${d.f2Time.toFixed(1)}s`;
+                        } else if (d._relGap < 0) {
+                            gapStr = `${d._relGap.toFixed(1)}s`;
                             gapColor = '#3b82f6';  // blue = behind player
                         }
 
