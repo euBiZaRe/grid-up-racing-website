@@ -1615,85 +1615,6 @@
                                             </div>
                                         </div>
                                     </div>
-
-                                    <!-- Compact Card-Specific Relative Standings -->
-                                    <div class="card-relative-section" style="margin-top: 1.25rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem;">
-                                        <div style="font-size: 0.7rem; font-weight: 850; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 4px;">
-                                            <i data-lucide="arrow-up-down" style="width: 12px; height: 12px;"></i> Surrounding Relative Gaps
-                                        </div>
-                                        <div class="table-scroll-container" style="max-height: 180px; overflow-y: auto; background: rgba(10, 10, 10, 0.25);">
-                                            <table class="standings-table" style="font-size: 0.75rem;">
-                                                <thead>
-                                                    <tr>
-                                                        <th style="text-align: center; width: 30px; font-size: 0.6rem; padding: 4px 6px; background: #0f0f0f;">Pos</th>
-                                                        <th style="width: 40px; font-size: 0.6rem; padding: 4px 6px; background: #0f0f0f;">Car</th>
-                                                        <th style="font-size: 0.6rem; padding: 4px 6px; background: #0f0f0f;">Driver</th>
-                                                        <th style="text-align: center; width: 65px; font-size: 0.6rem; padding: 4px 6px; background: #0f0f0f;">Gap</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    ${(() => {
-                                                        let cardRelativeRows = '';
-                                                        if (tel.drivers) {
-                                                            const cardDrivers = Object.values(tel.drivers).filter(d => d && d.name);
-                                                            const cardPlayer = cardDrivers.find(d => d.isPlayer);
-                                                            const cardPlayerF2 = (cardPlayer && cardPlayer.f2Time !== undefined) ? cardPlayer.f2Time : 0;
-                                                            
-                                                            cardDrivers.forEach(d => {
-                                                                if (!d.isPlayer && d.f2Time !== undefined) {
-                                                                    d._relGap = parseFloat((d.f2Time - cardPlayerF2).toFixed(1));
-                                                                } else {
-                                                                    d._relGap = 0;
-                                                                }
-                                                            });
-
-                                                            const cardAhead = cardDrivers
-                                                                .filter(d => !d.isPlayer && d._relGap > 0)
-                                                                .sort((a, b) => a._relGap - b._relGap);
-                                                            const cardBehind = cardDrivers
-                                                                .filter(d => !d.isPlayer && d._relGap < 0)
-                                                                .sort((a, b) => b._relGap - a._relGap);
-
-                                                            const cardWINDOW = 3;
-                                                            const cardRelativeDrivers = [
-                                                                ...cardAhead.slice(0, cardWINDOW).reverse(),
-                                                                ...(cardPlayer ? [cardPlayer] : []),
-                                                                ...cardBehind.slice(0, cardWINDOW),
-                                                            ].sort((a, b) => (a.classPos || a.pos || 99) - (b.classPos || b.pos || 99));
-
-                                                            cardRelativeDrivers.forEach(d => {
-                                                                const isPlayerRow = d.isPlayer ? 'class="standings-row-player"' : '';
-                                                                const classIndicator = d.classColor ? `<span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#${d.classColor}; margin-right:4px;"></span>` : '';
-                                                                
-                                                                let gapStr = '--';
-                                                                let gapColor = '#e5e7eb';
-                                                                if (d.isPlayer) {
-                                                                    gapStr = '— SELF —';
-                                                                    gapColor = '#34d399';
-                                                                } else if (d._relGap > 0) {
-                                                                    gapStr = `+${d._relGap.toFixed(1)}s`;
-                                                                    gapColor = '#f97316';
-                                                                } else if (d._relGap < 0) {
-                                                                    gapStr = `${d._relGap.toFixed(1)}s`;
-                                                                    gapColor = '#3b82f6';
-                                                                }
-
-                                                                cardRelativeRows += `
-                                                                    <tr ${isPlayerRow}>
-                                                                        <td style="text-align: center; font-weight: bold; padding: 4px 6px;">${d.classPos || d.pos}</td>
-                                                                        <td style="padding: 4px 6px;"><span class="car-num-tag" style="font-size: 0.6rem; padding: 1px 4px; line-height: 1;">${d.carNum}</span></td>
-                                                                        <td style="padding: 4px 6px;"><div style="display:flex; align-items:center; max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${classIndicator}${d.name}</div></td>
-                                                                        <td style="text-align: center; font-weight: bold; color: ${gapColor}; padding: 4px 6px;">${gapStr}</td>
-                                                                    </tr>
-                                                                `;
-                                                            });
-                                                        }
-                                                        return cardRelativeRows || '<tr><td colspan="4" style="text-align:center; padding:1rem; color:var(--text-muted);">No relative data</td></tr>';
-                                                    })()}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1748,6 +1669,45 @@
                     standingsRows = '<tr><td colspan="6" style="text-align:center; padding:1.5rem; color:var(--text-muted);">No standings data available</td></tr>';
                 }
 
+                // Build Relative Rows — showing gap/interval to the car ahead
+                let relativeRows = '';
+                if (primaryTel.drivers) {
+                    const allDrivers = Object.values(primaryTel.drivers).filter(d => d && d.name);
+
+                    // Sort all drivers by race position so P1 is always at the top
+                    const relativeDrivers = allDrivers.sort((a, b) => (a.classPos || a.pos || 99) - (b.classPos || b.pos || 99));
+
+                    relativeDrivers.forEach((d, index) => {
+                        const isPlayerRow = d.isPlayer ? 'class="standings-row-player"' : '';
+                        const classIndicator = d.classColor ? `<span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#${d.classColor}; margin-right:4px;"></span>` : '';
+
+                        let gapStr = '--';
+                        let gapColor = '#e5e7eb'; // neutral white
+
+                        if (index === 0) {
+                            gapStr = 'Leader';
+                            gapColor = '#f59e0b'; // Gold for leader
+                        } else {
+                            const prev = relativeDrivers[index - 1];
+                            if (d.f2Time !== undefined && prev.f2Time !== undefined) {
+                                const interval = Math.abs(d.f2Time - prev.f2Time);
+                                gapStr = `+${interval.toFixed(1)}s`;
+                            }
+                        }
+
+                        relativeRows += `
+                            <tr ${isPlayerRow}>
+                                <td style="text-align: center; font-weight: bold;">${d.classPos || d.pos}</td>
+                                <td><span class="car-num-tag">${d.carNum}</span></td>
+                                <td><div style="display:flex; align-items:center; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${classIndicator}${d.name}</div></td>
+                                <td style="text-align: center; font-weight: bold; color: ${gapColor};">${gapStr}</td>
+                            </tr>
+                        `;
+                    });
+                }
+                if (!relativeRows) {
+                    relativeRows = '<tr><td colspan="4" style="text-align:center; padding:1.5rem; color:var(--text-muted);">No relative track data available</td></tr>';
+                }
 
 
                 // Verify if static layout structure is initialized
@@ -1785,6 +1745,34 @@
                                             </table>
                                         </div>
                                     </div>
+
+                                    <!-- Relative black box widget -->
+                                    <div class="info-widget">
+                                        <h3 class="info-widget-title" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                            <span style="display: flex; align-items: center; gap: 0.5rem;">
+                                                <i data-lucide="arrow-up-down" style="width: 16px; height: 16px;"></i> Relative
+                                            </span>
+                                            <div style="display: flex; align-items: center; gap: 8px;">
+                                                <span id="relative-driver-meta" style="font-size: 0.65rem; font-weight: 500; text-transform: none; color: var(--text-muted);">Relative</span>
+                                                <button onclick="scrollPlayerIntoView()" title="Refocus My Driver" class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.65rem; border-radius: 6px; display: flex; align-items: center; gap: 4px; height: 24px; cursor: pointer; text-transform: none; font-weight: normal; margin: 0; line-height: 1;">
+                                                    <i data-lucide="target" style="width: 12px; height: 12px;"></i> Refocus
+                                                </button>
+                                            </div>
+                                        </h3>
+                                        <div class="table-scroll-container" id="relative-scroll">
+                                            <table class="standings-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th style="text-align: center; width: 40px;">Pos</th>
+                                                        <th style="width: 50px;">Car</th>
+                                                        <th>Driver</th>
+                                                        <th style="text-align: center; width: 80px;">Gap</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="relative-body"></tbody>
+                                            </table>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div class="race-info-column" id="race-info-container">
@@ -1813,12 +1801,20 @@
                 // Update only dynamic bodies so the scroll containers are preserved in the DOM
                 const driversContainer = document.getElementById('drivers-container');
                 const standingsBody = document.getElementById('standings-body');
+                const relativeBody = document.getElementById('relative-body');
+                const relativeDriverMeta = document.getElementById('relative-driver-meta');
 
                 if (driversContainer) {
                     driversContainer.innerHTML = driversHtml;
                 }
                 if (standingsBody) {
                     standingsBody.innerHTML = standingsRows;
+                }
+                if (relativeBody) {
+                    relativeBody.innerHTML = relativeRows;
+                }
+                if (relativeDriverMeta) {
+                    relativeDriverMeta.innerText = `Interval Gaps (Between Cars)`;
                 }
 
                 // Update Global Weather & Conditions
