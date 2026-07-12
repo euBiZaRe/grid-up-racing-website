@@ -1293,7 +1293,7 @@
                 ctx.font = `bold ${fontSize}px sans-serif`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                const labelText = showPosOnMap ? (d.classPos || d.pos || '-') : d.carNum;
+                const labelText = showPosOnMap ? (d.classPos || d.pos || d.carNum) : d.carNum;
                 ctx.fillText(labelText, pos.x, pos.y);
             });
 
@@ -1425,7 +1425,11 @@
         document.addEventListener('change', (e) => {
             if (e.target && e.target.id === 'map-pos-toggle') {
                 showPosOnMap = e.target.checked;
+                console.log("[Telemetry] showPosOnMap changed to:", showPosOnMap);
                 localStorage.setItem('show_pos_on_map', showPosOnMap);
+                if (typeof window.forceRenderDashboard === 'function') {
+                    window.forceRenderDashboard();
+                }
             }
         });
         
