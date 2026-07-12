@@ -1343,21 +1343,44 @@
             return `${minutes}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
         }
 
-        // Auto-scroll to player row inside standings and relative scroll boxes
+        // Auto-scroll to player row — relative box only (standings always shows P1 at top)
         function scrollPlayerIntoView() {
-            const playerRows = document.querySelectorAll('.standings-row-player');
-            playerRows.forEach(row => {
-                const scrollContainer = row.closest('.table-scroll-container');
-                if (scrollContainer) {
-                    const rowOffsetTop = row.offsetTop;
-                    const containerHeight = scrollContainer.clientHeight;
-                    const rowHeight = row.clientHeight;
-                    scrollContainer.scrollTo({
+            // Relative box: centre on player row
+            const relativeScroll = document.getElementById('relative-scroll');
+            if (relativeScroll) {
+                const playerRow = relativeScroll.querySelector('.standings-row-player');
+                if (playerRow) {
+                    const rowOffsetTop = playerRow.offsetTop;
+                    const containerHeight = relativeScroll.clientHeight;
+                    const rowHeight = playerRow.clientHeight;
+                    relativeScroll.scrollTo({
                         top: rowOffsetTop - (containerHeight / 2) + (rowHeight / 2),
                         behavior: 'smooth'
                     });
                 }
-            });
+            }
+            // Standings box: keep P1 at the top (scroll to top)
+            const standingsScroll = document.getElementById('standings-scroll');
+            if (standingsScroll) {
+                standingsScroll.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        // Refocus button in standings — scroll standings to the player row
+        function scrollStandingsToPlayer() {
+            const standingsScroll = document.getElementById('standings-scroll');
+            if (standingsScroll) {
+                const playerRow = standingsScroll.querySelector('.standings-row-player');
+                if (playerRow) {
+                    const rowOffsetTop = playerRow.offsetTop;
+                    const containerHeight = standingsScroll.clientHeight;
+                    const rowHeight = playerRow.clientHeight;
+                    standingsScroll.scrollTo({
+                        top: rowOffsetTop - (containerHeight / 2) + (rowHeight / 2),
+                        behavior: 'smooth'
+                    });
+                }
+            }
         }
 
         // Init Lucide Icons
@@ -1657,10 +1680,12 @@
                     // Take 4 closest ahead and 4 closest behind, player in the middle
                     const WINDOW = 4;
                     const relativeDrivers = [
-                        ...carsAhead.slice(0, WINDOW).reverse(),  // furthest ahead → closest ahead
+                        ...carsAhead.slice(0, WINDOW),
                         ...(playerDriver ? [playerDriver] : []),
-                        ...carsBehind.slice(0, WINDOW),            // closest behind → furthest behind
-                    ];
+                        ...carsBehind.slice(0, WINDOW),
+                    ]
+                    // Re-sort by race position so P1 is always at the top
+                    .sort((a, b) => (a.classPos || a.pos || 99) - (b.classPos || b.pos || 99));
 
                     relativeDrivers.forEach(d => {
                         const isPlayerRow = d.isPlayer ? 'class="standings-row-player"' : '';
@@ -1709,8 +1734,8 @@
                                             <span style="display: flex; align-items: center; gap: 0.5rem;">
                                                 <i data-lucide="list-ordered" style="width: 16px; height: 16px;"></i> Live Session Standings
                                             </span>
-                                            <button onclick="scrollPlayerIntoView()" title="Refocus My Driver" class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.65rem; border-radius: 6px; display: flex; align-items: center; gap: 4px; height: 24px; cursor: pointer; text-transform: none; font-weight: normal; margin: 0; line-height: 1;">
-                                                <i data-lucide="target" style="width: 12px; height: 12px;"></i> Refocus
+                                            <button onclick="scrollStandingsToPlayer()" title="Jump to My Driver" class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.65rem; border-radius: 6px; display: flex; align-items: center; gap: 4px; height: 24px; cursor: pointer; text-transform: none; font-weight: normal; margin: 0; line-height: 1;">
+                                                <i data-lucide="target" style="width: 12px; height: 12px;"></i> My Pos
                                             </button>
                                         </h3>
                                         <div class="table-scroll-container" id="standings-scroll">
