@@ -996,6 +996,8 @@
         let lockToPlayer = localStorage.getItem('lock_to_player') !== 'false'; // default to true
         let hasAutoScrolled = false;
         let useImperial = localStorage.getItem('use_imperial') === 'true';
+        let showPosOnMap = localStorage.getItem('show_pos_on_map') === 'true';
+
 
         // Load track map data
         fetch('js/track-maps.json')
@@ -1073,7 +1075,6 @@
                 if (!d || typeof d.progress !== 'number' || d.progress < 0) return;
                 const key = d.carNum || idx;
                 activeKeys.add(key);
-
                 if (!trackMapDrivers[key]) {
                     trackMapDrivers[key] = {
                         progress: d.progress,
@@ -1083,6 +1084,8 @@
                         isPlayer: d.isPlayer,
                         classColor: d.classColor,
                         carNum: d.carNum || '',
+                        pos: d.pos || 0,
+                        classPos: d.classPos || 0
                     };
                 } else {
                     const dState = trackMapDrivers[key];
@@ -1109,6 +1112,8 @@
                     dState.isPlayer = d.isPlayer;
                     dState.classColor = d.classColor;
                     dState.carNum = d.carNum || '';
+                    dState.pos = d.pos || 0;
+                    dState.classPos = d.classPos || 0;
                 }
             });
 
@@ -1288,7 +1293,8 @@
                 ctx.font = `bold ${fontSize}px sans-serif`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(d.carNum, pos.x, pos.y);
+                const labelText = showPosOnMap ? (d.classPos || d.pos || '-') : d.carNum;
+                ctx.fillText(labelText, pos.x, pos.y);
             });
 
             ctx.restore();
@@ -1414,6 +1420,14 @@
                 }
             });
         }
+        
+        // Document-level delegation listener for dynamic map-pos-toggle checkbox
+        document.addEventListener('change', (e) => {
+            if (e.target && e.target.id === 'map-pos-toggle') {
+                showPosOnMap = e.target.checked;
+                localStorage.setItem('show_pos_on_map', showPosOnMap);
+            }
+        });
         
         let streamsRef = null;
         let driversRef = null;
@@ -1787,8 +1801,14 @@
                             <div class="race-info-column" id="race-info-container">
                                 <!-- Live Track Map Widget -->
                                 <div class="info-widget" id="track-map-widget">
-                                    <h3 class="info-widget-title">
-                                        <i data-lucide="map-pin" style="width: 16px; height: 16px;"></i> Live Track Map
+                                    <h3 class="info-widget-title" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                        <span style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <i data-lucide="map-pin" style="width: 16px; height: 16px;"></i> Live Track Map
+                                        </span>
+                                        <label style="display: flex; align-items: center; gap: 6px; font-size: 0.65rem; color: var(--text-muted); cursor: pointer; text-transform: none; margin: 0; font-weight: normal; user-select: none;">
+                                            <input type="checkbox" id="map-pos-toggle" style="width: 12px; height: 12px; cursor: pointer; accent-color: #3b82f6;" ${showPosOnMap ? 'checked' : ''}>
+                                            <span>Show Positions</span>
+                                        </label>
                                     </h3>
                                     <div class="track-map-canvas-wrapper" id="track-map-wrapper">
                                         <canvas id="track-map-canvas"></canvas>
