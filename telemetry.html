@@ -825,6 +825,16 @@
                 grid-template-columns: 1fr 1fr;
             }
         }
+
+        /* ABS Indicator Animations */
+        @keyframes abs-flash {
+            0%, 49%  { opacity: 1; }
+            50%, 100% { opacity: 0; }
+        }
+        @keyframes abs-bar-flash {
+            0%, 49%  { background: linear-gradient(90deg, #dc2626, #f87171); }
+            50%, 100% { background: linear-gradient(90deg, #7f1d1d, #991b1b); }
+        }
     </style>
 </head>
 <body class="telemetry-page">
@@ -1472,6 +1482,7 @@
                     // Pedals
                     const throttleVal = tel.throttle || 0;
                     const brakeVal = tel.brake || 0;
+                    const absActive = tel.abs === true;
 
                     driversHtml += `
                         <div class="driver-card" id="card-${mid}">
@@ -1536,11 +1547,14 @@
                                             </div>
                                             <div class="pedal-bar-wrapper">
                                                 <div class="pedal-label">
-                                                    <span>Brake</span>
+                                                    <span style="display:flex; align-items:center; gap:6px;">
+                                                        Brake
+                                                        ${absActive ? `<span style="font-size:0.6rem; font-weight:900; color:#fff; background:#dc2626; border-radius:4px; padding:1px 5px; letter-spacing:1px; animation:abs-flash 0.3s steps(1) infinite;">ABS</span>` : ''}
+                                                    </span>
                                                     <span style="color: #f87171;">${brakeVal}%</span>
                                                 </div>
                                                 <div class="pedal-bar-bg">
-                                                    <div class="pedal-bar-fill brake-fill" style="width: ${brakeVal}%;"></div>
+                                                    <div class="pedal-bar-fill brake-fill" style="width: ${brakeVal}%; ${absActive ? 'animation:abs-bar-flash 0.3s steps(1) infinite;' : ''}"></div>
                                                 </div>
                                             </div>
                                         </div>
