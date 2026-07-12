@@ -1618,8 +1618,15 @@
                 let relativeRows = '';
                 if (primaryTel.drivers) {
                     const relativeDrivers = Object.values(primaryTel.drivers)
-                        .filter(d => d && d.f2Time !== undefined)
-                        .sort((a, b) => b.f2Time - a.f2Time);
+                        .filter(d => d && d.name)
+                        .sort((a, b) => {
+                            // Sort by f2Time descending (ahead = positive f2Time at top, behind = negative at bottom)
+                            // Fall back to position if f2Time is missing
+                            if (a.f2Time !== undefined && b.f2Time !== undefined) return b.f2Time - a.f2Time;
+                            if (a.f2Time !== undefined) return -1;
+                            if (b.f2Time !== undefined) return 1;
+                            return (a.classPos || a.pos || 99) - (b.classPos || b.pos || 99);
+                        });
 
                     relativeDrivers.forEach(d => {
                         const isPlayerRow = d.isPlayer ? 'class="standings-row-player"' : '';
@@ -1644,14 +1651,12 @@
                                 <td><span class="car-num-tag">${d.carNum}</span></td>
                                 <td><div style="display:flex; align-items:center; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${classIndicator}${d.name}</div></td>
                                 <td style="text-align: center; font-weight: bold; color: ${gapColor};">${gapStr}</td>
-                                <td style="text-align: right;" class="laptime-mono">${formatLapTime(d.lastLap)}</td>
-                                <td style="text-align: right; color:#f3f4f6;" class="laptime-mono">${formatLapTime(d.bestLap)}</td>
                             </tr>
                         `;
                     });
                 }
                 if (!relativeRows) {
-                    relativeRows = '<tr><td colspan="6" style="text-align:center; padding:1.5rem; color:var(--text-muted);">No relative track data available</td></tr>';
+                    relativeRows = '<tr><td colspan="4" style="text-align:center; padding:1.5rem; color:var(--text-muted);">No relative track data available</td></tr>';
                 }
 
                 // Verify if static layout structure is initialized
@@ -1710,9 +1715,7 @@
                                                         <th style="text-align: center; width: 40px;">Pos</th>
                                                         <th style="width: 50px;">Car</th>
                                                         <th>Driver</th>
-                                                        <th style="text-align: center; width: 60px;">Gap</th>
-                                                        <th style="text-align: right; width: 80px;">Last</th>
-                                                        <th style="text-align: right; width: 80px;">Best</th>
+                                                        <th style="text-align: center; width: 80px;">Gap</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody id="relative-body"></tbody>
