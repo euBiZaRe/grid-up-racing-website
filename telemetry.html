@@ -1073,6 +1073,10 @@
             const activeKeys = new Set();
             Object.entries(drivers).forEach(([idx, d]) => {
                 if (!d || typeof d.progress !== 'number' || d.progress < 0) return;
+                if (!window.hasLoggedDriverData) {
+                    console.log("[TrackMap] Sample driver data:", d);
+                    window.hasLoggedDriverData = true;
+                }
                 const key = d.carNum || idx;
                 activeKeys.add(key);
                 if (!trackMapDrivers[key]) {
