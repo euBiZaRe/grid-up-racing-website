@@ -1683,23 +1683,8 @@
                         }
                     });
 
-                    // Separate cars ahead (relGap > 0) and behind (relGap < 0) using normalised value
-                    const carsAhead  = allDrivers
-                        .filter(d => !d.isPlayer && d._relGap > 0)
-                        .sort((a, b) => a._relGap - b._relGap);   // smallest gap first (closest ahead)
-                    const carsBehind = allDrivers
-                        .filter(d => !d.isPlayer && d._relGap < 0)
-                        .sort((a, b) => b._relGap - a._relGap);   // least negative first (closest behind)
-
-                    // Take 4 closest ahead and 4 closest behind, player in the middle
-                    const WINDOW = 4;
-                    const relativeDrivers = [
-                        ...carsAhead.slice(0, WINDOW),
-                        ...(playerDriver ? [playerDriver] : []),
-                        ...carsBehind.slice(0, WINDOW),
-                    ]
-                    // Re-sort by race position so P1 is always at the top
-                    .sort((a, b) => (a.classPos || a.pos || 99) - (b.classPos || b.pos || 99));
+                    // Sort all drivers by race position so P1 is always at the top
+                    const relativeDrivers = allDrivers.sort((a, b) => (a.classPos || a.pos || 99) - (b.classPos || b.pos || 99));
 
                     relativeDrivers.forEach(d => {
                         const isPlayerRow = d.isPlayer ? 'class="standings-row-player"' : '';
