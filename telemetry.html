@@ -1073,10 +1073,6 @@
             const activeKeys = new Set();
             Object.entries(drivers).forEach(([idx, d]) => {
                 if (!d || typeof d.progress !== 'number' || d.progress < 0) return;
-                if (!window.hasLoggedDriverData) {
-                    console.log("[TrackMap] Sample driver data:", d);
-                    window.hasLoggedDriverData = true;
-                }
                 const key = d.carNum || idx;
                 activeKeys.add(key);
                 if (!trackMapDrivers[key]) {
@@ -1293,7 +1289,7 @@
                 ctx.shadowColor = 'transparent';
                 ctx.shadowBlur = 0;
 
-                ctx.fillStyle = '#ffffff';
+                ctx.fillStyle = '#0a0a0a';
                 ctx.font = `bold ${fontSize}px sans-serif`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
