@@ -198,32 +198,47 @@
             const grid = document.getElementById('esports-grid');
             
             try {
-                const snap = await db.collection("drivers").orderBy("name").get();
                 grid.innerHTML = '';
-
                 let esportsDrivers = [];
-                snap.forEach(doc => {
-                    const d = doc.data();
-                    if (d.active === false) return;
-                    
-                    // Explicitly restrict to Jacob Reid and Alex Cortez
-                    const nameLower = d.name ? d.name.trim().toLowerCase() : '';
-                    if (nameLower === 'jacob reid' || nameLower === 'alex cortez') {
+
+                // Explicit list of target drivers
+                const targetNames = ['Jacob Reid', 'Alex Cortez'];
+
+                for (const name of targetNames) {
+                    try {
+                        const driverQuery = await db.collection("drivers").where("name", "==", name).limit(1).get();
+                        if (driverQuery.empty) continue;
+                        const d = driverQuery.docs[0].data();
+                        if (d.active === false) continue;
+
+                        let age = 'N/A';
+                        const claimDoc = await db.collection("claims").doc(name).get();
+                        if (claimDoc.exists) {
+                            const discordId = claimDoc.data().discordId;
+                            if (discordId) {
+                                const userDoc = await db.collection("users").doc(discordId).get();
+                                if (userDoc.exists && userDoc.data().age) {
+                                    age = userDoc.data().age;
+                                }
+                            }
+                        }
+
                         const stats = d.stats || {};
                         const iratings = stats.iRatings || {};
                         const sportsRating = iratings.SPORTS || 0;
-                        
+
                         esportsDrivers.push({
                             name: d.name,
                             role: d.role || 'Esports Driver',
                             sportsRating: sportsRating,
-                            ovalRating: iratings.OVAL || 0,
-                            formulaRating: iratings.FORMULA || 0,
+                            age: age,
                             license: stats.licenseLevels?.SPORTS || 'A 4.00',
                             slug: d.slug || d.name.toLowerCase().replace(/['']/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
                         });
+                    } catch (err) {
+                        console.warn(`Failed loading stats for ${name}:`, err);
                     }
-                });
+                }
 
                 // Sort by sports iRating descending
                 esportsDrivers.sort((a, b) => b.sportsRating - a.sportsRating);
@@ -254,8 +269,8 @@
                                 <span style="color: #fff; font-weight: 500;">${d.license}</span>
                             </div>
                             <div class="stat-badge">
-                                <span>Formula Car iRating</span>
-                                <span style="color: var(--text-muted);">${d.formulaRating || 'N/A'}</span>
+                                <span>Age</span>
+                                <span style="color: var(--text-muted); font-weight: 500;">${d.age}</span>
                             </div>
                         </div>
                     `;
