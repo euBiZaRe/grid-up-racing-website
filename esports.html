@@ -18,17 +18,36 @@
     <link rel="icon" type="image/png" href="assets/G_2.png">
     
     <style>
+        .esports-page {
+            background-color: #05070a;
+            background-image: 
+                linear-gradient(rgba(225, 29, 72, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(225, 29, 72, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+            background-attachment: fixed;
+        }
+
         .esports-hero {
-            background: linear-gradient(180deg, rgba(11, 13, 18, 0.2) 0%, #0b0d12 100%), 
-                        radial-gradient(circle at 50% 30%, rgba(225, 29, 72, 0.15) 0%, transparent 60%);
-            padding: 8rem 0 4rem;
+            background: radial-gradient(circle at 50% 30%, rgba(225, 29, 72, 0.2) 0%, transparent 60%);
+            padding: 9rem 0 5rem;
             text-align: center;
             position: relative;
         }
-        
+
+        .esports-hero::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--secondary), transparent);
+        }
+
         .esports-title {
             font-family: var(--font-heading);
-            font-size: clamp(3rem, 10vw, 6rem);
+            font-size: clamp(3.5rem, 10vw, 6.5rem);
             font-weight: 900;
             text-transform: uppercase;
             letter-spacing: 4px;
@@ -37,77 +56,200 @@
             background: linear-gradient(135deg, #fff 30%, #e11d48 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 30px rgba(225, 29, 72, 0.2));
+            filter: drop-shadow(0 0 30px rgba(225, 29, 72, 0.25));
         }
 
         .esports-tag {
             font-family: var(--font-heading);
             color: var(--secondary);
-            font-size: 1rem;
-            letter-spacing: 8px;
+            font-size: 1.1rem;
+            letter-spacing: 12px;
             text-transform: uppercase;
             font-weight: 700;
             margin-bottom: 2rem;
+            text-shadow: 0 0 10px rgba(225, 29, 72, 0.3);
         }
 
         .pro-badge {
             background: var(--secondary);
             color: #fff;
-            padding: 0.25rem 0.75rem;
-            border-radius: 50px;
+            padding: 0.3rem 1rem;
+            border-radius: 4px;
             font-size: 0.65rem;
             font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
             display: inline-block;
             margin-bottom: 0.5rem;
-        }
-
-        .stat-badge {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            font-family: var(--font-heading);
-            font-size: 0.85rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 0.5rem;
-        }
-
-        .stat-value {
-            color: var(--primary);
-            font-weight: bold;
-        }
-
-        .trophy-card {
-            background: linear-gradient(135deg, rgba(20, 24, 33, 0.8) 0%, rgba(10, 12, 18, 0.8) 100%);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 2rem;
-            text-align: center;
-            transition: var(--transition);
-        }
-
-        .trophy-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(225, 29, 72, 0.3);
-            box-shadow: 0 15px 35px rgba(225, 29, 72, 0.1);
-        }
-
-        .trophy-icon {
-            font-size: 2.5rem;
-            color: var(--accent-gold);
-            margin-bottom: 1rem;
-            filter: drop-shadow(0 0 10px rgba(234, 179, 8, 0.3));
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .grid-esports {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            gap: 3.5rem;
+            margin-top: 4rem;
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Premium Esports Card styling */
+        .esports-card {
+            background: rgba(11, 13, 18, 0.85);
+            border: 1px solid rgba(225, 29, 72, 0.15);
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .esports-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, transparent 60%, rgba(225, 29, 72, 0.08) 100%);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .esports-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            border-color: var(--secondary);
+            box-shadow: 0 20px 50px rgba(225, 29, 72, 0.25);
+        }
+
+        .esports-portrait-wrapper {
+            width: 100%;
+            height: 380px;
+            overflow: hidden;
+            position: relative;
+            background: #111;
+            border-bottom: 2px solid rgba(225, 29, 72, 0.2);
+        }
+
+        .esports-portrait {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.8s ease;
+        }
+
+        .esports-card:hover .esports-portrait {
+            transform: scale(1.08);
+        }
+
+        .esports-portrait-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40%;
+            background: linear-gradient(to top, #0b0d12, transparent);
+            z-index: 2;
+        }
+
+        .esports-card-body {
+            padding: 2rem;
+            position: relative;
+            z-index: 3;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .esports-driver-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+        }
+
+        .esports-driver-name {
+            font-family: var(--font-heading);
+            font-size: 1.75rem;
+            font-weight: 900;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .esports-driver-role {
+            font-family: var(--font-heading);
+            font-size: 0.75rem;
+            color: var(--secondary);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 700;
+            margin-top: 0.25rem;
+        }
+
+        /* Tech specs look */
+        .esports-tech-spec {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .esports-tech-spec::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--secondary);
+        }
+
+        .esports-spec-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .esports-spec-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .esports-spec-lbl {
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 600;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+        }
+
+        .esports-spec-val {
+            font-family: var(--font-heading);
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .esports-rating-bar {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .esports-rating-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--secondary), #f43f5e);
+            border-radius: 20px;
         }
     </style>
 </head>
@@ -251,26 +393,50 @@
                 esportsDrivers.forEach(d => {
                     const card = document.createElement('a');
                     card.href = `drivers/${d.slug}.html`;
-                    card.className = 'glass driver-card';
+                    card.className = 'esports-card';
                     card.style.textDecoration = 'none';
 
+                    // Select image file
+                    const portraitImg = `assets/${d.slug}_esports.png`;
+                    
+                    // iRating percentage (max 5000)
+                    const iratingPct = Math.min((d.sportsRating / 5000) * 100, 100);
+
                     card.innerHTML = `
-                        <div class="driver-info">
-                            <span class="pro-badge">PRO</span>
-                            <h3 style="margin-top: 0.5rem;">${d.name}</h3>
-                            <p class="role" style="color: var(--secondary); font-size: 0.65rem; margin-bottom: 1rem;">${d.role}</p>
-                            
-                            <div class="stat-badge">
-                                <span>Sports Car iRating</span>
-                                <span class="stat-value">${d.sportsRating}</span>
-                            </div>
-                            <div class="stat-badge">
-                                <span>iRacing License</span>
-                                <span style="color: #fff; font-weight: 500;">${d.license}</span>
-                            </div>
-                            <div class="stat-badge">
-                                <span>Age</span>
-                                <span style="color: var(--text-muted); font-weight: 500;">${d.age}</span>
+                        <div class="esports-portrait-wrapper">
+                            <img src="${portraitImg}" alt="${d.name}" class="esports-portrait" onerror="this.src='../assets/bg-banner.png';">
+                            <div class="esports-portrait-overlay"></div>
+                        </div>
+                        <div class="esports-card-body">
+                            <div>
+                                <div class="esports-driver-header">
+                                    <div>
+                                        <h3 class="esports-driver-name">${d.name}</h3>
+                                        <div class="esports-driver-role">${d.role}</div>
+                                    </div>
+                                    <span class="pro-badge">PRO DIV</span>
+                                </div>
+                                
+                                <div class="esports-tech-spec">
+                                    <div class="esports-spec-row">
+                                        <span class="esports-spec-lbl">SPORTS CAR iRATING</span>
+                                        <span class="esports-spec-val" style="color: var(--primary);">${d.sportsRating}</span>
+                                    </div>
+                                    <div class="esports-rating-bar">
+                                        <div class="esports-rating-fill" style="width: ${iratingPct}%;"></div>
+                                    </div>
+                                </div>
+
+                                <div class="esports-tech-spec" style="margin-bottom: 0;">
+                                    <div class="esports-spec-row" style="margin-bottom: 0.5rem;">
+                                        <span class="esports-spec-lbl">iRACING LICENSE</span>
+                                        <span class="esports-spec-val" style="color: #10b981;">${d.license}</span>
+                                    </div>
+                                    <div class="esports-spec-row" style="margin-bottom: 0;">
+                                        <span class="esports-spec-lbl">DRIVER AGE</span>
+                                        <span class="esports-spec-val" style="color: var(--text-muted);">${d.age} Y/O</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     `;
