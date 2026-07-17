@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5JMPYRH8H9"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-5JMPYRH8H9');
+    </script>
+
+    <meta name="robots" content="noindex, nofollow"> <!-- Keep it hidden from search engines -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GRiD UP E-Sports | Official Team</title>
+    <link rel="stylesheet" href="style.css?v=8">
+    <link rel="icon" type="image/png" href="assets/G_2.png">
+    
+    <style>
+        .esports-hero {
+            background: linear-gradient(180deg, rgba(11, 13, 18, 0.2) 0%, #0b0d12 100%), 
+                        radial-gradient(circle at 50% 30%, rgba(225, 29, 72, 0.15) 0%, transparent 60%);
+            padding: 8rem 0 4rem;
+            text-align: center;
+            position: relative;
+        }
+        
+        .esports-title {
+            font-family: var(--font-heading);
+            font-size: clamp(3rem, 10vw, 6rem);
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            color: #fff;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #fff 30%, #e11d48 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 30px rgba(225, 29, 72, 0.2));
+        }
+
+        .esports-tag {
+            font-family: var(--font-heading);
+            color: var(--secondary);
+            font-size: 1rem;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-bottom: 2rem;
+        }
+
+        .pro-badge {
+            background: var(--secondary);
+            color: #fff;
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: inline-block;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-badge {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-family: var(--font-heading);
+            font-size: 0.85rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.5rem;
+        }
+
+        .stat-value {
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .trophy-card {
+            background: linear-gradient(135deg, rgba(20, 24, 33, 0.8) 0%, rgba(10, 12, 18, 0.8) 100%);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .trophy-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(225, 29, 72, 0.3);
+            box-shadow: 0 15px 35px rgba(225, 29, 72, 0.1);
+        }
+
+        .trophy-icon {
+            font-size: 2.5rem;
+            color: var(--accent-gold);
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 0 10px rgba(234, 179, 8, 0.3));
+        }
+
+        .grid-esports {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+    </style>
+</head>
+<body class="esports-page">
+    <nav id="navbar" class="scrolled">
+        <div class="container nav-content">
+            <a href="index.html" class="logo">
+                <img src="assets/logo.png" alt="GRiD UP" style="height: 40px; vertical-align: middle;">
+            </a>
+            <div class="menu-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html#home">Home</a></li>
+                <li><a href="roster.html">Roster</a></li>
+                <li><a href="events.html">Events</a></li>
+                <li><a href="reports.html">Race Reports</a></li>
+                <li><a href="league.html">League</a></li>
+                <li><a href="schedule.html">Schedule</a></li>
+                <li><a href="shop.html">Shop</a></li>
+                <li><a href="team-app.html">Apply</a></li>
+                <li><a href="https://discord.gg/gridup" target="_blank"><img src="assets/discord_header.png" alt="Discord" style="height: 25px; vertical-align: middle;"></a></li>
+                <li><a href="login.html" id="login-link" class="btn btn-outline" style="padding: 0.5rem 1.25rem; font-size: 0.8rem; margin-left: 1rem;">Login</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <header class="esports-hero">
+        <div class="container">
+            <span class="pro-badge" style="background: var(--primary); padding: 0.4rem 1.2rem; font-size: 0.75rem; letter-spacing: 2px;">Elite Division</span>
+            <h1 class="esports-title">GRiD UP</h1>
+            <p class="esports-tag">E-Sports Team</p>
+            <p style="max-width: 700px; margin: 0 auto; color: var(--text-muted); font-size: 1.1rem; line-height: 1.8;">
+                Our premier competitive sim racing division. Comprising our highest-rated drivers, the GRiD UP E-Sports team competes in top-tier endurance racing leagues and official iRacing Special Events.
+            </p>
+        </div>
+    </header>
+
+    <main class="container section" style="padding-top: 1rem;">
+        
+        <!-- Esports Championship Roster -->
+        <section>
+            <h2 class="section-title" style="text-align: center;">Championship Lineup</h2>
+            <p style="text-align: center; color: var(--text-muted); margin-top: -1rem; margin-bottom: 3rem;">The elite force representing GRiD UP in competitive events</p>
+            
+            <div class="grid-esports" id="esports-grid">
+                <!-- Dynamically populated from Firestore / JSON -->
+                <p style="text-align: center; color: var(--text-muted); grid-column: 1/-1;">Loading lineup stats...</p>
+            </div>
+        </section>
+
+        <!-- Achievements & Trophies -->
+        <section style="margin-top: 8rem;">
+            <h2 class="section-title" style="text-align: center;">Team Achievements</h2>
+            <div class="grid-esports" style="margin-top: 3rem;">
+                <div class="trophy-card">
+                    <div class="trophy-icon">🏆</div>
+                    <h3 style="font-family: var(--font-heading); color: #fff; margin-bottom: 0.5rem;">Spa 24HR Class Win</h3>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Secured P1 in class at the prestigious iRacing Spa 24 Hours endurance classic.</p>
+                </div>
+                <div class="trophy-card">
+                    <div class="trophy-icon">🏆</div>
+                    <h3 style="font-family: var(--font-heading); color: #fff; margin-bottom: 0.5rem;">Daytona 24HR Top 5</h3>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Outstanding Top 5 finish in the top split class during the grueling Daytona 24 Hours.</p>
+                </div>
+                <div class="trophy-card">
+                    <div class="trophy-icon">🏆</div>
+                    <h3 style="font-family: var(--font-heading); color: #fff; margin-bottom: 0.5rem;">Major League Top split</h3>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Regularly competing against the world's fastest esports teams in elite hosted series.</p>
+                </div>
+            </div>
+        </section>
+
+        <div style="text-align: center; margin-top: 8rem; margin-bottom: 4rem;">
+            <a href="index.html" class="btn btn-outline" style="padding: 1rem 3rem;">← Back to Home</a>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div style="display: flex; justify-content: center; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <a href="https://discord.gg/gridup" target="_blank" style="opacity: 0.6; transition: opacity 0.3s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 127.14 96.36" fill="#ffffff"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a67.55,67.55,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.31,60,73.31,53s5-12.74,11.43-12.74S96.2,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
+                </a>
+                <a href="https://www.youtube.com/@griduptv" target="_blank" style="opacity: 0.6; transition: opacity 0.3s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="#ffffff" style="margin-top: -1px;"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+                </a>
+            </div>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin: 0; padding-bottom: 1rem;">&copy; 2026 GRiD UP SIM RACING. ALL RIGHTS RESERVED.</p>
+        </div>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="script.js?v=6"></script>
+    <script src="js/auth.js?v=7"></script>
+    <script>
+        // Wait for DB to be initialized by auth.js
+        const dbCheckInterval = setInterval(() => {
+            if (window.db) {
+                clearInterval(dbCheckInterval);
+                loadEsportsLineup();
+            }
+        }, 100);
+
+        async function loadEsportsLineup() {
+            const grid = document.getElementById('esports-grid');
+            
+            try {
+                const snap = await db.collection("drivers").orderBy("name").get();
+                grid.innerHTML = '';
+
+                let esportsDrivers = [];
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    // We automatically filter out inactive drivers
+                    if (d.active === false) return;
+                    
+                    // Esports drivers selection criteria:
+                    // 1. High iRating (e.g. Sports Car iRating >= 2200)
+                    // 2. Explicitly in "GRiD UP Endurance" or "Grid Up Endurance"
+                    const stats = d.stats || {};
+                    const iratings = stats.iRatings || {};
+                    const sportsRating = iratings.SPORTS || 0;
+                    
+                    const isEndurance = d.category && d.category.toLowerCase().includes('endurance');
+                    
+                    // If they are part of the elite lineup (>= 2200 Sports iRating & part of endurance category)
+                    if (sportsRating >= 2200 && isEndurance) {
+                        esportsDrivers.push({
+                            name: d.name,
+                            role: d.role || 'Esports Driver',
+                            sportsRating: sportsRating,
+                            ovalRating: iratings.OVAL || 0,
+                            formulaRating: iratings.FORMULA || 0,
+                            license: stats.licenseLevels?.SPORTS || 'A 4.00',
+                            slug: d.slug || d.name.toLowerCase().replace(/['']/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+                        });
+                    }
+                });
+
+                // Sort by sports iRating descending
+                esportsDrivers.sort((a, b) => b.sportsRating - a.sportsRating);
+
+                if (esportsDrivers.length === 0) {
+                    grid.innerHTML = '<p style="text-align: center; color: var(--text-muted); grid-column: 1/-1;">Lineup details offline.</p>';
+                    return;
+                }
+
+                esportsDrivers.forEach(d => {
+                    const card = document.createElement('a');
+                    card.href = `drivers/${d.slug}.html`;
+                    card.className = 'glass driver-card';
+                    card.style.textDecoration = 'none';
+
+                    card.innerHTML = `
+                        <div class="driver-info">
+                            <span class="pro-badge">PRO</span>
+                            <h3 style="margin-top: 0.5rem;">${d.name}</h3>
+                            <p class="role" style="color: var(--secondary); font-size: 0.65rem; margin-bottom: 1rem;">${d.role}</p>
+                            
+                            <div class="stat-badge">
+                                <span>Sports Car iRating</span>
+                                <span class="stat-value">${d.sportsRating}</span>
+                            </div>
+                            <div class="stat-badge">
+                                <span>iRacing License</span>
+                                <span style="color: #fff; font-weight: 500;">${d.license}</span>
+                            </div>
+                            <div class="stat-badge">
+                                <span>Formula Car iRating</span>
+                                <span style="color: var(--text-muted);">${d.formulaRating || 'N/A'}</span>
+                            </div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+
+            } catch (err) {
+                console.error("Failed to load esports roster:", err);
+                grid.innerHTML = '<p style="text-align: center; color: #ef4444; grid-column: 1/-1;">Error loading esports lineup.</p>';
+            }
+        }
+    </script>
+</body>
+</html>
