@@ -161,29 +161,7 @@
             </div>
         </section>
 
-        <!-- Achievements & Trophies -->
-        <section style="margin-top: 8rem;">
-            <h2 class="section-title" style="text-align: center;">Team Achievements</h2>
-            <div class="grid-esports" style="margin-top: 3rem;">
-                <div class="trophy-card">
-                    <div class="trophy-icon">🏆</div>
-                    <h3 style="font-family: var(--font-heading); color: #fff; margin-bottom: 0.5rem;">Spa 24HR Class Win</h3>
-                    <p style="color: var(--text-muted); font-size: 0.9rem;">Secured P1 in class at the prestigious iRacing Spa 24 Hours endurance classic.</p>
-                </div>
-                <div class="trophy-card">
-                    <div class="trophy-icon">🏆</div>
-                    <h3 style="font-family: var(--font-heading); color: #fff; margin-bottom: 0.5rem;">Daytona 24HR Top 5</h3>
-                    <p style="color: var(--text-muted); font-size: 0.9rem;">Outstanding Top 5 finish in the top split class during the grueling Daytona 24 Hours.</p>
-                </div>
-                <div class="trophy-card">
-                    <div class="trophy-icon">🏆</div>
-                    <h3 style="font-family: var(--font-heading); color: #fff; margin-bottom: 0.5rem;">Major League Top split</h3>
-                    <p style="color: var(--text-muted); font-size: 0.9rem;">Regularly competing against the world's fastest esports teams in elite hosted series.</p>
-                </div>
-            </div>
-        </section>
-
-        <div style="text-align: center; margin-top: 8rem; margin-bottom: 4rem;">
+        <div style="text-align: center; margin-top: 4rem; margin-bottom: 4rem;">
             <a href="index.html" class="btn btn-outline" style="padding: 1rem 3rem;">← Back to Home</a>
         </div>
     </main>
@@ -226,20 +204,15 @@
                 let esportsDrivers = [];
                 snap.forEach(doc => {
                     const d = doc.data();
-                    // We automatically filter out inactive drivers
                     if (d.active === false) return;
                     
-                    // Esports drivers selection criteria:
-                    // 1. High iRating (e.g. Sports Car iRating >= 2200)
-                    // 2. Explicitly in "GRiD UP Endurance" or "Grid Up Endurance"
-                    const stats = d.stats || {};
-                    const iratings = stats.iRatings || {};
-                    const sportsRating = iratings.SPORTS || 0;
-                    
-                    const isEndurance = d.category && d.category.toLowerCase().includes('endurance');
-                    
-                    // If they are part of the elite lineup (>= 2200 Sports iRating & part of endurance category)
-                    if (sportsRating >= 2200 && isEndurance) {
+                    // Explicitly restrict to Jacob Reid and Alex Cortez
+                    const nameLower = d.name ? d.name.trim().toLowerCase() : '';
+                    if (nameLower === 'jacob reid' || nameLower === 'alex cortez') {
+                        const stats = d.stats || {};
+                        const iratings = stats.iRatings || {};
+                        const sportsRating = iratings.SPORTS || 0;
+                        
                         esportsDrivers.push({
                             name: d.name,
                             role: d.role || 'Esports Driver',
