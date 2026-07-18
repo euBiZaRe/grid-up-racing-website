@@ -1416,7 +1416,7 @@
             const startX = w - (history.length * step);
             
             // Draw ABS activations in background (orange vertical columns)
-            ctx.fillStyle = 'rgba(249, 115, 22, 0.2)';
+            ctx.fillStyle = 'rgba(249, 115, 22, 0.1)';
             for (let i = 0; i < history.length; i++) {
                 if (history[i].abs) {
                     const x = startX + (i * step);
@@ -1424,29 +1424,48 @@
                 }
             }
             
-            // Draw Throttle line (green)
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+
+            // Draw Throttle line (green) — smoothed via quadratic curves
             ctx.strokeStyle = '#34d399';
-            ctx.lineWidth = 1.75;
+            ctx.lineWidth = 2;
             ctx.beginPath();
-            for (let i = 0; i < history.length; i++) {
-                const x = startX + (i * step);
-                const y = h - (history[i].throttle / 100 * (h - 4)) - 2;
-                if (i === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
+            
+            let firstX = startX;
+            let firstY = h - (history[0].throttle / 100 * (h - 4)) - 2;
+            ctx.moveTo(firstX, firstY);
+            
+            for (let i = 0; i < history.length - 1; i++) {
+                const x1 = startX + (i * step);
+                const y1 = h - (history[i].throttle / 100 * (h - 4)) - 2;
+                const x2 = startX + ((i + 1) * step);
+                const y2 = h - (history[i + 1].throttle / 100 * (h - 4)) - 2;
+                const xc = (x1 + x2) / 2;
+                const yc = (y1 + y2) / 2;
+                ctx.quadraticCurveTo(x1, y1, xc, yc);
             }
+            const lastX = startX + ((history.length - 1) * step);
+            const lastY = h - (history[history.length - 1].throttle / 100 * (h - 4)) - 2;
+            ctx.lineTo(lastX, lastY);
             ctx.stroke();
             
-            // Draw Brake line (red)
-            ctx.strokeStyle = '#f87171';
-            ctx.lineWidth = 1.75;
-            ctx.beginPath();
-            for (let i = 0; i < history.length; i++) {
-                const x = startX + (i * step);
-                const y = h - (history[i].brake / 100 * (h - 4)) - 2;
-                if (i === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
+            // Draw Brake line (red/orange) — drawn in segments to dynamically shift colors
+            ctx.lineWidth = 2;
+            for (let i = 0; i < history.length - 1; i++) {
+                const x1 = startX + (i * step);
+                const y1 = h - (history[i].brake / 100 * (h - 4)) - 2;
+                const x2 = startX + ((i + 1) * step);
+                const y2 = h - (history[i + 1].brake / 100 * (h - 4)) - 2;
+                
+                // Color segments orange on ABS active, otherwise red
+                ctx.strokeStyle = (history[i].abs || history[i + 1].abs) ? '#f97316' : '#f87171';
+                
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
             }
-            ctx.stroke();
         }
 
         // Init Lucide Icons
@@ -1585,15 +1604,19 @@
                     const brakeVal = tel.brake || 0;
                     const absActive = tel.abs === true;
 
-                    // Accumulate trace history
+                    // Accumulate trace history with exponential smoothing
                     if (!traceHistory[mid]) {
                         traceHistory[mid] = [];
                     }
                     const history = traceHistory[mid];
                     if (history.length === 0 || tel.timestamp !== history[history.length - 1].timestamp) {
+                        const prevPoint = history.length > 0 ? history[history.length - 1] : null;
+                        const smoothT = prevPoint ? prevPoint.throttle + 0.35 * (throttleVal - prevPoint.throttle) : throttleVal;
+                        const smoothB = prevPoint ? prevPoint.brake + 0.35 * (brakeVal - prevPoint.brake) : brakeVal;
+                        
                         history.push({
-                            throttle: throttleVal,
-                            brake: brakeVal,
+                            throttle: smoothT,
+                            brake: smoothB,
                             abs: absActive,
                             timestamp: tel.timestamp || Date.now()
                         });
