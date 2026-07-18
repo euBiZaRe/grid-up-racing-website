@@ -2147,6 +2147,15 @@
                 const absIndicator = document.getElementById(`trace-abs-indicator-${mid}`);
                 const history = traceHistory[mid];
                 if (canvas && history && history.length >= 2) {
+                    if (window.debugHistoryTimer === undefined || Date.now() - window.debugHistoryTimer > 2000) {
+                        window.debugHistoryTimer = Date.now();
+                        console.log("Trace debug:", {
+                            length: history.length,
+                            durationMs: history[history.length - 1].timestamp - history[0].timestamp,
+                            newestAge: Date.now() - history[history.length - 1].timestamp,
+                            oldestAge: Date.now() - history[0].timestamp
+                        });
+                    }
                     drawTraceGraph(canvas, history);
                     
                     // Keep indicator synced with latest status in history
