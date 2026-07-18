@@ -1415,15 +1415,6 @@
             const step = w / (maxPoints - 1);
             const startX = w - (history.length * step);
             
-            // Draw ABS activations in background (orange vertical columns)
-            ctx.fillStyle = 'rgba(249, 115, 22, 0.1)';
-            for (let i = 0; i < history.length; i++) {
-                if (history[i].abs) {
-                    const x = startX + (i * step);
-                    ctx.fillRect(x, 0, step + 1, h);
-                }
-            }
-            
             ctx.lineJoin = 'round';
             ctx.lineCap = 'round';
 
@@ -1609,7 +1600,7 @@
                         traceHistory[mid] = [];
                     }
                     const history = traceHistory[mid];
-                    if (history.length === 0 || tel.timestamp !== history[history.length - 1].timestamp) {
+                    if (history.length === 0 || tel.timestamp !== history[history.length - 1].telTimestamp) {
                         const prevPoint = history.length > 0 ? history[history.length - 1] : null;
                         const smoothT = prevPoint ? prevPoint.throttle + 0.35 * (throttleVal - prevPoint.throttle) : throttleVal;
                         const smoothB = prevPoint ? prevPoint.brake + 0.35 * (brakeVal - prevPoint.brake) : brakeVal;
@@ -1618,9 +1609,12 @@
                             throttle: smoothT,
                             brake: smoothB,
                             abs: absActive,
-                            timestamp: tel.timestamp || Date.now()
+                            timestamp: Date.now(),
+                            telTimestamp: tel.timestamp || 0
                         });
-                        if (history.length > 150) {
+                        
+                        const cutoff = Date.now() - 6000;
+                        while (history.length > 0 && history[0].timestamp < cutoff) {
                             history.shift();
                         }
                     }
@@ -1915,19 +1909,6 @@
 
                 if (driversContainer) {
                     driversContainer.innerHTML = driversHtml;
-                    
-                    // Draw inputs trace graphs for all active driver cards
-                    activeMids.forEach(mid => {
-                        const canvas = document.getElementById(`trace-canvas-${mid}`);
-                        const absIndicator = document.getElementById(`trace-abs-indicator-${mid}`);
-                        const history = traceHistory[mid];
-                        if (canvas && history) {
-                            drawTraceGraph(canvas, history);
-                        }
-                        if (absIndicator && currentStreams[mid]?.telemetry) {
-                            absIndicator.style.display = currentStreams[mid].telemetry.abs ? 'inline' : 'none';
-                        }
-                    });
                 }
                 if (standingsBody) {
                     standingsBody.innerHTML = standingsRows;
@@ -2158,9 +2139,30 @@
             setupFirebaseListeners(e.target.value);
         });
 
+        let traceAnimFrame = null;
+        function traceAnimLoop() {
+            const activeMids = Object.keys(traceHistory);
+            activeMids.forEach(mid => {
+                const canvas = document.getElementById(`trace-canvas-${mid}`);
+                const absIndicator = document.getElementById(`trace-abs-indicator-${mid}`);
+                const history = traceHistory[mid];
+                if (canvas && history && history.length >= 2) {
+                    drawTraceGraph(canvas, history);
+                    
+                    // Keep indicator synced with latest status in history
+                    if (absIndicator) {
+                        const latestAbs = history[history.length - 1].abs;
+                        absIndicator.style.display = latestAbs ? 'inline' : 'none';
+                    }
+                }
+            });
+            traceAnimFrame = requestAnimationFrame(traceAnimLoop);
+        }
+
         // Trigger on DOM Loaded
         function initDashboard() {
             updateTeamDropdown(checkAdminStatus());
+            traceAnimLoop(); // Start smooth 60fps scrolling graph loop
             let attempts = 0;
             const dbCheckInterval = setInterval(() => {
                 attempts++;
