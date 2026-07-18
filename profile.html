@@ -504,7 +504,7 @@
                     document.getElementById('input-class').value = data.driverClass || "GT3";
                     
                     savedDiscord = data.discordName || user.displayName || "";
-                    if (savedDiscord === "Discord User" || savedDiscord === "Unknown Driver") {
+                    if (savedDiscord.toLowerCase().trim() === "discord user" || savedDiscord.toLowerCase().trim() === "unknown driver") {
                         savedDiscord = "";
                     }
                     
@@ -529,7 +529,7 @@
                     }
                 } else {
                     savedDiscord = user.displayName || "";
-                    if (savedDiscord === "Discord User" || savedDiscord === "Unknown Driver") {
+                    if (savedDiscord.toLowerCase().trim() === "discord user" || savedDiscord.toLowerCase().trim() === "unknown driver") {
                         savedDiscord = "";
                     }
                 }
