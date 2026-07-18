@@ -235,9 +235,6 @@ function loginWithDiscord() {
     console.log("Starting Discord Login...");
     const provider = new firebase.auth.OAuthProvider('oidc.discord');
     provider.addScope('identify');
-    provider.setCustomParameters({
-        scope: 'identify'
-    });
     auth.signInWithPopup(provider).then(async (result) => {
         const profile = result.additionalUserInfo?.profile;
         console.log("Login Success. Profile:", profile);
