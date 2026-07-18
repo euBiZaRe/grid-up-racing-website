@@ -117,17 +117,14 @@ function initAuth() {
                     await db.collection("users").doc(user.uid).set({
                         discordName: user.displayName || null,
                         photoURL: user.photoURL || null,
-                        email: user.email || null,
                         lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
                         debugInfo: {
                             displayName: user.displayName || null,
-                            email: user.email || null,
                             photoURL: user.photoURL || null,
                             providerData: user.providerData.map(p => ({
                                 providerId: p.providerId,
                                 uid: p.uid,
                                 displayName: p.displayName || null,
-                                email: p.email || null,
                                 photoURL: p.photoURL || null
                             })),
                             claims: tokenResult ? tokenResult.claims : null
@@ -238,7 +235,6 @@ function loginWithDiscord() {
     console.log("Starting Discord Login...");
     const provider = new firebase.auth.OAuthProvider('oidc.discord');
     provider.addScope('identify');
-    provider.addScope('email');
     auth.signInWithPopup(provider).then(async (result) => {
         const profile = result.additionalUserInfo?.profile;
         console.log("Login Success. Profile:", profile);
@@ -260,7 +256,6 @@ function loginWithDiscord() {
                 await db.collection("users").doc(result.user.uid).set({
                     discordName: discordUsername,
                     photoURL: result.user.photoURL || (profile ? (profile.picture || profile.avatar) : null),
-                    email: result.user.email || (profile ? profile.email : null),
                     lastSeen: firebase.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });
                 console.log("Synced user info to Firestore users collection");
