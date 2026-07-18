@@ -397,7 +397,10 @@
                     card.style.textDecoration = 'none';
 
                     // Select image file
-                    const portraitImg = 'assets/Esport%20image.png';
+                    let portraitImg = 'assets/Esport%20image.png';
+                    if (d.name === 'Jacob Reid') {
+                        portraitImg = 'assets/d51485b1-d8de-4949-a529-5cd340a334a0.png';
+                    }
                     
                     // iRating percentage (max 5000)
                     const iratingPct = Math.min((d.sportsRating / 5000) * 100, 100);
