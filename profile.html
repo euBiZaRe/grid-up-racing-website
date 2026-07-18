@@ -155,11 +155,6 @@
                         </div>
 
                         <div class="form-group">
-                            <label>Discord Username</label>
-                            <input type="text" id="input-discord-name" class="form-input" placeholder="Enter your Discord username (without @)">
-                        </div>
-
-                        <div class="form-group">
                             <label>iRacing ID</label>
                             <input type="text" id="input-iracing-id" class="form-input" placeholder="Enter your iRacing ID (e.g. 123456)">
                         </div>
@@ -512,7 +507,6 @@
                     if (savedDiscord === "Discord User" || savedDiscord === "Unknown Driver") {
                         savedDiscord = "";
                     }
-                    document.getElementById('input-discord-name').value = savedDiscord;
                     
                     // Social Links
                     document.getElementById('input-twitch').value = data.twitchUrl || "";
@@ -538,7 +532,6 @@
                     if (savedDiscord === "Discord User" || savedDiscord === "Unknown Driver") {
                         savedDiscord = "";
                     }
-                    document.getElementById('input-discord-name').value = savedDiscord;
                 }
                 
                 // Show Discord name in card
@@ -581,12 +574,9 @@
  
             const status = document.getElementById('save-status');
             status.textContent = "Saving...";
-            
-            const enteredDiscord = document.getElementById('input-discord-name').value.trim();
  
             try {
                 await db.collection("users").doc(user.uid).set({
-                    discordName: enteredDiscord || null,
                     email: user.email,
                     driverName: document.getElementById('input-name').value,
                     iracingId: document.getElementById('input-iracing-id').value,
@@ -602,16 +592,6 @@
                     advice: document.getElementById('input-advice').value,
                     lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });
-                
-                // Update live card view as well
-                const discordElt = document.getElementById('discord-username');
-                if (enteredDiscord) {
-                    const cleanDisp = enteredDiscord.startsWith('@') ? enteredDiscord : `@${enteredDiscord}`;
-                    discordElt.textContent = cleanDisp;
-                    discordElt.style.display = 'block';
-                } else {
-                    discordElt.style.display = 'none';
-                }
                 
                 status.textContent = "Profile updated successfully!";
                 setTimeout(() => { status.textContent = ""; }, 3000);
