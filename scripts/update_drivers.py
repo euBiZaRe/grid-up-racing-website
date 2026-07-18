@@ -220,6 +220,16 @@ def update_profiles():
     with open(TEMPLATE_PATH, "r", encoding="utf-8") as f:
         template = f.read()
 
+    # Load local cache stats if exists
+    local_stats = {}
+    stats_cache_path = os.path.join(os.path.dirname(__file__), "../driver_stats_2.json")
+    if os.path.exists(stats_cache_path):
+        try:
+            with open(stats_cache_path, "r", encoding="utf-8") as f:
+                local_stats = json.load(f)
+        except Exception as e:
+            print(f"Failed to load local stats cache: {e}")
+
     total_drivers = len(drivers)
     active_filenames = set()
 
@@ -249,6 +259,24 @@ def update_profiles():
                 "cleanPercentage": "0", 
                 "timeOnTrack": "N/A"
             }
+
+        # Merge local stats cache
+        if name in local_stats:
+            mapping = {
+                "SPORTS": "Sports Car",
+                "FORMULA": "Formula Car",
+                "OVAL": "Oval",
+                "DIRT": "Dirt Oval"
+            }
+            for key, disc in mapping.items():
+                if disc in local_stats[name]:
+                    ir = local_stats[name][disc].get("irating")
+                    sr = local_stats[name][disc].get("sr")
+                    if ir is not None:
+                        stats["iRatings"][key] = ir
+                        stats["iRatingPercentages"][key] = min(100, round((ir / 6000) * 100, 2))
+                    if sr is not None:
+                        stats["licenseLevels"][key] = sr
             
         # Hydrate template
         html = template
