@@ -155,6 +155,11 @@
                         </div>
 
                         <div class="form-group">
+                            <label>Discord Username</label>
+                            <input type="text" id="input-discord-name" class="form-input" placeholder="Enter your Discord username (without @)">
+                        </div>
+
+                        <div class="form-group">
                             <label>iRacing ID</label>
                             <input type="text" id="input-iracing-id" class="form-input" placeholder="Enter your iRacing ID (e.g. 123456)">
                         </div>
@@ -495,12 +500,19 @@
             try {
                 console.log("Profile: Fetching Firestore doc...");
                 const doc = await db.collection("users").doc(user.uid).get();
+                let savedDiscord = "";
                 if (doc.exists) {
                     const data = doc.data();
                     document.getElementById('input-name').value = data.driverName || "";
                     document.getElementById('input-iracing-id').value = data.iracingId || "";
                     document.getElementById('input-g61-url').value = data.g61Url || "";
                     document.getElementById('input-class').value = data.driverClass || "GT3";
+                    
+                    savedDiscord = data.discordName || user.displayName || "";
+                    if (savedDiscord === "Discord User" || savedDiscord === "Unknown Driver") {
+                        savedDiscord = "";
+                    }
+                    document.getElementById('input-discord-name').value = savedDiscord;
                     
                     // Social Links
                     document.getElementById('input-twitch').value = data.twitchUrl || "";
@@ -521,6 +533,21 @@
                     if (data.customAvatarUrl) {
                         avatar.src = data.customAvatarUrl;
                     }
+                } else {
+                    savedDiscord = user.displayName || "";
+                    if (savedDiscord === "Discord User" || savedDiscord === "Unknown Driver") {
+                        savedDiscord = "";
+                    }
+                    document.getElementById('input-discord-name').value = savedDiscord;
+                }
+                
+                // Show Discord name in card
+                if (savedDiscord) {
+                    const cleanDisp = savedDiscord.startsWith('@') ? savedDiscord : `@${savedDiscord}`;
+                    discordElt.textContent = cleanDisp;
+                    discordElt.style.display = 'block';
+                } else {
+                    discordElt.style.display = 'none';
                 }
                 
                 // Check if they are a verified team member
@@ -536,28 +563,30 @@
                     }
                 }
                 console.log("Profile: Data loaded successfully.");
-
+ 
                 // Load Driver Cards
                 loadUserCards(user.uid);
-
+ 
             } catch (error) {
                 console.error("Profile: Error loading user data:", error);
             }
-
+ 
             loading.style.display = 'none';
             content.style.display = 'block';
         }
-
+ 
         async function saveProfile() {
             const user = firebase.auth().currentUser;
             if (!user) return;
-
+ 
             const status = document.getElementById('save-status');
             status.textContent = "Saving...";
-
+            
+            const enteredDiscord = document.getElementById('input-discord-name').value.trim();
+ 
             try {
                 await db.collection("users").doc(user.uid).set({
-                    discordName: user.displayName, // Preserve Discord name
+                    discordName: enteredDiscord || null,
                     email: user.email,
                     driverName: document.getElementById('input-name').value,
                     iracingId: document.getElementById('input-iracing-id').value,
@@ -573,6 +602,16 @@
                     advice: document.getElementById('input-advice').value,
                     lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });
+                
+                // Update live card view as well
+                const discordElt = document.getElementById('discord-username');
+                if (enteredDiscord) {
+                    const cleanDisp = enteredDiscord.startsWith('@') ? enteredDiscord : `@${enteredDiscord}`;
+                    discordElt.textContent = cleanDisp;
+                    discordElt.style.display = 'block';
+                } else {
+                    discordElt.style.display = 'none';
+                }
                 
                 status.textContent = "Profile updated successfully!";
                 setTimeout(() => { status.textContent = ""; }, 3000);
