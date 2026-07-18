@@ -175,7 +175,7 @@ async function loadAndRenderStandings() {
         const allResults = [];
         snapshot.forEach(doc => {
             const data = doc.data();
-            if (data.eventId === 'gtc-virginia-120' || data.eventId === 'gtc-glen-24' || data.eventId === 'gtc-spa-3h') {
+            if (data.eventId === 'gtc-virginia-120' || data.eventId === 'gtc-glen-24' || data.eventId === 'gtc-spa-3h' || data.eventId === 'gtc-elkhart-120') {
                 allResults.push(data);
             }
         });
