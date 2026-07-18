@@ -242,6 +242,37 @@ const REPORT_DATA = {
     </tr>
   </tbody>
 </table>
+
+<h2>Post-Race Reflections: In the Drivers' Own Words</h2>
+
+<div style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 8px; padding: 1.5rem; margin: 2rem 0;">
+  
+  <h3 style="color: var(--primary); margin-top: 0;">Harrison Holliday (GT3 Winner)</h3>
+  <p style="font-style: italic; margin-left: 1rem; border-left: 3px solid var(--primary); padding-left: 1rem; color: #e2e8f0;">
+    "By the end, I was not holding it together very well! I pitted, and a lap later the rain started, so I thought I made the worst possible call. But the rain wasn't too bad for a while, so I could build a good gap. I figured the rain wouldn't make the track too wet for another 5 or 10 laps, so if anyone did take wets, they would fall back pretty fast. My teammate took wets extremely early and it didn't turn out well for him, so you could see just how badly you can fall off if you take them too soon."
+  </p>
+
+  <h3 style="color: var(--primary); margin-top: 1.5rem;">Michael O'Dell (GT3 Runner-Up)</h3>
+  <p style="font-style: italic; margin-left: 1rem; border-left: 3px solid var(--primary); padding-left: 1rem; color: #e2e8f0;">
+    "All things considered, I predicted it to go wet a lot sooner, and when it did go wet, it didn't really do enough. Even with doing a 360 out of the Kink and keeping the car rolling forward, it was good. I was hoping for a little bit more rain, but sometimes you call the wrong strategy. I was trying to lift-and-coast to get myself to commit right as the rain started to pick up so that I wouldn't have an extra stop. But the rain got pushed back a little bit and that threw it off. I decided to try to take the safe bet of wets, and the safe bet was not the right one today."
+  </p>
+
+  <h3 style="color: var(--primary); margin-top: 1.5rem;">Damijan Horvatin (GT3 P3)</h3>
+  <p style="font-style: italic; margin-left: 1rem; border-left: 3px solid var(--primary); padding-left: 1rem; color: #e2e8f0;">
+    "I feel good, but I could have felt better. It was a mistake on my part. In the laps leading up to my wreck, I noticed the guy behind (in the Mustang) was really quick through the Kink and gaining all the time. I would get a gap, he would gain it back. The rear just wouldn't stay planted in that corner for me, and in just the wrong decision, I decided to push a little harder to not lose time. I just touched the curb, it spun me around, and that led to all sorts of issues. So it's a bit of a sour taste—I would rather have finished P5 with a clean car instead of crab-walking it for those last few laps. But a debut P3, I'll take it."
+  </p>
+
+  <h3 style="color: var(--primary); margin-top: 1.5rem;">Pierre Poussi (GT4 Winner)</h3>
+  <p style="font-style: italic; margin-left: 1rem; border-left: 3px solid var(--primary); padding-left: 1rem; color: #e2e8f0;">
+    "It was just crazy, man! I went to the wets... about 6 minutes to go I could start picking a little bit of time off, and I saw P1 [Fabian] was losing it, so I was just pushing. I said: if I can get in his mirror, he'll overcook it, and that's exactly what he did. This is our debut [for Tekkart Motorsport]—both Damijan and I are on the podium, let's go!"
+  </p>
+
+  <h3 style="color: var(--primary); margin-top: 1.5rem;">Andrew B. Fabian (GT4 P4)</h3>
+  <p style="font-style: italic; margin-left: 1rem; border-left: 3px solid var(--primary); padding-left: 1rem; color: #e2e8f0;">
+    "Yeah, that's just my typical luck. I'm just very unlucky in races, I can never clench the win, just like Spa. Pierre had insane pace, so I had to do something interesting with my strategy. I was actually pulling in for my final stop with wets selected, and as I'm stopping in the box, I was like: dries, why not? It was just maybe two laps of too much wet at the end. Those final few laps, some of the downhill braking zones were impossible—the car just would not stop. He caught up to me and it is what it is, but he definitely deserved the win. I was just hoping that cheeky strategy would work out. If there was another 30 minutes left, I probably would have stayed on wets, but when I came in it was like 15 minutes left, so it's just not long enough for the track to get soaking wet."
+  </p>
+
+</div>
 `
 };
 
