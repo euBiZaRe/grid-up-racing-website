@@ -297,7 +297,7 @@ function loginWithDiscord() {
 async function updateAuthUI(user, isTentative = false) {
     const loginBtn = document.getElementById('login-link');
     const claimSection = document.getElementById('claim-section');
-    const driverTitle = document.querySelector('h1.glow-text');
+    const driverTitle = document.getElementById('user-name') || document.querySelector('h1.driver-main-name') || document.querySelector('h1.glow-text');
 
     // Auto-detect relative path prefix
     const path = window.location.pathname;
