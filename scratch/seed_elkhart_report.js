@@ -40,11 +40,11 @@ const REPORT_DATA = {
   <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">Harrison Holliday (#921) and Michael O'Dell (#56) fighting bumper-to-bumper for the GT3 class lead.</p>
 </div>
 
-<p>Damijan Horvatin of Tekkart Motorsport #306 claimed the final spot on the podium in third, finishing +1:01.030 behind the leader. Alexander Cortez and Natty Roberts of F&F Racing put in a stellar drive to earn Hard Charger honors, recovering from a P14 qualifying position to finish fourth and setting the fastest lap of the race with a blisteringly fast 2:02.975.</p>
+<p>Damijan Horvatin of Tekkart Motorsport #306 claimed the final spot on the podium in third, finishing +1:01.030 behind the leader. Alexander Cortez and Matty Roberts of F&F Racing put in a stellar drive to earn Hard Charger honors, recovering from a P14 qualifying position to finish fourth and setting the fastest lap of the race with a blisteringly fast 2:02.975.</p>
 
 <p>Levi Wolfe of Depend for Men Motorsports rounded out the top five, putting in an extremely clean run to finish with only 5 incidents and claim the fewest incidents bonus points.</p>
 
-<p>The race was not kind to everyone, however. High attrition saw several front-runners drop out, with Kevin Miller (Savage Motorsports), Javi Sierra (Sierra Motorsports), Alex Claudio (BWE Racing-#280), Anthony Savignano III (Pocket Aces Motorsports), and the Syndicate Racing duo of Connor Sterghoa and Faraz Ebrahim all forced to retire early.</p>
+<p>The race was not kind to everyone, however. High attrition saw several front-runners drop out, with Kevin Miller (Savage Motorsports), Javi Sierra (Sierra Motorsports), Alex Claudio (BWE Racing-#280), Anthony Savignano III (Pocket Aces Motorsports), and the Syndicate Racing duo of Connor Sterghos and Faraz Ebrahim all forced to retire early.</p>
 
 <h3>GT3 Official Results</h3>
 <table class="results-table" style="width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.9rem; border: 1px solid var(--glass-border);">
@@ -81,7 +81,7 @@ const REPORT_DATA = {
     </tr>
     <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
       <td style="padding: 0.75rem;">4</td>
-      <td style="padding: 0.75rem; color: #fff; font-weight: 600;">A. Cortez / N. Roberts</td>
+      <td style="padding: 0.75rem; color: #fff; font-weight: 600;">A. Cortez / M. Roberts</td>
       <td style="padding: 0.75rem;">F&F Racing</td>
       <td style="padding: 0.75rem;">+1:11.415</td>
       <td style="padding: 0.75rem;">19 INC</td>
@@ -151,7 +151,7 @@ const REPORT_DATA = {
     </tr>
     <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
       <td style="padding: 0.75rem;">DNF</td>
-      <td style="padding: 0.75rem;">C. Sterghoa / F. Ebrahim</td>
+      <td style="padding: 0.75rem;">C. Sterghos / F. Ebrahim</td>
       <td style="padding: 0.75rem;">Syndicate Racing</td>
       <td style="padding: 0.75rem;">DNF</td>
       <td style="padding: 0.75rem;">3 INC</td>
