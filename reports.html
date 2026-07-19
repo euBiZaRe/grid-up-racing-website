@@ -56,7 +56,7 @@
     <header class="hero hero-small">
         <div class="hero-overlay"></div>
         <div class="hero-content">
-            <h1 class="glow-text" style="font-size: clamp(3rem, 8vw, 5rem); font-weight: 900;">Race Reports</h1>
+            <h1 class="glow-text" style="font-size: clamp(3rem, 8vw, 5rem); font-weight: 900;">News</h1>
             <p style="color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 2px;">Latest news, recaps, and insights</p>
         </div>
     </header>
@@ -65,9 +65,12 @@
         <div class="tread-overlay" style="opacity: 0.05;"></div>
         
         <!-- Tab Selector -->
-        <div class="tabs-wrapper" style="display: flex; justify-content: center; gap: 1rem; margin-bottom: 3rem; position: relative; z-index: 10;">
-            <button class="tab-btn active" id="btn-editorial" style="background: rgba(14,165,233,0.1); border: 1px solid var(--primary); color: #ffffff; padding: 0.75rem 1.5rem; border-radius: 8px; font-family: var(--font-heading); font-weight: 700; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; box-shadow: 0 0 15px rgba(14,165,233,0.2);">
-                Editorial Recaps
+        <div class="tabs-wrapper" style="display: flex; justify-content: center; gap: 1rem; margin-bottom: 3rem; position: relative; z-index: 10; flex-wrap: wrap;">
+            <button class="tab-btn active" id="btn-news" style="background: rgba(14,165,233,0.1); border: 1px solid var(--primary); color: #ffffff; padding: 0.75rem 1.5rem; border-radius: 8px; font-family: var(--font-heading); font-weight: 700; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; box-shadow: 0 0 15px rgba(14,165,233,0.2);">
+                News
+            </button>
+            <button class="tab-btn" id="btn-reports" style="background: transparent; border: 1px solid var(--glass-border); color: var(--text-muted); padding: 0.75rem 1.5rem; border-radius: 8px; font-family: var(--font-heading); font-weight: 700; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem;">
+                Race Reports
             </button>
             <button class="tab-btn" id="btn-telemetry" style="background: transparent; border: 1px solid var(--glass-border); color: var(--text-muted); padding: 0.75rem 1.5rem; border-radius: 8px; font-family: var(--font-heading); font-weight: 700; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem;">
                 Telemetry Logs
@@ -116,11 +119,12 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
         const feed = document.getElementById('reports-feed');
-        const btnEditorial = document.getElementById('btn-editorial');
+        const btnNews = document.getElementById('btn-news');
+        const btnReports = document.getElementById('btn-reports');
         const btnTelemetry = document.getElementById('btn-telemetry');
         if (!feed) return;
 
-        let activeTab = 'editorial';
+        let activeTab = 'news';
 
         // Wait for Firebase db from script.js
         let attempts = 0;
@@ -133,17 +137,26 @@
             return;
         }
 
-        async function loadEditorialReports() {
-            feed.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 3rem;"><p>Loading editorial recaps...</p></div>';
+        async function loadEditorialReports(typeFilter) {
+            feed.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 3rem;"><p>Loading ${typeFilter === 'news' ? 'news articles' : 'race reports'}...</p></div>`;
             try {
                 const snap = await db.collection('reports').orderBy('date', 'desc').get();
                 if (snap.empty) {
-                    feed.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:3rem;"><p>No editorial reports yet.</p></div>';
+                    feed.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:3rem;"><p>No articles found.</p></div>`;
                     return;
                 }
+                
+                let count = 0;
                 feed.innerHTML = '';
+                
                 snap.forEach(doc => {
                     const data = doc.data();
+                    // Categorize as news or report (fallback to report if not specified)
+                    const docType = data.type || 'report';
+                    
+                    if (docType !== typeFilter) return;
+                    
+                    count++;
                     const id = doc.id;
                     const slug = data.slug || id;
                     const rawDate = data.date && data.date.toDate ? data.date.toDate() : new Date();
@@ -168,14 +181,18 @@
                             <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; flex: 1;">${data.summary || ''}</p>
                             <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--glass-border);">
                                 <span style="font-size: 0.75rem; color: var(--text-muted);">By ${data.author || 'GRiD UP'}</span>
-                                <span style="font-size: 0.75rem; color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Read Report &rarr;</span>
+                                <span style="font-size: 0.75rem; color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Read &rarr;</span>
                             </div>
                         </div>
                     `;
                     feed.appendChild(card);
                 });
+
+                if (count === 0) {
+                    feed.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:3rem;"><p>No ${typeFilter === 'news' ? 'news articles' : 'race reports'} posted yet.</p></div>`;
+                }
             } catch (e) {
-                console.error('Error loading editorial reports:', e);
+                console.error('Error loading reports:', e);
                 feed.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#ff3333;padding:3rem;"><p>Error loading reports.</p></div>';
             }
         }
@@ -264,41 +281,41 @@
             }
         }
 
-        // Tab click listeners
-        btnEditorial.addEventListener('click', () => {
-            if (activeTab === 'editorial') return;
-            activeTab = 'editorial';
-            btnEditorial.style.background = 'rgba(14,165,233,0.1)';
-            btnEditorial.style.borderColor = 'var(--primary)';
-            btnEditorial.style.color = '#ffffff';
-            btnEditorial.style.boxShadow = '0 0 15px rgba(14,165,233,0.2)';
+        function switchTab(tab) {
+            activeTab = tab;
+            const buttons = {
+                'news': btnNews,
+                'reports': btnReports,
+                'telemetry': btnTelemetry
+            };
 
-            btnTelemetry.style.background = 'transparent';
-            btnTelemetry.style.borderColor = 'var(--glass-border)';
-            btnTelemetry.style.color = 'var(--text-muted)';
-            btnTelemetry.style.boxShadow = 'none';
+            for (const [key, btn] of Object.entries(buttons)) {
+                if (key === tab) {
+                    btn.style.background = 'rgba(14,165,233,0.1)';
+                    btn.style.borderColor = 'var(--primary)';
+                    btn.style.color = '#ffffff';
+                    btn.style.boxShadow = '0 0 15px rgba(14,165,233,0.2)';
+                } else {
+                    btn.style.background = 'transparent';
+                    btn.style.borderColor = 'var(--glass-border)';
+                    btn.style.color = 'var(--text-muted)';
+                    btn.style.boxShadow = 'none';
+                }
+            }
 
-            loadEditorialReports();
-        });
+            if (tab === 'telemetry') {
+                loadTelemetryReports();
+            } else {
+                loadEditorialReports(tab);
+            }
+        }
 
-        btnTelemetry.addEventListener('click', () => {
-            if (activeTab === 'telemetry') return;
-            activeTab = 'telemetry';
-            btnTelemetry.style.background = 'rgba(14,165,233,0.1)';
-            btnTelemetry.style.borderColor = 'var(--primary)';
-            btnTelemetry.style.color = '#ffffff';
-            btnTelemetry.style.boxShadow = '0 0 15px rgba(14,165,233,0.2)';
-
-            btnEditorial.style.background = 'transparent';
-            btnEditorial.style.borderColor = 'var(--glass-border)';
-            btnEditorial.style.color = 'var(--text-muted)';
-            btnEditorial.style.boxShadow = 'none';
-
-            loadTelemetryReports();
-        });
+        btnNews.addEventListener('click', () => switchTab('news'));
+        btnReports.addEventListener('click', () => switchTab('reports'));
+        btnTelemetry.addEventListener('click', () => switchTab('telemetry'));
 
         // Load default tab
-        loadEditorialReports();
+        switchTab('news');
     });
     </script>
 </body>
