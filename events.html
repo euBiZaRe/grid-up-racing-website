@@ -17,16 +17,436 @@
     <meta property="og:image" content="https://raw.githubusercontent.com/gridup/gridup.github.io/main/assets/bg-banner.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upcoming Races | GRiD UP Sim Racing</title>
+    <title>Events | GRiD UP Sim Racing</title>
     <link rel="stylesheet" href="style.css?v=7">
     <link rel="icon" type="image/png" href="assets/G_2.png">
-    <meta name="description" content="Full event schedule for GRiD UP Sim Racing. See all iRacing special events we compete in including Bathurst, Spa, Indy 500, Petit Le Mans and more.">
+    <meta name="description" content="Full event schedule for GRiD UP Sim Racing. See all iRacing special events and team race schedule.">
     <meta name="keywords" content="GRiD UP events, grid up schedule, iRacing special events, sim racing calendar, grid up races 2026">
-    <meta property="og:title" content="GRiD UP Sim Racing | Event Schedule">
-    <meta property="og:description" content="Full event schedule for GRiD UP Sim Racing. See all iRacing special events we compete in including Bathurst, Spa, Indy 500, Petit Le Mans and more.">
+    <meta property="og:title" content="GRiD UP Sim Racing | Events">
+    <meta property="og:description" content="Full event schedule for GRiD UP Sim Racing. See all iRacing special events and team race schedule.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://gridup.online/events.html">
     <meta property="og:image" content="https://gridup.online/assets/G_2.png">
+    <style>
+        /* Tab Tiles */
+        .event-tabs {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            margin-bottom: 3rem;
+        }
+
+        .event-tab {
+            flex: 1;
+            max-width: 340px;
+            background: rgba(20, 20, 22, 0.6);
+            border: 2px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 2rem 2.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .event-tab::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(0, 207, 255, 0.05) 0%, transparent 60%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .event-tab:hover {
+            border-color: rgba(0, 207, 255, 0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 40px rgba(0, 207, 255, 0.08);
+        }
+
+        .event-tab:hover::before {
+            opacity: 1;
+        }
+
+        .event-tab.active {
+            border-color: var(--primary);
+            background: rgba(0, 207, 255, 0.06);
+            box-shadow: 0 0 30px rgba(0, 207, 255, 0.12), inset 0 0 30px rgba(0, 207, 255, 0.03);
+        }
+
+        .event-tab.active::before {
+            opacity: 1;
+        }
+
+        .event-tab-icon {
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+            display: block;
+        }
+
+        .event-tab-title {
+            font-family: var(--font-heading);
+            font-size: 1.1rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            transition: color 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        .event-tab.active .event-tab-title {
+            color: var(--primary);
+        }
+
+        .event-tab-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+            opacity: 0.7;
+            position: relative;
+            z-index: 1;
+        }
+
+        .tab-indicator {
+            width: 40px;
+            height: 3px;
+            background: var(--primary);
+            border-radius: 2px;
+            margin: 0.75rem auto 0;
+            opacity: 0;
+            transform: scaleX(0);
+            transition: all 0.3s ease;
+        }
+
+        .event-tab.active .tab-indicator {
+            opacity: 1;
+            transform: scaleX(1);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 600px) {
+            .event-tabs {
+                flex-direction: column;
+                align-items: center;
+            }
+            .event-tab {
+                max-width: 100%;
+                width: 100%;
+            }
+        }
+
+        /* ── Team Events (Schedule) Styles ── */
+        .schedule-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+            background: rgba(20, 20, 22, 0.4);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .filter-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            font-family: var(--font-heading);
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+        }
+
+        .filter-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .filter-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            color: var(--text-muted);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-family: var(--font-heading);
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            outline: none;
+        }
+
+        .filter-btn:hover {
+            background: rgba(255, 255, 255, 0.07);
+            color: #fff;
+        }
+
+        .filter-btn.active {
+            background: var(--primary-gradient);
+            color: #000;
+            border-color: var(--primary);
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        .filter-btn.active[data-license="Rookie"] {
+            background: rgba(188, 188, 188, 0.15);
+            color: #fff;
+            border-color: #9ca3af;
+            box-shadow: 0 0 10px rgba(188, 188, 188, 0.15);
+        }
+        .filter-btn.active[data-license="Class D"] {
+            background: rgba(252, 106, 3, 0.2);
+            color: #fff;
+            border-color: #fb923c;
+            box-shadow: 0 0 10px rgba(252, 106, 3, 0.2);
+        }
+        .filter-btn.active[data-license="Class C"] {
+            background: rgba(247, 209, 23, 0.2);
+            color: #fff;
+            border-color: #facc15;
+            box-shadow: 0 0 10px rgba(247, 209, 23, 0.2);
+        }
+        .filter-btn.active[data-license="Class B"] {
+            background: rgba(0, 143, 31, 0.2);
+            color: #fff;
+            border-color: #4ade80;
+            box-shadow: 0 0 10px rgba(0, 143, 31, 0.2);
+        }
+        .filter-btn.active[data-license="Class A"] {
+            background: rgba(0, 66, 209, 0.2);
+            color: #fff;
+            border-color: #4DA3FF;
+            box-shadow: 0 0 10px rgba(0, 66, 209, 0.2);
+        }
+
+        .schedule-search {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 0.85rem;
+            width: 280px;
+            transition: var(--transition-fast);
+        }
+
+        .schedule-search:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .schedule-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .sched-event-card {
+            display: grid;
+            grid-template-columns: 90px 1fr;
+            gap: 1.5rem;
+            align-items: center;
+            border: 1px solid var(--glass-border);
+            background: rgba(20, 20, 22, 0.4);
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .sched-event-card:hover {
+            border-color: var(--primary);
+            transform: translateX(4px);
+            box-shadow: 0 5px 25px rgba(0, 207, 255, 0.05);
+        }
+
+        .date-badge {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 0.5rem;
+            text-align: center;
+            min-height: 80px;
+        }
+
+        .date-badge.rookie { border-left: 4px solid #9ca3af; }
+        .date-badge.class-d { border-left: 4px solid #fb923c; }
+        .date-badge.class-c { border-left: 4px solid #facc15; }
+        .date-badge.class-b { border-left: 4px solid #4ade80; }
+        .date-badge.class-a { border-left: 4px solid #4DA3FF; }
+
+        .date-badge .month {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .date-badge .day {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #fff;
+            line-height: 1;
+            margin-top: 0.25rem;
+        }
+
+        .sched-event-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .sched-event-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .series-name {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #fff;
+            margin: 0;
+        }
+
+        .sched-event-meta-row {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .sched-event-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .sched-event-meta-item svg {
+            opacity: 0.6;
+        }
+
+        .cars-label {
+            font-size: 0.75rem;
+            line-height: 1.4;
+            color: var(--text-muted);
+        }
+
+        .badge-container {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .meta-badge {
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .meta-badge.license {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .meta-badge.license.rookie { color: #9ca3af; border-color: rgba(156, 163, 175, 0.3); }
+        .meta-badge.license.class-d { color: #fb923c; border-color: rgba(251, 146, 60, 0.3); }
+        .meta-badge.license.class-c { color: #facc15; border-color: rgba(250, 204, 21, 0.3); }
+        .meta-badge.license.class-b { color: #4ade80; border-color: rgba(74, 222, 128, 0.3); }
+        .meta-badge.license.class-a { color: #4DA3FF; border-color: rgba(77, 163, 255, 0.3); }
+
+        .meta-badge.length {
+            background: rgba(0, 207, 255, 0.1);
+            color: var(--primary);
+            border: 1px solid rgba(0, 207, 255, 0.2);
+        }
+
+        .meta-badge.team {
+            background: rgba(255, 0, 85, 0.1);
+            color: #ff0055;
+            border: 1px solid rgba(255, 0, 85, 0.2);
+        }
+
+        .meta-badge.multiclass {
+            background: rgba(168, 85, 247, 0.1);
+            color: #a855f7;
+            border: 1px solid rgba(168, 85, 247, 0.2);
+        }
+        
+        .no-events {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 4rem 2rem;
+            background: rgba(20, 20, 22, 0.2);
+            border: 1px dashed rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .sched-event-card {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            .date-badge {
+                flex-direction: row;
+                justify-content: flex-start;
+                gap: 10px;
+                min-height: auto;
+                padding: 0.5rem 1rem;
+            }
+            .date-badge .day {
+                margin: 0;
+                font-size: 1.25rem;
+            }
+        }
+    </style>
 </head>
 <body class="events-page">
     <nav id="navbar" class="scrolled">
@@ -39,14 +459,13 @@
                 <span></span>
                 <span></span>
             </div>
-                        <ul class="nav-links">
+                    <ul class="nav-links">
                 <li><a href="index.html#home">Home</a></li>
                 
                 <li><a href="roster.html">Roster</a></li>
-                <li><a href="events.html">Events</a></li>
+                <li><a href="events.html" class="active">Events</a></li>
                 <li><a href="reports.html">Race Reports</a></li>
                 <li><a href="league.html">League</a></li>
-                <li><a href="schedule.html">Schedule</a></li>
                 <li><a href="shop.html">Shop</a></li>
                 <li><a href="team-app.html">Apply</a></li>
                 <li><a href="https://discord.gg/gridup" target="_blank"><img src="assets/discord_header.png" alt="Discord" style="height: 25px; vertical-align: middle;"></a></li>
@@ -58,28 +477,116 @@
     <header class="hero hero-small">
         <div class="hero-overlay"></div>
         <div class="hero-content">
-            <h1 class="glow-text" style="font-size: clamp(3rem, 8vw, 5rem); font-weight: 900;">Upcoming Races</h1>
-            <p style="color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 2px;">The 2026 iRacing Special Events Season</p>
+            <h1 class="glow-text" style="font-size: clamp(3rem, 8vw, 5rem); font-weight: 900;">Events</h1>
+            <p style="color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 2px;">The 2026 Racing Season</p>
         </div>
     </header>
 
     <main class="container section" style="position: relative; overflow: hidden; padding-bottom: 2rem;">
         <div class="tread-overlay" style="opacity: 0.05;"></div>
-        <div id="pastEventsSection" class="event-list custom-scrollbar" style="display: none; max-height: 500px; overflow-y: auto; margin-bottom: 3rem; opacity: 0.7; padding-right: 1.5rem; transition: all 0.3s ease;">
-            <h2 style="text-align: center; color: var(--text-muted); margin-bottom: 2rem; font-size: 1.5rem;">2026 Completed Events</h2>
-            
-            <div id="dynamic-past-list"></div>
 
-            <hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 3rem 0;">
+        <!-- Tab Tiles -->
+        <div class="event-tabs">
+            <div class="event-tab active" onclick="switchTab('special')" id="tab-special">
+                <span class="event-tab-icon">🏁</span>
+                <div class="event-tab-title">Special Events</div>
+                <div class="event-tab-desc">iRacing Official Special Events</div>
+                <div class="tab-indicator"></div>
+            </div>
+            <div class="event-tab" onclick="switchTab('team')" id="tab-team">
+                <span class="event-tab-icon">📅</span>
+                <div class="event-tab-title">Team Events</div>
+                <div class="event-tab-desc">Weekly Team Race Schedule</div>
+                <div class="tab-indicator"></div>
+            </div>
         </div>
 
+        <!-- ═══ SPECIAL EVENTS TAB ═══ -->
+        <div class="tab-content active" id="content-special">
+            <div id="pastEventsSection" class="event-list custom-scrollbar" style="display: none; max-height: 500px; overflow-y: auto; margin-bottom: 3rem; opacity: 0.7; padding-right: 1.5rem; transition: all 0.3s ease;">
+                <h2 style="text-align: center; color: var(--text-muted); margin-bottom: 2rem; font-size: 1.5rem;">2026 Completed Events</h2>
+                
+                <div id="dynamic-past-list"></div>
 
-        <div style="text-align: center; margin-bottom: 5rem;">
-            <button id="togglePastEvents" class="btn btn-outline" style="min-width: 200px;">Show Past Events</button>
+                <hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 3rem 0;">
+            </div>
+
+            <div style="text-align: center; margin-bottom: 5rem;">
+                <button id="togglePastEvents" class="btn btn-outline" style="min-width: 200px;">Show Past Events</button>
+            </div>
+
+            <div id="full-event-list" class="event-list">
+                <p style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading season schedule...</p>
+            </div>
         </div>
 
-        <div id="full-event-list" class="event-list">
-            <p style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading season schedule...</p>
+        <!-- ═══ TEAM EVENTS TAB ═══ -->
+        <div class="tab-content" id="content-team">
+            <div class="schedule-controls">
+                <!-- Search -->
+                <div class="filter-row" style="justify-content: flex-start;">
+                    <div class="filter-group" style="width: 100%; max-width: 400px;">
+                        <label>Search Events</label>
+                        <input type="text" id="schedule-search-input" class="schedule-search" placeholder="Search series, tracks or cars..." oninput="filterSchedule()" style="width: 100%;">
+                    </div>
+                </div>
+
+                <!-- License Filters -->
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label>License Class</label>
+                        <div class="filter-buttons" id="license-filters">
+                            <button class="filter-btn active" data-license="all" onclick="toggleLicense('all')">All Classes</button>
+                            <button class="filter-btn" data-license="Rookie" onclick="toggleLicense('Rookie')">Rookie</button>
+                            <button class="filter-btn" data-license="Class D" onclick="toggleLicense('Class D')">Class D</button>
+                            <button class="filter-btn" data-license="Class C" onclick="toggleLicense('Class C')">Class C</button>
+                            <button class="filter-btn" data-license="Class B" onclick="toggleLicense('Class B')">Class B</button>
+                            <button class="filter-btn" data-license="Class A" onclick="toggleLicense('Class A')">Class A</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Format Filters -->
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label>Class Format</label>
+                        <div class="filter-buttons" id="multiclass-filters">
+                            <button class="filter-btn active" data-multiclass="all" onclick="toggleMulticlass('all')">All Classes</button>
+                            <button class="filter-btn" data-multiclass="yes" onclick="toggleMulticlass('yes')">Multiclass</button>
+                            <button class="filter-btn" data-multiclass="no" onclick="toggleMulticlass('no')">Single Class</button>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <label>Past Races</label>
+                        <button class="filter-btn" id="toggle-past-btn" onclick="togglePastScheduleEvents()">Show Past Events</button>
+                    </div>
+                </div>
+                
+                <!-- Month Filters -->
+                <div class="filter-row" style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.25rem;">
+                    <div class="filter-group" style="width: 100%;">
+                        <label>Month Filter</label>
+                        <div class="filter-buttons" id="month-filters">
+                            <button class="filter-btn active" data-month="all" onclick="toggleMonth('all')">All Months</button>
+                            <button class="filter-btn" data-month="Jan" onclick="toggleMonth('Jan')">Jan</button>
+                            <button class="filter-btn" data-month="Feb" onclick="toggleMonth('Feb')">Feb</button>
+                            <button class="filter-btn" data-month="Mar" onclick="toggleMonth('Mar')">Mar</button>
+                            <button class="filter-btn" data-month="Apr" onclick="toggleMonth('Apr')">Apr</button>
+                            <button class="filter-btn" data-month="May" onclick="toggleMonth('May')">May</button>
+                            <button class="filter-btn" data-month="Jun" onclick="toggleMonth('Jun')">Jun</button>
+                            <button class="filter-btn" data-month="Jul" onclick="toggleMonth('Jul')">Jul</button>
+                            <button class="filter-btn" data-month="Aug" onclick="toggleMonth('Aug')">Aug</button>
+                            <button class="filter-btn" data-month="Sep" onclick="toggleMonth('Sep')">Sep</button>
+                            <button class="filter-btn" data-month="Oct" onclick="toggleMonth('Oct')">Oct</button>
+                            <button class="filter-btn" data-month="Nov" onclick="toggleMonth('Nov')">Nov</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="schedule-grid" class="schedule-list">
+                <p style="text-align: center; color: var(--text-muted); width: 100%;">Loading official race schedule calendar...</p>
+            </div>
         </div>
 
         <div style="text-align: center; margin-top: 4rem;">
@@ -129,6 +636,166 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
     <script src="script.js?v=5"></script>
     <script src="js/auth.js?v=4"></script>
+    <script>
+        // ═══ Tab Switching Logic ═══
+        function switchTab(tab) {
+            document.querySelectorAll('.event-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+            document.getElementById('tab-' + tab).classList.add('active');
+            document.getElementById('content-' + tab).classList.add('active');
+
+            // Load schedule data on first switch to team tab
+            if (tab === 'team' && !window.scheduleLoaded) {
+                loadScheduleData();
+            }
+        }
+
+        // Check URL hash on load
+        if (window.location.hash === '#team-events') {
+            document.addEventListener('DOMContentLoaded', () => switchTab('team'));
+        }
+
+        // ═══ Team Events (Schedule) Logic ═══
+        let allScheduleEvents = [];
+        let activeLicense = "all";
+        let activeMulticlass = "all";
+        let activeMonth = "all";
+        let showPastScheduleEvents = false;
+
+        function loadScheduleData() {
+            fetch('scripts/schedule_events.json')
+                .then(res => res.json())
+                .then(data => {
+                    allScheduleEvents = data;
+                    window.scheduleLoaded = true;
+                    renderSchedule();
+                })
+                .catch(err => {
+                    console.error("Error loading schedule data:", err);
+                    document.getElementById('schedule-grid').innerHTML = '<div class="no-events"><p style="color: var(--secondary); font-weight: 700;">Could not load schedule database.</p></div>';
+                });
+        }
+
+        function toggleLicense(lic) {
+            activeLicense = lic;
+            document.querySelectorAll('#license-filters .filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-license') === lic);
+            });
+            renderSchedule();
+        }
+
+        function togglePastScheduleEvents() {
+            showPastScheduleEvents = !showPastScheduleEvents;
+            const btn = document.getElementById('toggle-past-btn');
+            btn.classList.toggle('active', showPastScheduleEvents);
+            renderSchedule();
+        }
+
+        function toggleMulticlass(mcVal) {
+            activeMulticlass = mcVal;
+            document.querySelectorAll('#multiclass-filters .filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-multiclass') === mcVal);
+            });
+            renderSchedule();
+        }
+
+        function toggleMonth(month) {
+            activeMonth = month;
+            document.querySelectorAll('#month-filters .filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-month') === month);
+            });
+            renderSchedule();
+        }
+
+        function filterSchedule() {
+            renderSchedule();
+        }
+
+        function getLicenseClass(lic) {
+            const l = String(lic).toLowerCase().replace(/\(|\)/g, '');
+            if (l.includes('class b 4.0') || l.includes('class a')) return 'class-a';
+            if (l.includes('class c 4.0') || l.includes('class b')) return 'class-b';
+            if (l.includes('class d 4.0') || l.includes('class c')) return 'class-c';
+            if (l.includes('rookie 4.0') || l.includes('class d')) return 'class-d';
+            return 'rookie';
+        }
+
+        function renderSchedule() {
+            const grid = document.getElementById('schedule-grid');
+            if (!grid) return;
+
+            const searchQuery = document.getElementById('schedule-search-input').value.toLowerCase().trim();
+
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            const filtered = allScheduleEvents.filter(event => {
+                if (!showPastScheduleEvents && event.isoDate < todayStr) {
+                    return false;
+                }
+                
+                const matchesLic = activeLicense === 'all' || event.license.toLowerCase().includes(activeLicense.toLowerCase());
+                                    
+                const matchesMulticlass = activeMulticlass === 'all' || 
+                                         (activeMulticlass === 'yes' && event.multiclass) || 
+                                         (activeMulticlass === 'no' && !event.multiclass);
+                                         
+                const matchesMonth = activeMonth === 'all' || event.date.toLowerCase().includes(activeMonth.toLowerCase());
+                
+                const matchesSearch = !searchQuery || 
+                                     event.seriesName.toLowerCase().includes(searchQuery) || 
+                                     event.track.toLowerCase().includes(searchQuery) || 
+                                     event.cars.toLowerCase().includes(searchQuery);
+
+                return matchesLic && matchesMulticlass && matchesMonth && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div class="no-events"><p style="margin:0;">No matching race events found.</p></div>';
+                return;
+            }
+
+            grid.innerHTML = '';
+            filtered.forEach(event => {
+                const licenseClass = getLicenseClass(event.license);
+                
+                const dateParts = event.date.split(' ');
+                const monthText = dateParts[0] || 'JUN';
+                const dayText = dateParts[1] || '16';
+
+                const card = document.createElement('div');
+                card.className = 'sched-event-card';
+                card.innerHTML = `
+                    <div class="date-badge ${licenseClass}">
+                        <span class="month">${monthText}</span>
+                        <span class="day">${dayText}</span>
+                    </div>
+                    <div class="sched-event-info">
+                        <div class="sched-event-header">
+                            <h3 class="series-name">${event.seriesName}</h3>
+                            <div class="badge-container">
+                                <span class="meta-badge license ${licenseClass}">${event.license}</span>
+                                <span class="meta-badge length">${event.length}</span>
+                                ${event.team ? '<span class="meta-badge team">Team</span>' : '<span class="meta-badge team" style="background: rgba(255,255,255,0.05); color: var(--text-muted); border-color: rgba(255,255,255,0.1);">Solo</span>'}
+                                ${event.multiclass ? '<span class="meta-badge multiclass">Multiclass</span>' : ''}
+                            </div>
+                        </div>
+                        <div class="sched-event-meta-row">
+                            <div class="sched-event-meta-item">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
+                                <span>Week ${event.week}</span>
+                            </div>
+                            <div class="sched-event-meta-item">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                                <span>${event.track}</span>
+                            </div>
+                        </div>
+                        <div class="cars-label"><strong>Cars:</strong> ${event.cars}</div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+    </script>
 </body>
 </html>
-
