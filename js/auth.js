@@ -507,7 +507,7 @@ async function loadRaceLineup(slug) {
                 const tempDiv = document.createElement('div');
                 
                 if (teams.length === 0) {
-                    const standardTeams = ["GRiD UP Sim Racing", "GRiD UP Black", "GRiD UP White", "GRiD UP Blue", "GRiD UP Red"];
+                    const standardTeams = ["GRiD UP Sim Racing", "GRiD UP Black", "GRiD UP White", "GRiD UP Blue", "GRiD UP Red", "GRiD UP Purple"];
                     let html = "";
                     standardTeams.forEach(name => {
                         html += `

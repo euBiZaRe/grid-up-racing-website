@@ -1039,7 +1039,7 @@ async function renderEventResults(eventId, targetElement) {
         const docs = [];
         snap.forEach(doc => docs.push(doc.data()));
         
-        const teamOrder = ["GRiD UP Sim Racing", "GRiD UP White", "GRiD UP Black", "GRiD UP Blue", "GRiD UP Red"];
+        const teamOrder = ["GRiD UP Sim Racing", "GRiD UP White", "GRiD UP Black", "GRiD UP Blue", "GRiD UP Red", "GRiD UP Purple"];
         docs.sort((a, b) => {
             const orderA = teamOrder.indexOf(a.teamName);
             const orderB = teamOrder.indexOf(b.teamName);
@@ -1262,7 +1262,7 @@ async function loadAllResults() {
             const results = groupedResults[eId];
             
             // Sort results by specified team priority order
-            const teamOrder = ["GRiD UP Sim Racing", "GRiD UP White", "GRiD UP Black", "GRiD UP Blue", "GRiD UP Red"];
+            const teamOrder = ["GRiD UP Sim Racing", "GRiD UP White", "GRiD UP Black", "GRiD UP Blue", "GRiD UP Red", "GRiD UP Purple"];
             results.sort((a, b) => {
                 const orderA = teamOrder.indexOf(a.teamName);
                 const orderB = teamOrder.indexOf(b.teamName);

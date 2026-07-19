@@ -1,8 +1,8 @@
 // GT Challenge Championship Standings Calculator
 
 const EXCLUDED_TEAMS = [
-    'GRID UP SIM RACING', 'GRID UP BLACK', 'GRID UP BLUE', 'GRID UP WHITE', 'GRID UP RED',
-    'GRiD UP Sim Racing', 'GRiD UP Black', 'GRiD UP Blue', 'GRiD UP White', 'GRiD UP Red',
+    'GRID UP SIM RACING', 'GRID UP BLACK', 'GRID UP BLUE', 'GRID UP WHITE', 'GRID UP RED', 'GRID UP PURPLE',
+    'GRiD UP Sim Racing', 'GRiD UP Black', 'GRiD UP Blue', 'GRiD UP White', 'GRiD UP Red', 'GRiD UP Purple',
     'Koch Motorsports',
 ];
 
