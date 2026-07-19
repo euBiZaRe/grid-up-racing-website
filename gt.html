@@ -494,8 +494,8 @@
             </a>
             <ul class="nav-links">
                 <li><a href="#home">Home</a></li>
+                <li><a href="#leagues">Leagues</a></li>
                 <li><a href="#roster">Roster</a></li>
-                <li><a href="#about">About</a></li>
                 <li><a href="index.html" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.7rem; margin-left: 1.5rem;">iRacing Main Site</a></li>
             </ul>
         </div>
@@ -557,19 +557,60 @@
         </div>
     </section>
 
-    <!-- About Section -->
-    <section id="about" class="section" style="background: rgba(10, 14, 23, 0.4); border-top: 1px solid var(--glass-border); border-bottom: 1px solid var(--glass-border);">
-        <div class="container" style="max-width: 800px; text-align: center;">
+    <!-- Leagues Section -->
+    <section id="leagues" class="section" style="background: rgba(10, 14, 23, 0.4); border-top: 1px solid var(--glass-border); border-bottom: 1px solid var(--glass-border);">
+        <div class="container">
             <div class="section-header">
-                <h2>About the Division</h2>
-                <p>Commitment to Virtual Motorsport</p>
+                <h2>League campaigns</h2>
+                <p>Gran Turismo Official Leagues & Championships</p>
             </div>
-            <p style="font-size: 1.1rem; line-height: 1.8; color: #94a3b8; margin-bottom: 2rem;">
-                Our Gran Turismo division brings together the most dedicated console-tier racers. Balancing professional driving preparation, custom setup sharing, and strategic telemetry analysis, we build racers capable of challenging at the highest levels. 
-            </p>
-            <p style="font-size: 1.1rem; line-height: 1.8; color: #94a3b8;">
-                From manufacturer cup campaigns to community tournaments, our drivers carry the GRiD UP name with pride, pace, and respect.
-            </p>
+            
+            <div class="roster-grid" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2.5rem;">
+                <!-- Card 1 -->
+                <div class="driver-card" style="min-height: 380px; text-align: left; align-items: flex-start; justify-content: flex-start;">
+                    <div style="background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem; color: var(--primary);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                    </div>
+                    <h3 style="font-family: var(--font-heading); font-size: 1.4rem; font-weight: 900; margin-bottom: 0.5rem; text-transform: uppercase; color: #fff;">Manufacturers Cup</h3>
+                    <p style="font-family: var(--font-heading); font-size: 0.7rem; font-weight: 900; color: var(--primary); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 1rem;">Official Series Campaign</p>
+                    <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.7; margin-bottom: 1.5rem;">
+                        Our drivers represent their chosen automotive brands on the global stage, competing in seasonal Manufacturer Series races requiring strategic tire selection, fuel management, and raw pace.
+                    </p>
+                    <div style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.05); width: 100%; padding-top: 1rem;">
+                        <span style="font-size: 0.7rem; font-family: var(--font-heading); font-weight: 700; letter-spacing: 1px; color: var(--text-muted); text-transform: uppercase;">Status: Active Campaign</span>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="driver-card" style="min-height: 380px; text-align: left; align-items: flex-start; justify-content: flex-start;">
+                    <div style="background: rgba(217, 70, 239, 0.1); border: 1px solid rgba(217, 70, 239, 0.3); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem; color: #d946ef;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    </div>
+                    <h3 style="font-family: var(--font-heading); font-size: 1.4rem; font-weight: 900; margin-bottom: 0.5rem; text-transform: uppercase; color: #fff;">Nations Cup</h3>
+                    <p style="font-family: var(--font-heading); font-size: 0.7rem; font-weight: 900; color: #d946ef; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 1rem;">National Colors Championship</p>
+                    <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.7; margin-bottom: 1.5rem;">
+                        Flying the flags of their home countries, our virtual athletes battle in highly competitive sprint and tactical endurance formats against top-ranked regional qualifiers.
+                    </p>
+                    <div style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.05); width: 100%; padding-top: 1rem;">
+                        <span style="font-size: 0.7rem; font-family: var(--font-heading); font-weight: 700; letter-spacing: 1px; color: var(--text-muted); text-transform: uppercase;">Status: Seasonal Selection</span>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="driver-card" style="min-height: 380px; text-align: left; align-items: flex-start; justify-content: flex-start;">
+                    <div style="background: rgba(14, 165, 233, 0.1); border: 1px solid rgba(14, 165, 233, 0.3); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem; color: #0ea5e9;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    </div>
+                    <h3 style="font-family: var(--font-heading); font-size: 1.4rem; font-weight: 900; margin-bottom: 0.5rem; text-transform: uppercase; color: #fff;">Special Events</h3>
+                    <p style="font-family: var(--font-heading); font-size: 0.7rem; font-weight: 900; color: #0ea5e9; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 1rem;">Community Tournaments</p>
+                    <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.7; margin-bottom: 1.5rem;">
+                        Participating in custom community leagues, manufacturer challenges, and seasonal endurance cups designed by top leagues globally.
+                    </p>
+                    <div style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.05); width: 100%; padding-top: 1rem;">
+                        <span style="font-size: 0.7rem; font-family: var(--font-heading); font-weight: 700; letter-spacing: 1px; color: var(--text-muted); text-transform: uppercase;">Status: Active Weekly</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -579,8 +620,8 @@
             <div class="footer-logo">GRiD UP GT</div>
             <ul class="footer-links">
                 <li><a href="#home">Home</a></li>
+                <li><a href="#leagues">Leagues</a></li>
                 <li><a href="#roster">Roster</a></li>
-                <li><a href="#about">About</a></li>
                 <li><a href="index.html">Main Website</a></li>
             </ul>
             <div class="socials">
