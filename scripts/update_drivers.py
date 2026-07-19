@@ -22,6 +22,15 @@ def init_firebase():
             return firestore.client()
         except Exception as e:
             print(f"Firebase init failed: {e}")
+    else:
+        local_cred_path = r"F:\Grid Up\grid-up-firebase-adminsdk-fbsvc-11d85f59be.json"
+        if os.path.exists(local_cred_path):
+            try:
+                cred = credentials.Certificate(local_cred_path)
+                firebase_admin.initialize_app(cred)
+                return firestore.client()
+            except Exception as e:
+                print(f"Firebase local init failed: {e}")
     return None
 
 db = init_firebase()
