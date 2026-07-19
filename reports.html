@@ -306,7 +306,7 @@
             if (tab === 'telemetry') {
                 loadTelemetryReports();
             } else {
-                loadEditorialReports(tab);
+                loadEditorialReports(tab === 'reports' ? 'report' : tab);
             }
         }
 
