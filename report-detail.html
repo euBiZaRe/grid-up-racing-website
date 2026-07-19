@@ -161,7 +161,24 @@
             document.getElementById('report-author').textContent = `By ${data.author || 'GRiD UP'}`;
 
             // Render content
-            document.getElementById('report-content').innerHTML = data.content || '<p style="color:var(--text-muted)">No content available.</p>';
+            let formattedContent = data.content || '<p style="color:var(--text-muted)">No content available.</p>';
+            if (!formattedContent.includes('<p>') && !formattedContent.includes('<div')) {
+                // Remove raw headers hashtags like '### Chasing Top Accomplishments'
+                formattedContent = formattedContent.replace(/^(?:###|##)\s*(.+)$/gm, '<h3 style="color: var(--primary); margin-top: 2rem; margin-bottom: 1rem; font-family: var(--font-heading); font-size: 1.4rem;">$1</h3>');
+                // Convert double newlines into paragraphs
+                formattedContent = formattedContent.split(/\n\n+/).map(p => {
+                    if (p.trim().startsWith('<h3')) return p.trim();
+                    // Process bold tags **bold** -> <strong>bold</strong>
+                    let processed = p.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    // Format lists
+                    processed = processed.replace(/^\s*-\s*(.+)$/gm, '<li style="margin-bottom: 0.5rem; margin-left: 1.5rem; list-style-type: square; color: var(--text-main);">$1</li>');
+                    if (processed.includes('<li')) {
+                        processed = `<ul style="margin: 1.5rem 0; padding-left: 1rem;">${processed}</ul>`;
+                    }
+                    return `<p style="margin-bottom: 1.5rem; line-height: 1.8;">${processed.replace(/\n/g, '<br>')}</p>`;
+                }).join('\n');
+            }
+            document.getElementById('report-content').innerHTML = formattedContent;
 
         } catch (e) {
             console.error('Error loading report:', e);
