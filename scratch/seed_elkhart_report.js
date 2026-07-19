@@ -19,7 +19,7 @@ const REPORT_DATA = {
     slug: "elkhart-lake-120-recap",
     date: firebase.firestore.Timestamp.fromDate(new Date("2026-07-19T10:00:00Z")),
     author: "GRiD UP Media",
-    bannerUrl: "assets/reports/elkhart-lake-gt3-battle.jpg",
+    bannerUrl: "assets/reports/elkhart-lake-banner.jpg",
     summary: "Road America played host to a chaotic and drama-filled two hours of multiclass racing, where Harrison Holliday survived the GT3 class chaos to claim victory and Pierre Poussi conquered the GT4 class.",
     content: `
 <p>The high-speed sweeps and heavy braking zones of Road America played host to a motorsport spectacle on Saturday as the GRiD UP GT Challenge tackled the Elkhart Lake 120. In a grueling 2-hour multiclass battle, drivers had to contend with changing track dynamics, traffic congestion, and highly competitive fields. When the chequered flag finally fell, it was Harrison Holliday who took a dramatic GT3 victory, while Pierre Poussi put on a clinic in the GT4 class to take a commanding win.</p>
