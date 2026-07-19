@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GRiD UP Gran Turismo Division</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #06070a;
+            --bg-card: rgba(10, 14, 23, 0.85);
+            --primary: #8b5cf6; /* Gran Turismo Electric Violet */
+            --primary-glow: rgba(139, 92, 246, 0.4);
+            --primary-gradient: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);
+            --secondary: #e11d48;
+            --text-main: #f8fafc;
+            --text-muted: #64748b;
+            --glass-border: rgba(255, 255, 255, 0.05);
+            --font-heading: 'Orbitron', sans-serif;
+            --font-body: 'Outfit', sans-serif;
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--bg-dark);
+            background-image: radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.08) 0%, transparent 60%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Navigation Styles */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(6, 7, 10, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 1.2rem 0;
+            transition: var(--transition);
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: #fff;
+            font-family: var(--font-heading);
+            font-weight: 900;
+            font-size: 1.4rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .logo span {
+            color: var(--primary);
+            text-shadow: 0 0 10px var(--primary-glow);
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2.5rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-main);
+            font-family: var(--font-heading);
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            transition: var(--transition);
+            opacity: 0.8;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            opacity: 1;
+            color: var(--primary);
+            text-shadow: 0 0 8px var(--primary-glow);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary-gradient);
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 2rem;
+            font-family: var(--font-heading);
+            font-weight: 900;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            text-decoration: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid transparent;
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: #fff;
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.6);
+        }
+
+        .btn-outline {
+            border-color: var(--glass-border);
+            color: #fff;
+            background: rgba(255,255,255,0.02);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary);
+            background: rgba(139, 92, 246, 0.05);
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        /* Hero Section */
+        .hero {
+            position: relative;
+            min-height: 85vh;
+            display: flex;
+            align-items: center;
+            padding-top: 6rem;
+            overflow: hidden;
+        }
+
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+        }
+
+        .hero-bg img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.35;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, transparent 50%, var(--bg-dark) 100%);
+            z-index: -1;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            max-width: 650px;
+        }
+
+        .badge {
+            background: rgba(139, 92, 246, 0.15);
+            color: #d946ef;
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            font-family: var(--font-heading);
+            font-size: 0.7rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            display: inline-block;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.1);
+        }
+
+        .hero h1 {
+            font-family: var(--font-heading);
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .hero h1 span {
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            margin-bottom: 2.5rem;
+            line-height: 1.7;
+        }
+
+        /* Stats Grid */
+        .stats-strip {
+            background: rgba(10, 14, 23, 0.6);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+            padding: 2.5rem;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            margin-top: -5rem;
+            position: relative;
+            z-index: 20;
+            margin-bottom: 6rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-item h3 {
+            font-family: var(--font-heading);
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-item p {
+            font-size: 0.75rem;
+            font-family: var(--font-heading);
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        /* Section Styles */
+        .section {
+            padding: 6rem 0;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-header h2 {
+            font-family: var(--font-heading);
+            font-size: 2.5rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-header p {
+            color: var(--primary);
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: 0.8rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        /* Roster Card */
+        .roster-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .driver-card {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 250px;
+        }
+
+        .driver-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--primary-gradient);
+            opacity: 0.3;
+            transition: var(--transition);
+        }
+
+        .driver-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.15);
+        }
+
+        .driver-card:hover::before {
+            opacity: 1;
+        }
+
+        .driver-avatar {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(217, 70, 239, 0.1) 100%);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            color: var(--primary);
+            font-weight: 900;
+            font-size: 1.5rem;
+            font-family: var(--font-heading);
+        }
+
+        .driver-name {
+            font-family: var(--font-heading);
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: #fff;
+            margin-bottom: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .driver-role {
+            font-family: var(--font-heading);
+            font-size: 0.65rem;
+            font-weight: 900;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 1.5rem;
+        }
+
+        .driver-stats-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding-top: 1rem;
+            gap: 1rem;
+        }
+
+        .driver-stat-box {
+            text-align: center;
+        }
+
+        .driver-stat-box span {
+            display: block;
+        }
+
+        .driver-stat-box .lbl {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-family: var(--font-heading);
+            letter-spacing: 1px;
+        }
+
+        .driver-stat-box .val {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #fff;
+            font-family: var(--font-heading);
+        }
+
+        /* Footer */
+        footer {
+            background: #040507;
+            border-top: 1px solid var(--glass-border);
+            padding: 4rem 0 2rem;
+            text-align: center;
+        }
+
+        .footer-logo {
+            font-family: var(--font-heading);
+            font-weight: 900;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: #fff;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-bottom: 2.5rem;
+            list-style: none;
+        }
+
+        .footer-links a {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-family: var(--font-heading);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            transition: var(--transition);
+        }
+
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+
+        .socials {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .socials a {
+            opacity: 0.5;
+            transition: var(--transition);
+        }
+
+        .socials a:hover {
+            opacity: 1;
+            color: var(--primary);
+        }
+
+        .copyright {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <nav>
+        <div class="container nav-content">
+            <a href="#" class="logo">
+                GRiD UP<span> GT</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#roster">Roster</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="index.html" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.7rem; margin-left: 1.5rem;">iRacing Main Site</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Area -->
+    <section id="home" class="hero">
+        <div class="hero-bg">
+            <img src="assets/gt-banner.png" alt="Gran Turismo Racing">
+        </div>
+        <div class="hero-overlay"></div>
+        <div class="hero-content container">
+            <span class="badge">GT Division</span>
+            <h1>The Pursuit of <span>Lap Perfection</span></h1>
+            <p>GRiD UP Gran Turismo is our premier competitive branch. Racing in major global championships, top leagues, and time attack challenges, we push virtual machinery to the limit.</p>
+            <div style="display: flex; gap: 1rem;">
+                <a href="#roster" class="btn btn-primary">Meet The Drivers</a>
+                <a href="https://discord.gg/gridup" target="_blank" class="btn btn-outline">Join Discord</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Strip -->
+    <section class="container">
+        <div class="stats-strip">
+            <div class="stat-item">
+                <h3 id="stat-count">0</h3>
+                <p>Elite Drivers</p>
+            </div>
+            <div class="stat-item">
+                <h3>S / A+</h3>
+                <p>Driver Rating</p>
+            </div>
+            <div class="stat-item">
+                <h3>99.9%</h3>
+                <p>Safety Focus</p>
+            </div>
+            <div class="stat-item">
+                <h3>24/7</h3>
+                <p>Testing Dev</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Roster Section -->
+    <section id="roster" class="section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Roster Lineup</h2>
+                <p>The virtual pilots of GRiD UP GT</p>
+            </div>
+            
+            <div class="roster-grid" id="gt-roster-grid">
+                <!-- Loaded dynamically -->
+                <div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 3rem;">
+                    <p>Loading Gran Turismo Roster...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="section" style="background: rgba(10, 14, 23, 0.4); border-top: 1px solid var(--glass-border); border-bottom: 1px solid var(--glass-border);">
+        <div class="container" style="max-width: 800px; text-align: center;">
+            <div class="section-header">
+                <h2>About the Division</h2>
+                <p>Commitment to Virtual Motorsport</p>
+            </div>
+            <p style="font-size: 1.1rem; line-height: 1.8; color: #94a3b8; margin-bottom: 2rem;">
+                Our Gran Turismo division brings together the most dedicated console-tier racers. Balancing professional driving preparation, custom setup sharing, and strategic telemetry analysis, we build racers capable of challenging at the highest levels. 
+            </p>
+            <p style="font-size: 1.1rem; line-height: 1.8; color: #94a3b8;">
+                From manufacturer cup campaigns to community tournaments, our drivers carry the GRiD UP name with pride, pace, and respect.
+            </p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-logo">GRiD UP GT</div>
+            <ul class="footer-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#roster">Roster</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="index.html">Main Website</a></li>
+            </ul>
+            <div class="socials">
+                <a href="https://discord.gg/gridup" target="_blank">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 127.14 96.36" fill="#64748b"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a67.55,67.55,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.31,60,73.31,53s5-12.74,11.43-12.74S96.2,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
+                </a>
+                <a href="https://www.youtube.com/@griduptv" target="_blank">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#64748b"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+                </a>
+            </div>
+            <p class="copyright">&copy; 2026 GRiD UP SIM RACING. ALL RIGHTS RESERVED.</p>
+        </div>
+    </footer>
+
+    <!-- Firebase Services -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAomPdMD_IrBw52m0Nc2l-cuDKNmH_qqAk",
+            authDomain: "grid-up.firebaseapp.com",
+            projectId: "grid-up",
+            storageBucket: "grid-up.firebasestorage.app",
+            messagingSenderId: "649006432736",
+            appId: "1:649006432736:web:5220f500a5e53cb7276b85"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const grid = document.getElementById('gt-roster-grid');
+            try {
+                // Query drivers with category: "Gran Turismo" or similar
+                const snap = await db.collection("drivers")
+                                      .where("category", "==", "Gran Turismo")
+                                      .orderBy("name")
+                                      .get();
+                
+                // Fallback query if no category match
+                let driversDocs = snap.docs;
+                if (snap.empty) {
+                    // Fallback to searching endurance/pro roles that might contain "GT" keywords, 
+                    // or just get all drivers and filter client-side.
+                    const allSnap = await db.collection("drivers").orderBy("name").get();
+                    driversDocs = allSnap.docs.filter(doc => {
+                        const d = doc.data();
+                        const role = (d.role || "").toLowerCase();
+                        const desc = (d.description || "").toLowerCase();
+                        return role.includes("gran turismo") || role.includes("gt") || desc.includes("gran turismo") || desc.includes("gt7") || d.category === "Gran Turismo";
+                    });
+                }
+
+                document.getElementById('stat-count').textContent = driversDocs.length;
+
+                if (driversDocs.length === 0) {
+                    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:3rem;"><p>No Gran Turismo roster drivers registered yet.</p></div>';
+                    return;
+                }
+
+                grid.innerHTML = '';
+                driversDocs.forEach(doc => {
+                    const d = doc.data();
+                    const initials = d.name ? d.name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase() : 'GT';
+                    const rating = d.rating || 'A';
+                    const safety = d.safety || 'S';
+
+                    const card = document.createElement('div');
+                    card.className = 'driver-card';
+                    card.innerHTML = `
+                        <div>
+                            <div class="driver-avatar">${initials}</div>
+                            <h3 class="driver-name">${d.name}</h3>
+                            <p class="driver-role">${d.role || 'Gran Turismo Driver'}</p>
+                        </div>
+                        <div class="driver-stats-row">
+                            <div class="driver-stat-box">
+                                <span class="lbl">DR</span>
+                                <span class="val" style="color: var(--primary);">${rating}</span>
+                            </div>
+                            <div class="driver-stat-box">
+                                <span class="lbl">SR</span>
+                                <span class="val" style="color: var(--secondary);">${safety}</span>
+                            </div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            } catch (err) {
+                console.error("Error loading roster:", err);
+                grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--secondary);padding:3rem;"><p>Error loading Gran Turismo roster.</p></div>';
+            }
+        });
+    </script>
+</body>
+</html>
