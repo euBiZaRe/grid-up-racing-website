@@ -8,12 +8,12 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
 </head>
 <body style="background: #0a0c10; color: #fff; font-family: sans-serif; padding: 3rem; text-align: center;">
-    <h1>GRiD UP News Seeder</h1>
-    <p>This page updates/seeds the E-Sports Division announcement with the new custom banner image into the live <strong>grid-up</strong> Firestore database.</p>
+    <h1>GRiD UP News Seeder & Clean-up</h1>
+    <p>This page removes duplicates and seeds a single copy of the E-Sports Division announcement into the live database.</p>
     <button id="seed-btn" style="background: #00cfff; border: none; padding: 1rem 2rem; color: #000; font-weight: bold; border-radius: 8px; cursor: pointer; font-size: 1rem; margin-top: 1rem;">
-        Update / Seed E-Sports Article
+        Clean Duplicates & Seed Single Copy
     </button>
-    <div id="status" style="margin-top: 2rem; font-size: 1.2rem; color: #a0aec0;">Click the button to update.</div>
+    <div id="status" style="margin-top: 2rem; font-size: 1.2rem; color: #a0aec0;">Click the button to process.</div>
 
     <script>
         const firebaseConfig = {
@@ -30,7 +30,7 @@
 
         document.getElementById('seed-btn').addEventListener('click', async () => {
             const statusDiv = document.getElementById('status');
-            statusDiv.innerText = "Processing database update...";
+            statusDiv.innerText = "Processing cleanup and seeding...";
             
             const article = {
                 title: "Announcing the New GRiD UP E-Sports Division",
@@ -43,16 +43,20 @@
             };
 
             try {
-                // Look for an existing article by this title first to overwrite it cleanly
+                // Find all existing documents with this title
                 const snap = await db.collection("reports").where("title", "==", article.title).get();
+                
+                // Delete all of them
                 if (!snap.empty) {
-                    const docId = snap.docs[0].id;
-                    await db.collection("reports").doc(docId).set(article);
-                    statusDiv.innerHTML = `<span style="color: #48bb78;">Success! Updated existing article (ID: <strong>${docId}</strong>) with the new banner!</span><br><br><a href="reports.html" style="color: #00cfff;">Go to News Page</a>`;
-                } else {
-                    const docRef = await db.collection("reports").add(article);
-                    statusDiv.innerHTML = `<span style="color: #48bb78;">Success! Created new article with ID: <strong>${docRef.id}</strong>!</span><br><br><a href="reports.html" style="color: #00cfff;">Go to News Page</a>`;
+                    statusDiv.innerText = `Found ${snap.size} old copies. Deleting...`;
+                    for (const doc of snap.docs) {
+                        await db.collection("reports").doc(doc.id).delete();
+                    }
                 }
+                
+                // Write a single clean copy
+                const docRef = await db.collection("reports").add(article);
+                statusDiv.innerHTML = `<span style="color: #48bb78;">Success! Cleaned old copies and added a single fresh copy (ID: <strong>${docRef.id}</strong>) with the new banner!</span><br><br><a href="reports.html" style="color: #00cfff;">Go to News Page</a>`;
             } catch (error) {
                 console.error(error);
                 statusDiv.innerHTML = `<span style="color: #f56565;">Error: ${error.message}</span>`;
