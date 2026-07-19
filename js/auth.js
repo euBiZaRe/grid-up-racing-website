@@ -308,17 +308,28 @@ async function updateAuthUI(user, isTentative = false) {
         basePath = '../';
     }
 
+    // Ensure nav-actions container exists in nav-content
+    const navContent = document.querySelector('.nav-content');
+    let navActions = document.querySelector('.nav-actions');
+    if (navContent && !navActions) {
+        navActions = document.createElement('div');
+        navActions.className = 'nav-actions';
+        navContent.appendChild(navActions);
+    }
+
+    // Clean up any login button inside nav-links list to avoid duplicates/misalignment
+    const loginLi = loginBtn ? loginBtn.closest('li') : null;
+    if (loginLi) loginLi.remove();
+    else if (loginBtn) loginBtn.remove();
+
     if (user) {
         let avatar = user.photoURL || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
         
-        // A. Handle Navbar UI
-        const navLinks = document.querySelector('.nav-links');
-        if (loginBtn || navLinks) {
+        if (navActions) {
             let container = document.getElementById('navbar-user-ui');
             if (!container) {
                 container = document.createElement('div');
                 container.id = "navbar-user-ui";
-                container.style.marginLeft = "1.5rem";
                 container.style.display = "flex";
                 container.style.alignItems = "center";
                 container.style.gap = "8px";
@@ -330,19 +341,8 @@ async function updateAuthUI(user, isTentative = false) {
             const logoutBtn = `<a href="#" onclick="if(confirm('Logout?')) firebase.auth().signOut()" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border-color: rgba(255,255,255,0.15); border-radius: 4px;"><img src="${avatar}" style="width: 16px; height: 16px; border-radius: 50%; vertical-align: middle; margin-right: 5px; object-fit: cover;"> Logout</a>`;
 
             container.innerHTML = `${adminLink}${portalLink}${profileLink}${logoutBtn}`;
-            
-            if (loginBtn) {
-                loginBtn.replaceWith(container);
-            } else if (!document.getElementById('navbar-user-ui')) {
-                if (navLinks.tagName === 'UL' || navLinks.tagName === 'OL') {
-                    const li = document.createElement('li');
-                    li.id = "navbar-user-li";
-                    li.appendChild(container);
-                    navLinks.appendChild(li);
-                } else {
-                    navLinks.appendChild(container);
-                }
-            }
+            navActions.innerHTML = '';
+            navActions.appendChild(container);
         }
 
         // B. Handle Profile Page Admin Button
@@ -358,21 +358,8 @@ async function updateAuthUI(user, isTentative = false) {
         }
     } else {
         // Logged Out State
-        const userUI = document.getElementById('navbar-user-ui');
-        const userLI = document.getElementById('navbar-user-li');
-        if (userUI) userUI.remove();
-        if (userLI) userLI.remove();
-
-        const navLinks = document.querySelector('.nav-links');
-        if (!document.getElementById('login-link') && navLinks) {
-            const loginHtml = `<a href="${basePath}login.html" id="login-link" class="btn btn-outline" style="padding: 0.5rem 1.25rem; font-size: 0.8rem; margin-left: 1rem;">Login</a>`;
-            if (navLinks.tagName === 'UL' || navLinks.tagName === 'OL') {
-                const li = document.createElement('li');
-                li.innerHTML = loginHtml;
-                navLinks.appendChild(li);
-            } else {
-                navLinks.insertAdjacentHTML('beforeend', loginHtml);
-            }
+        if (navActions) {
+            navActions.innerHTML = `<a href="${basePath}login.html" id="login-link" class="btn btn-outline" style="padding: 0.5rem 1.5rem; font-size: 0.75rem; border-radius: 50px;">Login</a>`;
         }
         
         if (claimSection) claimSection.style.display = 'none';

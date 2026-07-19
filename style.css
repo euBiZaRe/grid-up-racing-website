@@ -370,10 +370,10 @@ nav.scrolled {
 }
 
 .nav-content {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    gap: 3.5rem;
+    gap: 1rem;
 }
 
 .logo {
@@ -424,6 +424,16 @@ nav.scrolled {
     padding: 0;
     align-items: center;
     flex-wrap: nowrap;
+    justify-content: center;
+    grid-column: 2;
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    grid-column: 3;
 }
 
 .nav-links li {
