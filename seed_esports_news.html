@@ -9,9 +9,9 @@
 </head>
 <body style="background: #0a0c10; color: #fff; font-family: sans-serif; padding: 3rem; text-align: center;">
     <h1>GRiD UP News Seeder & Clean-up</h1>
-    <p>This page removes duplicates and seeds a single copy of the E-Sports Division announcement into the live database.</p>
+    <p>This page removes duplicates and seeds a detailed, longer version of the E-Sports Division announcement including recruitment info into the live database.</p>
     <button id="seed-btn" style="background: #00cfff; border: none; padding: 1rem 2rem; color: #000; font-weight: bold; border-radius: 8px; cursor: pointer; font-size: 1rem; margin-top: 1rem;">
-        Clean Duplicates & Seed Single Copy
+        Clean Duplicates & Seed Detailed Article
     </button>
     <div id="status" style="margin-top: 2rem; font-size: 1.2rem; color: #a0aec0;">Click the button to process.</div>
 
@@ -34,12 +34,12 @@
             
             const article = {
                 title: "Announcing the New GRiD UP E-Sports Division",
-                content: "We are thrilled to officially announce the upcoming establishment of the GRiD UP E-Sports Division. Comprising our highest rated and most dedicated sim racers, this elite tier represents the absolute pinnacle of our team's talent. \n\nAlthough the division is not yet running, it is coming soon! Our drivers are currently undergoing preparations and training as we structure the program. Once active, this dedicated roster will represent GRiD UP on the global stage, competing in top-tier endurance sim racing events. \n\nStay tuned to our channel for launch updates, official roster announcements, live coverage schedules, and telemetry reports as we get closer to our inaugural green flag!",
+                content: "We are thrilled to officially announce the upcoming establishment of the GRiD UP E-Sports Division. Comprising our highest rated and most dedicated sim racers, this elite tier represents the absolute pinnacle of our team's talent. \n\nAlthough the division is not yet running, it is coming soon! Our drivers are currently undergoing intense preparations, track testing, and engineering development as we structure the program. Once active, this dedicated roster will represent GRiD UP on the global stage, competing in top-tier endurance sim racing events across major virtual racing circuits.\n\n### We Are Recruiting!\n\nAs we build the ultimate sim racing lineup, we are opening recruitment for exceptionally talented and dedicated drivers to join our elite roster. We are looking for drivers who possess:\n\n- Exceptional speed, racecraft, and consistency across GT3/LMP2 categories.\n- A collaborative team-first mindset with a dedication to telemetry analysis and team practice.\n- High-level race readiness and commitment to long-stint endurance operations.\n\nIf you have what it takes to run with the best and represent our brand in the highest tiers of competitive sim racing, head over to our **Apply** page and submit your driver application today. \n\nStay tuned to our channel for launch updates, official roster announcements, live coverage schedules, and telemetry reports as we get closer to our inaugural green flag!",
                 type: "news",
                 date: new Date(),
                 author: "GRiD UP Media",
                 bannerUrl: "assets/esports-division.png",
-                summary: "Comprising our highest rated and most dedicated drivers, the new elite E-Sports division is coming soon to top-tier endurance racing."
+                summary: "Comprising our highest rated and most dedicated drivers, the new elite E-Sports division is coming soon. Roster recruitment is now open!"
             };
 
             try {
@@ -56,7 +56,7 @@
                 
                 // Write a single clean copy
                 const docRef = await db.collection("reports").add(article);
-                statusDiv.innerHTML = `<span style="color: #48bb78;">Success! Cleaned old copies and added a single fresh copy (ID: <strong>${docRef.id}</strong>) with the new banner!</span><br><br><a href="reports.html" style="color: #00cfff;">Go to News Page</a>`;
+                statusDiv.innerHTML = `<span style="color: #48bb78;">Success! Cleaned old copies and added the detailed article (ID: <strong>${docRef.id}</strong>)!</span><br><br><a href="reports.html" style="color: #00cfff;">Go to News Page</a>`;
             } catch (error) {
                 console.error(error);
                 statusDiv.innerHTML = `<span style="color: #f56565;">Error: ${error.message}</span>`;
