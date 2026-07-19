@@ -72,9 +72,6 @@
             <button class="tab-btn" id="btn-reports" style="background: transparent; border: 1px solid var(--glass-border); color: var(--text-muted); padding: 0.75rem 1.5rem; border-radius: 8px; font-family: var(--font-heading); font-weight: 700; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem;">
                 Race Reports
             </button>
-            <button class="tab-btn" id="btn-telemetry" style="background: transparent; border: 1px solid var(--glass-border); color: var(--text-muted); padding: 0.75rem 1.5rem; border-radius: 8px; font-family: var(--font-heading); font-weight: 700; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem;">
-                Telemetry Logs
-            </button>
         </div>
         
         <div id="reports-feed" class="driver-grid">
@@ -121,7 +118,6 @@
         const feed = document.getElementById('reports-feed');
         const btnNews = document.getElementById('btn-news');
         const btnReports = document.getElementById('btn-reports');
-        const btnTelemetry = document.getElementById('btn-telemetry');
         if (!feed) return;
 
         let activeTab = 'news';
@@ -285,8 +281,7 @@
             activeTab = tab;
             const buttons = {
                 'news': btnNews,
-                'reports': btnReports,
-                'telemetry': btnTelemetry
+                'reports': btnReports
             };
 
             for (const [key, btn] of Object.entries(buttons)) {
@@ -303,16 +298,11 @@
                 }
             }
 
-            if (tab === 'telemetry') {
-                loadTelemetryReports();
-            } else {
-                loadEditorialReports(tab === 'reports' ? 'report' : tab);
-            }
+            loadEditorialReports(tab === 'reports' ? 'report' : tab);
         }
 
         btnNews.addEventListener('click', () => switchTab('news'));
         btnReports.addEventListener('click', () => switchTab('reports'));
-        btnTelemetry.addEventListener('click', () => switchTab('telemetry'));
 
         // Load default tab
         switchTab('news');
