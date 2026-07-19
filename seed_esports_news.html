@@ -9,11 +9,11 @@
 </head>
 <body style="background: #0a0c10; color: #fff; font-family: sans-serif; padding: 3rem; text-align: center;">
     <h1>GRiD UP News Seeder</h1>
-    <p>This page seeds the E-Sports Division announcement directly into the live <strong>grid-up</strong> Firestore database.</p>
+    <p>This page updates/seeds the E-Sports Division announcement with the new custom banner image into the live <strong>grid-up</strong> Firestore database.</p>
     <button id="seed-btn" style="background: #00cfff; border: none; padding: 1rem 2rem; color: #000; font-weight: bold; border-radius: 8px; cursor: pointer; font-size: 1rem; margin-top: 1rem;">
-        Seed E-Sports Article
+        Update / Seed E-Sports Article
     </button>
-    <div id="status" style="margin-top: 2rem; font-size: 1.2rem; color: #a0aec0;">Click the button to seed.</div>
+    <div id="status" style="margin-top: 2rem; font-size: 1.2rem; color: #a0aec0;">Click the button to update.</div>
 
     <script>
         const firebaseConfig = {
@@ -30,7 +30,7 @@
 
         document.getElementById('seed-btn').addEventListener('click', async () => {
             const statusDiv = document.getElementById('status');
-            statusDiv.innerText = "Seeding article...";
+            statusDiv.innerText = "Processing database update...";
             
             const article = {
                 title: "Announcing the New GRiD UP E-Sports Division",
@@ -38,14 +38,21 @@
                 type: "news",
                 date: new Date(),
                 author: "GRiD UP Media",
-                bannerUrl: "assets/bg-banner.png",
+                bannerUrl: "assets/esports-division.png",
                 summary: "Comprising our highest rated and most dedicated drivers, the new elite E-Sports division is coming soon to top-tier endurance racing."
             };
 
             try {
-                // Add new doc
-                const docRef = await db.collection("reports").add(article);
-                statusDiv.innerHTML = `<span style="color: #48bb78;">Success! Seeded article with ID: <strong>${docRef.id}</strong></span><br><br><a href="reports.html" style="color: #00cfff;">Go to News Page</a>`;
+                // Look for an existing article by this title first to overwrite it cleanly
+                const snap = await db.collection("reports").where("title", "==", article.title).get();
+                if (!snap.empty) {
+                    const docId = snap.docs[0].id;
+                    await db.collection("reports").doc(docId).set(article);
+                    statusDiv.innerHTML = `<span style="color: #48bb78;">Success! Updated existing article (ID: <strong>${docId}</strong>) with the new banner!</span><br><br><a href="reports.html" style="color: #00cfff;">Go to News Page</a>`;
+                } else {
+                    const docRef = await db.collection("reports").add(article);
+                    statusDiv.innerHTML = `<span style="color: #48bb78;">Success! Created new article with ID: <strong>${docRef.id}</strong>!</span><br><br><a href="reports.html" style="color: #00cfff;">Go to News Page</a>`;
+                }
             } catch (error) {
                 console.error(error);
                 statusDiv.innerHTML = `<span style="color: #f56565;">Error: ${error.message}</span>`;
