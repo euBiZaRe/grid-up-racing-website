@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Seed News Article</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+</head>
+<body style="background: #0a0c10; color: #fff; font-family: sans-serif; padding: 3rem; text-align: center;">
+    <h1>GRiD UP News Seeder</h1>
+    <p>This page seeds the E-Sports Division announcement directly into the live <strong>grid-up</strong> Firestore database.</p>
+    <button id="seed-btn" style="background: #00cfff; border: none; padding: 1rem 2rem; color: #000; font-weight: bold; border-radius: 8px; cursor: pointer; font-size: 1rem; margin-top: 1rem;">
+        Seed E-Sports Article
+    </button>
+    <div id="status" style="margin-top: 2rem; font-size: 1.2rem; color: #a0aec0;">Click the button to seed.</div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAomPdMD_IrBw52m0Nc2l-cuDKNmH_qqAk",
+            authDomain: "grid-up.firebaseapp.com",
+            projectId: "grid-up",
+            storageBucket: "grid-up.firebasestorage.app",
+            messagingSenderId: "649006432736",
+            appId: "1:649006432736:web:5220f500a5e53cb7276b85"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        document.getElementById('seed-btn').addEventListener('click', async () => {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerText = "Seeding article...";
+            
+            const article = {
+                title: "Announcing the New GRiD UP E-Sports Division",
+                content: "We are thrilled to officially announce the upcoming establishment of the GRiD UP E-Sports Division. Comprising our highest rated and most dedicated sim racers, this elite tier represents the absolute pinnacle of our team's talent. \n\nAlthough the division is not yet running, it is coming soon! Our drivers are currently undergoing preparations and training as we structure the program. Once active, this dedicated roster will represent GRiD UP on the global stage, competing in top-tier endurance sim racing events. \n\nStay tuned to our channel for launch updates, official roster announcements, live coverage schedules, and telemetry reports as we get closer to our inaugural green flag!",
+                type: "news",
+                date: new Date(),
+                author: "GRiD UP Media",
+                bannerUrl: "assets/bg-banner.png",
+                summary: "Comprising our highest rated and most dedicated drivers, the new elite E-Sports division is coming soon to top-tier endurance racing."
+            };
+
+            try {
+                // Add new doc
+                const docRef = await db.collection("reports").add(article);
+                statusDiv.innerHTML = `<span style="color: #48bb78;">Success! Seeded article with ID: <strong>${docRef.id}</strong></span><br><br><a href="reports.html" style="color: #00cfff;">Go to News Page</a>`;
+            } catch (error) {
+                console.error(error);
+                statusDiv.innerHTML = `<span style="color: #f56565;">Error: ${error.message}</span>`;
+            }
+        });
+    </script>
+</body>
+</html>
