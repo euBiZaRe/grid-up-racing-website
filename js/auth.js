@@ -196,12 +196,35 @@ async function enrichAuthData(user) {
         }
     } catch (e) { console.warn("Verification Check Error:", e); }
 
+    // Check for Custom Avatar / Profile Picture in Firestore users collection
+    let finalAvatar = user.photoURL;
+    if (db) {
+        try {
+            const userDoc = await db.collection("users").doc(user.uid).get();
+            if (userDoc.exists) {
+                const userData = userDoc.data();
+                if (userData.customAvatarUrl) {
+                    finalAvatar = userData.customAvatarUrl;
+                } else if (userData.photoURL) {
+                    finalAvatar = userData.photoURL;
+                }
+            }
+        } catch (e) { console.warn("Avatar Check Error:", e); }
+    }
+
+    // Update user object's photoURL with custom avatar so updateAuthUI and cache use it
+    const enrichedUser = {
+        uid: user.uid,
+        photoURL: finalAvatar,
+        displayName: user.displayName
+    };
+
     // Re-update UI with enriched data
-    updateAuthUI(user);
+    updateAuthUI(enrichedUser);
 
     // Save enriched state to cache
     localStorage.setItem('gridup_auth_cache', JSON.stringify({
-        user: { uid: user.uid, photoURL: user.photoURL, displayName: user.displayName },
+        user: enrichedUser,
         isAdmin: IS_ADMIN,
         isVerified: IS_VERIFIED
     }));
@@ -301,11 +324,12 @@ async function updateAuthUI(user, isTentative = false) {
                 container.style.gap = "8px";
             }
 
+            const adminLink = IS_ADMIN ? `<a href="${basePath}admin.html" id="navbar-admin-btn" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border-color: rgba(0,207,255,0.3); color: #00cfff; border-radius: 4px;">Admin</a>` : '';
             const portalLink = `<a href="${basePath}portal.html" id="navbar-portal-btn" class="btn btn-primary" style="position: relative; padding: 0.4rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border-radius: 4px;">Portal<span id="portal-badge" style="display: ${PORTAL_HAS_UNREAD ? 'block' : 'none'}; position: absolute; top: -4px; right: -4px; width: 8px; height: 8px; background-color: #ff3b30; border-radius: 50%; border: 1px solid #fff; box-shadow: 0 0 4px rgba(255,59,48,0.6);"></span></a>`;
             const profileLink = `<a href="${basePath}profile.html" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border-radius: 4px;">Profile</a>`;
-            const logoutBtn = `<a href="#" onclick="if(confirm('Logout?')) firebase.auth().signOut()" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border-color: rgba(255,255,255,0.15); border-radius: 4px;"><img src="${avatar}" style="width: 16px; height: 16px; border-radius: 50%; vertical-align: middle; margin-right: 5px;"> Logout</a>`;
+            const logoutBtn = `<a href="#" onclick="if(confirm('Logout?')) firebase.auth().signOut()" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border-color: rgba(255,255,255,0.15); border-radius: 4px;"><img src="${avatar}" style="width: 16px; height: 16px; border-radius: 50%; vertical-align: middle; margin-right: 5px; object-fit: cover;"> Logout</a>`;
 
-            container.innerHTML = `${portalLink}${profileLink}${logoutBtn}`;
+            container.innerHTML = `${adminLink}${portalLink}${profileLink}${logoutBtn}`;
             
             if (loginBtn) {
                 loginBtn.replaceWith(container);
