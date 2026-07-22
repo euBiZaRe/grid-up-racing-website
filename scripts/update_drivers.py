@@ -98,7 +98,8 @@ def fetch_driver_data_scrape(slug):
                 "Formula": "FORMULA",
                 "Formula Car": "FORMULA", # fallback
                 "Oval": "OVAL",
-                "Dirt Oval": "DIRT"
+                "Dirt Oval": "DIRT_OVAL",
+                "Dirt Road": "DIRT_ROAD"
             }
             
             for display_name, internal_key in disciplines.items():
@@ -275,7 +276,8 @@ def update_profiles():
                 "SPORTS": "Sports Car",
                 "FORMULA": "Formula Car",
                 "OVAL": "Oval",
-                "DIRT": "Dirt Oval"
+                "DIRT_OVAL": "Dirt Oval",
+                "DIRT_ROAD": "Dirt Road"
             }
             for key, disc in mapping.items():
                 if disc in local_stats[name]:
@@ -294,7 +296,7 @@ def update_profiles():
         html = html.replace("{{MEMBER_SINCE}}", stats.get("memberSince", "N/A"))
         html = html.replace("{{G61_URL}}", url)
         
-        for key in ["SPORTS", "FORMULA", "OVAL", "DIRT"]:
+        for key in ["SPORTS", "FORMULA", "OVAL", "DIRT_OVAL", "DIRT_ROAD"]:
             ir = stats["iRatings"].get(key, 0)
             lic = stats["licenseLevels"].get(key, "R 2.50")
             pc = stats["iRatingPercentages"].get(key, 0)
