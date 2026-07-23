@@ -242,7 +242,7 @@
 
         .chart-wrapper {
             position: relative;
-            height: 250px;
+            height: 480px;
             background: rgba(0, 0, 0, 0.25);
             border-radius: 12px;
             overflow: hidden;
@@ -1369,7 +1369,7 @@
             if (allPointsCount(lapAData) < 2) return;
 
             // Projection helper
-            const margin = 24;
+            const margin = 28;
             const viewW = w - margin * 2;
             const viewH = h - margin * 2;
             
@@ -1392,13 +1392,26 @@
                 return { x: px, y: py };
             }
 
-            // 1. Draw Lap B Track Path (dotted comparison line) in background
+            // 1. Draw dark background track outline (the track road boundaries)
+            ctx.strokeStyle = 'rgba(30, 41, 59, 0.7)';
+            ctx.lineWidth = 16;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.beginPath();
+            lapAData.points.forEach((p, idx) => {
+                const pt = project(p.lat, p.lon);
+                if (idx === 0) ctx.moveTo(pt.x, pt.y);
+                else ctx.lineTo(pt.x, pt.y);
+            });
+            ctx.closePath();
+            ctx.stroke();
+
+            // 2. Draw Lap B's Racing Line (dashed pink, thickness 6px) to clearly compare positions
             if (lapBData && allPointsCount(lapBData) >= 2) {
-                ctx.strokeStyle = 'rgba(236, 72, 153, 0.4)';
-                ctx.lineWidth = 4;
-                ctx.setLineDash([5, 5]);
+                ctx.strokeStyle = '#ec4899'; // Driver B Pink
+                ctx.lineWidth = 6;
+                ctx.setLineDash([8, 8]);
                 ctx.beginPath();
-                
                 lapBData.points.forEach((p, idx) => {
                     const pt = project(p.lat, p.lon);
                     if (idx === 0) ctx.moveTo(pt.x, pt.y);
@@ -1408,11 +1421,19 @@
                 ctx.setLineDash([]);
             }
 
-            // 2. Draw Lap A color-coded racing line
-            ctx.lineWidth = 5;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
+            // 3. Draw Lap A's Racing Line (solid blue, thickness 6px)
+            ctx.strokeStyle = '#3b82f6'; // Driver A Blue
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            lapAData.points.forEach((p, idx) => {
+                const pt = project(p.lat, p.lon);
+                if (idx === 0) ctx.moveTo(pt.x, pt.y);
+                else ctx.lineTo(pt.x, pt.y);
+            });
+            ctx.stroke();
 
+            // 4. Overlay thin color-coded inputs line inside Driver A's line (throttle/brake)
+            ctx.lineWidth = 2.5;
             for (let i = 0; i < lapAData.points.length - 1; i++) {
                 const p1 = lapAData.points[i];
                 const p2 = lapAData.points[i + 1];
@@ -1420,11 +1441,11 @@
                 const pt2 = project(p2.lat, p2.lon);
 
                 if (p1.brk > 15) {
-                    ctx.strokeStyle = p1.abs ? '#f97316' : '#ef4444';
+                    ctx.strokeStyle = p1.abs ? '#f97316' : '#ef4444'; // Red (Orange for ABS)
                 } else if (p1.thr > 20) {
-                    ctx.strokeStyle = '#34d399';
+                    ctx.strokeStyle = '#10b981'; // Green throttle
                 } else {
-                    ctx.strokeStyle = '#6b7280';
+                    ctx.strokeStyle = '#94a3b8'; // Slate Coast
                 }
 
                 ctx.beginPath();
@@ -1492,121 +1513,109 @@
             const h = chartCanvas.height = chartCanvas.offsetHeight;
             ctx.clearRect(0, 0, w, h);
 
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
-            ctx.lineWidth = 1;
-            for (let percent = 25; percent <= 75; percent += 25) {
-                const y = h - (percent / 100 * (h - 20)) - 10;
-                ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(w, y);
-                ctx.stroke();
+            // Stacked telemetry sections configuration
+            // Row heights: Speed (120px), Throttle (90px), Brake (90px), Steering (90px)
+            const charts = [
+                { name: "SPEED (km/h)", yMin: 15, yMax: 135, valMin: 0, valMax: 280, color: "#60a5fa", gridSteps: [50, 100, 150, 200, 250], getVal: p => p.spd ? p.spd * 3.6 : 0 },
+                { name: "THROTTLE (%)", yMin: 155, yMax: 235, valMin: 0, valMax: 100, color: "#10b981", gridSteps: [0, 50, 100], getVal: p => p.thr || 0 },
+                { name: "BRAKE (%)", yMin: 255, yMax: 335, valMin: 0, valMax: 100, color: "#ef4444", gridSteps: [0, 50, 100], getVal: p => p.brk || 0 },
+                { name: "STEERING (deg)", yMin: 355, yMax: 435, valMin: -180, valMax: 180, color: "#a855f7", gridSteps: [-100, 0, 100], getVal: p => (p.str || 0) * (180 / Math.PI) * 4 }
+            ];
+
+            // Add Delta-T chart at the bottom if comparing
+            if (lapBData) {
+                charts.push({
+                    name: "TIME DELTA (s)", yMin: 445, yMax: 475, valMin: -2.0, valMax: 2.0, color: "#f59e0b", gridSteps: [-1.0, 0.0, 1.0],
+                    getVal: (pA, idxA) => {
+                        const pointsA = lapAData.points;
+                        const pointsB = lapBData.points;
+                        const tA = idxA * (lapAData.lap_time / pointsA.length);
+                        let bIdx = Math.round(pA.pct * (pointsB.length - 1));
+                        if (bIdx >= pointsB.length) bIdx = pointsB.length - 1;
+                        if (bIdx < 0) bIdx = 0;
+                        const tB = bIdx * (lapBData.lap_time / pointsB.length);
+                        return tA - tB;
+                    }
+                });
             }
 
-            const maxVal = 280;
+            // Draw each stacked telemetry graph
+            charts.forEach(c => {
+                // Background & Border
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+                ctx.fillRect(0, c.yMin, w, c.yMax - c.yMin);
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(0, c.yMin, w, c.yMax - c.yMin);
 
-            function drawTraceLine(pts, color, isDashed) {
-                ctx.strokeStyle = color;
+                // Gridlines & Labels
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.font = '8px monospace';
+                ctx.textAlign = 'left';
+                ctx.fillText(c.name, 10, c.yMin + 12);
+
+                c.gridSteps.forEach(val => {
+                    const ratio = (val - c.valMin) / (c.valMax - c.valMin);
+                    const y = c.yMax - ratio * (c.yMax - c.yMin - 15) - 5;
+                    
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(w, y);
+                    ctx.stroke();
+
+                    // Text y-axis labels on right
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+                    ctx.textAlign = 'right';
+                    ctx.fillText(val, w - 8, y + 3);
+                });
+
+                // Helper to scale values to row boundaries
+                function getScaledY(val) {
+                    const ratio = (val - c.valMin) / (c.valMax - c.valMin);
+                    const constrained = Math.max(0, Math.min(1, ratio));
+                    return c.yMax - constrained * (c.yMax - c.yMin - 15) - 5;
+                }
+
+                // Draw Driver B Line (Comparison) - Dashed
+                if (lapBData) {
+                    ctx.strokeStyle = c.color;
+                    ctx.lineWidth = 1.5;
+                    ctx.setLineDash([3, 4]);
+                    ctx.beginPath();
+                    
+                    lapBData.points.forEach((pB, idxB) => {
+                        const x = pB.pct * w;
+                        // For delta-t, B is evaluated relative to A, so no B trace on delta chart
+                        if (c.name.includes("TIME")) return; 
+                        const val = c.getVal(pB, idxB);
+                        const y = getScaledY(val);
+                        if (idxB === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    });
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+
+                // Draw Driver A Line (Primary Target) - Solid
+                ctx.strokeStyle = c.name.includes("TIME") ? "#f59e0b" : c.color;
                 ctx.lineWidth = 2;
-                if (isDashed) ctx.setLineDash([3, 3]);
                 ctx.beginPath();
-
-                pts.forEach((p, idx) => {
-                    const x = (p.pct) * w;
-                    const val = p.spd ? (p.spd * 3.6) : 0;
-                    const y = h - ((val / maxVal) * (h - 30)) - 15;
-                    if (idx === 0) ctx.moveTo(x, y);
-                    else ctx.lineTo(x, y);
-                });
-                ctx.stroke();
-                ctx.setLineDash([]);
-            }
-
-            if (lapBData) {
-                drawTraceLine(lapBData.points, 'rgba(236, 72, 153, 0.55)', true);
-            }
-            drawTraceLine(lapAData.points, '#60a5fa', false);
-
-            function drawPedalsTrace(pts, isCompare) {
-                ctx.strokeStyle = isCompare ? 'rgba(52, 211, 153, 0.35)' : 'rgba(52, 211, 153, 0.7)';
-                ctx.lineWidth = 1.25;
-                ctx.beginPath();
-                pts.forEach((p, idx) => {
-                    const x = p.pct * w;
-                    const val = p.thr || 0;
-                    const y = h - ((val / 100) * 45) - 10;
-                    if (idx === 0) ctx.moveTo(x, y);
-                    else ctx.lineTo(x, y);
-                });
-                ctx.stroke();
-
-                ctx.strokeStyle = isCompare ? 'rgba(248, 113, 113, 0.35)' : 'rgba(248, 113, 113, 0.7)';
-                ctx.beginPath();
-                pts.forEach((p, idx) => {
-                    const x = p.pct * w;
-                    const val = p.brk || 0;
-                    const y = h - ((val / 100) * 45) - 10;
-                    if (idx === 0) ctx.moveTo(x, y);
-                    else ctx.lineTo(x, y);
-                });
-                ctx.stroke();
-            }
-
-            if (lapBData) {
-                drawPedalsTrace(lapBData.points, true);
-            }
-            drawPedalsTrace(lapAData.points, false);
-
-            // Draw Delta-T curve if Lap B is active
-            if (lapBData) {
-                ctx.strokeStyle = '#f59e0b'; // Premium Gold
-                ctx.lineWidth = 1.75;
-                ctx.beginPath();
-                
-                const pointsA = lapAData.points;
-                const pointsB = lapBData.points;
-                
-                pointsA.forEach((pA, idxA) => {
+                lapAData.points.forEach((pA, idxA) => {
                     const x = pA.pct * w;
-                    const tA = idxA * (lapAData.lap_time / pointsA.length);
-                    
-                    let bIdx = Math.round(pA.pct * (pointsB.length - 1));
-                    if (bIdx >= pointsB.length) bIdx = pointsB.length - 1;
-                    if (bIdx < 0) bIdx = 0;
-                    
-                    const tB = bIdx * (lapBData.lap_time / pointsB.length);
-                    const deltaT = tA - tB;
-                    
-                    const maxDeltaScale = 3.0; // +/- 3.0 seconds max scale
-                    const deltaRatio = deltaT / maxDeltaScale;
-                    const constrainedRatio = Math.max(-1, Math.min(1, deltaRatio));
-                    
-                    const y = h/2 - (constrainedRatio * (h / 3));
-                    
+                    const val = c.getVal(pA, idxA);
+                    const y = getScaledY(val);
                     if (idxA === 0) ctx.moveTo(x, y);
                     else ctx.lineTo(x, y);
                 });
                 ctx.stroke();
-                
-                // Draw 0.0s baseline guide
-                ctx.strokeStyle = 'rgba(245, 158, 11, 0.2)';
-                ctx.setLineDash([2, 4]);
-                ctx.beginPath();
-                ctx.moveTo(0, h/2);
-                ctx.lineTo(w, h/2);
-                ctx.stroke();
-                ctx.setLineDash([]);
+            });
 
-                // Draw Delta-T Label
-                ctx.fillStyle = '#f59e0b';
-                ctx.font = '9px monospace';
-                ctx.textAlign = 'right';
-                ctx.fillText('Delta-T (Gold)', w - 10, h/2 - 8);
-            }
-
+            // Draw vertical scrub scrubber cursor
             const currentPct = lapAData.points[playbackIndex]?.pct || 0;
             const cursorX = currentPct * w;
             
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
             ctx.lineWidth = 1.5;
             ctx.setLineDash([4, 4]);
             ctx.beginPath();
