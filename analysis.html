@@ -724,6 +724,7 @@
         function updateTeamDropdown(isAdmin) {
             const currentSelected = teamSelect.value;
             let optionsHtml = `
+                <option value="any">-- All Teams --</option>
                 <option value="gridUp_sim">GRiD UP Sim Racing</option>
                 <option value="gridUp_black">GRiD UP Black</option>
                 <option value="gridUp_blue">GRiD UP Blue</option>
@@ -795,8 +796,34 @@
                 const reg = registrySnap.val() || {};
                 
                 // Fetch analysis node
-                database.ref(`teams/${teamId}/laps_analysis`).once('value', (snap) => {
-                    const data = snap.val() || {};
+                const refPath = teamId === "any" ? 'teams' : `teams/${teamId}/laps_analysis`;
+                database.ref(refPath).once('value', (snap) => {
+                    let data = {};
+                    if (teamId === "any") {
+                        const allTeams = snap.val() || {};
+                        Object.keys(allTeams).forEach(tKey => {
+                            if (allTeams[tKey] && allTeams[tKey].laps_analysis) {
+                                // Merge laps_analysis nodes
+                                Object.keys(allTeams[tKey].laps_analysis).forEach(mId => {
+                                    if (!data[mId]) {
+                                        data[mId] = allTeams[tKey].laps_analysis[mId];
+                                    } else {
+                                        // Merge laps and resolve best if driver exists in multiple teams
+                                        const existing = data[mId];
+                                        const incoming = allTeams[tKey].laps_analysis[mId];
+                                        if (incoming.laps) {
+                                            existing.laps = { ...existing.laps, ...incoming.laps };
+                                        }
+                                        if (incoming.best && (!existing.best || incoming.best.lap_time < existing.best.lap_time)) {
+                                            existing.best = incoming.best;
+                                        }
+                                    }
+                                });
+                            }
+                        });
+                    } else {
+                        data = snap.val() || {};
+                    }
                     const driversFound = Object.keys(data);
                     
                     if (driversFound.length === 0) {
