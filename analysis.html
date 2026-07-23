@@ -844,7 +844,22 @@
 
                         // Build registry names cache and group laps by track_name and car_name
                         driversFound.forEach(machineId => {
-                            let driverName = reg[machineId]?.name || data[machineId]?.best?.points?.[0]?.name;
+                            const node = data[machineId];
+                            let driverName = reg[machineId]?.name 
+                                || node?.driver_name 
+                                || node?.best?.driver_name 
+                                || node?.best?.points?.[0]?.name;
+
+                            // Search through laps if not found
+                            if (!driverName && node?.laps) {
+                                for (const lKey in node.laps) {
+                                    if (node.laps[lKey]?.driver_name) {
+                                        driverName = node.laps[lKey].driver_name;
+                                        break;
+                                    }
+                                }
+                            }
+
                             if (!driverName) {
                                 if (machineId === "mock_pro_driver") {
                                     driverName = "Max Verstappen (Mock)";
@@ -860,8 +875,6 @@
                             }
                             driversRegistry[machineId] = driverName;
                             availableLaps[machineId] = data[machineId] || {};
-                            
-                            const node = data[machineId];
                             
                             function registerLapTrack(lapObj, isBest, lapNum) {
                                 if (!lapObj || !lapObj.points) return;
@@ -1232,7 +1245,7 @@
             let allLons = [];
             
             lapAData.points.forEach(p => {
-                if (p.pct >= zoomStart && p.pct <= zoomEnd && p.lat && p.lon) {
+                if (p.pct >= zoomStart && p.pct <= zoomEnd && typeof p.lat === 'number' && typeof p.lon === 'number' && p.lat !== 0 && p.lon !== 0) {
                     allLats.push(p.lat);
                     allLons.push(p.lon);
                 }
@@ -1240,7 +1253,7 @@
 
             if (lapBData) {
                 lapBData.points.forEach(p => {
-                    if (p.pct >= zoomStart && p.pct <= zoomEnd && p.lat && p.lon) {
+                    if (p.pct >= zoomStart && p.pct <= zoomEnd && typeof p.lat === 'number' && typeof p.lon === 'number' && p.lat !== 0 && p.lon !== 0) {
                         allLats.push(p.lat);
                         allLons.push(p.lon);
                     }
@@ -1255,7 +1268,9 @@
                 
                 const meanLat = (gpsBounds.minLat + gpsBounds.maxLat) / 2;
                 gpsBounds.cosLat = Math.cos(meanLat * Math.PI / 180);
-                gpsBounds.aspect = Math.abs((gpsBounds.maxLon - gpsBounds.minLon) * gpsBounds.cosLat) / Math.abs(gpsBounds.maxLat - gpsBounds.minLat);
+                const latRange = Math.abs(gpsBounds.maxLat - gpsBounds.minLat) || 0.0001;
+                const lonRange = Math.abs((gpsBounds.maxLon - gpsBounds.minLon) * gpsBounds.cosLat) || 0.0001;
+                gpsBounds.aspect = lonRange / latRange;
             }
 
             // Update scrubber limit based on Lap A points
@@ -1284,8 +1299,8 @@
             const viewW = w - margin * 2;
             const viewH = h - margin * 2;
             
-            const diffLon = (gpsBounds.maxLon - gpsBounds.minLon) * gpsBounds.cosLat;
-            const diffLat = gpsBounds.maxLat - gpsBounds.minLat;
+            const diffLon = Math.abs((gpsBounds.maxLon - gpsBounds.minLon) * gpsBounds.cosLat) || 0.0001;
+            const diffLat = Math.abs(gpsBounds.maxLat - gpsBounds.minLat) || 0.0001;
 
             function project(lat, lon) {
                 let px = 0;
