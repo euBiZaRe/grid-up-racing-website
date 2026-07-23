@@ -383,6 +383,17 @@
     <script src="js/auth.js?v=2"></script>
 </head>
 <body class="telemetry-page">
+    <div id="debug-banner" style="background: #0f172a; border-bottom: 2px solid #ef4444; padding: 1.5rem; color: #f8fafc; font-family: monospace; font-size: 0.8rem; line-height: 1.6; z-index: 10000; position: relative; max-width: 1200px; margin: 1rem auto; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">
+        <strong style="color: #ef4444; font-size: 0.9rem;">[Telemetry Diagnostics Console]</strong><br>
+        • Firebase SDK: <span id="db-sdk-status" style="color: #fbbf24;">Checking...</span><br>
+        • Database Connection: <span id="db-instance-status" style="color: #fbbf24;">Checking...</span><br>
+        • Target Database URL: <span id="db-url-status" style="color: #94a3b8;">Checking...</span><br>
+        • Selected Team Node: <span id="db-team-status" style="color: #fbbf24;">Checking...</span><br>
+        • Driver Profile Registry: <span id="db-registry-status" style="color: #fbbf24;">Checking...</span><br>
+        • Telemetry Laps Query: <span id="db-fetch-status" style="color: #fbbf24;">Checking...</span><br>
+        • Loaded Tracks Catalog: <span id="db-tracks-status" style="color: #fbbf24;">Checking...</span>
+    </div>
+
     <nav id="navbar" class="scrolled">
         <div class="container nav-content">
             <a href="index.html" class="logo">
@@ -769,15 +780,25 @@
 
         // Initialize Firebase connection
         function initFirebaseConnection() {
+            const sdkStatusEl = document.getElementById('db-sdk-status');
+            const instStatusEl = document.getElementById('db-instance-status');
+            const urlStatusEl = document.getElementById('db-url-status');
+            
+            if (sdkStatusEl) sdkStatusEl.innerText = "Loaded (v" + firebase.SDK_VERSION + ")";
+            
             if (window.firebase) {
                 try {
+                    const dbUrl = "https://grid-up-racedash-default-rtdb.europe-west1.firebasedatabase.app";
+                    if (urlStatusEl) urlStatusEl.innerText = dbUrl;
+                    
                     let telemetryApp = firebase.apps.find(app => app.name === "telemetry_analysis");
                     if (!telemetryApp) {
                         telemetryApp = firebase.initializeApp({
-                            databaseURL: "https://grid-up-racedash-default-rtdb.europe-west1.firebasedatabase.app"
+                            databaseURL: dbUrl
                         }, "telemetry_analysis");
                     }
                     database = telemetryApp.database();
+                    if (instStatusEl) instStatusEl.innerText = "Connected (App: telemetry_analysis)";
                 } catch (err) {
                     console.error("Firebase secondary app init failed:", err);
                     database = firebase.database();
@@ -793,6 +814,15 @@
         // Load laps list for chosen team
         function loadLapsAnalysisData(tId) {
             teamId = tId;
+            const teamStatusEl = document.getElementById('db-team-status');
+            const registryStatusEl = document.getElementById('db-registry-status');
+            const fetchStatusEl = document.getElementById('db-fetch-status');
+            const tracksStatusEl = document.getElementById('db-tracks-status');
+            
+            if (teamStatusEl) teamStatusEl.innerText = tId;
+            if (registryStatusEl) registryStatusEl.innerText = "Querying driver_registry...";
+            if (fetchStatusEl) fetchStatusEl.innerText = "Preparing query...";
+            if (tracksStatusEl) tracksStatusEl.innerText = "Waiting for data...";
             trackSelect.innerHTML = '<option value="">Loading Tracks...</option>';
             carSelect.innerHTML = '<option value="">Select Track first</option>';
             driverASelect.innerHTML = '<option value="">Select Car first</option>';
@@ -811,9 +841,14 @@
 
             // Load Registry Names - Catch any unauthorized access errors and default to empty reg
             database.ref('driver_registry').once('value')
-                .then(registrySnap => registrySnap.val() || {})
+                .then(registrySnap => {
+                    const val = registrySnap.val() || {};
+                    if (registryStatusEl) registryStatusEl.innerText = "Registry loaded (" + Object.keys(val).length + " drivers found)";
+                    return val;
+                })
                 .catch(err => {
                     console.warn("Could not load driver registry:", err);
+                    if (registryStatusEl) registryStatusEl.innerText = "Permission Denied / Offline (Using profile-embedded fallbacks)";
                     return {};
                 })
                 .then(reg => {
