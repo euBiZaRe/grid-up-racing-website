@@ -664,6 +664,23 @@
     </footer>
 
     <script>
+        window.addEventListener('error', function(e) {
+            const errDiv = document.createElement('div');
+            errDiv.style.position = 'fixed';
+            errDiv.style.bottom = '10px';
+            errDiv.style.right = '10px';
+            errDiv.style.background = '#ef4444';
+            errDiv.style.color = '#fff';
+            errDiv.style.padding = '1rem';
+            errDiv.style.borderRadius = '8px';
+            errDiv.style.zIndex = '9999';
+            errDiv.style.maxWidth = '400px';
+            errDiv.style.fontSize = '0.75rem';
+            errDiv.style.boxShadow = '0 4px 12px rgba(0,0,0,0.5)';
+            errDiv.innerText = 'JS Error: ' + e.message + ' at ' + e.filename + ':' + e.lineno;
+            document.body.appendChild(errDiv);
+        });
+
         // Initialize Firebase config
         let database = null;
         let auth = null;
@@ -792,111 +809,120 @@
             drawEmptyCanvas(trackCanvas, "No Lap Selected");
             drawEmptyCanvas(chartCanvas, "No Lap Selected");
 
-            // Load Registry Names
-            database.ref('driver_registry').once('value', (registrySnap) => {
-                const reg = registrySnap.val() || {};
-                
-                function processLoadedData(data) {
-                    const driversFound = Object.keys(data);
-                    
-                    if (driversFound.length === 0) {
-                        trackSelect.innerHTML = '<option value="">No logs found</option>';
-                        return;
-                    }
+            // Load Registry Names - Catch any unauthorized access errors and default to empty reg
+            database.ref('driver_registry').once('value')
+                .then(registrySnap => registrySnap.val() || {})
+                .catch(err => {
+                    console.warn("Could not load driver registry:", err);
+                    return {};
+                })
+                .then(reg => {
+                    function processLoadedData(data) {
+                        const driversFound = Object.keys(data);
+                        
+                        if (driversFound.length === 0) {
+                            trackSelect.innerHTML = '<option value="">No logs found</option>';
+                            return;
+                        }
 
-                    // Build registry names cache and group laps by track_name and car_name
-                    driversFound.forEach(machineId => {
-                        const driverName = reg[machineId]?.name || data[machineId]?.best?.points?.[0]?.name || "Unknown Driver";
-                        driversRegistry[machineId] = driverName;
-                        availableLaps[machineId] = data[machineId] || {};
-                        
-                        const node = data[machineId];
-                        
-                        function registerLapTrack(lapObj, isBest, lapNum) {
-                            if (!lapObj || !lapObj.points) return;
-                            const tName = lapObj.track_name || "Spa-Francorchamps"; // fallback for older test logs
-                            const cName = lapObj.car_name || "Unknown Car";
+                        // Build registry names cache and group laps by track_name and car_name
+                        driversFound.forEach(machineId => {
+                            const driverName = reg[machineId]?.name || data[machineId]?.best?.points?.[0]?.name || "Unknown Driver";
+                            driversRegistry[machineId] = driverName;
+                            availableLaps[machineId] = data[machineId] || {};
                             
-                            if (!tracksCatalog[tName]) {
-                                tracksCatalog[tName] = {};
+                            const node = data[machineId];
+                            
+                            function registerLapTrack(lapObj, isBest, lapNum) {
+                                if (!lapObj || !lapObj.points) return;
+                                const tName = lapObj.track_name || "Spa-Francorchamps"; // fallback for older test logs
+                                const cName = lapObj.car_name || "Unknown Car";
+                                
+                                if (!tracksCatalog[tName]) {
+                                    tracksCatalog[tName] = {};
+                                }
+                                if (!tracksCatalog[tName][cName]) {
+                                    tracksCatalog[tName][cName] = {};
+                                }
+                                if (!tracksCatalog[tName][cName][machineId]) {
+                                    tracksCatalog[tName][cName][machineId] = [];
+                                }
+                                tracksCatalog[tName][cName][machineId].push({
+                                    lap_num: lapNum,
+                                    lap_time: lapObj.lap_time,
+                                    isBest: isBest,
+                                    data: lapObj
+                                });
                             }
-                            if (!tracksCatalog[tName][cName]) {
-                                tracksCatalog[tName][cName] = {};
+                            
+                            if (node.best) {
+                                registerLapTrack(node.best, true, "best");
                             }
-                            if (!tracksCatalog[tName][cName][machineId]) {
-                                tracksCatalog[tName][cName][machineId] = [];
-                            }
-                            tracksCatalog[tName][cName][machineId].push({
-                                lap_num: lapNum,
-                                lap_time: lapObj.lap_time,
-                                isBest: isBest,
-                                data: lapObj
-                            });
-                        }
-                        
-                        if (node.best) {
-                            registerLapTrack(node.best, true, "best");
-                        }
-                        if (node.laps) {
-                            Object.keys(node.laps).forEach(lNum => {
-                                registerLapTrack(node.laps[lNum], false, lNum);
-                            });
-                        }
-                    });
-
-                    // Populate tracks dropdown
-                    const tracksFound = Object.keys(tracksCatalog);
-                    if (tracksFound.length === 0) {
-                        trackSelect.innerHTML = '<option value="">No tracks found</option>';
-                        return;
-                    }
-
-                    let trackOptions = '<option value="">-- Choose Track --</option>';
-                    tracksFound.sort().forEach(tName => {
-                        trackOptions += `<option value="${tName}">${tName}</option>`;
-                    });
-                    trackSelect.innerHTML = trackOptions;
-                }
-
-                if (teamId === "any") {
-                    const teamIds = ['gridUp_sim', 'gridUp_black', 'gridUp_blue', 'gridUp_red', 'gridUp_white', 'gridUp_practice', 'solo'];
-                    const promises = teamIds.map(tKey => {
-                        return database.ref(`teams/${tKey}/laps_analysis`).once('value')
-                            .then(snap => snap.val())
-                            .catch(err => {
-                                console.warn(`Could not read team ${tKey}:`, err);
-                                return null;
-                            });
-                    });
-
-                    Promise.all(promises).then(results => {
-                        let data = {};
-                        results.forEach(lapsAnalysis => {
-                            if (lapsAnalysis) {
-                                Object.keys(lapsAnalysis).forEach(mId => {
-                                    if (!data[mId]) {
-                                        data[mId] = lapsAnalysis[mId];
-                                    } else {
-                                        const existing = data[mId];
-                                        const incoming = lapsAnalysis[mId];
-                                        if (incoming.laps) {
-                                            existing.laps = { ...existing.laps, ...incoming.laps };
-                                        }
-                                        if (incoming.best && (!existing.best || incoming.best.lap_time < existing.best.lap_time)) {
-                                            existing.best = incoming.best;
-                                        }
-                                    }
+                            if (node.laps) {
+                                Object.keys(node.laps).forEach(lNum => {
+                                    registerLapTrack(node.laps[lNum], false, lNum);
                                 });
                             }
                         });
-                        processLoadedData(data);
-                    });
-                } else {
-                    database.ref(`teams/${teamId}/laps_analysis`).once('value', (snap) => {
-                        processLoadedData(snap.val() || {});
-                    });
-                }
-            });
+
+                        // Populate tracks dropdown
+                        const tracksFound = Object.keys(tracksCatalog);
+                        if (tracksFound.length === 0) {
+                            trackSelect.innerHTML = '<option value="">No tracks found</option>';
+                            return;
+                        }
+
+                        let trackOptions = '<option value="">-- Choose Track --</option>';
+                        tracksFound.sort().forEach(tName => {
+                            trackOptions += `<option value="${tName}">${tName}</option>`;
+                        });
+                        trackSelect.innerHTML = trackOptions;
+                    }
+
+                    if (teamId === "any") {
+                        const teamIds = ['gridUp_sim', 'gridUp_black', 'gridUp_blue', 'gridUp_red', 'gridUp_white', 'gridUp_practice', 'solo'];
+                        const promises = teamIds.map(tKey => {
+                            return database.ref(`teams/${tKey}/laps_analysis`).once('value')
+                                .then(snap => snap.val())
+                                .catch(err => {
+                                    console.warn(`Could not read team ${tKey}:`, err);
+                                    return null;
+                                });
+                        });
+
+                        Promise.all(promises).then(results => {
+                            let data = {};
+                            results.forEach(lapsAnalysis => {
+                                if (lapsAnalysis) {
+                                    Object.keys(lapsAnalysis).forEach(mId => {
+                                        if (!data[mId]) {
+                                            data[mId] = lapsAnalysis[mId];
+                                        } else {
+                                            const existing = data[mId];
+                                            const incoming = lapsAnalysis[mId];
+                                            if (incoming.laps) {
+                                                existing.laps = { ...existing.laps, ...incoming.laps };
+                                            }
+                                            if (incoming.best && (!existing.best || incoming.best.lap_time < existing.best.lap_time)) {
+                                                existing.best = incoming.best;
+                                            }
+                                        }
+                                    });
+                                }
+                            });
+                            processLoadedData(data);
+                        });
+                    } else {
+                        database.ref(`teams/${teamId}/laps_analysis`).once('value')
+                            .then(snap => {
+                                processLoadedData(snap.val() || {});
+                            })
+                            .catch(err => {
+                                console.error("Error loading specific team laps:", err);
+                                processLoadedData({});
+                            });
+                    }
+                });
         }
 
         function setupSelectionListeners() {
