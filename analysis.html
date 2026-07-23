@@ -1919,33 +1919,65 @@
                 }
             };
             
-            // Bind telemetry chart interactive mouse seeking & hover tooltips
+            // Bind telemetry chart interactive mouse seeking, hover tooltips & drag brush zoom
             const chartCanvasEl = document.getElementById('telemetry-chart-canvas');
             if (chartCanvasEl) {
+                chartCanvasEl.addEventListener('mousedown', (e) => {
+                    if (!lapAData) return;
+                    const rect = chartCanvasEl.getBoundingClientRect();
+                    const clickX = e.clientX - rect.left;
+                    dragStartPct = zoomStart + (clickX / rect.width) * (zoomEnd - zoomStart);
+                    isDragging = true;
+                });
+
                 chartCanvasEl.addEventListener('mousemove', (e) => {
                     if (!lapAData) return;
                     const rect = chartCanvasEl.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    hoverPct = Math.max(0, Math.min(1, x / rect.width));
+                    const currentX = e.clientX - rect.left;
+                    const pct = Math.max(0, Math.min(1, currentX / rect.width));
+                    
+                    hoverPct = zoomStart + pct * (zoomEnd - zoomStart);
+                    
+                    if (isDragging) {
+                        dragCurrentPct = zoomStart + (currentX / rect.width) * (zoomEnd - zoomStart);
+                    }
+                    
                     drawTelemetryCharts();
-                    drawLapsAndMarkers(); // Update map hover position in real-time
+                    drawLapsAndMarkers();
                 });
                 
                 chartCanvasEl.addEventListener('mouseleave', () => {
                     hoverPct = null;
+                    isDragging = false;
+                    dragStartPct = null;
+                    dragCurrentPct = null;
                     drawTelemetryCharts();
-                    drawLapsAndMarkers(); // Clear map hover position
+                    drawLapsAndMarkers();
                 });
                 
-                chartCanvasEl.addEventListener('click', (e) => {
-                    if (!lapAData) return;
+                window.addEventListener('mouseup', (e) => {
+                    if (!isDragging) return;
+                    isDragging = false;
                     const rect = chartCanvasEl.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    const pct = Math.max(0, Math.min(1, x / rect.width));
-                    
-                    playbackIndex = Math.round(pct * (lapAData.points.length - 1));
-                    scrubberSlider.value = Math.round(pct * 100);
-                    updateUI();
+                    const releaseX = e.clientX - rect.left;
+                    const dragEndPct = zoomStart + (releaseX / rect.width) * (zoomEnd - zoomStart);
+
+                    if (Math.abs(dragEndPct - dragStartPct) > 0.01) {
+                        zoomStart = Math.max(0, Math.min(dragStartPct, dragEndPct));
+                        zoomEnd = Math.min(1, Math.max(dragStartPct, dragEndPct));
+                        isZoomed = true;
+                        
+                        const rzBtn = document.getElementById('reset-zoom-button');
+                        if (rzBtn) rzBtn.style.display = 'block';
+                        
+                        updateUI();
+                    } else {
+                        playbackIndex = Math.round(dragEndPct * (lapAData.points.length - 1));
+                        scrubberSlider.value = Math.round(dragEndPct * 100);
+                        updateUI();
+                    }
+                    dragStartPct = null;
+                    dragCurrentPct = null;
                 });
             }
 
