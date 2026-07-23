@@ -1586,7 +1586,55 @@
                     ctx.beginPath();
                     ctx.arc(ptB.x, ptB.y, 7, 0, 2 * Math.PI);
                     ctx.fill();
+                    ctx.fill();
                     ctx.stroke();
+                }
+            }
+        }
+
+        // Draw Hover position markers on the track map
+        if (hoverPct !== null) {
+            const idxA = Math.round(hoverPct * (lapAData.points.length - 1));
+            const carA = lapAData.points[idxA];
+            if (carA && typeof carA.lat === 'number' && typeof carA.lon === 'number') {
+                const ptA = project(carA.lat, carA.lon);
+                
+                // Draw outer white ring and blue core
+                ctx.strokeStyle = '#fff';
+                ctx.shadowColor = '#3b82f6';
+                ctx.shadowBlur = 8;
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.arc(ptA.x, ptA.y, 8, 0, 2 * Math.PI);
+                ctx.stroke();
+                
+                ctx.fillStyle = '#3b82f6';
+                ctx.beginPath();
+                ctx.arc(ptA.x, ptA.y, 3.5, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+            
+            if (lapBData) {
+                const idxB = Math.round(hoverPct * (lapBData.points.length - 1));
+                const carB = lapBData.points[idxB];
+                if (carB && typeof carB.lat === 'number' && typeof carB.lon === 'number') {
+                    const ptB = project(carB.lat, carB.lon);
+                    
+                    // Draw outer white ring and pink core
+                    ctx.strokeStyle = '#fff';
+                    ctx.shadowColor = '#ec4899';
+                    ctx.shadowBlur = 8;
+                    ctx.lineWidth = 2.5;
+                    ctx.beginPath();
+                    ctx.arc(ptB.x, ptB.y, 8, 0, 2 * Math.PI);
+                    ctx.stroke();
+                    
+                    ctx.fillStyle = '#ec4899';
+                    ctx.beginPath();
+                    ctx.arc(ptB.x, ptB.y, 3.5, 0, 2 * Math.PI);
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
                 }
             }
         }
@@ -1950,11 +1998,13 @@
                     const x = e.clientX - rect.left;
                     hoverPct = Math.max(0, Math.min(1, x / rect.width));
                     drawTelemetryCharts();
+                    drawLapsAndMarkers(); // Update map hover position in real-time
                 });
                 
                 chartCanvasEl.addEventListener('mouseleave', () => {
                     hoverPct = null;
                     drawTelemetryCharts();
+                    drawLapsAndMarkers(); // Clear map hover position
                 });
                 
                 chartCanvasEl.addEventListener('click', (e) => {
