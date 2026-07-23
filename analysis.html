@@ -376,66 +376,7 @@
         }
     </style>
 
-    <!-- Early Diagnostics Console Logger Setup -->
-    <script>
-        (function() {
-            window.diagnosticLogs = [];
-            
-            const origLog = console.log;
-            const origWarn = console.warn;
-            const origError = console.error;
-            
-            function logToDiagnostics(msg, type = 'info') {
-                window.diagnosticLogs.push({ time: new Date().toLocaleTimeString(), msg, type });
-                const container = document.getElementById('debug-console-log');
-                if (container) {
-                    const colors = { info: '#cbd5e1', warn: '#fbbf24', error: '#f87171' };
-                    const color = colors[type] || '#cbd5e1';
-                    const div = document.createElement('div');
-                    div.style.color = color;
-                    div.style.borderBottom = '1px solid rgba(255,255,255,0.02)';
-                    div.style.padding = '2px 0';
-                    div.innerText = `[${window.diagnosticLogs[window.diagnosticLogs.length - 1].time}] [${type.toUpperCase()}] ${msg}`;
-                    container.appendChild(div);
-                    container.scrollTop = container.scrollHeight;
-                }
-            }
-            
-            console.log = function(...args) {
-                origLog.apply(console, args);
-                logToDiagnostics(args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' '), 'info');
-            };
-            console.warn = function(...args) {
-                origWarn.apply(console, args);
-                logToDiagnostics(args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' '), 'warn');
-            };
-            console.error = function(...args) {
-                origError.apply(console, args);
-                logToDiagnostics(args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' '), 'error');
-            };
-            
-            window.addEventListener('error', function(e) {
-                console.error("Runtime Error: " + e.message + " at " + e.filename + ":" + e.lineno);
-                const errDiv = document.createElement('div');
-                errDiv.style.position = 'fixed';
-                errDiv.style.bottom = '10px';
-                errDiv.style.right = '10px';
-                errDiv.style.background = '#ef4444';
-                errDiv.style.color = '#fff';
-                errDiv.style.padding = '1rem';
-                errDiv.style.borderRadius = '8px';
-                errDiv.style.zIndex = '99999';
-                errDiv.style.maxWidth = '400px';
-                errDiv.style.fontSize = '0.75rem';
-                errDiv.style.boxShadow = '0 4px 12px rgba(0,0,0,0.5)';
-                errDiv.innerText = 'JS Error: ' + e.message + ' at ' + e.filename + ':' + e.lineno;
-                document.body.appendChild(errDiv);
-            });
-            
-            window.logToDiagnostics = logToDiagnostics;
-            console.log("Early logger initialized.");
-        })();
-    </script>
+
 
     <!-- Firebase SDK (Standard references matching telemetry.html) -->
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
@@ -445,21 +386,6 @@
     <script src="js/auth.js?v=2"></script>
 </head>
 <body class="telemetry-page">
-    <div id="debug-banner" style="background: #0f172a; border-bottom: 2px solid #ef4444; padding: 1.5rem; color: #f8fafc; font-family: monospace; font-size: 0.8rem; line-height: 1.6; z-index: 10000; position: relative; max-width: 1200px; margin: 1rem auto; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">
-        <strong style="color: #ef4444; font-size: 0.9rem;">[Telemetry Diagnostics Console]</strong><br>
-        • Firebase SDK: <span id="db-sdk-status" style="color: #fbbf24;">Checking...</span><br>
-        • Database Connection: <span id="db-instance-status" style="color: #fbbf24;">Checking...</span><br>
-        • Target Database URL: <span id="db-url-status" style="color: #94a3b8;">Checking...</span><br>
-        • Selected Team Node: <span id="db-team-status" style="color: #fbbf24;">Checking...</span><br>
-        • Driver Profile Registry: <span id="db-registry-status" style="color: #fbbf24;">Checking...</span><br>
-        • Telemetry Laps Query: <span id="db-fetch-status" style="color: #fbbf24;">Checking...</span><br>
-        • Loaded Tracks Catalog: <span id="db-tracks-status" style="color: #fbbf24;">Checking...</span>
-        <hr style="border-color: rgba(255,255,255,0.06); margin: 0.75rem 0;">
-        <strong style="color: #60a5fa; font-size: 0.8rem;">[Diagnostics Console Log Output]</strong><br>
-        <div id="debug-console-log" style="max-height: 120px; overflow-y: auto; color: #a1a1aa; font-family: monospace; font-size: 0.7rem; background: #020617; padding: 0.5rem; border-radius: 4px; margin-top: 0.25rem; white-space: pre-wrap;">
-            Initializing logger...
-        </div>
-    </div>
 
     <nav id="navbar" class="scrolled">
         <div class="container nav-content">
@@ -744,27 +670,7 @@
     <script>
 
 
-        // Flush early logs and setup diagnostics DOM links
-        (function() {
-            const container = document.getElementById('debug-console-log');
-            if (container) {
-                container.innerHTML = '';
-                if (window.diagnosticLogs) {
-                    window.diagnosticLogs.forEach(log => {
-                        const colors = { info: '#cbd5e1', warn: '#fbbf24', error: '#f87171' };
-                        const color = colors[log.type] || '#cbd5e1';
-                        const div = document.createElement('div');
-                        div.style.color = color;
-                        div.style.borderBottom = '1px solid rgba(255,255,255,0.02)';
-                        div.style.padding = '2px 0';
-                        div.innerText = `[${log.time}] [${log.type.toUpperCase()}] ${log.msg}`;
-                        container.appendChild(div);
-                    });
-                    container.scrollTop = container.scrollHeight;
-                }
-            }
-            console.log("Diagnostics logger DOM connected & logs flushed.");
-        })();
+
 
         // Initialize Firebase config
         let database = null;
@@ -867,16 +773,12 @@
 
         // Initialize Firebase connection
         function initFirebaseConnection() {
-            const sdkStatusEl = document.getElementById('db-sdk-status');
-            const instStatusEl = document.getElementById('db-instance-status');
-            const urlStatusEl = document.getElementById('db-url-status');
-            
-            if (sdkStatusEl) sdkStatusEl.innerText = "Loaded (v" + firebase.SDK_VERSION + ")";
+
             
             if (window.firebase) {
                 try {
                     const dbUrl = "https://grid-up-racedash-default-rtdb.europe-west1.firebasedatabase.app";
-                    if (urlStatusEl) urlStatusEl.innerText = dbUrl;
+                    
                     
                     let telemetryApp = firebase.apps.find(app => app.name === "telemetry_analysis");
                     if (!telemetryApp) {
@@ -885,7 +787,7 @@
                         }, "telemetry_analysis");
                     }
                     database = telemetryApp.database();
-                    if (instStatusEl) instStatusEl.innerText = "Connected (App: telemetry_analysis)";
+                    
                 } catch (err) {
                     console.error("Firebase secondary app init failed:", err);
                     database = firebase.database();
@@ -905,15 +807,7 @@
                 return;
             }
             teamId = tId;
-            const teamStatusEl = document.getElementById('db-team-status');
-            const registryStatusEl = document.getElementById('db-registry-status');
-            const fetchStatusEl = document.getElementById('db-fetch-status');
-            const tracksStatusEl = document.getElementById('db-tracks-status');
-            
-            if (teamStatusEl) teamStatusEl.innerText = tId;
-            if (registryStatusEl) registryStatusEl.innerText = "Querying driver_registry...";
-            if (fetchStatusEl) fetchStatusEl.innerText = "Preparing query...";
-            if (tracksStatusEl) tracksStatusEl.innerText = "Waiting for data...";
+
             trackSelect.innerHTML = '<option value="">Loading Tracks...</option>';
             carSelect.innerHTML = '<option value="">Select Track first</option>';
             driverASelect.innerHTML = '<option value="">Select Car first</option>';
@@ -933,13 +827,10 @@
             // Load Registry Names - Catch any unauthorized access errors and default to empty reg
             database.ref('driver_registry').once('value')
                 .then(registrySnap => {
-                    const val = registrySnap.val() || {};
-                    if (registryStatusEl) registryStatusEl.innerText = "Registry loaded (" + Object.keys(val).length + " drivers found)";
-                    return val;
+                    return registrySnap.val() || {};
                 })
                 .catch(err => {
                     console.warn("Could not load driver registry:", err);
-                    if (registryStatusEl) registryStatusEl.innerText = "Permission Denied / Offline (Using profile-embedded fallbacks)";
                     return {};
                 })
                 .then(reg => {
