@@ -436,21 +436,40 @@
                     </div>
                 </div>
 
-                <!-- Toggle Comparison mode -->
-                <div style="display: flex; align-items: center; justify-content: center; height: 100%;">
-                    <label style="font-size: 0.75rem; color: #fff; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; margin-top: 1rem;">
-                        <input type="checkbox" id="compare-toggle" style="width: 16px; height: 16px; accent-color: #3b82f6; cursor: pointer;">
-                        <span>Compare Laps Side-by-Side</span>
-                    </label>
+                <!-- Track Selection -->
+                <div>
+                    <label class="select-label">Select Track</label>
+                    <div class="custom-select-wrapper">
+                        <i data-lucide="map-pin" style="width: 16px; height: 16px; color: var(--text-muted);"></i>
+                        <select id="track-select">
+                            <option value="">Loading Tracks...</option>
+                        </select>
+                    </div>
                 </div>
 
-                <!-- Action Button Back to Realtime -->
-                <div style="display: flex; justify-content: flex-end; align-items: center; height: 100%;">
-                    <a href="telemetry.html" class="btn btn-outline" style="display: flex; align-items: center; gap: 6px; padding: 0.5rem 1rem; border-radius: 10px; font-size: 0.75rem; text-decoration: none; font-weight: 700; text-transform: uppercase; margin-top: 1rem;">
-                        <i data-lucide="activity" style="width: 14px; height: 14px;"></i>
-                        <span>Live Streams</span>
-                    </a>
+                <!-- Car Selection -->
+                <div>
+                    <label class="select-label">Select Car</label>
+                    <div class="custom-select-wrapper">
+                        <i data-lucide="car" style="width: 16px; height: 16px; color: var(--text-muted);"></i>
+                        <select id="car-select">
+                            <option value="">Select Track first</option>
+                        </select>
+                    </div>
                 </div>
+            </div>
+
+            <!-- Comparison toggle row -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.04); padding-top: 1rem;">
+                <label style="font-size: 0.75rem; color: #fff; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none;">
+                    <input type="checkbox" id="compare-toggle" style="width: 16px; height: 16px; accent-color: #3b82f6; cursor: pointer;">
+                    <span>Compare Laps Side-by-Side</span>
+                </label>
+                
+                <a href="telemetry.html" class="btn btn-outline" style="display: flex; align-items: center; gap: 6px; padding: 0.5rem 1rem; border-radius: 10px; font-size: 0.75rem; text-decoration: none; font-weight: 700; text-transform: uppercase;">
+                    <i data-lucide="activity" style="width: 14px; height: 14px;"></i>
+                    <span>Live Streams</span>
+                </a>
             </div>
 
             <!-- Lap A Selection -->
@@ -664,6 +683,8 @@
 
         // DOM elements
         const teamSelect = document.getElementById('team-select');
+        const trackSelect = document.getElementById('track-select');
+        const carSelect = document.getElementById('car-select');
         const compareToggle = document.getElementById('compare-toggle');
         const compareSelectorsWrapper = document.getElementById('compare-selectors-wrapper');
 
@@ -750,16 +771,21 @@
             }
         }
 
+        let tracksCatalog = {}; // trackName -> { carName -> { machineId -> [laps] } }
+
         // Load laps list for chosen team
         function loadLapsAnalysisData(tId) {
             teamId = tId;
-            driverASelect.innerHTML = '<option value="">Loading Drivers...</option>';
-            driverBSelect.innerHTML = '<option value="">Loading Drivers...</option>';
+            trackSelect.innerHTML = '<option value="">Loading Tracks...</option>';
+            carSelect.innerHTML = '<option value="">Select Track first</option>';
+            driverASelect.innerHTML = '<option value="">Select Car first</option>';
+            driverBSelect.innerHTML = '<option value="">Select Car first</option>';
             lapASelect.innerHTML = '<option value="">Select a Driver first</option>';
             lapBSelect.innerHTML = '<option value="">Select a Driver first</option>';
             
             driversRegistry = {};
             availableLaps = {};
+            tracksCatalog = {};
             lapAData = null;
             lapBData = null;
             resetHUDs();
@@ -776,21 +802,62 @@
                     const driversFound = Object.keys(data);
                     
                     if (driversFound.length === 0) {
-                        driverASelect.innerHTML = '<option value="">No driver logs found</option>';
-                        driverBSelect.innerHTML = '<option value="">No driver logs found</option>';
+                        trackSelect.innerHTML = '<option value="">No logs found</option>';
                         return;
                     }
 
-                    let driverOptions = '<option value="">-- Choose Driver --</option>';
+                    // Build registry names cache and group laps by track_name and car_name
                     driversFound.forEach(machineId => {
                         const driverName = reg[machineId]?.name || data[machineId]?.best?.points?.[0]?.name || "Unknown Driver";
                         driversRegistry[machineId] = driverName;
                         availableLaps[machineId] = data[machineId] || {};
-                        driverOptions += `<option value="${machineId}">${driverName}</option>`;
+                        
+                        const node = data[machineId];
+                        
+                        function registerLapTrack(lapObj, isBest, lapNum) {
+                            if (!lapObj || !lapObj.points) return;
+                            const tName = lapObj.track_name || "Spa-Francorchamps"; // fallback for older test logs
+                            const cName = lapObj.car_name || "Unknown Car";
+                            
+                            if (!tracksCatalog[tName]) {
+                                tracksCatalog[tName] = {};
+                            }
+                            if (!tracksCatalog[tName][cName]) {
+                                tracksCatalog[tName][cName] = {};
+                            }
+                            if (!tracksCatalog[tName][cName][machineId]) {
+                                tracksCatalog[tName][cName][machineId] = [];
+                            }
+                            tracksCatalog[tName][cName][machineId].push({
+                                lap_num: lapNum,
+                                lap_time: lapObj.lap_time,
+                                isBest: isBest,
+                                data: lapObj
+                            });
+                        }
+                        
+                        if (node.best) {
+                            registerLapTrack(node.best, true, "best");
+                        }
+                        if (node.laps) {
+                            Object.keys(node.laps).forEach(lNum => {
+                                registerLapTrack(node.laps[lNum], false, lNum);
+                            });
+                        }
                     });
 
-                    driverASelect.innerHTML = driverOptions;
-                    driverBSelect.innerHTML = driverOptions;
+                    // Populate tracks dropdown
+                    const tracksFound = Object.keys(tracksCatalog);
+                    if (tracksFound.length === 0) {
+                        trackSelect.innerHTML = '<option value="">No tracks found</option>';
+                        return;
+                    }
+
+                    let trackOptions = '<option value="">-- Choose Track --</option>';
+                    tracksFound.sort().forEach(tName => {
+                        trackOptions += `<option value="${tName}">${tName}</option>`;
+                    });
+                    trackSelect.innerHTML = trackOptions;
                 });
             });
         }
@@ -813,10 +880,72 @@
                 }
             });
 
-            // Driver A
+            // Track Select
+            trackSelect.addEventListener('change', (e) => {
+                const trackName = e.target.value;
+                
+                carSelect.innerHTML = '<option value="">-- Select Car --</option>';
+                driverASelect.innerHTML = '<option value="">Select Car first</option>';
+                driverBSelect.innerHTML = '<option value="">Select Car first</option>';
+                lapASelect.innerHTML = '<option value="">Select a Driver first</option>';
+                lapBSelect.innerHTML = '<option value="">Select a Driver first</option>';
+                
+                lapAData = null;
+                lapBData = null;
+                resetHUDs();
+                drawEmptyCanvas(trackCanvas, "No Lap Selected");
+                drawEmptyCanvas(chartCanvas, "No Lap Selected");
+
+                if (!trackName || !tracksCatalog[trackName]) {
+                    return;
+                }
+
+                const carsOnTrack = Object.keys(tracksCatalog[trackName]);
+                let carOpts = '<option value="">-- Choose Car --</option>';
+                carsOnTrack.sort().forEach(cName => {
+                    carOpts += `<option value="${cName}">${cName}</option>`;
+                });
+                carSelect.innerHTML = carOpts;
+            });
+
+            // Car Select
+            carSelect.addEventListener('change', (e) => {
+                const carName = e.target.value;
+                const trackName = trackSelect.value;
+                
+                driverASelect.innerHTML = '<option value="">-- Select Driver --</option>';
+                driverBSelect.innerHTML = '<option value="">-- Select Driver --</option>';
+                lapASelect.innerHTML = '<option value="">Select a Driver first</option>';
+                lapBSelect.innerHTML = '<option value="">Select a Driver first</option>';
+                
+                lapAData = null;
+                lapBData = null;
+                resetHUDs();
+                drawEmptyCanvas(trackCanvas, "No Lap Selected");
+                drawEmptyCanvas(chartCanvas, "No Lap Selected");
+
+                if (!carName || !trackName || !tracksCatalog[trackName]?.[carName]) {
+                    return;
+                }
+
+                const machineIdsOnCar = Object.keys(tracksCatalog[trackName][carName]);
+                let driverOpts = '<option value="">-- Choose Driver --</option>';
+                machineIdsOnCar.forEach(mId => {
+                    const dName = driversRegistry[mId] || "Unknown Driver";
+                    driverOpts += `<option value="${mId}">${dName}</option>`;
+                });
+                
+                driverASelect.innerHTML = driverOpts;
+                driverBSelect.innerHTML = driverOpts;
+            });
+
+            // Driver A Select
             driverASelect.addEventListener('change', (e) => {
                 const mId = e.target.value;
-                if (!mId || !availableLaps[mId]) {
+                const trackName = trackSelect.value;
+                const carName = carSelect.value;
+                
+                if (!mId || !trackName || !carName || !tracksCatalog[trackName]?.[carName]?.[mId]) {
                     lapASelect.innerHTML = '<option value="">Select a Driver first</option>';
                     lapAData = null;
                     updateUI();
@@ -824,24 +953,26 @@
                 }
 
                 let lapOpts = '<option value="">-- Select Lap --</option>';
-                const analysisNode = availableLaps[mId];
+                const lapsList = tracksCatalog[trackName][carName][mId];
                 
-                if (analysisNode.best) {
-                    lapOpts += `<option value="best">Personal Best (${analysisNode.best.lap_time.toFixed(3)}s)</option>`;
-                }
-                if (analysisNode.laps) {
-                    Object.keys(analysisNode.laps).sort((a,b) => b-a).forEach(lapNum => {
-                        const l = analysisNode.laps[lapNum];
-                        lapOpts += `<option value="${lapNum}">Lap ${lapNum} (${l.lap_time.toFixed(3)}s)</option>`;
-                    });
-                }
+                lapsList.sort((a, b) => {
+                    if (a.lap_num === 'best') return -1;
+                    if (b.lap_num === 'best') return 1;
+                    return b.lap_num - a.lap_num;
+                }).forEach(l => {
+                    const label = l.lap_num === 'best' ? `Personal Best (${l.lap_time.toFixed(3)}s)` : `Lap ${l.lap_num} (${l.lap_time.toFixed(3)}s)`;
+                    lapOpts += `<option value="${l.lap_num}">${label}</option>`;
+                });
                 lapASelect.innerHTML = lapOpts;
             });
 
-            // Driver B
+            // Driver B Select
             driverBSelect.addEventListener('change', (e) => {
                 const mId = e.target.value;
-                if (!mId || !availableLaps[mId]) {
+                const trackName = trackSelect.value;
+                const carName = carSelect.value;
+                
+                if (!mId || !trackName || !carName || !tracksCatalog[trackName]?.[carName]?.[mId]) {
                     lapBSelect.innerHTML = '<option value="">Select a Driver first</option>';
                     lapBData = null;
                     updateUI();
@@ -849,17 +980,16 @@
                 }
 
                 let lapOpts = '<option value="">-- Select Lap --</option>';
-                const analysisNode = availableLaps[mId];
+                const lapsList = tracksCatalog[trackName][carName][mId];
                 
-                if (analysisNode.best) {
-                    lapOpts += `<option value="best">Personal Best (${analysisNode.best.lap_time.toFixed(3)}s)</option>`;
-                }
-                if (analysisNode.laps) {
-                    Object.keys(analysisNode.laps).sort((a,b) => b-a).forEach(lapNum => {
-                        const l = analysisNode.laps[lapNum];
-                        lapOpts += `<option value="${lapNum}">Lap ${lapNum} (${l.lap_time.toFixed(3)}s)</option>`;
-                    });
-                }
+                lapsList.sort((a, b) => {
+                    if (a.lap_num === 'best') return -1;
+                    if (b.lap_num === 'best') return 1;
+                    return b.lap_num - a.lap_num;
+                }).forEach(l => {
+                    const label = l.lap_num === 'best' ? `Personal Best (${l.lap_time.toFixed(3)}s)` : `Lap ${l.lap_num} (${l.lap_time.toFixed(3)}s)`;
+                    lapOpts += `<option value="${l.lap_num}">${label}</option>`;
+                });
                 lapBSelect.innerHTML = lapOpts;
             });
 
@@ -867,14 +997,16 @@
             lapASelect.addEventListener('change', (e) => {
                 const choice = e.target.value;
                 const mId = driverASelect.value;
-                if (!choice || !mId) {
+                const trackName = trackSelect.value;
+                const carName = carSelect.value;
+                if (!choice || !mId || !trackName || !carName) {
                     lapAData = null;
                     updateUI();
                     return;
                 }
                 
-                const node = availableLaps[mId];
-                lapAData = choice === 'best' ? node.best : node.laps[choice];
+                const lapMatch = tracksCatalog[trackName][carName][mId].find(l => String(l.lap_num) === String(choice));
+                lapAData = lapMatch ? lapMatch.data : null;
                 playbackIndex = 0;
                 scrubberSlider.value = 0;
                 updateUI();
@@ -884,17 +1016,19 @@
             lapBSelect.addEventListener('change', (e) => {
                 const choice = e.target.value;
                 const mId = driverBSelect.value;
-                if (!choice || !mId) {
+                const trackName = trackSelect.value;
+                const carName = carSelect.value;
+                if (!choice || !mId || !trackName || !carName) {
                     lapBData = null;
                     updateUI();
                     return;
                 }
                 
-                const node = availableLaps[mId];
-                lapBData = choice === 'best' ? node.best : node.laps[choice];
+                const lapMatch = tracksCatalog[trackName][carName][mId].find(l => String(l.lap_num) === String(choice));
+                lapBData = lapMatch ? lapMatch.data : null;
                 updateUI();
             });
-
+        
             // Play button handler
             playButton.addEventListener('click', togglePlayback);
 
