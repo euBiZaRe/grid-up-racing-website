@@ -795,35 +795,7 @@
             database.ref('driver_registry').once('value', (registrySnap) => {
                 const reg = registrySnap.val() || {};
                 
-                // Fetch analysis node
-                const refPath = teamId === "any" ? 'teams' : `teams/${teamId}/laps_analysis`;
-                database.ref(refPath).once('value', (snap) => {
-                    let data = {};
-                    if (teamId === "any") {
-                        const allTeams = snap.val() || {};
-                        Object.keys(allTeams).forEach(tKey => {
-                            if (allTeams[tKey] && allTeams[tKey].laps_analysis) {
-                                // Merge laps_analysis nodes
-                                Object.keys(allTeams[tKey].laps_analysis).forEach(mId => {
-                                    if (!data[mId]) {
-                                        data[mId] = allTeams[tKey].laps_analysis[mId];
-                                    } else {
-                                        // Merge laps and resolve best if driver exists in multiple teams
-                                        const existing = data[mId];
-                                        const incoming = allTeams[tKey].laps_analysis[mId];
-                                        if (incoming.laps) {
-                                            existing.laps = { ...existing.laps, ...incoming.laps };
-                                        }
-                                        if (incoming.best && (!existing.best || incoming.best.lap_time < existing.best.lap_time)) {
-                                            existing.best = incoming.best;
-                                        }
-                                    }
-                                });
-                            }
-                        });
-                    } else {
-                        data = snap.val() || {};
-                    }
+                function processLoadedData(data) {
                     const driversFound = Object.keys(data);
                     
                     if (driversFound.length === 0) {
@@ -883,7 +855,46 @@
                         trackOptions += `<option value="${tName}">${tName}</option>`;
                     });
                     trackSelect.innerHTML = trackOptions;
-                });
+                }
+
+                if (teamId === "any") {
+                    const teamIds = ['gridUp_sim', 'gridUp_black', 'gridUp_blue', 'gridUp_red', 'gridUp_white', 'gridUp_practice', 'solo'];
+                    const promises = teamIds.map(tKey => {
+                        return database.ref(`teams/${tKey}/laps_analysis`).once('value')
+                            .then(snap => snap.val())
+                            .catch(err => {
+                                console.warn(`Could not read team ${tKey}:`, err);
+                                return null;
+                            });
+                    });
+
+                    Promise.all(promises).then(results => {
+                        let data = {};
+                        results.forEach(lapsAnalysis => {
+                            if (lapsAnalysis) {
+                                Object.keys(lapsAnalysis).forEach(mId => {
+                                    if (!data[mId]) {
+                                        data[mId] = lapsAnalysis[mId];
+                                    } else {
+                                        const existing = data[mId];
+                                        const incoming = lapsAnalysis[mId];
+                                        if (incoming.laps) {
+                                            existing.laps = { ...existing.laps, ...incoming.laps };
+                                        }
+                                        if (incoming.best && (!existing.best || incoming.best.lap_time < existing.best.lap_time)) {
+                                            existing.best = incoming.best;
+                                        }
+                                    }
+                                });
+                            }
+                        });
+                        processLoadedData(data);
+                    });
+                } else {
+                    database.ref(`teams/${teamId}/laps_analysis`).once('value', (snap) => {
+                        processLoadedData(snap.val() || {});
+                    });
+                }
             });
         }
 
