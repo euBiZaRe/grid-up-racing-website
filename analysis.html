@@ -942,7 +942,20 @@
 
                         // Build registry names cache and group laps by track_name and car_name
                         driversFound.forEach(machineId => {
-                            const driverName = reg[machineId]?.name || data[machineId]?.best?.points?.[0]?.name || "Unknown Driver";
+                            let driverName = reg[machineId]?.name || data[machineId]?.best?.points?.[0]?.name;
+                            if (!driverName) {
+                                if (machineId === "mock_pro_driver") {
+                                    driverName = "Max Verstappen (Mock)";
+                                } else if (machineId === "mock_am_driver") {
+                                    driverName = "John Doe (Mock)";
+                                } else {
+                                    driverName = machineId
+                                        .replace(/[_-]/g, ' ')
+                                        .split(' ')
+                                        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+                                        .join(' ');
+                                }
+                            }
                             driversRegistry[machineId] = driverName;
                             availableLaps[machineId] = data[machineId] || {};
                             
@@ -1393,9 +1406,9 @@
                 return { x: px, y: py };
             }
 
-            // 1. Draw dark background track outline (the track road boundaries)
-            ctx.strokeStyle = 'rgba(30, 41, 59, 0.7)';
-            ctx.lineWidth = 16;
+            // 1. Draw solid dark grey background road surface (width 22px) representing track bounds
+            ctx.strokeStyle = '#1e293b'; // Slate-800 asphalt representation
+            ctx.lineWidth = 22;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
             ctx.beginPath();
@@ -1407,11 +1420,19 @@
             ctx.closePath();
             ctx.stroke();
 
-            // 2. Draw Lap B's Racing Line (dashed pink, thickness 6px) to clearly compare positions
+            // Draw a thin inner centerline on the asphalt for premium aesthetic
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([4, 12]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // 2. Draw Lap B's Racing Line (solid pink, thickness 9px)
+            // Stacking B (9px) under A (5px) creates a clear 2px pink border on both sides of A where they overlap,
+            // and lets B emerge clearly on its own trajectory when they diverge!
             if (lapBData && allPointsCount(lapBData) >= 2) {
-                ctx.strokeStyle = '#ec4899'; // Driver B Pink
-                ctx.lineWidth = 6;
-                ctx.setLineDash([8, 8]);
+                ctx.strokeStyle = 'rgba(244, 63, 94, 0.75)'; // Rose-500
+                ctx.lineWidth = 9;
                 ctx.beginPath();
                 lapBData.points.forEach((p, idx) => {
                     const pt = project(p.lat, p.lon);
@@ -1419,12 +1440,11 @@
                     else ctx.lineTo(pt.x, pt.y);
                 });
                 ctx.stroke();
-                ctx.setLineDash([]);
             }
 
-            // 3. Draw Lap A's Racing Line (solid blue, thickness 6px)
-            ctx.strokeStyle = '#3b82f6'; // Driver A Blue
-            ctx.lineWidth = 6;
+            // 3. Draw Lap A's Racing Line (solid blue, thickness 5px)
+            ctx.strokeStyle = 'rgba(59, 130, 246, 0.8)'; // Blue-500
+            ctx.lineWidth = 5;
             ctx.beginPath();
             lapAData.points.forEach((p, idx) => {
                 const pt = project(p.lat, p.lon);
@@ -1433,8 +1453,8 @@
             });
             ctx.stroke();
 
-            // 4. Overlay thin color-coded inputs line inside Driver A's line (throttle/brake)
-            ctx.lineWidth = 2.5;
+            // 4. Draw Driver A inputs (Throttle/Brake) inside a thin center line (2px width) on top of Lap A
+            ctx.lineWidth = 2;
             for (let i = 0; i < lapAData.points.length - 1; i++) {
                 const p1 = lapAData.points[i];
                 const p2 = lapAData.points[i + 1];
@@ -1442,7 +1462,7 @@
                 const pt2 = project(p2.lat, p2.lon);
 
                 if (p1.brk > 15) {
-                    ctx.strokeStyle = p1.abs ? '#f97316' : '#ef4444'; // Red (Orange for ABS)
+                    ctx.strokeStyle = p1.abs ? '#f97316' : '#ef4444'; // Red brake (Orange for ABS)
                 } else if (p1.thr > 20) {
                     ctx.strokeStyle = '#10b981'; // Green throttle
                 } else {
@@ -1453,6 +1473,32 @@
                 ctx.moveTo(pt1.x, pt1.y);
                 ctx.lineTo(pt2.x, pt2.y);
                 ctx.stroke();
+            }
+
+            // 5. Draw Driver B inputs if comparing (thin 2px dashed inside Driver B's path)
+            if (lapBData && allPointsCount(lapBData) >= 2) {
+                ctx.lineWidth = 1.5;
+                ctx.setLineDash([2, 5]);
+                for (let i = 0; i < lapBData.points.length - 1; i++) {
+                    const p1 = lapBData.points[i];
+                    const p2 = lapBData.points[i + 1];
+                    const pt1 = project(p1.lat, p1.lon);
+                    const pt2 = project(p2.lat, p2.lon);
+
+                    if (p1.brk > 15) {
+                        ctx.strokeStyle = p1.abs ? '#f97316' : '#f87171'; // Lighter red
+                    } else if (p1.thr > 20) {
+                        ctx.strokeStyle = '#34d399'; // Lighter green
+                    } else {
+                        ctx.strokeStyle = '#cbd5e1'; // Lighter grey
+                    }
+
+                    ctx.beginPath();
+                    ctx.moveTo(pt1.x, pt1.y);
+                    ctx.lineTo(pt2.x, pt2.y);
+                    ctx.stroke();
+                }
+                ctx.setLineDash([]);
             }
 
             // 3. Draw car placement dots
