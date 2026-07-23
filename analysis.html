@@ -929,7 +929,9 @@
                     return {};
                 })
                 .then(reg => {
+                    console.log("Registry resolution callback entered. Reg keys: " + Object.keys(reg).length);
                     function processLoadedData(data) {
+                        console.log("processLoadedData called. Drivers found: " + Object.keys(data).length);
                         const driversFound = Object.keys(data);
                         
                         if (driversFound.length === 0) {
@@ -1025,6 +1027,7 @@
                             processLoadedData(data);
                         });
                     } else {
+                        console.log("Triggering fetch for specific team: " + teamId);
                         database.ref(`teams/${teamId}/laps_analysis`).once('value')
                             .then(snap => {
                                 processLoadedData(snap.val() || {});
