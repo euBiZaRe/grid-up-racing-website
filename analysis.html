@@ -886,6 +886,10 @@
 
         // Load laps list for chosen team
         function loadLapsAnalysisData(tId) {
+            if (!database) {
+                console.warn("loadLapsAnalysisData: database connection not active yet. Skipping load.");
+                return;
+            }
             teamId = tId;
             const teamStatusEl = document.getElementById('db-team-status');
             const registryStatusEl = document.getElementById('db-registry-status');
