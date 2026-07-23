@@ -393,6 +393,11 @@
         • Driver Profile Registry: <span id="db-registry-status" style="color: #fbbf24;">Checking...</span><br>
         • Telemetry Laps Query: <span id="db-fetch-status" style="color: #fbbf24;">Checking...</span><br>
         • Loaded Tracks Catalog: <span id="db-tracks-status" style="color: #fbbf24;">Checking...</span>
+        <hr style="border-color: rgba(255,255,255,0.06); margin: 0.75rem 0;">
+        <strong style="color: #60a5fa; font-size: 0.8rem;">[Diagnostics Console Log Output]</strong><br>
+        <div id="debug-console-log" style="max-height: 120px; overflow-y: auto; color: #a1a1aa; font-family: monospace; font-size: 0.7rem; background: #020617; padding: 0.5rem; border-radius: 4px; margin-top: 0.25rem; white-space: pre-wrap;">
+            Initializing logger...
+        </div>
     </div>
 
     <nav id="navbar" class="scrolled">
@@ -692,6 +697,46 @@
             errDiv.innerText = 'JS Error: ' + e.message + ' at ' + e.filename + ':' + e.lineno;
             document.body.appendChild(errDiv);
         });
+
+        // Diagnostics console logger pipeline
+        (function() {
+            const consoleLogContainer = document.getElementById('debug-console-log');
+            if (consoleLogContainer) consoleLogContainer.innerHTML = '';
+            
+            function logToBanner(msg, type = 'info') {
+                const container = document.getElementById('debug-console-log');
+                if (!container) return;
+                const colors = { info: '#cbd5e1', warn: '#fbbf24', error: '#f87171' };
+                const color = colors[type] || '#cbd5e1';
+                const div = document.createElement('div');
+                div.style.color = color;
+                div.style.borderBottom = '1px solid rgba(255,255,255,0.02)';
+                div.style.padding = '2px 0';
+                div.innerText = `[${new Date().toLocaleTimeString()}] [${type.toUpperCase()}] ${msg}`;
+                container.appendChild(div);
+                container.scrollTop = container.scrollHeight;
+            }
+            
+            const origLog = console.log;
+            const origWarn = console.warn;
+            const origError = console.error;
+            
+            console.log = function(...args) {
+                origLog.apply(console, args);
+                logToBanner(args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' '), 'info');
+            };
+            console.warn = function(...args) {
+                origWarn.apply(console, args);
+                logToBanner(args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' '), 'warn');
+            };
+            console.error = function(...args) {
+                origError.apply(console, args);
+                logToBanner(args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' '), 'error');
+            };
+            
+            window.logToDiagnostics = logToBanner;
+            console.log("Console logger initialized successfully.");
+        })();
 
         // Initialize Firebase config
         let database = null;
