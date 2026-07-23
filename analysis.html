@@ -242,7 +242,7 @@
 
         .chart-wrapper {
             position: relative;
-            height: 560px;
+            height: 640px;
             background: rgba(0, 0, 0, 0.25);
             border-radius: 12px;
             overflow: hidden;
@@ -1576,17 +1576,18 @@
             // Stacked telemetry sections configuration
             // Row heights comfortably fit 6 stacked charts (Speed, Throttle, Brake, Steering, Gear, Delta-T)
             const charts = [
-                { name: "SPEED", yMin: 15, yMax: 105, valMin: 0, valMax: 280, color: "#60a5fa", suffix: " km/h", gridSteps: [100, 200, 250], getVal: p => p.spd ? p.spd * 3.6 : 0 },
-                { name: "THROTTLE", yMin: 120, yMax: 190, valMin: 0, valMax: 100, color: "#10b981", suffix: "%", gridSteps: [50, 100], getVal: p => p.thr || 0 },
-                { name: "BRAKE", yMin: 205, yMax: 275, valMin: 0, valMax: 100, color: "#ef4444", suffix: "%", gridSteps: [50, 100], getVal: p => p.brk || 0 },
-                { name: "STEERING", yMin: 290, yMax: 360, valMin: -180, valMax: 180, color: "#a855f7", suffix: "°", gridSteps: [-90, 0, 90], getVal: p => (p.str || 0) * (180 / Math.PI) * 4 },
-                { name: "GEAR", yMin: 375, yMax: 445, valMin: -1, valMax: 6, color: "#fbbf24", suffix: "", gridSteps: [-1, 0, 1, 2, 3, 4, 5, 6], getVal: p => p.gear || 0 }
+                { name: "SPEED", yMin: 15, yMax: 95, valMin: 0, valMax: 280, color: "#60a5fa", suffix: " km/h", gridSteps: [100, 200, 250], getVal: p => p.spd ? p.spd * 3.6 : 0 },
+                { name: "RPM", yMin: 110, yMax: 190, valMin: 0, valMax: 9000, color: "#fb923c", suffix: " rpm", gridSteps: [3000, 6000, 8000], getVal: p => p.rpm || 0 },
+                { name: "THROTTLE", yMin: 205, yMax: 275, valMin: 0, valMax: 100, color: "#10b981", suffix: "%", gridSteps: [50, 100], getVal: p => p.thr || 0 },
+                { name: "BRAKE", yMin: 290, yMax: 360, valMin: 0, valMax: 100, color: "#ef4444", suffix: "%", gridSteps: [50, 100], getVal: p => p.brk || 0 },
+                { name: "STEERING", yMin: 375, yMax: 445, valMin: -180, valMax: 180, color: "#a855f7", suffix: "°", gridSteps: [-90, 0, 90], getVal: p => (p.str || 0) * (180 / Math.PI) * 4 },
+                { name: "GEAR", yMin: 460, yMax: 530, valMin: -1, valMax: 6, color: "#e2e8f0", suffix: "", gridSteps: [-1, 0, 1, 2, 3, 4, 5, 6], getVal: p => p.gear || 0 }
             ];
 
             // Add Delta-T chart at the bottom if comparing
             if (lapBData) {
                 charts.push({
-                    name: "TIME DELTA", yMin: 460, yMax: 510, valMin: -2.0, valMax: 2.0, color: "#f59e0b", suffix: "s", gridSteps: [-1.0, 0.0, 1.0],
+                    name: "TIME DELTA", yMin: 545, yMax: 605, valMin: -2.0, valMax: 2.0, color: "#f59e0b", suffix: "s", gridSteps: [-1.0, 0.0, 1.0],
                     getVal: (pA, idxA) => {
                         const pointsA = lapAData.points;
                         const pointsB = lapBData.points;
@@ -1713,7 +1714,7 @@
 
                 // Build values tooltip card
                 const boxW = 160;
-                const boxH = lapBData ? 180 : 100;
+                const boxH = lapBData ? 210 : 115;
                 const boxX = hoverX + boxW + 15 > w ? hoverX - boxW - 15 : hoverX + 15;
                 const boxY = 25;
 
@@ -1735,28 +1736,30 @@
                 ctx.fillText(`DRIVER A (Blue):`, boxX + 10, boxY + 28);
                 ctx.fillStyle = '#f8fafc';
                 ctx.fillText(`• Speed: ${Math.round(pA.spd * 3.6)} km/h`, boxX + 14, boxY + 38);
-                ctx.fillText(`• Throttle: ${Math.round(pA.thr || 0)}%`, boxX + 14, boxY + 48);
-                ctx.fillText(`• Brake: ${Math.round(pA.brk || 0)}%`, boxX + 14, boxY + 58);
-                ctx.fillText(`• Steering: ${Math.round((pA.str || 0) * (180/Math.PI)*4)}°`, boxX + 14, boxY + 68);
-                ctx.fillText(`• Gear: ${pA.gear === 0 ? 'N' : pA.gear === -1 ? 'R' : pA.gear}`, boxX + 14, boxY + 78);
+                ctx.fillText(`• RPM: ${pA.rpm || 0} rpm`, boxX + 14, boxY + 48);
+                ctx.fillText(`• Throttle: ${Math.round(pA.thr || 0)}%`, boxX + 14, boxY + 58);
+                ctx.fillText(`• Brake: ${Math.round(pA.brk || 0)}%`, boxX + 14, boxY + 68);
+                ctx.fillText(`• Steering: ${Math.round((pA.str || 0) * (180/Math.PI)*4)}°`, boxX + 14, boxY + 78);
+                ctx.fillText(`• Gear: ${pA.gear === 0 ? 'N' : pA.gear === -1 ? 'R' : pA.gear}`, boxX + 14, boxY + 88);
 
                 // Driver B Inputs
                 if (pB) {
                     ctx.fillStyle = '#ec4899';
-                    ctx.fillText(`DRIVER B (Pink):`, boxX + 10, boxY + 94);
+                    ctx.fillText(`DRIVER B (Pink):`, boxX + 10, boxY + 104);
                     ctx.fillStyle = '#f8fafc';
-                    ctx.fillText(`• Speed: ${Math.round(pB.spd * 3.6)} km/h`, boxX + 14, boxY + 104);
-                    ctx.fillText(`• Throttle: ${Math.round(pB.thr || 0)}%`, boxX + 14, boxY + 114);
-                    ctx.fillText(`• Brake: ${Math.round(pB.brk || 0)}%`, boxX + 14, boxY + 124);
-                    ctx.fillText(`• Steering: ${Math.round((pB.str || 0) * (180/Math.PI)*4)}°`, boxX + 14, boxY + 134);
-                    ctx.fillText(`• Gear: ${pB.gear === 0 ? 'N' : pB.gear === -1 ? 'R' : pB.gear}`, boxX + 14, boxY + 144);
+                    ctx.fillText(`• Speed: ${Math.round(pB.spd * 3.6)} km/h`, boxX + 14, boxY + 114);
+                    ctx.fillText(`• RPM: ${pB.rpm || 0} rpm`, boxX + 14, boxY + 124);
+                    ctx.fillText(`• Throttle: ${Math.round(pB.thr || 0)}%`, boxX + 14, boxY + 134);
+                    ctx.fillText(`• Brake: ${Math.round(pB.brk || 0)}%`, boxX + 14, boxY + 144);
+                    ctx.fillText(`• Steering: ${Math.round((pB.str || 0) * (180/Math.PI)*4)}°`, boxX + 14, boxY + 154);
+                    ctx.fillText(`• Gear: ${pB.gear === 0 ? 'N' : pB.gear === -1 ? 'R' : pB.gear}`, boxX + 14, boxY + 164);
 
                     // Delta
                     const tA = idxA * (lapAData.lap_time / lapAData.points.length);
                     const tB = idxB * (lapBData.lap_time / lapBData.points.length);
                     const delta = tA - tB;
                     ctx.fillStyle = '#f59e0b';
-                    ctx.fillText(`• Delta: ${delta >= 0 ? '+' : ''}${delta.toFixed(3)}s`, boxX + 14, boxY + 158);
+                    ctx.fillText(`• Delta: ${delta >= 0 ? '+' : ''}${delta.toFixed(3)}s`, boxX + 14, boxY + 178);
                 }
             }
         }
