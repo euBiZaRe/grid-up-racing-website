@@ -425,6 +425,7 @@
                     <div class="custom-select-wrapper">
                         <i data-lucide="users" style="width: 16px; height: 16px; color: var(--text-muted);"></i>
                         <select id="team-select">
+                            <option value="any">-- All Teams --</option>
                             <option value="gridUp_sim">GRiD UP Sim Racing</option>
                             <option value="gridUp_black">GRiD UP Black</option>
                             <option value="gridUp_blue">GRiD UP Blue</option>
@@ -743,7 +744,7 @@
             if (hasOption) {
                 teamSelect.value = currentSelected;
             } else {
-                teamSelect.value = "gridUp_sim";
+                teamSelect.value = "any";
             }
             // Trigger data load
             loadLapsAnalysisData(teamSelect.value);
