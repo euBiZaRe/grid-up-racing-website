@@ -771,6 +771,19 @@
         let teamId = "gridUp_sim";
         let hoverPct = null; // mouse hover position percentage
 
+        // Convert seconds to MM:SS:MS formatting
+        function formatLapTime(secs) {
+            if (isNaN(secs) || secs === null || secs === undefined) return "--:--:---";
+            const minutes = Math.floor(secs / 60);
+            const remainingSecs = Math.floor(secs % 60);
+            const milliseconds = Math.round((secs % 1) * 1000);
+            
+            const mm = String(minutes).padStart(2, '0');
+            const ss = String(remainingSecs).padStart(2, '0');
+            const ms = String(milliseconds).padStart(3, '0');
+            return `${mm}:${ss}:${ms}`;
+        }
+
         let driversRegistry = {}; // machineId -> Driver Name
         let availableLaps = {}; // machineId -> list of { lap_num, lap_time, points }
 
@@ -1152,7 +1165,7 @@
                     if (b.lap_num === 'best') return 1;
                     return b.lap_num - a.lap_num;
                 }).forEach(l => {
-                    const label = l.lap_num === 'best' ? `Personal Best (${l.lap_time.toFixed(3)}s)` : `Lap ${l.lap_num} (${l.lap_time.toFixed(3)}s)`;
+                    const label = l.lap_num === 'best' ? `Personal Best (${formatLapTime(l.lap_time)})` : `Lap ${l.lap_num} (${formatLapTime(l.lap_time)})`;
                     lapOpts += `<option value="${l.lap_num}">${label}</option>`;
                 });
                 lapASelect.innerHTML = lapOpts;
@@ -1179,7 +1192,7 @@
                     if (b.lap_num === 'best') return 1;
                     return b.lap_num - a.lap_num;
                 }).forEach(l => {
-                    const label = l.lap_num === 'best' ? `Personal Best (${l.lap_time.toFixed(3)}s)` : `Lap ${l.lap_num} (${l.lap_time.toFixed(3)}s)`;
+                    const label = l.lap_num === 'best' ? `Personal Best (${formatLapTime(l.lap_time)})` : `Lap ${l.lap_num} (${formatLapTime(l.lap_time)})`;
                     lapOpts += `<option value="${l.lap_num}">${label}</option>`;
                 });
                 lapBSelect.innerHTML = lapOpts;
@@ -1754,7 +1767,7 @@
             if (!ptA) return;
 
             document.getElementById('hud-a-name').innerText = driversRegistry[driverASelect.value] || "Driver A";
-            document.getElementById('hud-a-time').innerText = `${lapAData.lap_time.toFixed(3)}s (Lap ${lapAData.lap_num})`;
+            document.getElementById('hud-a-time').innerText = `${formatLapTime(lapAData.lap_time)} (Lap ${lapAData.lap_num})`;
             document.getElementById('hud-a-speed').innerText = `${Math.round(ptA.spd * 3.6)} km/h`;
             document.getElementById('hud-a-gear').innerText = ptA.gear === 0 ? "N" : ptA.gear === -1 ? "R" : ptA.gear;
             document.getElementById('hud-a-gas-bar').style.width = `${ptA.thr}%`;
@@ -1799,7 +1812,7 @@
                     }
 
                     document.getElementById('hud-b-name').innerText = driversRegistry[driverBSelect.value] || "Driver B";
-                    document.getElementById('hud-b-time').innerText = `${lapBData.lap_time.toFixed(3)}s (Lap ${lapBData.lap_num})`;
+                    document.getElementById('hud-b-time').innerText = `${formatLapTime(lapBData.lap_time)} (Lap ${lapBData.lap_num})`;
                     document.getElementById('hud-b-speed').innerText = `${Math.round(ptB.spd * 3.6)} km/h`;
                     document.getElementById('hud-b-gear').innerText = ptB.gear === 0 ? "N" : ptB.gear === -1 ? "R" : ptB.gear;
                     document.getElementById('hud-b-gas-bar').style.width = `${ptB.thr}%`;
