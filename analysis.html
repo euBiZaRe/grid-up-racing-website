@@ -1221,34 +1221,7 @@
                 updateHudValues();
                 drawLapsAndMarkers();
                 drawTelemetryCharts();
-            });
-
-            // Chart Canvas Click-to-Scrub
-            chartCanvas.addEventListener('mousedown', (e) => {
-                if (!lapAData || allPointsCount(lapAData) < 2) return;
-                
-                const rect = chartCanvas.getBoundingClientRect();
-                const clickX = e.clientX - rect.left;
-                
-                const clickPct = clickX / chartCanvas.width;
-                
-                let closestIndex = 0;
-                let minDistance = 999999;
-                
-                lapAData.points.forEach((p, idx) => {
-                    const dist = Math.abs(p.pct - clickPct);
-                    if (dist < minDistance) {
-                        minDistance = dist;
-                        closestIndex = idx;
-                    }
-                });
-                
-                playbackIndex = closestIndex;
-                updateHudValues();
-                drawLapsAndMarkers();
-                drawTelemetryCharts();
-            });
-        }
+            });        }
 
         // Draw message in empty canvas
         function drawEmptyCanvas(cvs, text) {
