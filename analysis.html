@@ -744,25 +744,23 @@
             } else {
                 teamSelect.value = "gridUp_sim";
             }
+            // Trigger data load
+            loadLapsAnalysisData(teamSelect.value);
         }
 
         // Initialize Firebase connection
         function initFirebaseConnection() {
             if (window.firebase) {
-                const config = {
-                    apiKey: "AIzaSyAs7M..." ,
-                    authDomain: "grid-up-racedash.firebaseapp.com",
-                    databaseURL: "https://grid-up-racedash-default-rtdb.europe-west1.firebasedatabase.app",
-                    projectId: "grid-up-racedash",
-                    storageBucket: "grid-up-racedash.appspot.com",
-                    messagingSenderId: "109865431",
-                    appId: "1:109865431:web:abcde"
-                };
-                
                 try {
-                    let telemetryApp = firebase.initializeApp(config, "analysis_app");
+                    let telemetryApp = firebase.apps.find(app => app.name === "telemetry_analysis");
+                    if (!telemetryApp) {
+                        telemetryApp = firebase.initializeApp({
+                            databaseURL: "https://grid-up-racedash-default-rtdb.europe-west1.firebasedatabase.app"
+                        }, "telemetry_analysis");
+                    }
                     database = telemetryApp.database();
                 } catch (err) {
+                    console.error("Firebase secondary app init failed:", err);
                     database = firebase.database();
                 }
                 
