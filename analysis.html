@@ -556,9 +556,12 @@
             <div style="display: flex; flex-direction: column; justify-content: space-between;">
                 <!-- Telemetry comparison charts (canvas line chart) -->
                 <div class="chart-analysis-card">
-                    <h3 style="font-size: 1rem; font-weight: 900; color: #fff; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 8px;">
-                        <i data-lucide="bar-chart" style="width: 18px; height: 18px; color: #3b82f6;"></i>
-                        <span>Input & Speed Traces</span>
+                    <h3 style="font-size: 1rem; font-weight: 900; color: #fff; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i data-lucide="bar-chart" style="width: 18px; height: 18px; color: #3b82f6;"></i>
+                            <span>Input & Speed Traces</span>
+                        </div>
+                        <button id="reset-zoom-button" style="display: none; padding: 4px 10px; font-size: 0.7rem; font-weight: bold; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.35); border-radius: 4px; color: #60a5fa; cursor: pointer; transition: all 0.2s ease;">Reset Zoom</button>
                     </h3>
                     <div class="chart-wrapper">
                         <canvas id="telemetry-chart-canvas"></canvas>
@@ -703,6 +706,14 @@
         // Visual chart scale offsets
         let gpsBounds = { minLat: 0, maxLat: 0, minLon: 0, maxLon: 0, aspect: 1 };
 
+        // Zooming state variables
+        let zoomStart = 0.0;
+        let zoomEnd = 1.0;
+        let isZoomed = false;
+        let isDragging = false;
+        let dragStartPct = null;
+        let dragCurrentPct = null;
+
         // DOM elements
         const teamSelect = document.getElementById('team-select');
         const trackSelect = document.getElementById('track-select');
@@ -820,6 +831,11 @@
             tracksCatalog = {};
             lapAData = null;
             lapBData = null;
+            zoomStart = 0.0;
+            zoomEnd = 1.0;
+            isZoomed = false;
+            const rzBtn = document.getElementById('reset-zoom-button');
+            if (rzBtn) rzBtn.style.display = 'none';
             resetHUDs();
             drawEmptyCanvas(trackCanvas, "No Lap Selected");
             drawEmptyCanvas(chartCanvas, "No Lap Selected");
@@ -964,6 +980,18 @@
                 loadLapsAnalysisData(e.target.value);
             });
 
+            // Reset Zoom Button Click Listener
+            const resetZoomBtn = document.getElementById('reset-zoom-button');
+            if (resetZoomBtn) {
+                resetZoomBtn.addEventListener('click', () => {
+                    zoomStart = 0.0;
+                    zoomEnd = 1.0;
+                    isZoomed = false;
+                    resetZoomBtn.style.display = 'none';
+                    updateUI();
+                });
+            }
+
             // Compare Toggle
             compareToggle.addEventListener('change', (e) => {
                 const checked = e.target.checked;
@@ -988,6 +1016,11 @@
                 
                 lapAData = null;
                 lapBData = null;
+                zoomStart = 0.0;
+                zoomEnd = 1.0;
+                isZoomed = false;
+                const rzBtn = document.getElementById('reset-zoom-button');
+                if (rzBtn) rzBtn.style.display = 'none';
                 resetHUDs();
                 drawEmptyCanvas(trackCanvas, "No Lap Selected");
                 drawEmptyCanvas(chartCanvas, "No Lap Selected");
@@ -1016,6 +1049,11 @@
                 
                 lapAData = null;
                 lapBData = null;
+                zoomStart = 0.0;
+                zoomEnd = 1.0;
+                isZoomed = false;
+                const rzBtn = document.getElementById('reset-zoom-button');
+                if (rzBtn) rzBtn.style.display = 'none';
                 resetHUDs();
                 drawEmptyCanvas(trackCanvas, "No Lap Selected");
                 drawEmptyCanvas(chartCanvas, "No Lap Selected");
@@ -1239,7 +1277,7 @@
             let allLons = [];
             
             lapAData.points.forEach(p => {
-                if (p.lat && p.lon) {
+                if (p.pct >= zoomStart && p.pct <= zoomEnd && p.lat && p.lon) {
                     allLats.push(p.lat);
                     allLons.push(p.lon);
                 }
@@ -1247,7 +1285,7 @@
 
             if (lapBData) {
                 lapBData.points.forEach(p => {
-                    if (p.lat && p.lon) {
+                    if (p.pct >= zoomStart && p.pct <= zoomEnd && p.lat && p.lon) {
                         allLats.push(p.lat);
                         allLons.push(p.lon);
                     }
@@ -1610,6 +1648,11 @@
                     return c.yMax - constrained * (c.yMax - c.yMin - 15) - 5;
                 }
 
+                // Helper to check if a percentage is in the visible zoom viewport
+                function inViewport(pct) {
+                    return pct >= zoomStart && pct <= zoomEnd;
+                }
+
                 // Draw Driver B Line (Comparison) - Dashed
                 if (lapBData) {
                     ctx.strokeStyle = c.color;
@@ -1617,13 +1660,18 @@
                     ctx.setLineDash([3, 4]);
                     ctx.beginPath();
                     
+                    let firstPt = true;
                     lapBData.points.forEach((pB, idxB) => {
-                        const x = pB.pct * w;
+                        const x = ((pB.pct - zoomStart) / (zoomEnd - zoomStart)) * w;
                         if (c.name.includes("TIME")) return; 
                         const val = c.getVal(pB, idxB);
                         const y = getScaledY(val);
-                        if (idxB === 0) ctx.moveTo(x, y);
-                        else ctx.lineTo(x, y);
+                        if (firstPt) {
+                            ctx.moveTo(x, y);
+                            firstPt = false;
+                        } else {
+                            ctx.lineTo(x, y);
+                        }
                     });
                     ctx.stroke();
                     ctx.setLineDash([]);
@@ -1633,31 +1681,48 @@
                 ctx.strokeStyle = c.name.includes("TIME") ? "#f59e0b" : c.color;
                 ctx.lineWidth = 2;
                 ctx.beginPath();
+                let firstPtA = true;
                 lapAData.points.forEach((pA, idxA) => {
-                    const x = pA.pct * w;
+                    const x = ((pA.pct - zoomStart) / (zoomEnd - zoomStart)) * w;
                     const val = c.getVal(pA, idxA);
                     const y = getScaledY(val);
-                    if (idxA === 0) ctx.moveTo(x, y);
-                    else ctx.lineTo(x, y);
+                    if (firstPtA) {
+                        ctx.moveTo(x, y);
+                        firstPtA = false;
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
                 });
                 ctx.stroke();
             });
 
-            // Draw vertical scrub scrubber cursor
+            // Draw vertical scrub scrubber cursor (only if inside zoom viewport)
             const currentPct = lapAData.points[playbackIndex]?.pct || 0;
-            const cursorX = currentPct * w;
-            
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
-            ctx.lineWidth = 1.25;
-            ctx.setLineDash([4, 4]);
-            ctx.beginPath();
-            ctx.moveTo(cursorX, 0);
-            ctx.lineTo(cursorX, h);
-            ctx.stroke();
-            ctx.setLineDash([]);
+            if (currentPct >= zoomStart && currentPct <= zoomEnd) {
+                const cursorX = ((currentPct - zoomStart) / (zoomEnd - zoomStart)) * w;
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+                ctx.lineWidth = 1.25;
+                ctx.setLineDash([4, 4]);
+                ctx.beginPath();
+                ctx.moveTo(cursorX, 0);
+                ctx.lineTo(cursorX, h);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
 
-            // Draw Hover Tooltip overlay details
-            if (hoverPct !== null) {
+            // Draw current drag brushing selection overlay if active
+            if (isDragging && dragStartPct !== null && dragCurrentPct !== null) {
+                const x1 = ((dragStartPct - zoomStart) / (zoomEnd - zoomStart)) * w;
+                const x2 = ((dragCurrentPct - zoomStart) / (zoomEnd - zoomStart)) * w;
+                ctx.fillStyle = 'rgba(59, 130, 246, 0.2)';
+                ctx.fillRect(Math.min(x1, x2), 0, Math.abs(x2 - x1), h);
+                ctx.strokeStyle = 'rgba(59, 130, 246, 0.5)';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(Math.min(x1, x2), 0, Math.abs(x2 - x1), h);
+            }
+
+            // Draw Hover Tooltip overlay details (only if inside zoom viewport)
+            if (hoverPct !== null && hoverPct >= zoomStart && hoverPct <= zoomEnd) {
                 const idxA = Math.round(hoverPct * (lapAData.points.length - 1));
                 const pA = lapAData.points[idxA];
                 
@@ -1669,7 +1734,7 @@
                 }
 
                 // Hover guide vertical line
-                const hoverX = hoverPct * w;
+                const hoverX = ((hoverPct - zoomStart) / (zoomEnd - zoomStart)) * w;
                 ctx.strokeStyle = 'rgba(239, 68, 68, 0.6)'; // Red hover guide line
                 ctx.lineWidth = 1.25;
                 ctx.beginPath();
@@ -1700,12 +1765,14 @@
                 ctx.fillStyle = '#60a5fa';
                 ctx.fillText(`DRIVER A (Blue):`, boxX + 10, boxY + 28);
                 ctx.fillStyle = '#f8fafc';
-                ctx.fillText(`• Speed: ${Math.round(pA.spd * 3.6)} km/h`, boxX + 14, boxY + 38);
-                ctx.fillText(`• RPM: ${pA.rpm || 0} rpm`, boxX + 14, boxY + 48);
-                ctx.fillText(`• Throttle: ${Math.round(pA.thr || 0)}%`, boxX + 14, boxY + 58);
-                ctx.fillText(`• Brake: ${Math.round(pA.brk || 0)}%`, boxX + 14, boxY + 68);
-                ctx.fillText(`• Steering: ${Math.round((pA.str || 0) * (180/Math.PI)*4)}°`, boxX + 14, boxY + 78);
-                ctx.fillText(`• Gear: ${pA.gear === 0 ? 'N' : pA.gear === -1 ? 'R' : pA.gear}`, boxX + 14, boxY + 88);
+                if (pA) {
+                    ctx.fillText(`• Speed: ${Math.round(pA.spd * 3.6)} km/h`, boxX + 14, boxY + 38);
+                    ctx.fillText(`• RPM: ${pA.rpm || 0} rpm`, boxX + 14, boxY + 48);
+                    ctx.fillText(`• Throttle: ${Math.round(pA.thr || 0)}%`, boxX + 14, boxY + 58);
+                    ctx.fillText(`• Brake: ${Math.round(pA.brk || 0)}%`, boxX + 14, boxY + 68);
+                    ctx.fillText(`• Steering: ${Math.round((pA.str || 0) * (180/Math.PI)*4)}°`, boxX + 14, boxY + 78);
+                    ctx.fillText(`• Gear: ${pA.gear === 0 ? 'N' : pA.gear === -1 ? 'R' : pA.gear}`, boxX + 14, boxY + 88);
+                }
 
                 // Driver B Inputs
                 if (pB) {
@@ -1728,7 +1795,6 @@
                 }
             }
         }
-
         function updateHudValues() {
             if (!lapAData) return;
             const ptA = lapAData.points[playbackIndex];
