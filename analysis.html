@@ -1296,6 +1296,14 @@
                 const latRange = Math.abs(gpsBounds.maxLat - gpsBounds.minLat) || 0.0001;
                 const lonRange = Math.abs((gpsBounds.maxLon - gpsBounds.minLon) * gpsBounds.cosLat) || 0.0001;
                 gpsBounds.aspect = lonRange / latRange;
+            } else {
+                // Synthetic layout bounds fallback
+                gpsBounds.minLat = 50.423;
+                gpsBounds.maxLat = 50.437;
+                gpsBounds.minLon = 5.958;
+                gpsBounds.maxLon = 5.982;
+                gpsBounds.cosLat = Math.cos(50.43 * Math.PI / 180);
+                gpsBounds.aspect = 1.5;
             }
 
             // Update scrubber limit based on Lap A points
@@ -1327,6 +1335,23 @@
             const diffLon = Math.abs((gpsBounds.maxLon - gpsBounds.minLon) * gpsBounds.cosLat) || 0.0001;
             const diffLat = Math.abs(gpsBounds.maxLat - gpsBounds.minLat) || 0.0001;
 
+            const hasRealGps = allLats.length > 0;
+
+            function getPtLatLon(p) {
+                if (hasRealGps) {
+                    return { lat: p.lat, lon: p.lon };
+                }
+                // Fallback for cars/sim sessions without direct GPS API outputs
+                // Generates smooth proportional track layout based on lap progress percentage
+                const t = (p.pct || 0) * 2 * Math.PI;
+                const x = 8.0 * Math.cos(t) + 2.5 * Math.sin(2 * t) + 0.8 * Math.cos(3 * t);
+                const y = 5.0 * Math.sin(t) + 1.8 * Math.cos(2 * t) + 0.4 * Math.sin(4 * t);
+                return {
+                    lat: 50.43 + y * 0.0006,
+                    lon: 5.97 + x * 0.0006
+                };
+            }
+
             function project(lat, lon) {
                 let px = 0;
                 let py = 0;
@@ -1351,8 +1376,9 @@
             ctx.beginPath();
             let firstPt = true;
             lapAData.points.forEach((p, idx) => {
-                if (!p || typeof p.lat !== 'number' || typeof p.lon !== 'number') return;
-                const pt = project(p.lat, p.lon);
+                if (!p) return;
+                const c = getPtLatLon(p);
+                const pt = project(c.lat, c.lon);
                 if (firstPt) {
                     ctx.moveTo(pt.x, pt.y);
                     firstPt = false;
@@ -1379,8 +1405,9 @@
                 ctx.beginPath();
                 let firstPt = true;
                 lapBData.points.forEach((p, idx) => {
-                    if (!p || typeof p.lat !== 'number' || typeof p.lon !== 'number') return;
-                    const pt = project(p.lat, p.lon);
+                    if (!p) return;
+                    const c = getPtLatLon(p);
+                    const pt = project(c.lat, c.lon);
                     if (firstPt) {
                         ctx.moveTo(pt.x, pt.y);
                         firstPt = false;
@@ -1397,8 +1424,9 @@
             ctx.beginPath();
             let firstPtA = true;
             lapAData.points.forEach((p, idx) => {
-                if (!p || typeof p.lat !== 'number' || typeof p.lon !== 'number') return;
-                const pt = project(p.lat, p.lon);
+                if (!p) return;
+                const c = getPtLatLon(p);
+                const pt = project(c.lat, c.lon);
                 if (firstPtA) {
                     ctx.moveTo(pt.x, pt.y);
                     firstPtA = false;
@@ -1413,9 +1441,11 @@
             for (let i = 0; i < lapAData.points.length - 1; i++) {
                 const p1 = lapAData.points[i];
                 const p2 = lapAData.points[i + 1];
-                if (!p1 || !p2 || typeof p1.lat !== 'number' || typeof p2.lat !== 'number') continue;
-                const pt1 = project(p1.lat, p1.lon);
-                const pt2 = project(p2.lat, p2.lon);
+                if (!p1 || !p2) continue;
+                const c1 = getPtLatLon(p1);
+                const c2 = getPtLatLon(p2);
+                const pt1 = project(c1.lat, c1.lon);
+                const pt2 = project(c2.lat, c2.lon);
 
                 if (p1.brk > 15) {
                     ctx.strokeStyle = p1.abs ? '#f97316' : '#ef4444'; // Red brake (Orange for ABS)
@@ -1438,9 +1468,11 @@
                 for (let i = 0; i < lapBData.points.length - 1; i++) {
                     const p1 = lapBData.points[i];
                     const p2 = lapBData.points[i + 1];
-                    if (!p1 || !p2 || typeof p1.lat !== 'number' || typeof p2.lat !== 'number') continue;
-                    const pt1 = project(p1.lat, p1.lon);
-                    const pt2 = project(p2.lat, p2.lon);
+                    if (!p1 || !p2) continue;
+                    const c1 = getPtLatLon(p1);
+                    const c2 = getPtLatLon(p2);
+                    const pt1 = project(c1.lat, c1.lon);
+                    const pt2 = project(c2.lat, c2.lon);
 
                     if (p1.brk > 15) {
                         ctx.strokeStyle = p1.abs ? '#f97316' : '#f87171'; // Lighter red
@@ -1458,11 +1490,12 @@
                 ctx.setLineDash([]);
             }
 
-            // 3. Draw car placement dots
+            // 6. Draw car placement dots
             if (playbackIndex < lapAData.points.length) {
                 const carA = lapAData.points[playbackIndex];
-                if (carA && typeof carA.lat === 'number' && typeof carA.lon === 'number') {
-                    const ptA = project(carA.lat, carA.lon);
+                if (carA) {
+                    const cA = getPtLatLon(carA);
+                    const ptA = project(cA.lat, cA.lon);
                     
                     ctx.fillStyle = 'rgba(59, 130, 246, 0.25)';
                     ctx.beginPath();
@@ -1496,8 +1529,9 @@
                 
                 if (bIdx < lapBData.points.length) {
                     const carB = lapBData.points[bIdx];
-                    if (carB && typeof carB.lat === 'number' && typeof carB.lon === 'number') {
-                        const ptB = project(carB.lat, carB.lon);
+                    if (carB) {
+                        const cB = getPtLatLon(carB);
+                        const ptB = project(cB.lat, cB.lon);
                     
                     ctx.fillStyle = 'rgba(236, 72, 153, 0.25)';
                     ctx.beginPath();
@@ -1520,8 +1554,9 @@
         if (hoverPct !== null) {
             const idxA = Math.round(hoverPct * (lapAData.points.length - 1));
             const carA = lapAData.points[idxA];
-            if (carA && typeof carA.lat === 'number' && typeof carA.lon === 'number') {
-                const ptA = project(carA.lat, carA.lon);
+            if (carA) {
+                const cA = getPtLatLon(carA);
+                const ptA = project(cA.lat, cA.lon);
                 
                 // Draw outer white ring and blue core
                 ctx.strokeStyle = '#fff';
@@ -1542,8 +1577,9 @@
             if (lapBData) {
                 const idxB = Math.round(hoverPct * (lapBData.points.length - 1));
                 const carB = lapBData.points[idxB];
-                if (carB && typeof carB.lat === 'number' && typeof carB.lon === 'number') {
-                    const ptB = project(carB.lat, carB.lon);
+                if (carB) {
+                    const cB = getPtLatLon(carB);
+                    const ptB = project(cB.lat, cB.lon);
                     
                     // Draw outer white ring and pink core
                     ctx.strokeStyle = '#fff';
@@ -1556,7 +1592,7 @@
                     
                     ctx.fillStyle = '#ec4899';
                     ctx.beginPath();
-                    ctx.arc(ptB.x, ptB.y, 3.5, 0, 2 * Math.PI);
+                    ctx.arc(ptB.y, ptB.y, 3.5, 0, 2 * Math.PI);
                     ctx.fill();
                     ctx.shadowBlur = 0;
                 }
