@@ -1534,18 +1534,18 @@
             // Stacked telemetry sections configuration
             // Row heights comfortably fit 6 stacked charts (Speed, Throttle, Brake, Steering, Gear, Delta-T)
             const charts = [
-                { name: "SPEED", yMin: 15, yMax: 95, valMin: 0, valMax: 280, color: "#60a5fa", suffix: " km/h", gridSteps: [100, 200, 250], getVal: p => p.spd ? p.spd * 3.6 : 0 },
-                { name: "RPM", yMin: 110, yMax: 190, valMin: 0, valMax: 9000, color: "#fb923c", suffix: " rpm", gridSteps: [3000, 6000, 8000], getVal: p => p.rpm || 0 },
-                { name: "THROTTLE", yMin: 205, yMax: 275, valMin: 0, valMax: 100, color: "#10b981", suffix: "%", gridSteps: [50, 100], getVal: p => p.thr || 0 },
-                { name: "BRAKE", yMin: 290, yMax: 360, valMin: 0, valMax: 100, color: "#ef4444", suffix: "%", gridSteps: [50, 100], getVal: p => p.brk || 0 },
-                { name: "STEERING", yMin: 375, yMax: 445, valMin: -180, valMax: 180, color: "#a855f7", suffix: "°", gridSteps: [-90, 0, 90], getVal: p => (p.str || 0) * (180 / Math.PI) * 4 },
-                { name: "GEAR", yMin: 460, yMax: 530, valMin: -1, valMax: 6, color: "#e2e8f0", suffix: "", gridSteps: [-1, 0, 1, 2, 3, 4, 5, 6], getVal: p => p.gear || 0 }
+                { name: "SPEED", valMin: 0, valMax: 280, color: "#60a5fa", suffix: " km/h", gridSteps: [100, 200, 250], getVal: p => p.spd ? p.spd * 3.6 : 0 },
+                { name: "RPM", valMin: 0, valMax: 9000, color: "#fb923c", suffix: " rpm", gridSteps: [3000, 6000, 8000], getVal: p => p.rpm || 0 },
+                { name: "THROTTLE", valMin: 0, valMax: 100, color: "#10b981", suffix: "%", gridSteps: [50, 100], getVal: p => p.thr || 0 },
+                { name: "BRAKE", valMin: 0, valMax: 100, color: "#ef4444", suffix: "%", gridSteps: [50, 100], getVal: p => p.brk || 0 },
+                { name: "STEERING", valMin: -180, valMax: 180, color: "#a855f7", suffix: "°", gridSteps: [-90, 0, 90], getVal: p => (p.str || 0) * (180 / Math.PI) * 4 },
+                { name: "GEAR", valMin: -1, valMax: 6, color: "#e2e8f0", suffix: "", gridSteps: [-1, 0, 1, 2, 3, 4, 5, 6], getVal: p => p.gear || 0 }
             ];
 
             // Add Delta-T chart at the bottom if comparing
             if (lapBData) {
                 charts.push({
-                    name: "TIME DELTA", yMin: 545, yMax: 605, valMin: -2.0, valMax: 2.0, color: "#f59e0b", suffix: "s", gridSteps: [-1.0, 0.0, 1.0],
+                    name: "TIME DELTA", valMin: -2.0, valMax: 2.0, color: "#f59e0b", suffix: "s", gridSteps: [-1.0, 0.0, 1.0],
                     getVal: (pA, idxA) => {
                         const pointsA = lapAData.points;
                         const pointsB = lapBData.points;
@@ -1558,6 +1558,19 @@
                     }
                 });
             }
+
+            // Calculate dynamic vertical bounds (yMin, yMax) to stretch and fill the dynamic canvas height
+            const N = charts.length;
+            const topPadding = 15;
+            const bottomPadding = 15;
+            const gap = 15;
+            const availHeight = h - topPadding - bottomPadding;
+            const chartH = (availHeight - (N - 1) * gap) / N;
+
+            charts.forEach((c, idx) => {
+                c.yMin = topPadding + idx * (chartH + gap);
+                c.yMax = c.yMin + chartH;
+            });
 
             // Draw each stacked telemetry graph
             charts.forEach(c => {
@@ -1970,6 +1983,12 @@
                     drawTelemetryCharts();
                 }
             });
+
+            // Clean up the URL by stripping the cache-busting version query parameters
+            if (window.history && window.history.replaceState) {
+                const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+                window.history.replaceState({ path: cleanUrl }, '', cleanUrl);
+            }
 
             let attempts = 0;
             const dbCheck = setInterval(() => {
