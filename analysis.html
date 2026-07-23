@@ -890,12 +890,15 @@
                                 if (!tracksCatalog[tName][cName][machineId]) {
                                     tracksCatalog[tName][cName][machineId] = [];
                                 }
-                                tracksCatalog[tName][cName][machineId].push({
-                                    lap_num: lapNum,
-                                    lap_time: lapObj.lap_time,
-                                    isBest: isBest,
-                                    data: lapObj
-                                });
+                                const exists = tracksCatalog[tName][cName][machineId].some(existing => String(existing.lap_num) === String(lapNum));
+                                if (!exists) {
+                                    tracksCatalog[tName][cName][machineId].push({
+                                        lap_num: lapNum,
+                                        lap_time: lapObj.lap_time,
+                                        isBest: isBest,
+                                        data: lapObj
+                                    });
+                                }
                             }
                             
                             if (node.best) {
@@ -1082,8 +1085,19 @@
                 }
 
                 let lapOpts = '<option value="">-- Select Lap --</option>';
-                const lapsList = tracksCatalog[trackName][carName][mId];
+                const rawLapsList = tracksCatalog[trackName][carName][mId];
                 
+                // Deduplicate laps by lap_num (preferring 'best' flag entry if present)
+                const seenLapNums = new Set();
+                const lapsList = [];
+                rawLapsList.forEach(l => {
+                    const key = String(l.lap_num);
+                    if (!seenLapNums.has(key)) {
+                        seenLapNums.add(key);
+                        lapsList.push(l);
+                    }
+                });
+
                 lapsList.sort((a, b) => {
                     if (a.lap_num === 'best') return -1;
                     if (b.lap_num === 'best') return 1;
@@ -1109,9 +1123,20 @@
                 }
 
                 let lapOpts = '<option value="">-- Select Lap --</option>';
-                const lapsList = tracksCatalog[trackName][carName][mId];
+                const rawLapsListB = tracksCatalog[trackName][carName][mId];
                 
-                lapsList.sort((a, b) => {
+                // Deduplicate laps by lap_num
+                const seenLapNumsB = new Set();
+                const lapsListB = [];
+                rawLapsListB.forEach(l => {
+                    const key = String(l.lap_num);
+                    if (!seenLapNumsB.has(key)) {
+                        seenLapNumsB.add(key);
+                        lapsListB.push(l);
+                    }
+                });
+
+                lapsListB.sort((a, b) => {
                     if (a.lap_num === 'best') return -1;
                     if (b.lap_num === 'best') return 1;
                     return b.lap_num - a.lap_num;
