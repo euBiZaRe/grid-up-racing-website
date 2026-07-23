@@ -242,7 +242,7 @@
 
         .chart-wrapper {
             position: relative;
-            height: 480px;
+            height: 560px;
             background: rgba(0, 0, 0, 0.25);
             border-radius: 12px;
             overflow: hidden;
@@ -769,6 +769,7 @@
         // Initialize Firebase config
         let database = null;
         let teamId = "gridUp_sim";
+        let hoverPct = null; // mouse hover position percentage
 
         let driversRegistry = {}; // machineId -> Driver Name
         let availableLaps = {}; // machineId -> list of { lap_num, lap_time, points }
@@ -1514,18 +1515,19 @@
             ctx.clearRect(0, 0, w, h);
 
             // Stacked telemetry sections configuration
-            // Row heights: Speed (120px), Throttle (90px), Brake (90px), Steering (90px)
+            // Row heights comfortably fit 6 stacked charts (Speed, Throttle, Brake, Steering, Gear, Delta-T)
             const charts = [
-                { name: "SPEED (km/h)", yMin: 15, yMax: 135, valMin: 0, valMax: 280, color: "#60a5fa", gridSteps: [50, 100, 150, 200, 250], getVal: p => p.spd ? p.spd * 3.6 : 0 },
-                { name: "THROTTLE (%)", yMin: 155, yMax: 235, valMin: 0, valMax: 100, color: "#10b981", gridSteps: [0, 50, 100], getVal: p => p.thr || 0 },
-                { name: "BRAKE (%)", yMin: 255, yMax: 335, valMin: 0, valMax: 100, color: "#ef4444", gridSteps: [0, 50, 100], getVal: p => p.brk || 0 },
-                { name: "STEERING (deg)", yMin: 355, yMax: 435, valMin: -180, valMax: 180, color: "#a855f7", gridSteps: [-100, 0, 100], getVal: p => (p.str || 0) * (180 / Math.PI) * 4 }
+                { name: "SPEED", yMin: 15, yMax: 105, valMin: 0, valMax: 280, color: "#60a5fa", suffix: " km/h", gridSteps: [100, 200, 250], getVal: p => p.spd ? p.spd * 3.6 : 0 },
+                { name: "THROTTLE", yMin: 120, yMax: 190, valMin: 0, valMax: 100, color: "#10b981", suffix: "%", gridSteps: [50, 100], getVal: p => p.thr || 0 },
+                { name: "BRAKE", yMin: 205, yMax: 275, valMin: 0, valMax: 100, color: "#ef4444", suffix: "%", gridSteps: [50, 100], getVal: p => p.brk || 0 },
+                { name: "STEERING", yMin: 290, yMax: 360, valMin: -180, valMax: 180, color: "#a855f7", suffix: "°", gridSteps: [-90, 0, 90], getVal: p => (p.str || 0) * (180 / Math.PI) * 4 },
+                { name: "GEAR", yMin: 375, yMax: 445, valMin: -1, valMax: 6, color: "#fbbf24", suffix: "", gridSteps: [-1, 0, 1, 2, 3, 4, 5, 6], getVal: p => p.gear || 0 }
             ];
 
             // Add Delta-T chart at the bottom if comparing
             if (lapBData) {
                 charts.push({
-                    name: "TIME DELTA (s)", yMin: 445, yMax: 475, valMin: -2.0, valMax: 2.0, color: "#f59e0b", gridSteps: [-1.0, 0.0, 1.0],
+                    name: "TIME DELTA", yMin: 460, yMax: 510, valMin: -2.0, valMax: 2.0, color: "#f59e0b", suffix: "s", gridSteps: [-1.0, 0.0, 1.0],
                     getVal: (pA, idxA) => {
                         const pointsA = lapAData.points;
                         const pointsB = lapBData.points;
@@ -1542,15 +1544,15 @@
             // Draw each stacked telemetry graph
             charts.forEach(c => {
                 // Background & Border
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
                 ctx.fillRect(0, c.yMin, w, c.yMax - c.yMin);
                 ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
                 ctx.lineWidth = 1;
                 ctx.strokeRect(0, c.yMin, w, c.yMax - c.yMin);
 
-                // Gridlines & Labels
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-                ctx.font = '8px monospace';
+                // Graph Title
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+                ctx.font = 'bold 8px sans-serif';
                 ctx.textAlign = 'left';
                 ctx.fillText(c.name, 10, c.yMin + 12);
 
@@ -1564,10 +1566,16 @@
                     ctx.lineTo(w, y);
                     ctx.stroke();
 
-                    // Text y-axis labels on right
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+                    // Text y-axis labels on right with suffix unit
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+                    ctx.font = '8px monospace';
                     ctx.textAlign = 'right';
-                    ctx.fillText(val, w - 8, y + 3);
+                    
+                    let label = val;
+                    if (c.name === "GEAR") {
+                        label = val === 0 ? "N" : val === -1 ? "R" : val;
+                    }
+                    ctx.fillText(label + c.suffix, w - 8, y + 3);
                 });
 
                 // Helper to scale values to row boundaries
@@ -1586,7 +1594,6 @@
                     
                     lapBData.points.forEach((pB, idxB) => {
                         const x = pB.pct * w;
-                        // For delta-t, B is evaluated relative to A, so no B trace on delta chart
                         if (c.name.includes("TIME")) return; 
                         const val = c.getVal(pB, idxB);
                         const y = getScaledY(val);
@@ -1615,14 +1622,84 @@
             const currentPct = lapAData.points[playbackIndex]?.pct || 0;
             const cursorX = currentPct * w;
             
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.lineWidth = 1.25;
             ctx.setLineDash([4, 4]);
             ctx.beginPath();
             ctx.moveTo(cursorX, 0);
             ctx.lineTo(cursorX, h);
             ctx.stroke();
             ctx.setLineDash([]);
+
+            // Draw Hover Tooltip overlay details
+            if (hoverPct !== null) {
+                const idxA = Math.round(hoverPct * (lapAData.points.length - 1));
+                const pA = lapAData.points[idxA];
+                
+                let pB = null;
+                let idxB = 0;
+                if (lapBData) {
+                    idxB = Math.round(hoverPct * (lapBData.points.length - 1));
+                    pB = lapBData.points[idxB];
+                }
+
+                // Hover guide vertical line
+                const hoverX = hoverPct * w;
+                ctx.strokeStyle = 'rgba(239, 68, 68, 0.6)'; // Red hover guide line
+                ctx.lineWidth = 1.25;
+                ctx.beginPath();
+                ctx.moveTo(hoverX, 0);
+                ctx.lineTo(hoverX, h);
+                ctx.stroke();
+
+                // Build values tooltip card
+                const boxW = 160;
+                const boxH = lapBData ? 180 : 100;
+                const boxX = hoverX + boxW + 15 > w ? hoverX - boxW - 15 : hoverX + 15;
+                const boxY = 25;
+
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+                ctx.lineWidth = 1;
+                ctx.fillRect(boxX, boxY, boxW, boxH);
+                ctx.strokeRect(boxX, boxY, boxW, boxH);
+
+                ctx.font = '8px monospace';
+                ctx.textAlign = 'left';
+
+                // Label position
+                ctx.fillStyle = '#94a3b8';
+                ctx.fillText(`POSITION: ${(hoverPct * 100).toFixed(1)}%`, boxX + 10, boxY + 14);
+
+                // Driver A Inputs
+                ctx.fillStyle = '#60a5fa';
+                ctx.fillText(`DRIVER A (Blue):`, boxX + 10, boxY + 28);
+                ctx.fillStyle = '#f8fafc';
+                ctx.fillText(`• Speed: ${Math.round(pA.spd * 3.6)} km/h`, boxX + 14, boxY + 38);
+                ctx.fillText(`• Throttle: ${Math.round(pA.thr || 0)}%`, boxX + 14, boxY + 48);
+                ctx.fillText(`• Brake: ${Math.round(pA.brk || 0)}%`, boxX + 14, boxY + 58);
+                ctx.fillText(`• Steering: ${Math.round((pA.str || 0) * (180/Math.PI)*4)}°`, boxX + 14, boxY + 68);
+                ctx.fillText(`• Gear: ${pA.gear === 0 ? 'N' : pA.gear === -1 ? 'R' : pA.gear}`, boxX + 14, boxY + 78);
+
+                // Driver B Inputs
+                if (pB) {
+                    ctx.fillStyle = '#ec4899';
+                    ctx.fillText(`DRIVER B (Pink):`, boxX + 10, boxY + 94);
+                    ctx.fillStyle = '#f8fafc';
+                    ctx.fillText(`• Speed: ${Math.round(pB.spd * 3.6)} km/h`, boxX + 14, boxY + 104);
+                    ctx.fillText(`• Throttle: ${Math.round(pB.thr || 0)}%`, boxX + 14, boxY + 114);
+                    ctx.fillText(`• Brake: ${Math.round(pB.brk || 0)}%`, boxX + 14, boxY + 124);
+                    ctx.fillText(`• Steering: ${Math.round((pB.str || 0) * (180/Math.PI)*4)}°`, boxX + 14, boxY + 134);
+                    ctx.fillText(`• Gear: ${pB.gear === 0 ? 'N' : pB.gear === -1 ? 'R' : pB.gear}`, boxX + 14, boxY + 144);
+
+                    // Delta
+                    const tA = idxA * (lapAData.lap_time / lapAData.points.length);
+                    const tB = idxB * (lapBData.lap_time / lapBData.points.length);
+                    const delta = tA - tB;
+                    ctx.fillStyle = '#f59e0b';
+                    ctx.fillText(`• Delta: ${delta >= 0 ? '+' : ''}${delta.toFixed(3)}s`, boxX + 14, boxY + 158);
+                }
+            }
         }
 
         function updateHudValues() {
@@ -1776,6 +1853,34 @@
                 }
             };
             
+            // Bind telemetry chart interactive mouse seeking & hover tooltips
+            const chartCanvasEl = document.getElementById('telemetry-chart-canvas');
+            if (chartCanvasEl) {
+                chartCanvasEl.addEventListener('mousemove', (e) => {
+                    if (!lapAData) return;
+                    const rect = chartCanvasEl.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    hoverPct = Math.max(0, Math.min(1, x / rect.width));
+                    drawTelemetryCharts();
+                });
+                
+                chartCanvasEl.addEventListener('mouseleave', () => {
+                    hoverPct = null;
+                    drawTelemetryCharts();
+                });
+                
+                chartCanvasEl.addEventListener('click', (e) => {
+                    if (!lapAData) return;
+                    const rect = chartCanvasEl.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const pct = Math.max(0, Math.min(1, x / rect.width));
+                    
+                    playbackIndex = Math.round(pct * (lapAData.points.length - 1));
+                    scrubberSlider.value = Math.round(pct * 100);
+                    updateUI();
+                });
+            }
+
             let attempts = 0;
             const dbCheck = setInterval(() => {
                 attempts++;
