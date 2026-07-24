@@ -1516,9 +1516,9 @@
                         
                         let targetLength = 0;
                         if (direction === 'anticlockwise') {
-                            targetLength = sfOffset - (clampedPct * totalLength);
-                        } else {
                             targetLength = sfOffset + (clampedPct * totalLength);
+                        } else {
+                            targetLength = sfOffset + ((1.0 - clampedPct) * totalLength);
                         }
 
                         // Wrap target length around total SVG path length
