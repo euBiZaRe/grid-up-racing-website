@@ -1153,6 +1153,10 @@
                     lapOpts += `<option value="${l.lap_num}">${label}</option>`;
                 });
                 lapASelect.innerHTML = lapOpts;
+                if (lapsList.length > 0) {
+                    lapASelect.value = lapsList[0].lap_num;
+                    lapASelect.dispatchEvent(new Event('change'));
+                }
             });
 
             // Driver B Select
@@ -1191,6 +1195,10 @@
                     lapOpts += `<option value="${l.lap_num}">${label}</option>`;
                 });
                 lapBSelect.innerHTML = lapOpts;
+                if (lapsListB.length > 0) {
+                    lapBSelect.value = lapsListB[0].lap_num;
+                    lapBSelect.dispatchEvent(new Event('change'));
+                }
             });
 
             // Lap A Select
