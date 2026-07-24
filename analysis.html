@@ -930,6 +930,10 @@
                                 const tName = lapObj.track_name || "Spa-Francorchamps"; // fallback for older test logs
                                 const cName = lapObj.car_name || "Unknown Car";
                                 
+                                // Sort telemetry points monotonically by lap percentage (0.0 -> 1.0)
+                                const cleanPoints = [...lapObj.points].sort((a, b) => (a.pct || 0) - (b.pct || 0));
+                                const cleanLapObj = { ...lapObj, points: cleanPoints };
+
                                 if (!tracksCatalog[tName]) {
                                     tracksCatalog[tName] = {};
                                 }
@@ -945,7 +949,7 @@
                                         lap_num: lapNum,
                                         lap_time: lapObj.lap_time,
                                         isBest: isBest,
-                                        data: lapObj
+                                        data: cleanLapObj
                                     });
                                 }
                             }
