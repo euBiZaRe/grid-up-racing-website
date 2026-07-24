@@ -1834,7 +1834,7 @@
                 { name: "RPM", valMin: 0, valMax: chartMaxRpm, color: "#fb923c", suffix: " rpm", gridSteps: [Math.round(chartMaxRpm * 0.4), Math.round(chartMaxRpm * 0.8)], getVal: p => p.rpm || 0 },
                 { name: "THROTTLE", valMin: 0, valMax: 100, color: "#10b981", suffix: "%", gridSteps: [50, 100], getVal: p => p.thr || 0 },
                 { name: "BRAKE", valMin: 0, valMax: 100, color: "#ef4444", suffix: "%", gridSteps: [50, 100], getVal: p => p.brk || 0 },
-                { name: "STEERING", valMin: -180, valMax: 180, color: "#a855f7", suffix: "°", gridSteps: [-90, 0, 90], getVal: p => (p.str || 0) * (180 / Math.PI) * 4 },
+                { name: "STEERING", valMin: -200, valMax: 200, color: "#a855f7", suffix: "°", gridSteps: [-100, 0, 100], getVal: p => (p.str || 0) * (180 / Math.PI) },
                 { name: "GEAR", valMin: -1, valMax: 6, color: "#e2e8f0", suffix: "", gridSteps: [1, 2, 3, 4, 5, 6], getVal: p => p.gear || 0 }
             ];
 
