@@ -1373,8 +1373,14 @@
         function drawLapsAndMarkers() {
             if (!lapAData) return;
             const ctx = trackCanvas.getContext('2d');
-            const w = trackCanvas.width = trackCanvas.offsetWidth;
-            const h = trackCanvas.height = trackCanvas.offsetHeight;
+            const dw = trackCanvas.offsetWidth;
+            const dh = trackCanvas.offsetHeight;
+            if (trackCanvas.width !== dw || trackCanvas.height !== dh) {
+                trackCanvas.width = dw;
+                trackCanvas.height = dh;
+            }
+            const w = dw;
+            const h = dh;
             ctx.clearRect(0, 0, w, h);
 
             if (allPointsCount(lapAData) < 2) return;
@@ -1761,8 +1767,14 @@
         function drawTelemetryCharts() {
             if (!lapAData) return;
             const ctx = chartCanvas.getContext('2d');
-            const w = chartCanvas.width = chartCanvas.offsetWidth;
-            const h = chartCanvas.height = chartCanvas.offsetHeight;
+            const dw = chartCanvas.offsetWidth;
+            const dh = chartCanvas.offsetHeight;
+            if (chartCanvas.width !== dw || chartCanvas.height !== dh) {
+                chartCanvas.width = dw;
+                chartCanvas.height = dh;
+            }
+            const w = dw;
+            const h = dh;
             ctx.clearRect(0, 0, w, h);
 
             // Stacked telemetry sections configuration
@@ -2159,6 +2171,7 @@
                     isDragging = true;
                 });
 
+                let renderRafPending = false;
                 chartCanvasEl.addEventListener('mousemove', (e) => {
                     if (!lapAData) return;
                     const rect = chartCanvasEl.getBoundingClientRect();
@@ -2177,8 +2190,14 @@
                         updateHudValues();
                     }
 
-                    drawTelemetryCharts();
-                    drawLapsAndMarkers();
+                    if (!renderRafPending) {
+                        renderRafPending = true;
+                        requestAnimationFrame(() => {
+                            renderRafPending = false;
+                            drawTelemetryCharts();
+                            drawLapsAndMarkers();
+                        });
+                    }
                 });
                 
                 chartCanvasEl.addEventListener('mouseleave', () => {
