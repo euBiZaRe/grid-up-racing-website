@@ -930,8 +930,10 @@
                                 const tName = lapObj.track_name || "Spa-Francorchamps"; // fallback for older test logs
                                 const cName = lapObj.car_name || "Unknown Car";
                                 
-                                // Sort telemetry points monotonically by lap percentage (0.0 -> 1.0)
-                                const cleanPoints = [...lapObj.points].sort((a, b) => (a.pct || 0) - (b.pct || 0));
+                                // Sanitize and sort telemetry points monotonically by lap percentage (0.0 -> 1.0)
+                                // Removes out-of-bounds start line wrap points that cause noisy spikes across graphs
+                                const validPoints = lapObj.points.filter(p => typeof p.pct === 'number' && p.pct >= 0.0 && p.pct <= 1.0);
+                                const cleanPoints = validPoints.sort((a, b) => (a.pct || 0) - (b.pct || 0));
                                 const cleanLapObj = { ...lapObj, points: cleanPoints };
 
                                 if (!tracksCatalog[tName]) {
@@ -1890,7 +1892,11 @@
                     ctx.beginPath();
                     
                     let firstPt = true;
+                    let lastPctB = -1;
                     lapBData.points.forEach((pB, idxB) => {
+                        if (pB.pct < lastPctB - 0.2) return; // Ignore backward wrap spikes
+                        lastPctB = pB.pct;
+                        
                         const x = ((pB.pct - zoomStart) / (zoomEnd - zoomStart)) * w;
                         if (c.name.includes("TIME")) return; 
                         const val = c.getVal(pB, idxB);
@@ -1911,7 +1917,11 @@
                 ctx.lineWidth = 2;
                 ctx.beginPath();
                 let firstPtA = true;
+                let lastPctA = -1;
                 lapAData.points.forEach((pA, idxA) => {
+                    if (pA.pct < lastPctA - 0.2) return; // Ignore backward wrap spikes
+                    lastPctA = pA.pct;
+
                     const x = ((pA.pct - zoomStart) / (zoomEnd - zoomStart)) * w;
                     const val = c.getVal(pA, idxA);
                     const y = getScaledY(val);
