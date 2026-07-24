@@ -1875,7 +1875,7 @@
 
                 c.gridSteps.forEach(val => {
                     const ratio = (val - c.valMin) / (c.valMax - c.valMin);
-                    const y = c.yMax - ratio * (c.yMax - c.yMin - 15) - 5;
+                    const y = (c.yMax - 6) - ratio * (c.yMax - c.yMin - 12);
                     
                     ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
                     ctx.beginPath();
@@ -1898,8 +1898,7 @@
                 // Helper to scale values to row boundaries
                 function getScaledY(val) {
                     const ratio = (val - c.valMin) / (c.valMax - c.valMin);
-                    const constrained = Math.max(0, Math.min(1, ratio));
-                    return c.yMax - constrained * (c.yMax - c.yMin - 15) - 5;
+                    return (c.yMax - 6) - ratio * (c.yMax - c.yMin - 12);
                 }
 
                 // Helper to check if a percentage is in the visible zoom viewport
