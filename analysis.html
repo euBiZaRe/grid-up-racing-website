@@ -1794,15 +1794,34 @@
             const h = dh;
             ctx.clearRect(0, 0, w, h);
 
-            // Stacked telemetry sections configuration
-            // Row heights comfortably fit 6 stacked charts (Speed, Throttle, Brake, Steering, Gear, Delta-T)
+            // Compute dynamic max values for Speed and RPM to prevent top clipping
+            let maxSpdFound = 250;
+            let maxRpmFound = 8000;
+            if (lapAData && lapAData.points) {
+                lapAData.points.forEach(p => {
+                    const spdKmh = (p.spd || 0) * 3.6;
+                    if (spdKmh > maxSpdFound) maxSpdFound = spdKmh;
+                    if ((p.rpm || 0) > maxRpmFound) maxRpmFound = p.rpm;
+                });
+            }
+            if (lapBData && lapBData.points) {
+                lapBData.points.forEach(p => {
+                    const spdKmh = (p.spd || 0) * 3.6;
+                    if (spdKmh > maxSpdFound) maxSpdFound = spdKmh;
+                    if ((p.rpm || 0) > maxRpmFound) maxRpmFound = p.rpm;
+                });
+            }
+
+            const chartMaxSpeed = Math.ceil((maxSpdFound + 20) / 50) * 50;
+            const chartMaxRpm = Math.ceil((maxRpmFound + 500) / 1000) * 1000;
+
             const charts = [
-                { name: "SPEED", valMin: 0, valMax: 280, color: "#60a5fa", suffix: " km/h", gridSteps: [100, 200, 250], getVal: p => p.spd ? p.spd * 3.6 : 0 },
-                { name: "RPM", valMin: 0, valMax: 9000, color: "#fb923c", suffix: " rpm", gridSteps: [3000, 6000, 8000], getVal: p => p.rpm || 0 },
+                { name: "SPEED", valMin: 0, valMax: chartMaxSpeed, color: "#60a5fa", suffix: " km/h", gridSteps: [Math.round(chartMaxSpeed * 0.4), Math.round(chartMaxSpeed * 0.8)], getVal: p => p.spd ? p.spd * 3.6 : 0 },
+                { name: "RPM", valMin: 0, valMax: chartMaxRpm, color: "#fb923c", suffix: " rpm", gridSteps: [Math.round(chartMaxRpm * 0.4), Math.round(chartMaxRpm * 0.8)], getVal: p => p.rpm || 0 },
                 { name: "THROTTLE", valMin: 0, valMax: 100, color: "#10b981", suffix: "%", gridSteps: [50, 100], getVal: p => p.thr || 0 },
                 { name: "BRAKE", valMin: 0, valMax: 100, color: "#ef4444", suffix: "%", gridSteps: [50, 100], getVal: p => p.brk || 0 },
                 { name: "STEERING", valMin: -180, valMax: 180, color: "#a855f7", suffix: "°", gridSteps: [-90, 0, 90], getVal: p => (p.str || 0) * (180 / Math.PI) * 4 },
-                { name: "GEAR", valMin: -1, valMax: 6, color: "#e2e8f0", suffix: "", gridSteps: [-1, 0, 1, 2, 3, 4, 5, 6], getVal: p => p.gear || 0 }
+                { name: "GEAR", valMin: -1, valMax: 6, color: "#e2e8f0", suffix: "", gridSteps: [1, 2, 3, 4, 5, 6], getVal: p => p.gear || 0 }
             ];
 
             // Add Delta-T chart at the bottom if comparing
@@ -1901,11 +1920,14 @@
                         if (c.name.includes("TIME")) return; 
                         
                         let val = c.getVal(pB, idxB);
-                        // 3-point smoothing for continuous curves
-                        if (["SPEED", "RPM", "STEERING"].includes(c.name) && idxB > 0 && idxB < lapBData.points.length - 1) {
-                            const prevVal = c.getVal(lapBData.points[idxB - 1], idxB - 1);
-                            const nextVal = c.getVal(lapBData.points[idxB + 1], idxB + 1);
-                            val = (prevVal + val + nextVal) / 3;
+                        // 5-point Gaussian weighted smoothing for continuous curves
+                        if (["SPEED", "RPM", "STEERING"].includes(c.name) && idxB >= 2 && idxB < lapBData.points.length - 2) {
+                            const p0 = c.getVal(lapBData.points[idxB - 2], idxB - 2);
+                            const p1 = c.getVal(lapBData.points[idxB - 1], idxB - 1);
+                            const p2 = val;
+                            const p3 = c.getVal(lapBData.points[idxB + 1], idxB + 1);
+                            const p4 = c.getVal(lapBData.points[idxB + 2], idxB + 2);
+                            val = p0 * 0.06 + p1 * 0.24 + p2 * 0.40 + p3 * 0.24 + p4 * 0.06;
                         }
 
                         const y = getScaledY(val);
@@ -1938,11 +1960,14 @@
                     const x = ((pA.pct - zoomStart) / (zoomEnd - zoomStart)) * w;
                     let val = c.getVal(pA, idxA);
                     
-                    // 3-point smoothing for continuous curves
-                    if (["SPEED", "RPM", "STEERING"].includes(c.name) && idxA > 0 && idxA < lapAData.points.length - 1) {
-                        const prevVal = c.getVal(lapAData.points[idxA - 1], idxA - 1);
-                        const nextVal = c.getVal(lapAData.points[idxA + 1], idxA + 1);
-                        val = (prevVal + val + nextVal) / 3;
+                    // 5-point Gaussian weighted smoothing for continuous curves
+                    if (["SPEED", "RPM", "STEERING"].includes(c.name) && idxA >= 2 && idxA < lapAData.points.length - 2) {
+                        const p0 = c.getVal(lapAData.points[idxA - 2], idxA - 2);
+                        const p1 = c.getVal(lapAData.points[idxA - 1], idxA - 1);
+                        const p2 = val;
+                        const p3 = c.getVal(lapAData.points[idxA + 1], idxA + 1);
+                        const p4 = c.getVal(lapAData.points[idxA + 2], idxA + 2);
+                        val = p0 * 0.06 + p1 * 0.24 + p2 * 0.40 + p3 * 0.24 + p4 * 0.06;
                     }
 
                     const y = getScaledY(val);
