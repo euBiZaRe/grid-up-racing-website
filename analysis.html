@@ -1209,7 +1209,11 @@
                 }
                 
                 const lapMatch = tracksCatalog[trackName][carName][mId].find(l => String(l.lap_num) === String(choice));
-                lapAData = lapMatch ? lapMatch.data : null;
+                if (lapMatch) {
+                    lapAData = { ...lapMatch.data, lap_num: lapMatch.lap_num === 'best' ? (lapMatch.data.lap_num || 'Best') : lapMatch.lap_num };
+                } else {
+                    lapAData = null;
+                }
                 playbackIndex = 0;
                 scrubberSlider.value = 0;
                 updateUI();
@@ -1228,7 +1232,11 @@
                 }
                 
                 const lapMatch = tracksCatalog[trackName][carName][mId].find(l => String(l.lap_num) === String(choice));
-                lapBData = lapMatch ? lapMatch.data : null;
+                if (lapMatch) {
+                    lapBData = { ...lapMatch.data, lap_num: lapMatch.lap_num === 'best' ? (lapMatch.data.lap_num || 'Best') : lapMatch.lap_num };
+                } else {
+                    lapBData = null;
+                }
                 updateUI();
             });
         
