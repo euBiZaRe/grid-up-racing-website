@@ -1216,7 +1216,9 @@
                 
                 const lapMatch = tracksCatalog[trackName][carName][mId].find(l => String(l.lap_num) === String(choice));
                 if (lapMatch) {
-                    lapAData = { ...lapMatch.data, lap_num: lapMatch.lap_num === 'best' ? (lapMatch.data.lap_num || 'Best') : lapMatch.lap_num };
+                    const rawData = lapMatch.data;
+                    const sortedPts = rawData.points ? [...rawData.points].sort((a, b) => (a.pct || 0) - (b.pct || 0)) : [];
+                    lapAData = { ...rawData, lap_num: lapMatch.lap_num === 'best' ? (rawData.lap_num || 'Best') : lapMatch.lap_num, points: sortedPts };
                 } else {
                     lapAData = null;
                 }
@@ -1239,7 +1241,9 @@
                 
                 const lapMatch = tracksCatalog[trackName][carName][mId].find(l => String(l.lap_num) === String(choice));
                 if (lapMatch) {
-                    lapBData = { ...lapMatch.data, lap_num: lapMatch.lap_num === 'best' ? (lapMatch.data.lap_num || 'Best') : lapMatch.lap_num };
+                    const rawData = lapMatch.data;
+                    const sortedPts = rawData.points ? [...rawData.points].sort((a, b) => (a.pct || 0) - (b.pct || 0)) : [];
+                    lapBData = { ...rawData, lap_num: lapMatch.lap_num === 'best' ? (rawData.lap_num || 'Best') : lapMatch.lap_num, points: sortedPts };
                 } else {
                     lapBData = null;
                 }
