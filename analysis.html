@@ -1079,6 +1079,10 @@
                     carOpts += `<option value="${cName}">${cName}</option>`;
                 });
                 carSelect.innerHTML = carOpts;
+                if (carsOnTrack.length > 0) {
+                    carSelect.value = carsOnTrack[0];
+                    carSelect.dispatchEvent(new Event('change'));
+                }
             });
 
             // Car Select
@@ -1115,6 +1119,11 @@
                 
                 driverASelect.innerHTML = driverOpts;
                 driverBSelect.innerHTML = driverOpts;
+
+                if (machineIdsOnCar.length > 0) {
+                    driverASelect.value = machineIdsOnCar[0];
+                    driverASelect.dispatchEvent(new Event('change'));
+                }
             });
 
             // Driver A Select
