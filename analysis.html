@@ -1808,14 +1808,16 @@
             const h = dh;
             ctx.clearRect(0, 0, w, h);
 
-            // Compute dynamic max values for Speed and RPM to prevent top clipping
+            // Compute dynamic max values for Speed, RPM, and Gear
             let maxSpdFound = 250;
             let maxRpmFound = 8000;
+            let maxGearFound = 6;
             if (lapAData && lapAData.points) {
                 lapAData.points.forEach(p => {
                     const spdKmh = (p.spd || 0) * 3.6;
                     if (spdKmh > maxSpdFound) maxSpdFound = spdKmh;
                     if ((p.rpm || 0) > maxRpmFound) maxRpmFound = p.rpm;
+                    if ((p.gear || 0) > maxGearFound) maxGearFound = p.gear;
                 });
             }
             if (lapBData && lapBData.points) {
@@ -1823,11 +1825,14 @@
                     const spdKmh = (p.spd || 0) * 3.6;
                     if (spdKmh > maxSpdFound) maxSpdFound = spdKmh;
                     if ((p.rpm || 0) > maxRpmFound) maxRpmFound = p.rpm;
+                    if ((p.gear || 0) > maxGearFound) maxGearFound = p.gear;
                 });
             }
 
             const chartMaxSpeed = Math.ceil((maxSpdFound + 20) / 50) * 50;
             const chartMaxRpm = Math.ceil((maxRpmFound + 500) / 1000) * 1000;
+            const gearSteps = [];
+            for (let g = 1; g <= maxGearFound; g++) gearSteps.push(g);
 
             const charts = [
                 { name: "SPEED", valMin: 0, valMax: chartMaxSpeed, color: "#60a5fa", suffix: " km/h", gridSteps: [Math.round(chartMaxSpeed * 0.4), Math.round(chartMaxSpeed * 0.8)], getVal: p => p.spd ? p.spd * 3.6 : 0 },
@@ -1835,7 +1840,7 @@
                 { name: "THROTTLE", valMin: 0, valMax: 100, color: "#10b981", suffix: "%", gridSteps: [50, 100], getVal: p => p.thr || 0 },
                 { name: "BRAKE", valMin: 0, valMax: 100, color: "#ef4444", suffix: "%", gridSteps: [50, 100], getVal: p => p.brk || 0 },
                 { name: "STEERING", valMin: -200, valMax: 200, color: "#a855f7", suffix: "°", gridSteps: [-100, 0, 100], getVal: p => (p.str || 0) * (180 / Math.PI) },
-                { name: "GEAR", valMin: -1, valMax: 6, color: "#e2e8f0", suffix: "", gridSteps: [1, 2, 3, 4, 5, 6], getVal: p => p.gear || 0 }
+                { name: "GEAR", valMin: 0.5, valMax: maxGearFound + 0.5, color: "#e2e8f0", suffix: "", gridSteps: gearSteps, getVal: p => p.gear || 0 }
             ];
 
             // Add Delta-T chart at the bottom if comparing
@@ -1887,15 +1892,15 @@
                     const ratio = (val - c.valMin) / (c.valMax - c.valMin);
                     const y = (c.yMax - 6) - ratio * (c.yMax - c.yMin - 12);
                     
-                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
+                    ctx.strokeStyle = c.name === "GEAR" ? 'rgba(255, 255, 255, 0.06)' : 'rgba(255, 255, 255, 0.02)';
                     ctx.beginPath();
                     ctx.moveTo(0, y);
                     ctx.lineTo(w, y);
                     ctx.stroke();
 
                     // Text y-axis labels on right with suffix unit
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-                    ctx.font = '8px monospace';
+                    ctx.fillStyle = c.name === "GEAR" ? 'rgba(255, 255, 255, 0.65)' : 'rgba(255, 255, 255, 0.2)';
+                    ctx.font = c.name === "GEAR" ? 'bold 9px monospace' : '8px monospace';
                     ctx.textAlign = 'right';
                     
                     let label = val;
