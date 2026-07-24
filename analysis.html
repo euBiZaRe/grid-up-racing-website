@@ -662,6 +662,52 @@
         let teamId = "gridUp_sim";
         let hoverPct = null; // mouse hover position percentage
 
+        // Track SVG Map Engine (shared with Live Telemetry)
+        let trackSvgMapsData = null;
+        let trackSvgNS = 'http://www.w3.org/2000/svg';
+        let trackSvgPathEl = null;
+        let trackSvgPathLength = 0;
+        let trackSvgBBox = null;
+        let trackSvgCurrentTrackId = null;
+
+        fetch('js/track-maps.json')
+            .then(r => r.json())
+            .then(data => {
+                trackSvgMapsData = data;
+                console.log(`[Analysis TrackMap] Loaded ${Object.keys(data).length} vector track maps`);
+                if (lapAData) updateUI();
+            })
+            .catch(err => console.warn('[Analysis TrackMap] Failed to load track-maps.json:', err));
+
+        function initTrackSvgPath(svgPathD) {
+            if (!svgPathD) return;
+            try {
+                if (!trackSvgPathEl) {
+                    const svg = document.createElementNS(trackSvgNS, 'svg');
+                    svg.setAttribute('width', '2000');
+                    svg.setAttribute('height', '2000');
+                    svg.style.position = 'absolute';
+                    svg.style.left = '-9999px';
+                    svg.style.top = '-9999px';
+                    svg.style.pointerEvents = 'none';
+                    document.body.appendChild(svg);
+                    trackSvgPathEl = document.createElementNS(trackSvgNS, 'path');
+                    svg.appendChild(trackSvgPathEl);
+                }
+                trackSvgPathEl.setAttribute('d', svgPathD);
+                trackSvgPathLength = trackSvgPathEl.getTotalLength() || 0;
+                let box = trackSvgPathEl.getBBox();
+                if (!box || box.width === 0 || box.height === 0) {
+                    box = { x: -1000, y: -1000, width: 2000, height: 2000 };
+                }
+                trackSvgBBox = box;
+            } catch (e) {
+                console.error("[Analysis TrackMap] Failed to init SVG path:", e);
+                trackSvgPathLength = 0;
+                trackSvgBBox = { x: -1000, y: -1000, width: 2000, height: 2000 };
+            }
+        }
+
         // Convert seconds to MM:SS:MS formatting
         function formatLapTime(secs) {
             if (isNaN(secs) || secs === null || secs === undefined) return "--:--:---";
@@ -1368,33 +1414,103 @@
                 return { x: px, y: py };
             }
 
-            // 1. Draw solid dark grey background road surface (width 22px) representing track bounds
-            ctx.strokeStyle = '#1e293b'; // Slate-800 asphalt representation
-            ctx.lineWidth = 22;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            ctx.beginPath();
-            let firstPt = true;
-            lapAData.points.forEach((p, idx) => {
-                if (!p) return;
-                const c = getPtLatLon(p);
-                const pt = project(c.lat, c.lon);
-                if (firstPt) {
-                    ctx.moveTo(pt.x, pt.y);
-                    firstPt = false;
-                } else {
-                    ctx.lineTo(pt.x, pt.y);
-                }
-            });
-            ctx.closePath();
-            ctx.stroke();
+            // Check if active track map is available in trackSvgMapsData catalog
+            const trackId = lapAData.track_id;
+            let activeSvgTrack = (trackSvgMapsData && trackId && trackSvgMapsData[trackId]) ? trackSvgMapsData[trackId] : null;
 
-            // Draw a thin inner centerline on the asphalt for premium aesthetic
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
-            ctx.lineWidth = 1;
-            ctx.setLineDash([4, 12]);
-            ctx.stroke();
-            ctx.setLineDash([]);
+            if (activeSvgTrack) {
+                if (trackSvgCurrentTrackId !== trackId) {
+                    initTrackSvgPath(activeSvgTrack.i);
+                    trackSvgCurrentTrackId = trackId;
+                }
+
+                // Render vector track map background path
+                if (trackSvgPathEl && trackSvgPathLength > 0 && trackSvgBBox) {
+                    const pad = 32;
+                    const bbox = trackSvgBBox;
+                    const scaleX = (w - pad * 2) / bbox.width;
+                    const scaleY = (h - pad * 2) / bbox.height;
+                    const scale = Math.min(scaleX, scaleY);
+                    const offsetX = (w - bbox.width * scale) / 2 - bbox.x * scale;
+                    const offsetY = (h - bbox.height * scale) / 2 - bbox.y * scale;
+
+                    ctx.save();
+                    ctx.translate(offsetX, offsetY);
+                    ctx.scale(scale, scale);
+
+                    const p2d = new Path2D(activeSvgTrack.i);
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.07)';
+                    ctx.lineWidth = 26 / scale;
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
+                    ctx.stroke(p2d);
+
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+                    ctx.lineWidth = 10 / scale;
+                    ctx.stroke(p2d);
+
+                    ctx.restore();
+
+                    // Map progress (0-1) to Vector SVG X,Y
+                    function svgProgressToXY(pct) {
+                        const totalLength = trackSvgPathLength;
+                        const sfLength = activeSvgTrack.sp ? activeSvgTrack.sp.l : 0;
+                        const direction = activeSvgTrack.sd || 'clockwise';
+                        const adjustedLength = (totalLength * pct) % totalLength;
+                        const length = (direction === 'anticlockwise')
+                            ? (sfLength + adjustedLength) % totalLength
+                            : (sfLength - adjustedLength + totalLength) % totalLength;
+
+                        const svgLength = (length / activeSvgTrack.l) * trackSvgPathLength;
+                        if (isNaN(svgLength) || !isFinite(svgLength)) return null;
+                        const rawPt = trackSvgPathEl.getPointAtLength(svgLength);
+                        if (!rawPt) return null;
+                        return {
+                            x: offsetX + rawPt.x * scale,
+                            y: offsetY + rawPt.y * scale
+                        };
+                    }
+                }
+            }
+
+            // Unified projection function (uses vector track-map if available, otherwise GPS bounds)
+            function projectPoint(p) {
+                if (activeSvgTrack && trackSvgPathEl && typeof p.pct === 'number') {
+                    const svgPos = svgProgressToXY(p.pct);
+                    if (svgPos) return svgPos;
+                }
+                const c = getPtLatLon(p);
+                return project(c.lat, c.lon);
+            }
+
+            // 1. Draw background road surface or inner track line if no SVG map
+            if (!activeSvgTrack || !trackSvgPathEl) {
+                ctx.strokeStyle = '#1e293b'; // Slate-800 asphalt representation
+                ctx.lineWidth = 22;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.beginPath();
+                let firstPt = true;
+                lapAData.points.forEach((p, idx) => {
+                    if (!p) return;
+                    const c = getPtLatLon(p);
+                    const pt = project(c.lat, c.lon);
+                    if (firstPt) {
+                        ctx.moveTo(pt.x, pt.y);
+                        firstPt = false;
+                    } else {
+                        ctx.lineTo(pt.x, pt.y);
+                    }
+                });
+                ctx.closePath();
+                ctx.stroke();
+
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([4, 12]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
 
             // 2. Draw Lap B's Racing Line (solid pink, thickness 9px)
             // Stacking B (9px) under A (5px) creates a clear 2px pink border on both sides of A where they overlap,
@@ -1406,8 +1522,8 @@
                 let firstPt = true;
                 lapBData.points.forEach((p, idx) => {
                     if (!p) return;
-                    const c = getPtLatLon(p);
-                    const pt = project(c.lat, c.lon);
+                    const pt = projectPoint(p);
+                    if (!pt) return;
                     if (firstPt) {
                         ctx.moveTo(pt.x, pt.y);
                         firstPt = false;
@@ -1425,8 +1541,8 @@
             let firstPtA = true;
             lapAData.points.forEach((p, idx) => {
                 if (!p) return;
-                const c = getPtLatLon(p);
-                const pt = project(c.lat, c.lon);
+                const pt = projectPoint(p);
+                if (!pt) return;
                 if (firstPtA) {
                     ctx.moveTo(pt.x, pt.y);
                     firstPtA = false;
@@ -1442,10 +1558,9 @@
                 const p1 = lapAData.points[i];
                 const p2 = lapAData.points[i + 1];
                 if (!p1 || !p2) continue;
-                const c1 = getPtLatLon(p1);
-                const c2 = getPtLatLon(p2);
-                const pt1 = project(c1.lat, c1.lon);
-                const pt2 = project(c2.lat, c2.lon);
+                const pt1 = projectPoint(p1);
+                const pt2 = projectPoint(p2);
+                if (!pt1 || !pt2) continue;
 
                 if (p1.brk > 15) {
                     ctx.strokeStyle = p1.abs ? '#f97316' : '#ef4444'; // Red brake (Orange for ABS)
@@ -1467,12 +1582,11 @@
                 ctx.setLineDash([2, 5]);
                 for (let i = 0; i < lapBData.points.length - 1; i++) {
                     const p1 = lapBData.points[i];
-                    const p2 = lapBData.points[i + 1];
+                    const p2 = lapAData.points[i + 1];
                     if (!p1 || !p2) continue;
-                    const c1 = getPtLatLon(p1);
-                    const c2 = getPtLatLon(p2);
-                    const pt1 = project(c1.lat, c1.lon);
-                    const pt2 = project(c2.lat, c2.lon);
+                    const pt1 = projectPoint(p1);
+                    const pt2 = projectPoint(p2);
+                    if (!pt1 || !pt2) continue;
 
                     if (p1.brk > 15) {
                         ctx.strokeStyle = p1.abs ? '#f97316' : '#f87171'; // Lighter red
@@ -1494,21 +1608,21 @@
             if (playbackIndex < lapAData.points.length) {
                 const carA = lapAData.points[playbackIndex];
                 if (carA) {
-                    const cA = getPtLatLon(carA);
-                    const ptA = project(cA.lat, cA.lon);
-                    
-                    ctx.fillStyle = 'rgba(59, 130, 246, 0.25)';
-                    ctx.beginPath();
-                    ctx.arc(ptA.x, ptA.y, 14, 0, 2 * Math.PI);
-                    ctx.fill();
-                    
-                    ctx.fillStyle = '#3b82f6';
-                    ctx.strokeStyle = '#fff';
-                    ctx.lineWidth = 2.5;
-                    ctx.beginPath();
-                    ctx.arc(ptA.x, ptA.y, 7, 0, 2 * Math.PI);
-                    ctx.fill();
-                    ctx.stroke();
+                    const ptA = projectPoint(carA);
+                    if (ptA) {
+                        ctx.fillStyle = 'rgba(59, 130, 246, 0.25)';
+                        ctx.beginPath();
+                        ctx.arc(ptA.x, ptA.y, 14, 0, 2 * Math.PI);
+                        ctx.fill();
+                        
+                        ctx.fillStyle = '#3b82f6';
+                        ctx.strokeStyle = '#fff';
+                        ctx.lineWidth = 2.5;
+                        ctx.beginPath();
+                        ctx.arc(ptA.x, ptA.y, 7, 0, 2 * Math.PI);
+                        ctx.fill();
+                        ctx.stroke();
+                    }
                 }
             }
 
@@ -1530,21 +1644,21 @@
                 if (bIdx < lapBData.points.length) {
                     const carB = lapBData.points[bIdx];
                     if (carB) {
-                        const cB = getPtLatLon(carB);
-                        const ptB = project(cB.lat, cB.lon);
-                    
-                        ctx.fillStyle = 'rgba(236, 72, 153, 0.25)';
-                        ctx.beginPath();
-                        ctx.arc(ptB.x, ptB.y, 14, 0, 2 * Math.PI);
-                        ctx.fill();
-                        
-                        ctx.fillStyle = '#ec4899';
-                        ctx.strokeStyle = '#fff';
-                        ctx.lineWidth = 2.5;
-                        ctx.beginPath();
-                        ctx.arc(ptB.x, ptB.y, 7, 0, 2 * Math.PI);
-                        ctx.fill();
-                        ctx.stroke();
+                        const ptB = projectPoint(carB);
+                        if (ptB) {
+                            ctx.fillStyle = 'rgba(236, 72, 153, 0.25)';
+                            ctx.beginPath();
+                            ctx.arc(ptB.x, ptB.y, 14, 0, 2 * Math.PI);
+                            ctx.fill();
+                            
+                            ctx.fillStyle = '#ec4899';
+                            ctx.strokeStyle = '#fff';
+                            ctx.lineWidth = 2.5;
+                            ctx.beginPath();
+                            ctx.arc(ptB.x, ptB.y, 7, 0, 2 * Math.PI);
+                            ctx.fill();
+                            ctx.stroke();
+                        }
                     }
                 }
             }
@@ -1554,46 +1668,46 @@
             const idxA = Math.round(hoverPct * (lapAData.points.length - 1));
             const carA = lapAData.points[idxA];
             if (carA) {
-                const cA = getPtLatLon(carA);
-                const ptA = project(cA.lat, cA.lon);
-                
-                // Draw outer white ring and blue core
-                ctx.strokeStyle = '#fff';
-                ctx.shadowColor = '#3b82f6';
-                ctx.shadowBlur = 8;
-                ctx.lineWidth = 2.5;
-                ctx.beginPath();
-                ctx.arc(ptA.x, ptA.y, 8, 0, 2 * Math.PI);
-                ctx.stroke();
-                
-                ctx.fillStyle = '#3b82f6';
-                ctx.beginPath();
-                ctx.arc(ptA.x, ptA.y, 3.5, 0, 2 * Math.PI);
-                ctx.fill();
-                ctx.shadowBlur = 0;
+                const ptA = projectPoint(carA);
+                if (ptA) {
+                    // Draw outer white ring and blue core
+                    ctx.strokeStyle = '#fff';
+                    ctx.shadowColor = '#3b82f6';
+                    ctx.shadowBlur = 8;
+                    ctx.lineWidth = 2.5;
+                    ctx.beginPath();
+                    ctx.arc(ptA.x, ptA.y, 8, 0, 2 * Math.PI);
+                    ctx.stroke();
+                    
+                    ctx.fillStyle = '#3b82f6';
+                    ctx.beginPath();
+                    ctx.arc(ptA.x, ptA.y, 3.5, 0, 2 * Math.PI);
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
             }
             
             if (lapBData) {
                 const idxB = Math.round(hoverPct * (lapBData.points.length - 1));
                 const carB = lapBData.points[idxB];
                 if (carB) {
-                    const cB = getPtLatLon(carB);
-                    const ptB = project(cB.lat, cB.lon);
-                    
-                    // Draw outer white ring and pink core
-                    ctx.strokeStyle = '#fff';
-                    ctx.shadowColor = '#ec4899';
-                    ctx.shadowBlur = 8;
-                    ctx.lineWidth = 2.5;
-                    ctx.beginPath();
-                    ctx.arc(ptB.x, ptB.y, 8, 0, 2 * Math.PI);
-                    ctx.stroke();
-                    
-                    ctx.fillStyle = '#ec4899';
-                    ctx.beginPath();
-                    ctx.arc(ptB.x, ptB.y, 3.5, 0, 2 * Math.PI);
-                    ctx.fill();
-                    ctx.shadowBlur = 0;
+                    const ptB = projectPoint(carB);
+                    if (ptB) {
+                        // Draw outer white ring and pink core
+                        ctx.strokeStyle = '#fff';
+                        ctx.shadowColor = '#ec4899';
+                        ctx.shadowBlur = 8;
+                        ctx.lineWidth = 2.5;
+                        ctx.beginPath();
+                        ctx.arc(ptB.x, ptB.y, 8, 0, 2 * Math.PI);
+                        ctx.stroke();
+                        
+                        ctx.fillStyle = '#ec4899';
+                        ctx.beginPath();
+                        ctx.arc(ptB.x, ptB.y, 3.5, 0, 2 * Math.PI);
+                        ctx.fill();
+                        ctx.shadowBlur = 0;
+                    }
                 }
             }
         }
