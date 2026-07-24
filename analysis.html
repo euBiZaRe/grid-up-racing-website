@@ -1894,17 +1894,30 @@
                     let firstPt = true;
                     let lastPctB = -1;
                     lapBData.points.forEach((pB, idxB) => {
-                        if (pB.pct < lastPctB - 0.2) return; // Ignore backward wrap spikes
+                        if (pB.pct < lastPctB - 0.2) return;
                         lastPctB = pB.pct;
                         
                         const x = ((pB.pct - zoomStart) / (zoomEnd - zoomStart)) * w;
                         if (c.name.includes("TIME")) return; 
-                        const val = c.getVal(pB, idxB);
+                        
+                        let val = c.getVal(pB, idxB);
+                        // 3-point smoothing for continuous curves
+                        if (["SPEED", "RPM", "STEERING"].includes(c.name) && idxB > 0 && idxB < lapBData.points.length - 1) {
+                            const prevVal = c.getVal(lapBData.points[idxB - 1], idxB - 1);
+                            const nextVal = c.getVal(lapBData.points[idxB + 1], idxB + 1);
+                            val = (prevVal + val + nextVal) / 3;
+                        }
+
                         const y = getScaledY(val);
                         if (firstPt) {
                             ctx.moveTo(x, y);
                             firstPt = false;
                         } else {
+                            if (c.name === "GEAR") {
+                                const prevX = ((lapBData.points[idxB - 1].pct - zoomStart) / (zoomEnd - zoomStart)) * w;
+                                const prevY = getScaledY(c.getVal(lapBData.points[idxB - 1], idxB - 1));
+                                ctx.lineTo(x, prevY);
+                            }
                             ctx.lineTo(x, y);
                         }
                     });
@@ -1919,16 +1932,29 @@
                 let firstPtA = true;
                 let lastPctA = -1;
                 lapAData.points.forEach((pA, idxA) => {
-                    if (pA.pct < lastPctA - 0.2) return; // Ignore backward wrap spikes
+                    if (pA.pct < lastPctA - 0.2) return;
                     lastPctA = pA.pct;
 
                     const x = ((pA.pct - zoomStart) / (zoomEnd - zoomStart)) * w;
-                    const val = c.getVal(pA, idxA);
+                    let val = c.getVal(pA, idxA);
+                    
+                    // 3-point smoothing for continuous curves
+                    if (["SPEED", "RPM", "STEERING"].includes(c.name) && idxA > 0 && idxA < lapAData.points.length - 1) {
+                        const prevVal = c.getVal(lapAData.points[idxA - 1], idxA - 1);
+                        const nextVal = c.getVal(lapAData.points[idxA + 1], idxA + 1);
+                        val = (prevVal + val + nextVal) / 3;
+                    }
+
                     const y = getScaledY(val);
                     if (firstPtA) {
                         ctx.moveTo(x, y);
                         firstPtA = false;
                     } else {
+                        if (c.name === "GEAR") {
+                            const prevX = ((lapAData.points[idxA - 1].pct - zoomStart) / (zoomEnd - zoomStart)) * w;
+                            const prevY = getScaledY(c.getVal(lapAData.points[idxA - 1], idxA - 1));
+                            ctx.lineTo(x, prevY);
+                        }
                         ctx.lineTo(x, y);
                     }
                 });
