@@ -1515,9 +1515,9 @@
                         
                         let targetLength = 0;
                         if (direction === 'anticlockwise') {
-                            targetLength = totalLength * clampedPct;
-                        } else {
                             targetLength = totalLength * (1.0 - clampedPct);
+                        } else {
+                            targetLength = totalLength * clampedPct;
                         }
 
                         const svgLength = Math.max(0, Math.min(totalLength, targetLength));
