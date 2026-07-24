@@ -1533,22 +1533,21 @@
                         const cB = getPtLatLon(carB);
                         const ptB = project(cB.lat, cB.lon);
                     
-                    ctx.fillStyle = 'rgba(236, 72, 153, 0.25)';
-                    ctx.beginPath();
-                    ctx.arc(ptB.x, ptB.y, 14, 0, 2 * Math.PI);
-                    ctx.fill();
-                    
-                    ctx.fillStyle = '#ec4899';
-                    ctx.strokeStyle = '#fff';
-                    ctx.lineWidth = 2.5;
-                    ctx.beginPath();
-                    ctx.arc(ptB.x, ptB.y, 7, 0, 2 * Math.PI);
-                    ctx.fill();
-                    ctx.fill();
-                    ctx.stroke();
+                        ctx.fillStyle = 'rgba(236, 72, 153, 0.25)';
+                        ctx.beginPath();
+                        ctx.arc(ptB.x, ptB.y, 14, 0, 2 * Math.PI);
+                        ctx.fill();
+                        
+                        ctx.fillStyle = '#ec4899';
+                        ctx.strokeStyle = '#fff';
+                        ctx.lineWidth = 2.5;
+                        ctx.beginPath();
+                        ctx.arc(ptB.x, ptB.y, 7, 0, 2 * Math.PI);
+                        ctx.fill();
+                        ctx.stroke();
+                    }
                 }
             }
-        }
 
         // Draw Hover position markers on the track map
         if (hoverPct !== null) {
@@ -1592,7 +1591,7 @@
                     
                     ctx.fillStyle = '#ec4899';
                     ctx.beginPath();
-                    ctx.arc(ptB.y, ptB.y, 3.5, 0, 2 * Math.PI);
+                    ctx.arc(ptB.x, ptB.y, 3.5, 0, 2 * Math.PI);
                     ctx.fill();
                     ctx.shadowBlur = 0;
                 }
