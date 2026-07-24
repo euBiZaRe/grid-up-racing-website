@@ -1521,7 +1521,8 @@
                         if (direction === 'anticlockwise') {
                             targetLength = sfOffset + (clampedPct * totalLength);
                         } else {
-                            targetLength = sfOffset - (clampedPct * totalLength);
+                            // Apply exact 8.5% track map offset calibration
+                            targetLength = (sfOffset - 0.085 * totalLength) - (clampedPct * totalLength);
                         }
 
                         // Wrap target length around total SVG path length
