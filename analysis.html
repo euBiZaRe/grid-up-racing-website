@@ -1990,18 +1990,16 @@
                 ctx.stroke();
             });
 
-            // Draw vertical scrub scrubber cursor (only if inside zoom viewport)
+            // Draw vertical scrub scrubber cursor / hover guide (unified single line locked to current cursor position)
             const currentPct = lapAData.points[playbackIndex]?.pct || 0;
             if (currentPct >= zoomStart && currentPct <= zoomEnd) {
                 const cursorX = ((currentPct - zoomStart) / (zoomEnd - zoomStart)) * w;
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
-                ctx.lineWidth = 1.25;
-                ctx.setLineDash([4, 4]);
+                ctx.strokeStyle = '#ef4444'; // Red guide line
+                ctx.lineWidth = 1.5;
                 ctx.beginPath();
                 ctx.moveTo(cursorX, 0);
                 ctx.lineTo(cursorX, h);
                 ctx.stroke();
-                ctx.setLineDash([]);
             }
 
             // Draw current drag brushing selection overlay if active
@@ -2027,14 +2025,7 @@
                     pB = lapBData.points[idxB];
                 }
 
-                // Hover guide vertical line
                 const hoverX = ((hoverPct - zoomStart) / (zoomEnd - zoomStart)) * w;
-                ctx.strokeStyle = 'rgba(239, 68, 68, 0.6)'; // Red hover guide line
-                ctx.lineWidth = 1.25;
-                ctx.beginPath();
-                ctx.moveTo(hoverX, 0);
-                ctx.lineTo(hoverX, h);
-                ctx.stroke();
 
                 // Build values tooltip card
                 const boxW = 160;
