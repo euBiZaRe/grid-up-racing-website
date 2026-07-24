@@ -1512,8 +1512,14 @@
                         const totalLength = trackSvgPathLength;
                         const clampedPct = Math.max(0, Math.min(1, pct));
                         const direction = activeSvgTrack.sd || 'clockwise';
-                        const sfOffset = activeSvgTrack.sfLength || 0;
-                        
+                        // Extract Start/Finish line length offset from track catalog (sp.l or sfLength)
+                        let sfOffset = 0;
+                        if (activeSvgTrack.sp && typeof activeSvgTrack.sp.l === 'number') {
+                            sfOffset = activeSvgTrack.sp.l;
+                        } else if (typeof activeSvgTrack.sfLength === 'number') {
+                            sfOffset = activeSvgTrack.sfLength;
+                        }
+
                         let targetLength = 0;
                         if (direction === 'anticlockwise') {
                             targetLength = sfOffset + (clampedPct * totalLength);
