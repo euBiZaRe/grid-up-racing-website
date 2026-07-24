@@ -1473,8 +1473,13 @@
                 }
             }
 
-            // Unified projection function (uses vector track-map if available, otherwise GPS bounds)
+            // Unified projection function:
+            // 1. If real GPS coordinates exist, project them so exact driver lateral line & apexes show precisely
+            // 2. If GPS is 0, project onto the official vector SVG track map path via lap percentage (pct)
             function projectPoint(p) {
+                if (hasRealGps && typeof p.lat === 'number' && typeof p.lon === 'number' && p.lat !== 0 && p.lon !== 0) {
+                    return project(p.lat, p.lon);
+                }
                 if (activeSvgTrack && trackSvgPathEl && typeof p.pct === 'number') {
                     const svgPos = svgProgressToXY(p.pct);
                     if (svgPos) return svgPos;
