@@ -1933,8 +1933,8 @@
                         if (c.name.includes("TIME")) return; 
                         
                         let val = c.getVal(pB, idxB);
-                        // 9-point Gaussian kernel smoothing for continuous telemetry channels
-                        if (["SPEED", "RPM", "THROTTLE", "BRAKE", "STEERING"].includes(c.name) && idxB >= 4 && idxB < lapBData.points.length - 4) {
+                        // Gaussian kernel smoothing for continuous physical channels (Speed, RPM, Steering)
+                        if (["SPEED", "RPM", "STEERING"].includes(c.name) && idxB >= 4 && idxB < lapBData.points.length - 4) {
                             const pts = lapBData.points;
                             val = c.getVal(pts[idxB-4], idxB-4) * 0.02 +
                                   c.getVal(pts[idxB-3], idxB-3) * 0.05 +
@@ -1977,8 +1977,8 @@
                     const x = ((pA.pct - zoomStart) / (zoomEnd - zoomStart)) * w;
                     let val = c.getVal(pA, idxA);
                     
-                    // 9-point Gaussian kernel smoothing for continuous telemetry channels
-                    if (["SPEED", "RPM", "THROTTLE", "BRAKE", "STEERING"].includes(c.name) && idxA >= 4 && idxA < lapAData.points.length - 4) {
+                    // Gaussian kernel smoothing for continuous physical channels (Speed, RPM, Steering)
+                    if (["SPEED", "RPM", "STEERING"].includes(c.name) && idxA >= 4 && idxA < lapAData.points.length - 4) {
                         const pts = lapAData.points;
                         val = c.getVal(pts[idxA-4], idxA-4) * 0.02 +
                               c.getVal(pts[idxA-3], idxA-3) * 0.05 +
