@@ -1997,10 +1997,10 @@
                 ctx.stroke();
             });
 
-            // Draw vertical scrub scrubber cursor / hover guide (unified single line locked to current cursor position)
-            const currentPct = lapAData.points[playbackIndex]?.pct || 0;
-            if (currentPct >= zoomStart && currentPct <= zoomEnd) {
-                const cursorX = ((currentPct - zoomStart) / (zoomEnd - zoomStart)) * w;
+            // Draw vertical scrub scrubber cursor / hover guide (locked 100% directly to mouse position)
+            const activePct = (hoverPct !== null) ? hoverPct : (lapAData.points[playbackIndex]?.pct || 0);
+            if (activePct >= zoomStart && activePct <= zoomEnd) {
+                const cursorX = ((activePct - zoomStart) / (zoomEnd - zoomStart)) * w;
                 ctx.strokeStyle = '#ef4444'; // Red guide line
                 ctx.lineWidth = 1.5;
                 ctx.beginPath();
