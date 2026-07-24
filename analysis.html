@@ -1512,13 +1512,17 @@
                         const totalLength = trackSvgPathLength;
                         const clampedPct = Math.max(0, Math.min(1, pct));
                         const direction = activeSvgTrack.sd || 'clockwise';
+                        const sfOffset = activeSvgTrack.sfLength || 0;
                         
                         let targetLength = 0;
                         if (direction === 'anticlockwise') {
-                            targetLength = totalLength * (1.0 - clampedPct);
+                            targetLength = sfOffset - (clampedPct * totalLength);
                         } else {
-                            targetLength = totalLength * clampedPct;
+                            targetLength = sfOffset + (clampedPct * totalLength);
                         }
+
+                        // Wrap target length around total SVG path length
+                        targetLength = ((targetLength % totalLength) + totalLength) % totalLength;
 
                         const svgLength = Math.max(0, Math.min(totalLength, targetLength));
                         if (isNaN(svgLength) || !isFinite(svgLength)) return null;
