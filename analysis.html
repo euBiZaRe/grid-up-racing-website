@@ -1433,10 +1433,11 @@
                             break;
                         }
                     }
-                    // Default fallback to Road America (ID 37 / 1) if name matches road america
-                    if (!activeSvgTrack && selTrackName.includes('roadamerica')) {
-                        activeSvgTrack = trackSvgMapsData['37'] || trackSvgMapsData['1'];
-                        activeTrackId = '37';
+                    // Default fallback to first key in catalog if name search fails
+                    if (!activeSvgTrack && Object.keys(trackSvgMapsData).length > 0) {
+                        const firstId = Object.keys(trackSvgMapsData)[0];
+                        activeSvgTrack = trackSvgMapsData[firstId];
+                        activeTrackId = firstId;
                     }
                 }
             }
@@ -1501,6 +1502,7 @@
             // Unified projection function:
             // 1. If real GPS coordinates exist, project them so exact driver lateral line & apexes show precisely
             // 2. If GPS is 0, project onto the official vector SVG track map path via lap percentage (pct)
+            // 3. Fallback to synthetic track layout math
             function projectPoint(p) {
                 if (hasRealGps && typeof p.lat === 'number' && typeof p.lon === 'number' && p.lat !== 0 && p.lon !== 0) {
                     return project(p.lat, p.lon);
