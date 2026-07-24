@@ -1501,17 +1501,16 @@
                     svgProgressToXY = function(pct) {
                         const totalLength = trackSvgPathLength;
                         const clampedPct = Math.max(0, Math.min(1, pct));
-                        const sfLength = activeSvgTrack.sp ? activeSvgTrack.sp.l : 0;
                         const direction = activeSvgTrack.sd || 'clockwise';
                         
                         let targetLength = 0;
                         if (direction === 'anticlockwise') {
-                            targetLength = (sfLength + totalLength * clampedPct) % totalLength;
+                            targetLength = totalLength * clampedPct;
                         } else {
-                            targetLength = (sfLength - totalLength * clampedPct + totalLength * 10) % totalLength;
+                            targetLength = totalLength * (1.0 - clampedPct);
                         }
 
-                        const svgLength = targetLength;
+                        const svgLength = Math.max(0, Math.min(totalLength, targetLength));
                         if (isNaN(svgLength) || !isFinite(svgLength)) return null;
 
                         const cacheKey = Math.round(svgLength * 10);
