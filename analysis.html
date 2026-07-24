@@ -1500,14 +1500,15 @@
                     // Map progress (0-1) to Vector SVG X,Y with memoized point lookup cache for ultra-smooth 60fps scrubbing
                     svgProgressToXY = function(pct) {
                         const totalLength = trackSvgPathLength;
+                        const clampedPct = Math.max(0, Math.min(1, pct));
                         const sfLength = activeSvgTrack.sp ? activeSvgTrack.sp.l : 0;
                         const direction = activeSvgTrack.sd || 'clockwise';
-                        const adjustedLength = (totalLength * pct) % totalLength;
+                        const adjustedLength = totalLength * clampedPct;
                         const length = (direction === 'anticlockwise')
                             ? (sfLength + adjustedLength) % totalLength
                             : (sfLength - adjustedLength + totalLength) % totalLength;
 
-                        const svgLength = (length / activeSvgTrack.l) * trackSvgPathLength;
+                        const svgLength = (length / (activeSvgTrack.l || 1)) * totalLength;
                         if (isNaN(svgLength) || !isFinite(svgLength)) return null;
 
                         const cacheKey = Math.round(svgLength * 10);
@@ -1641,7 +1642,7 @@
                 ctx.setLineDash([2, 5]);
                 for (let i = 0; i < lapBData.points.length - 1; i++) {
                     const p1 = lapBData.points[i];
-                    const p2 = lapAData.points[i + 1];
+                    const p2 = lapBData.points[i + 1];
                     if (!p1 || !p2) continue;
                     const pt1 = projectPoint(p1);
                     const pt2 = projectPoint(p2);
