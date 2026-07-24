@@ -679,9 +679,12 @@
             })
             .catch(err => console.warn('[Analysis TrackMap] Failed to load track-maps.json:', err));
 
+        let trackSvgPointCache = {};
+
         function initTrackSvgPath(svgPathD) {
             if (!svgPathD) return;
             try {
+                trackSvgPointCache = {}; // Reset point cache for new track path
                 if (!trackSvgPathEl) {
                     const svg = document.createElementNS(trackSvgNS, 'svg');
                     svg.setAttribute('width', '2000');
@@ -1480,7 +1483,7 @@
 
                     ctx.restore();
 
-                    // Map progress (0-1) to Vector SVG X,Y
+                    // Map progress (0-1) to Vector SVG X,Y with memoized point lookup cache for ultra-smooth 60fps scrubbing
                     svgProgressToXY = function(pct) {
                         const totalLength = trackSvgPathLength;
                         const sfLength = activeSvgTrack.sp ? activeSvgTrack.sp.l : 0;
@@ -1492,7 +1495,14 @@
 
                         const svgLength = (length / activeSvgTrack.l) * trackSvgPathLength;
                         if (isNaN(svgLength) || !isFinite(svgLength)) return null;
-                        const rawPt = trackSvgPathEl.getPointAtLength(svgLength);
+
+                        const cacheKey = Math.round(svgLength * 10);
+                        let rawPt = trackSvgPointCache[cacheKey];
+                        if (!rawPt) {
+                            rawPt = trackSvgPathEl.getPointAtLength(svgLength);
+                            trackSvgPointCache[cacheKey] = rawPt;
+                        }
+
                         if (!rawPt) return null;
                         return {
                             x: offsetX + rawPt.x * scale,
@@ -2161,6 +2171,12 @@
                         dragCurrentPct = zoomStart + (currentX / rect.width) * (zoomEnd - zoomStart);
                     }
                     
+                    if (lapAData && lapAData.points) {
+                        playbackIndex = Math.round(hoverPct * (lapAData.points.length - 1));
+                        scrubberSlider.value = playbackIndex;
+                        updateHudValues();
+                    }
+
                     drawTelemetryCharts();
                     drawLapsAndMarkers();
                 });
