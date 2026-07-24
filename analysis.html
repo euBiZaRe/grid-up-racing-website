@@ -1450,25 +1450,22 @@
             let activeTrackId = lapAData.track_id;
             
             if (trackSvgMapsData) {
-                if (activeTrackId && trackSvgMapsData[activeTrackId]) {
+                const selTrackName = (trackSelect.value || lapAData.track_name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                for (const [id, tObj] of Object.entries(trackSvgMapsData)) {
+                    const matchName = (tObj.n || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                    if (matchName && selTrackName && (matchName.includes(selTrackName) || selTrackName.includes(matchName))) {
+                        activeSvgTrack = tObj;
+                        activeTrackId = id;
+                        break;
+                    }
+                }
+                if (!activeSvgTrack && activeTrackId && trackSvgMapsData[activeTrackId]) {
                     activeSvgTrack = trackSvgMapsData[activeTrackId];
-                } else {
-                    const selTrackName = (trackSelect.value || lapAData.track_name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-                    for (const [id, tObj] of Object.entries(trackSvgMapsData)) {
-                        // Check fuzzy track catalog match
-                        const matchName = (tObj.n || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-                        if (matchName && selTrackName && (matchName.includes(selTrackName) || selTrackName.includes(matchName))) {
-                            activeSvgTrack = tObj;
-                            activeTrackId = id;
-                            break;
-                        }
-                    }
-                    // Default fallback to first key in catalog if name search fails
-                    if (!activeSvgTrack && Object.keys(trackSvgMapsData).length > 0) {
-                        const firstId = Object.keys(trackSvgMapsData)[0];
-                        activeSvgTrack = trackSvgMapsData[firstId];
-                        activeTrackId = firstId;
-                    }
+                }
+                if (!activeSvgTrack && Object.keys(trackSvgMapsData).length > 0) {
+                    const firstId = Object.keys(trackSvgMapsData)[0];
+                    activeSvgTrack = trackSvgMapsData[firstId];
+                    activeTrackId = firstId;
                 }
             }
 
@@ -1522,9 +1519,9 @@
 
                         let targetLength = 0;
                         if (direction === 'anticlockwise') {
-                            targetLength = sfOffset - (clampedPct * totalLength);
-                        } else {
                             targetLength = sfOffset + (clampedPct * totalLength);
+                        } else {
+                            targetLength = sfOffset - (clampedPct * totalLength);
                         }
 
                         // Wrap target length around total SVG path length
