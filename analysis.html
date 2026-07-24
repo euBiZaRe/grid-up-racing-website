@@ -1331,6 +1331,8 @@
                 });
             }
 
+            window.currentAllLats = allLats;
+
             if (allLats.length > 0) {
                 gpsBounds.minLat = Math.min(...allLats);
                 gpsBounds.maxLat = Math.max(...allLats);
@@ -1381,7 +1383,7 @@
             const diffLon = Math.abs((gpsBounds.maxLon - gpsBounds.minLon) * gpsBounds.cosLat) || 0.0001;
             const diffLat = Math.abs(gpsBounds.maxLat - gpsBounds.minLat) || 0.0001;
 
-            const hasRealGps = allLats.length > 0;
+            const hasRealGps = (window.currentAllLats || []).length > 0;
 
             function getPtLatLon(p) {
                 if (hasRealGps) {
