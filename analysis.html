@@ -1503,12 +1503,15 @@
                         const clampedPct = Math.max(0, Math.min(1, pct));
                         const sfLength = activeSvgTrack.sp ? activeSvgTrack.sp.l : 0;
                         const direction = activeSvgTrack.sd || 'clockwise';
-                        const adjustedLength = totalLength * clampedPct;
-                        const length = (direction === 'anticlockwise')
-                            ? (sfLength + adjustedLength) % totalLength
-                            : (sfLength - adjustedLength + totalLength) % totalLength;
+                        
+                        let targetLength = 0;
+                        if (direction === 'anticlockwise') {
+                            targetLength = (sfLength + totalLength * clampedPct) % totalLength;
+                        } else {
+                            targetLength = (sfLength - totalLength * clampedPct + totalLength * 10) % totalLength;
+                        }
 
-                        const svgLength = (length / (activeSvgTrack.l || 1)) * totalLength;
+                        const svgLength = targetLength;
                         if (isNaN(svgLength) || !isFinite(svgLength)) return null;
 
                         const cacheKey = Math.round(svgLength * 10);
