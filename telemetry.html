@@ -1419,9 +1419,8 @@
             ctx.lineTo(w, h / 2);
             ctx.stroke();
             
-            const maxPoints = 150;
-            const step = w / (maxPoints - 1);
-            const startX = w - (history.length * step);
+            const step = w / Math.max(1, history.length - 1);
+            const startX = 0;
             
             ctx.lineJoin = 'round';
             ctx.lineCap = 'round';
@@ -1431,20 +1430,20 @@
             ctx.lineWidth = 2;
             ctx.beginPath();
             
-            let firstX = startX;
+            let firstX = 0;
             let firstY = h - (history[0].throttle / 100 * (h - 4)) - 2;
             ctx.moveTo(firstX, firstY);
             
             for (let i = 0; i < history.length - 1; i++) {
-                const x1 = startX + (i * step);
+                const x1 = i * step;
                 const y1 = h - (history[i].throttle / 100 * (h - 4)) - 2;
-                const x2 = startX + ((i + 1) * step);
+                const x2 = (i + 1) * step;
                 const y2 = h - (history[i + 1].throttle / 100 * (h - 4)) - 2;
                 const xc = (x1 + x2) / 2;
                 const yc = (y1 + y2) / 2;
                 ctx.quadraticCurveTo(x1, y1, xc, yc);
             }
-            const lastX = startX + ((history.length - 1) * step);
+            const lastX = w;
             const lastY = h - (history[history.length - 1].throttle / 100 * (h - 4)) - 2;
             ctx.lineTo(lastX, lastY);
             ctx.stroke();
@@ -1452,9 +1451,9 @@
             // Draw Brake line (red/orange) — drawn in segments to dynamically shift colors
             ctx.lineWidth = 2;
             for (let i = 0; i < history.length - 1; i++) {
-                const x1 = startX + (i * step);
+                const x1 = i * step;
                 const y1 = h - (history[i].brake / 100 * (h - 4)) - 2;
-                const x2 = startX + ((i + 1) * step);
+                const x2 = (i + 1) * step;
                 const y2 = h - (history[i + 1].brake / 100 * (h - 4)) - 2;
                 
                 // Color segments orange on ABS active, otherwise red
