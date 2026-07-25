@@ -778,8 +778,12 @@ function renderEventsUI(upcomingEvents, pastEvents = null, featuredOverride = nu
         'production-car-challenge': 'iRacing Production Car Challenge'
     };
 
-    // A. Update Upcoming UI
-    const nextEvent = featuredOverride || (upcomingEvents.length > 0 ? upcomingEvents[0] : null);
+    let nextEvent = featuredOverride || (upcomingEvents.length > 0 ? upcomingEvents[0] : null);
+    // Prioritize Road America 6h if it is upcoming/active
+    const raEvent = upcomingEvents.find(e => e.id === 'road-america-6h');
+    if (raEvent && !featuredOverride) {
+        nextEvent = raEvent;
+    }
     if (!nextEvent) {
         if (upcomingTrack) upcomingTrack.innerHTML = '<p style="text-align: center; color: var(--text-muted); width: 100%;">No upcoming events scheduled.</p>';
         if (fullEventList) fullEventList.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Stay tuned for future event dates.</p>';
