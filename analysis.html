@@ -1450,17 +1450,18 @@
             let activeTrackId = lapAData.track_id;
             
             if (trackSvgMapsData) {
-                const selTrackName = (trackSelect.value || lapAData.track_name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-                for (const [id, tObj] of Object.entries(trackSvgMapsData)) {
-                    const matchName = (tObj.n || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-                    if (matchName && selTrackName && (matchName.includes(selTrackName) || selTrackName.includes(matchName))) {
-                        activeSvgTrack = tObj;
-                        activeTrackId = id;
-                        break;
-                    }
-                }
-                if (!activeSvgTrack && activeTrackId && trackSvgMapsData[activeTrackId]) {
+                if (activeTrackId && trackSvgMapsData[activeTrackId]) {
                     activeSvgTrack = trackSvgMapsData[activeTrackId];
+                } else {
+                    const selTrackName = (trackSelect.value || lapAData.track_name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                    for (const [id, tObj] of Object.entries(trackSvgMapsData)) {
+                        const matchName = (tObj.n || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                        if (matchName && selTrackName && (matchName.includes(selTrackName) || selTrackName.includes(matchName))) {
+                            activeSvgTrack = tObj;
+                            activeTrackId = id;
+                            break;
+                        }
+                    }
                 }
             }
 
