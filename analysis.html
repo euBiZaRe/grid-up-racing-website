@@ -1567,10 +1567,9 @@
                 ctx.lineJoin = 'round';
                 ctx.beginPath();
                 let firstPt = true;
-                lapAData.points.forEach((p, idx) => {
+                lapAData.points.forEach((p) => {
                     if (!p) return;
-                    const c = getPtLatLon(p);
-                    const pt = project(c.lat, c.lon);
+                    const pt = projectPoint(p);
                     if (firstPt) {
                         ctx.moveTo(pt.x, pt.y);
                         firstPt = false;
