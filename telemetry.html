@@ -1620,7 +1620,7 @@
                             telTimestamp: tel.timestamp || 0
                         });
                         
-                        const cutoff = Date.now() - 5000; // Hold exactly 5 seconds of telemetry data
+                        const cutoff = Date.now() - 10000; // Hold exactly 10 seconds of telemetry data
                         while (history.length > 0 && history[0].timestamp < cutoff) {
                             history.shift();
                         }
