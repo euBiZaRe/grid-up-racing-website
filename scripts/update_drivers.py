@@ -159,7 +159,8 @@ def load_drivers_list():
                 if data.get('active') != False and data.get('slug'):
                     drivers.append({
                         "name": data['name'],
-                        "url": f"https://garage61.net/app/drivers/{data['slug']}"
+                        "url": f"https://garage61.net/app/drivers/{data['slug']}",
+                        "role": data.get('role', 'Driver')
                     })
             print(f"Loaded {len(drivers)} active drivers from Firestore via Admin SDK.")
         except Exception as e:
@@ -185,10 +186,14 @@ def load_drivers_list():
                     slug_field = fields.get('slug', {})
                     slug = slug_field.get('stringValue')
                     
+                    role_field = fields.get('role', {})
+                    role = role_field.get('stringValue', 'Driver')
+                    
                     if active != False and name and slug:
                         drivers.append({
                             "name": name,
-                            "url": f"https://garage61.net/app/drivers/{slug}"
+                            "url": f"https://garage61.net/app/drivers/{slug}",
+                            "role": role
                         })
                 print(f"Loaded {len(drivers)} active drivers from Firestore via REST API.")
         except Exception as e:
@@ -200,6 +205,9 @@ def load_drivers_list():
             print("Falling back to local drivers.json...")
             with open(DRIVERS_JSON, "r") as f:
                 drivers = json.load(f)
+                for d in drivers:
+                    if 'role' not in d:
+                        d['role'] = 'Driver'
         else:
             print(f"Error: {DRIVERS_JSON} not found and Firestore query failed.")
             
@@ -294,6 +302,7 @@ def update_profiles():
         html = html.replace("{{NAME}}", name)
         html = html.replace("{{NICKNAME}}", stats.get("nickname", ""))
         html = html.replace("{{MEMBER_SINCE}}", stats.get("memberSince", "N/A"))
+        html = html.replace("{{ROLE}}", driver.get("role", "Driver"))
         html = html.replace("{{G61_URL}}", url)
         
         for key in ["SPORTS", "FORMULA", "OVAL", "DIRT_OVAL", "DIRT_ROAD"]:
