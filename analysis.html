@@ -1548,12 +1548,12 @@
             // 2. If GPS is 0, project onto the official vector SVG track map path via lap percentage (pct)
             // 3. Fallback to synthetic track layout math
             function projectPoint(p, idx) {
+                if (hasRealGps && typeof p.lat === 'number' && typeof p.lon === 'number' && p.lat !== 0 && p.lon !== 0) {
+                    return project(p.lat, p.lon);
+                }
                 if (svgProgressToXY && typeof p.pct === 'number') {
                     const svgPos = svgProgressToXY(p.pct);
                     if (svgPos) return svgPos;
-                }
-                if (hasRealGps && typeof p.lat === 'number' && typeof p.lon === 'number' && p.lat !== 0 && p.lon !== 0) {
-                    return project(p.lat, p.lon);
                 }
                 const c = getPtLatLon(p, idx);
                 return project(c.lat, c.lon);
