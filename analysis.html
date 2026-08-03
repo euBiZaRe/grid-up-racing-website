@@ -1784,6 +1784,45 @@
                 }
             }
         }
+
+        // Draw Turn-In and Initial Braking markers on the track map for precision coaching
+        if (lapAData && lapAData.points) {
+            for (let i = 1; i < lapAData.points.length - 1; i++) {
+                const prev = lapAData.points[i - 1];
+                const curr = lapAData.points[i];
+                if (!prev || !curr) continue;
+
+                // Initial Brake Application Point (Red Dot + White Border)
+                if (prev.brk <= 15 && curr.brk > 15) {
+                    const pt = projectPoint(curr, i);
+                    if (pt) {
+                        ctx.fillStyle = '#ef4444';
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = 1.5;
+                        ctx.beginPath();
+                        ctx.arc(pt.x, pt.y, 4.5, 0, 2 * Math.PI);
+                        ctx.fill();
+                        ctx.stroke();
+                    }
+                }
+
+                // Turn-In Point (Purple Star/Marker when steering angle begins > 15 degrees)
+                const prevStr = Math.abs((prev.str || 0) * (180 / Math.PI));
+                const currStr = Math.abs((curr.str || 0) * (180 / Math.PI));
+                if (prevStr <= 15 && currStr > 15) {
+                    const pt = projectPoint(curr, i);
+                    if (pt) {
+                        ctx.fillStyle = '#a855f7';
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = 1.5;
+                        ctx.beginPath();
+                        ctx.arc(pt.x, pt.y, 4, 0, 2 * Math.PI);
+                        ctx.fill();
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
     }
 
         function drawTelemetryCharts() {
