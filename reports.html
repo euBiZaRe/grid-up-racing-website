@@ -67,7 +67,10 @@
         
         <!-- Tab Selector -->
         <div class="tabs-wrapper" style="display: flex; justify-content: center; gap: 1rem; margin-bottom: 3rem; position: relative; z-index: 10; flex-wrap: wrap;">
-            <button class="tab-btn active" id="btn-news" style="background: rgba(14,165,233,0.1); border: 1px solid var(--primary); color: #ffffff; padding: 0.75rem 1.5rem; border-radius: 8px; font-family: var(--font-heading); font-weight: 700; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; box-shadow: 0 0 15px rgba(14,165,233,0.2);">
+            <button class="tab-btn active" id="btn-all" style="background: rgba(14,165,233,0.1); border: 1px solid var(--primary); color: #ffffff; padding: 0.75rem 1.5rem; border-radius: 8px; font-family: var(--font-heading); font-weight: 700; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; box-shadow: 0 0 15px rgba(14,165,233,0.2);">
+                All
+            </button>
+            <button class="tab-btn" id="btn-news" style="background: transparent; border: 1px solid var(--glass-border); color: var(--text-muted); padding: 0.75rem 1.5rem; border-radius: 8px; font-family: var(--font-heading); font-weight: 700; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem;">
                 News
             </button>
             <button class="tab-btn" id="btn-reports" style="background: transparent; border: 1px solid var(--glass-border); color: var(--text-muted); padding: 0.75rem 1.5rem; border-radius: 8px; font-family: var(--font-heading); font-weight: 700; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem;">
@@ -117,11 +120,12 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
         const feed = document.getElementById('reports-feed');
+        const btnAll = document.getElementById('btn-all');
         const btnNews = document.getElementById('btn-news');
         const btnReports = document.getElementById('btn-reports');
         if (!feed) return;
 
-        let activeTab = 'news';
+        let activeTab = 'all';
 
         // Wait for Firebase db from script.js
         let attempts = 0;
@@ -135,7 +139,8 @@
         }
 
         async function loadEditorialReports(typeFilter) {
-            feed.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 3rem;"><p>Loading ${typeFilter === 'news' ? 'news articles' : 'race reports'}...</p></div>`;
+            const typeLabel = typeFilter === 'all' ? 'articles' : typeFilter === 'news' ? 'news articles' : 'race reports';
+            feed.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 3rem;"><p>Loading ${typeLabel}...</p></div>`;
             try {
                 const snap = await db.collection('reports').orderBy('date', 'desc').get();
                 if (snap.empty) {
@@ -151,7 +156,7 @@
                     // Categorize as news or report (fallback to report if not specified)
                     const docType = data.type || 'report';
                     
-                    if (docType !== typeFilter) return;
+                    if (typeFilter !== 'all' && docType !== typeFilter) return;
                     
                     count++;
                     const id = doc.id;
@@ -186,7 +191,8 @@
                 });
 
                 if (count === 0) {
-                    feed.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:3rem;"><p>No ${typeFilter === 'news' ? 'news articles' : 'race reports'} posted yet.</p></div>`;
+                    const typeLabel = typeFilter === 'all' ? 'articles' : typeFilter === 'news' ? 'news articles' : 'race reports';
+                    feed.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:3rem;"><p>No ${typeLabel} posted yet.</p></div>`;
                 }
             } catch (e) {
                 console.error('Error loading reports:', e);
@@ -281,6 +287,7 @@
         function switchTab(tab) {
             activeTab = tab;
             const buttons = {
+                'all': btnAll,
                 'news': btnNews,
                 'reports': btnReports
             };
@@ -302,11 +309,12 @@
             loadEditorialReports(tab === 'reports' ? 'report' : tab);
         }
 
+        btnAll.addEventListener('click', () => switchTab('all'));
         btnNews.addEventListener('click', () => switchTab('news'));
         btnReports.addEventListener('click', () => switchTab('reports'));
 
         // Load default tab
-        switchTab('news');
+        switchTab('all');
     });
     </script>
 </body>
