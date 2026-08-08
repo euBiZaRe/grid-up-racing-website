@@ -565,12 +565,9 @@
 
         <!-- Sponsor / Social Rotator Container -->
         <div id="widget-rotator" class="widget-wrapper">
-            <div class="widget-card">
-                <div class="rotator-widget">
-                    <div class="rotator-content" id="rotator-content-wrapper">
-                        <span class="rotator-badge" id="rotator-badge-el">🌐 discord</span>
-                        <span class="rotator-text" id="rotator-text-el">JOIN DISCORD</span>
-                    </div>
+            <div class="widget-card" style="padding: 0.25rem 0.5rem; display: flex; align-items: center; justify-content: center; height: 45px; min-width: 170px; background: rgba(0,0,0,0.5);">
+                <div class="rotator-content" id="rotator-content-wrapper" style="display: flex; align-items: center; justify-content: center;">
+                    <img id="rotator-img-el" src="../assets/overlays/white/gridup_online.png" alt="Sponsor Logo" style="height: 25px; max-width: 150px; object-fit: contain; filter: drop-shadow(0 0 5px rgba(255,255,255,0.1));">
                 </div>
             </div>
         </div>
@@ -622,22 +619,15 @@
             setupWidget("rotator", 85, 85, 1.0);
 
             // Rotator sliding list items
-            const rotatorItems = [
-                { id: "discord", label: "JOIN DISCORD", icon: "🌐" },
-                { id: "website", label: "VISIT WEBSITE", icon: "💻" },
-                { id: "subscribe", label: "SUBSCRIBE FOR COACHING", icon: "🏎️" }
-            ];
-
+            const rotatorImagesList = ["gridup_online", "gridup_shop", "discord_gridup"];
             let rotatorIndex = 0;
-            const rotatorBadgeEl = document.getElementById("rotator-badge-el");
-            const rotatorTextEl = document.getElementById("rotator-text-el");
+            const rotatorImgEl = document.getElementById("rotator-img-el");
             const rotatorContentEl = document.getElementById("rotator-content-wrapper");
+            const logoColor = params.get("logoColor") || "white";
 
             if (activeWidgets.includes("rotator")) {
-                // Initialize badge visibility
-                if (!rotatorBadge) {
-                    rotatorBadgeEl.style.display = "none";
-                }
+                // Set initial image
+                rotatorImgEl.src = `../assets/overlays/${logoColor}/${rotatorImagesList[0]}.png`;
 
                 // Rotator interval loop
                 setInterval(() => {
@@ -645,11 +635,8 @@
                     rotatorContentEl.style.transform = "translateY(5px)";
                     
                     setTimeout(() => {
-                        rotatorIndex = (rotatorIndex + 1) % rotatorItems.length;
-                        const item = rotatorItems[rotatorIndex];
-                        
-                        rotatorBadgeEl.textContent = `${item.icon} ${item.id}`;
-                        rotatorTextEl.textContent = item.label;
+                        rotatorIndex = (rotatorIndex + 1) % rotatorImagesList.length;
+                        rotatorImgEl.src = `../assets/overlays/${logoColor}/${rotatorImagesList[rotatorIndex]}.png`;
                         
                         rotatorContentEl.style.opacity = "1";
                         rotatorContentEl.style.transform = "translateY(0)";

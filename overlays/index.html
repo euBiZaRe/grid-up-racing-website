@@ -628,11 +628,19 @@
                                         <span class="slider-value" id="rotator-interval-value">6s</span>
                                     </div>
                                 </div>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="check-rotator-badge" checked>
-                                    <span class="checkbox-custom"></span>
-                                    <span>Display Rotator Badge</span>
-                                </label>
+                                <div class="control-group">
+                                    <span class="control-label">Logo Color</span>
+                                    <select id="select-logo-color" class="custom-select">
+                                        <option value="white">White (Original)</option>
+                                        <option value="red">Red</option>
+                                        <option value="blue">Blue</option>
+                                        <option value="gold">Gold</option>
+                                        <option value="green">Green</option>
+                                        <option value="purple">Purple</option>
+                                        <option value="orange">Orange</option>
+                                        <option value="black">Black (Inverted Outline)</option>
+                                    </select>
+                                </div>
                                 <div class="control-group">
                                     <span class="control-label">Reposition Preset</span>
                                     <div class="dock-grid">
@@ -709,9 +717,8 @@
 
                         <!-- Rotator Mock -->
                         <div id="preview-widget-rotator" class="preview-widget" data-widget="rotator" style="left: 85%; top: 85%; display: none;">
-                            <div class="mock-widget-box theme-redline">
-                                <span style="font-size: 0.5rem; background: var(--secondary); padding: 0.1rem 0.2rem; border-radius: 2px;">SOCIAL</span>
-                                <span style="font-size: 0.55rem;">JOIN DISCORD</span>
+                            <div class="mock-widget-box theme-redline" style="padding: 0.25rem 0.5rem; display: flex; align-items: center; justify-content: center; height: 35px; min-width: 150px; background: rgba(0,0,0,0.5);">
+                                <img id="preview-rotator-img" src="../assets/overlays/white/gridup_online.png" alt="Sponsor Logo" style="height: 20px; max-width: 140px; object-fit: contain; filter: drop-shadow(0 0 4px rgba(255,255,255,0.15));">
                             </div>
                         </div>
                     </div>
@@ -760,7 +767,21 @@
             // Rotator specifics
             const inputRotatorInterval = document.getElementById("input-rotator-interval");
             const labelRotatorInterval = document.getElementById("rotator-interval-value");
-            const checkRotatorBadge = document.getElementById("check-rotator-badge");
+            const selectLogoColor = document.getElementById("select-logo-color");
+
+            // Rotator preview loop
+            const rotatorImagesList = ["gridup_online", "gridup_shop", "discord_gridup"];
+            let previewRotatorIndex = 0;
+            setInterval(() => {
+                if (widgets.rotator.enabled) {
+                    previewRotatorIndex = (previewRotatorIndex + 1) % rotatorImagesList.length;
+                    const imgEl = document.getElementById("preview-rotator-img");
+                    const logoColor = selectLogoColor.value;
+                    if (imgEl) {
+                        imgEl.src = `../assets/overlays/${logoColor}/${rotatorImagesList[previewRotatorIndex]}.png`;
+                    }
+                }
+            }, 3000);
 
             // Initialize widget properties
             const widgets = {
@@ -819,13 +840,21 @@
                 });
             });
 
-            // Rotator Interval
+            // Rotator Interval & Logo Color listener
             inputRotatorInterval.addEventListener("input", (e) => {
                 const val = e.target.value;
                 labelRotatorInterval.textContent = val + "s";
                 updateUrl();
             });
-            checkRotatorBadge.addEventListener("change", updateUrl);
+            
+            selectLogoColor.addEventListener("change", () => {
+                const logoColor = selectLogoColor.value;
+                const imgEl = document.getElementById("preview-rotator-img");
+                if (imgEl) {
+                    imgEl.src = `../assets/overlays/${logoColor}/${rotatorImagesList[previewRotatorIndex]}.png`;
+                }
+                updateUrl();
+            });
 
             // Theme, unit, and style inputs
             selectTheme.addEventListener("change", updateThemes);
@@ -910,7 +939,7 @@
                 const glow = checkGlow.checked;
                 const sim = checkSim.checked;
                 const rotatorInterval = inputRotatorInterval.value;
-                const rotatorBadge = checkRotatorBadge.checked;
+                const logoColor = selectLogoColor.value;
 
                 const activeWidgetIds = Object.keys(widgets).filter(id => widgets[id].enabled).join(",");
                 
@@ -919,7 +948,7 @@
                 pathParts.pop(); // Remove "index.html" or trailing empty
                 const basePath = pathParts.join("/");
                 
-                let compiledUrl = `${window.location.origin}${basePath}/widget.html?active=${activeWidgetIds}&theme=${theme}&glow=${glow}&unit=${speedUnit}&sim=${sim}&rotatorInterval=${rotatorInterval}&rotatorBadge=${rotatorBadge}`;
+                let compiledUrl = `${window.location.origin}${basePath}/widget.html?active=${activeWidgetIds}&theme=${theme}&glow=${glow}&unit=${speedUnit}&sim=${sim}&rotatorInterval=${rotatorInterval}&logoColor=${logoColor}`;
 
                 Object.keys(widgets).forEach(id => {
                     if (widgets[id].enabled) {
