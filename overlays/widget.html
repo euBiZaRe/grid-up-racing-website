@@ -541,6 +541,7 @@
             const rotatorInterval = parseInt(params.get("rotatorInterval") || "6", 10) * 1000;
             const rotatorBadge = params.get("rotatorBadge") !== "false";
             const border = params.get("border") !== "false";
+            const bgOpacity = parseFloat(params.get("bgOpacity") || "0.95");
 
             // Apply Theme to Canvas Container
             const canvasEl = document.getElementById("main-canvas");
@@ -551,6 +552,10 @@
                     card.classList.add("border-off");
                 });
             }
+
+            document.querySelectorAll(".widget-card").forEach(card => {
+                card.style.backgroundColor = `rgba(10, 12, 18, ${bgOpacity})`;
+            });
 
             // Widget Positioning & Scale Configuration Helper
             function setupWidget(id, defaultX, defaultY, defaultScale) {

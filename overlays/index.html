@@ -451,6 +451,14 @@
                         </select>
                     </div>
 
+                    <div class="control-group">
+                        <span class="control-label">Background Opacity</span>
+                        <div class="slider-container">
+                            <input type="range" id="input-bg-opacity" min="0" max="100" step="5" value="95">
+                            <span class="slider-value" id="bg-opacity-value">95%</span>
+                        </div>
+                    </div>
+
                     <div class="flex gap-4" style="display: flex; gap: 1.5rem; justify-content: space-between;">
                         <label class="checkbox-label">
                             <input type="checkbox" id="check-glow" checked>
@@ -756,6 +764,8 @@
             const obsUrlInput = document.getElementById("obs-url-input");
             const btnCopy = document.getElementById("btn-copy");
             const checkBorder = document.getElementById("check-border");
+            const inputBgOpacity = document.getElementById("input-bg-opacity");
+            const labelBgOpacity = document.getElementById("bg-opacity-value");
 
             // Rotator specifics
             const inputRotatorInterval = document.getElementById("input-rotator-interval");
@@ -844,6 +854,16 @@
             checkGlow.addEventListener("change", updateUrl);
             checkSim.addEventListener("change", updateUrl);
             
+            inputBgOpacity.addEventListener("input", (e) => {
+                const val = e.target.value;
+                labelBgOpacity.textContent = val + "%";
+                const alpha = val / 100;
+                document.querySelectorAll(".mock-widget-box").forEach(box => {
+                    box.style.backgroundColor = `rgba(10, 12, 18, ${alpha})`;
+                });
+                updateUrl();
+            });
+            
             checkBorder.addEventListener("change", () => {
                 document.querySelectorAll(".mock-widget-box").forEach(box => {
                     if (checkBorder.checked) {
@@ -858,8 +878,10 @@
             // Theme preview updates
             function updateThemes() {
                 const theme = selectTheme.value;
+                const alpha = inputBgOpacity.value / 100;
                 document.querySelectorAll(".mock-widget-box").forEach(box => {
                     box.className = `mock-widget-box theme-${theme}`;
+                    box.style.backgroundColor = `rgba(10, 12, 18, ${alpha})`;
                     if (!checkBorder.checked) {
                         box.classList.add("border-off");
                     }
@@ -936,6 +958,7 @@
                 const sim = checkSim.checked;
                 const rotatorInterval = inputRotatorInterval.value;
                 const border = checkBorder.checked;
+                const bgOpacity = inputBgOpacity.value / 100;
 
                 const activeWidgetIds = Object.keys(widgets).filter(id => widgets[id].enabled).join(",");
                 
@@ -944,7 +967,7 @@
                 pathParts.pop(); // Remove "index.html" or trailing empty
                 const basePath = pathParts.join("/");
                 
-                let compiledUrl = `${window.location.origin}${basePath}/widget.html?active=${activeWidgetIds}&theme=${theme}&glow=${glow}&unit=${speedUnit}&sim=${sim}&rotatorInterval=${rotatorInterval}&border=${border}`;
+                let compiledUrl = `${window.location.origin}${basePath}/widget.html?active=${activeWidgetIds}&theme=${theme}&glow=${glow}&unit=${speedUnit}&sim=${sim}&rotatorInterval=${rotatorInterval}&border=${border}&bgOpacity=${bgOpacity}`;
 
                 Object.keys(widgets).forEach(id => {
                     if (widgets[id].enabled) {
