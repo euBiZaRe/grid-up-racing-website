@@ -55,6 +55,11 @@
             transition: all 0.3s ease;
         }
 
+        .widget-card.border-off {
+            border-left: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-radius: 12px !important;
+        }
+
         .glow-on .widget-card {
             box-shadow: 0 0 25px rgba(var(--theme-accent-rgb), 0.22);
             border-color: rgba(var(--theme-accent-rgb), 0.4);
@@ -535,10 +540,17 @@
             const forceSim = params.get("sim") === "true";
             const rotatorInterval = parseInt(params.get("rotatorInterval") || "6", 10) * 1000;
             const rotatorBadge = params.get("rotatorBadge") !== "false";
+            const border = params.get("border") !== "false";
 
             // Apply Theme to Canvas Container
             const canvasEl = document.getElementById("main-canvas");
             canvasEl.className = `overlay-canvas theme-${theme} ${glow ? 'glow-on' : ''}`;
+
+            if (!border) {
+                document.querySelectorAll(".widget-card").forEach(card => {
+                    card.classList.add("border-off");
+                });
+            }
 
             // Widget Positioning & Scale Configuration Helper
             function setupWidget(id, defaultX, defaultY, defaultScale) {

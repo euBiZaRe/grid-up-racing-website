@@ -311,6 +311,11 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
         }
 
+        .mock-widget-box.border-off {
+            border-left: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-radius: 8px !important;
+        }
+
         .theme-white { --theme-accent: #ffffff; }
         .theme-red { --theme-accent: #dc2626; }
         .theme-blue { --theme-accent: #0ea5e9; }
@@ -457,6 +462,13 @@
                             <input type="checkbox" id="check-sim" checked>
                             <span class="checkbox-custom"></span>
                             <span>Telemetry Simulation</span>
+                        </label>
+                    </div>
+                    <div style="margin-top: 0.75rem; display: flex; justify-content: flex-start;">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="check-border" checked>
+                            <span class="checkbox-custom"></span>
+                            <span>Show Color Border Accent</span>
                         </label>
                     </div>
                 </div>
@@ -743,6 +755,7 @@
             const checkSim = document.getElementById("check-sim");
             const obsUrlInput = document.getElementById("obs-url-input");
             const btnCopy = document.getElementById("btn-copy");
+            const checkBorder = document.getElementById("check-border");
 
             // Rotator specifics
             const inputRotatorInterval = document.getElementById("input-rotator-interval");
@@ -830,12 +843,26 @@
             selectUnit.addEventListener("change", updateUrl);
             checkGlow.addEventListener("change", updateUrl);
             checkSim.addEventListener("change", updateUrl);
+            
+            checkBorder.addEventListener("change", () => {
+                document.querySelectorAll(".mock-widget-box").forEach(box => {
+                    if (checkBorder.checked) {
+                        box.classList.remove("border-off");
+                    } else {
+                        box.classList.add("border-off");
+                    }
+                });
+                updateUrl();
+            });
 
             // Theme preview updates
             function updateThemes() {
                 const theme = selectTheme.value;
                 document.querySelectorAll(".mock-widget-box").forEach(box => {
                     box.className = `mock-widget-box theme-${theme}`;
+                    if (!checkBorder.checked) {
+                        box.classList.add("border-off");
+                    }
                 });
                 updateUrl();
             }
@@ -908,6 +935,7 @@
                 const glow = checkGlow.checked;
                 const sim = checkSim.checked;
                 const rotatorInterval = inputRotatorInterval.value;
+                const border = checkBorder.checked;
 
                 const activeWidgetIds = Object.keys(widgets).filter(id => widgets[id].enabled).join(",");
                 
@@ -916,7 +944,7 @@
                 pathParts.pop(); // Remove "index.html" or trailing empty
                 const basePath = pathParts.join("/");
                 
-                let compiledUrl = `${window.location.origin}${basePath}/widget.html?active=${activeWidgetIds}&theme=${theme}&glow=${glow}&unit=${speedUnit}&sim=${sim}&rotatorInterval=${rotatorInterval}`;
+                let compiledUrl = `${window.location.origin}${basePath}/widget.html?active=${activeWidgetIds}&theme=${theme}&glow=${glow}&unit=${speedUnit}&sim=${sim}&rotatorInterval=${rotatorInterval}&border=${border}`;
 
                 Object.keys(widgets).forEach(id => {
                     if (widgets[id].enabled) {
