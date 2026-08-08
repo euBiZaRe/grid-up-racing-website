@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GRiD UP | Stream Overlay Configurator</title>
+    <link rel="stylesheet" href="../style.css?v=7">
+    <link rel="icon" type="image/png" href="../assets/G_2.png">
+    <style>
+        /* Custom overlays config styles, blending with Grid Up's main styles */
+        :root {
+            --bg-config-card: rgba(15, 18, 26, 0.7);
+            --border-glow: rgba(14, 165, 233, 0.2);
+        }
+
+        body {
+            background-image: radial-gradient(circle at 50% 0%, rgba(14, 165, 233, 0.08) 0%, transparent 50%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-container {
+            margin-top: 100px;
+            margin-bottom: 50px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 1.9fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        @media (max-width: 1024px) {
+            .config-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Config Card styling */
+        .config-card {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.75rem;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-premium);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            transition: var(--transition-fast);
+        }
+
+        .config-card:hover {
+            border-color: var(--glass-border-bright);
+            box-shadow: 0 0 30px rgba(14, 165, 233, 0.1);
+        }
+
+        .card-title {
+            font-family: var(--font-heading);
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #fff;
+            border-b: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 0.75rem;
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .control-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        /* Custom inputs */
+        .custom-select, .custom-input {
+            width: 100%;
+            background: #06080c;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            color: #fff;
+            padding: 0.65rem 0.85rem;
+            font-family: var(--font-body);
+            font-size: 0.85rem;
+            outline: none;
+            transition: var(--transition-fast);
+        }
+
+        .custom-select:focus, .custom-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(14, 165, 233, 0.15);
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.85rem;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checkbox-label input {
+            display: none;
+        }
+
+        .checkbox-custom {
+            width: 18px;
+            height: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+            background: #06080c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition-fast);
+        }
+
+        .checkbox-label input:checked + .checkbox-custom {
+            background: var(--primary);
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(14, 165, 233, 0.3);
+        }
+
+        .checkbox-custom::after {
+            content: "✓";
+            color: #fff;
+            font-size: 10px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .checkbox-label input:checked + .checkbox-custom::after {
+            display: block;
+        }
+
+        /* Slider */
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .slider-container input[type="range"] {
+            flex: 1;
+            accent-color: var(--primary);
+            height: 4px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        .slider-value {
+            font-family: var(--font-heading);
+            font-size: 0.8rem;
+            color: var(--primary);
+            min-width: 40px;
+            text-align: right;
+        }
+
+        /* Widget items in config panel */
+        .widget-item-config {
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 10px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            transition: var(--transition-fast);
+        }
+
+        .widget-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .widget-item-body {
+            display: none;
+            flex-direction: column;
+            gap: 0.75rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 0.75rem;
+        }
+
+        .widget-item-config.active .widget-item-body {
+            display: flex;
+        }
+
+        /* Quick Docks */
+        .dock-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.4rem;
+        }
+
+        .btn-dock {
+            background: #06080c;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 4px;
+            color: var(--text-muted);
+            font-size: 0.65rem;
+            padding: 0.4rem;
+            font-family: var(--font-heading);
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .btn-dock:hover {
+            border-color: var(--primary);
+            color: #fff;
+            background: rgba(14, 165, 233, 0.05);
+        }
+
+        /* Canvas Preview */
+        .canvas-container {
+            background: #040508;
+            border: 2px solid var(--glass-border);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow-premium);
+            position: relative;
+        }
+
+        .aspect-ratio-box {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+            background-image: radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .canvas-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(1px);
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .aspect-ratio-box:hover .canvas-overlay {
+            opacity: 0;
+        }
+
+        /* Preview elements */
+        .preview-widget {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            cursor: grab;
+            user-select: none;
+            z-index: 10;
+            transition: transform 0.05s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        .preview-widget:active {
+            cursor: grabbing;
+        }
+
+        /* Preset widgets preview mock design */
+        .mock-widget-box {
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            font-family: var(--font-heading);
+            font-size: 0.65rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            white-space: nowrap;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .mock-widget-box.selected {
+            border-color: var(--primary) !important;
+            box-shadow: 0 0 15px rgba(14, 165, 233, 0.4);
+        }
+
+        /* Themes styling in preview */
+        .theme-redline {
+            background: #000;
+            border-left: 3px solid #dc2626 !important;
+            color: #fff;
+        }
+        .theme-glass-pro {
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(8px);
+            border-color: rgba(255,255,255,0.12) !important;
+            color: #fff;
+        }
+        .theme-gold {
+            background: linear-gradient(135deg, #111, #000);
+            border-color: rgba(234, 179, 8, 0.4) !important;
+            color: #eab308;
+        }
+        .theme-dark {
+            background: #07090e;
+            border-color: #1e293b !important;
+            color: #fff;
+        }
+        .theme-stealth {
+            background: transparent;
+            border-color: rgba(255,255,255,0.2) !important;
+            color: #fff;
+            border-style: dashed !important;
+        }
+
+        /* Integration Panel */
+        .url-box {
+            display: flex;
+            gap: 1rem;
+            background: #06080c;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 0.5rem;
+            align-items: center;
+        }
+
+        .url-box input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-family: monospace;
+            font-size: 0.75rem;
+            outline: none;
+            padding: 0.5rem;
+        }
+
+        .btn-action {
+            background: var(--primary-gradient);
+            color: #fff;
+            font-family: var(--font-heading);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            border: none;
+            border-radius: 6px;
+            padding: 0.6rem 1.25rem;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .btn-action:hover {
+            filter: brightness(1.1);
+            box-shadow: 0 0 15px rgba(14, 165, 233, 0.45);
+        }
+
+        /* Interactive instruction points */
+        .guide-steps {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .guide-steps li {
+            position: relative;
+            padding-left: 1.5rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .guide-steps li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 1.25rem;
+            line-height: 1;
+        }
+    </style>
+</head>
+<body>
+    <nav id="navbar">
+        <div class="container nav-content">
+            <a href="../index.html" class="logo">
+                <img src="../assets/logo.png" alt="GRiD UP" style="height: 40px; vertical-align: middle;">
+            </a>
+            <ul class="nav-links">
+                <li><a href="../index.html#home">Home</a></li>
+                <li><a href="../events.html">Events</a></li>
+                <li><a href="../league.html">League</a></li>
+                <li><a href="../reports.html">News</a></li>
+                <li><a href="../roster.html">Roster</a></li>
+                <li><a href="../telemetry.html">Telemetry</a></li>
+                <li><a href="../team-app.html">Apply</a></li>
+                <li><a href="../shop.html">Shop</a></li>
+                <li><a href="https://discord.gg/gridup" target="_blank"><img src="../assets/discord_header.png" alt="Discord" style="height: 25px; vertical-align: middle;"></a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container main-container">
+        <!-- Main Heading -->
+        <div style="text-align: center; display: flex; flex-direction: column; gap: 0.5rem;">
+            <h1 class="glow-text" style="font-family: var(--font-heading); font-weight: 900; letter-spacing: 2px;">Stream Overlay Builder</h1>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Design and compile your custom OBS overlays with real-time iRacing telemetry link</p>
+        </div>
+
+        <div class="config-grid">
+            <!-- Settings Panel -->
+            <div class="flex flex-col gap-6" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <!-- General Customization -->
+                <div class="config-card">
+                    <div class="card-title">
+                        <span style="color: var(--primary);">⚙</span> Layout Options
+                    </div>
+                    
+                    <div class="control-group">
+                        <span class="control-label">Visual Theme</span>
+                        <select id="select-theme" class="custom-select">
+                            <option value="redline">Premium Redline (Sporty Red Accent)</option>
+                            <option value="glass-pro">Glassmorphism Pro (Frosted Glass)</option>
+                            <option value="gold">Championship Gold (Premium Luxury)</option>
+                            <option value="dark">Solid Dark (Matte Black)</option>
+                            <option value="stealth">Stealth HUD (Fully Transparent Outline)</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <span class="control-label">Speed Unit</span>
+                        <select id="select-unit" class="custom-select">
+                            <option value="imperial">Imperial (MPH)</option>
+                            <option value="metric">Metric (KM/H)</option>
+                        </select>
+                    </div>
+
+                    <div class="flex gap-4" style="display: flex; gap: 1.5rem; justify-content: space-between;">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="check-glow" checked>
+                            <span class="checkbox-custom"></span>
+                            <span>Neon Glow Aura</span>
+                        </label>
+
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="check-sim" checked>
+                            <span class="checkbox-custom"></span>
+                            <span>Telemetry Simulation</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Active Widgets Settings -->
+                <div class="config-card">
+                    <div class="card-title">
+                        <span style="color: var(--primary);">📊</span> Active Overlays
+                    </div>
+
+                    <div class="flex flex-col gap-4" id="widgets-config-container" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <!-- Telemetry HUD -->
+                        <div class="widget-item-config active" data-widget="hud">
+                            <div class="widget-item-header">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" class="widget-enable" checked>
+                                    <span class="checkbox-custom"></span>
+                                    <span style="font-weight: bold;">Telemetry HUD</span>
+                                </label>
+                                <span style="font-size: 0.7rem; color: var(--primary); cursor: pointer;" class="btn-toggle-body">⚙ Settings</span>
+                            </div>
+                            <div class="widget-item-body">
+                                <div class="control-group">
+                                    <span class="control-label">Scale</span>
+                                    <div class="slider-container">
+                                        <input type="range" class="widget-scale" min="0.5" max="1.5" step="0.05" value="1.0">
+                                        <span class="slider-value">1.00x</span>
+                                    </div>
+                                </div>
+                                <div class="control-group">
+                                    <span class="control-label">Reposition Preset</span>
+                                    <div class="dock-grid">
+                                        <button class="btn-dock" data-x="15" data-y="15">Top Left</button>
+                                        <button class="btn-dock" data-x="50" data-y="15">Top Center</button>
+                                        <button class="btn-dock" data-x="85" data-y="15">Top Right</button>
+                                        <button class="btn-dock" data-x="15" data-y="85">Bottom L</button>
+                                        <button class="btn-dock" data-x="50" data-y="85">Bottom C</button>
+                                        <button class="btn-dock" data-x="85" data-y="85">Bottom R</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Relative Standings -->
+                        <div class="widget-item-config" data-widget="relative">
+                            <div class="widget-item-header">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" class="widget-enable" checked>
+                                    <span class="checkbox-custom"></span>
+                                    <span style="font-weight: bold;">Relative Gaps</span>
+                                </label>
+                                <span style="font-size: 0.7rem; color: var(--primary); cursor: pointer;" class="btn-toggle-body">⚙ Settings</span>
+                            </div>
+                            <div class="widget-item-body">
+                                <div class="control-group">
+                                    <span class="control-label">Scale</span>
+                                    <div class="slider-container">
+                                        <input type="range" class="widget-scale" min="0.5" max="1.5" step="0.05" value="0.95">
+                                        <span class="slider-value">0.95x</span>
+                                    </div>
+                                </div>
+                                <div class="control-group">
+                                    <span class="control-label">Reposition Preset</span>
+                                    <div class="dock-grid">
+                                        <button class="btn-dock" data-x="15" data-y="15">Top Left</button>
+                                        <button class="btn-dock" data-x="50" data-y="15">Top Center</button>
+                                        <button class="btn-dock" data-x="85" data-y="15">Top Right</button>
+                                        <button class="btn-dock" data-x="15" data-y="80">Bottom L</button>
+                                        <button class="btn-dock" data-x="50" data-y="80">Bottom C</button>
+                                        <button class="btn-dock" data-x="85" data-y="80">Bottom R</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Standings/Leaderboard -->
+                        <div class="widget-item-config" data-widget="leaderboard">
+                            <div class="widget-item-header">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" class="widget-enable">
+                                    <span class="checkbox-custom"></span>
+                                    <span style="font-weight: bold;">Race Leaderboard</span>
+                                </label>
+                                <span style="font-size: 0.7rem; color: var(--primary); cursor: pointer;" class="btn-toggle-body">⚙ Settings</span>
+                            </div>
+                            <div class="widget-item-body">
+                                <div class="control-group">
+                                    <span class="control-label">Scale</span>
+                                    <div class="slider-container">
+                                        <input type="range" class="widget-scale" min="0.5" max="1.5" step="0.05" value="0.9">
+                                        <span class="slider-value">0.90x</span>
+                                    </div>
+                                </div>
+                                <div class="control-group">
+                                    <span class="control-label">Reposition Preset</span>
+                                    <div class="dock-grid">
+                                        <button class="btn-dock" data-x="15" data-y="25">Top Left</button>
+                                        <button class="btn-dock" data-x="50" data-y="25">Top Center</button>
+                                        <button class="btn-dock" data-x="85" data-y="25">Top Right</button>
+                                        <button class="btn-dock" data-x="15" data-y="85">Bottom L</button>
+                                        <button class="btn-dock" data-x="50" data-y="85">Bottom C</button>
+                                        <button class="btn-dock" data-x="85" data-y="85">Bottom R</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Session Info -->
+                        <div class="widget-item-config" data-widget="session">
+                            <div class="widget-item-header">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" class="widget-enable" checked>
+                                    <span class="checkbox-custom"></span>
+                                    <span style="font-weight: bold;">Session & Status</span>
+                                </label>
+                                <span style="font-size: 0.7rem; color: var(--primary); cursor: pointer;" class="btn-toggle-body">⚙ Settings</span>
+                            </div>
+                            <div class="widget-item-body">
+                                <div class="control-group">
+                                    <span class="control-label">Scale</span>
+                                    <div class="slider-container">
+                                        <input type="range" class="widget-scale" min="0.5" max="1.5" step="0.05" value="0.9">
+                                        <span class="slider-value">0.90x</span>
+                                    </div>
+                                </div>
+                                <div class="control-group">
+                                    <span class="control-label">Reposition Preset</span>
+                                    <div class="dock-grid">
+                                        <button class="btn-dock" data-x="15" data-y="12">Top Left</button>
+                                        <button class="btn-dock" data-x="50" data-y="12">Top Center</button>
+                                        <button class="btn-dock" data-x="85" data-y="12">Top Right</button>
+                                        <button class="btn-dock" data-x="15" data-y="85">Bottom L</button>
+                                        <button class="btn-dock" data-x="50" data-y="85">Bottom C</button>
+                                        <button class="btn-dock" data-x="85" data-y="85">Bottom R</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sponsor Rotator -->
+                        <div class="widget-item-config" data-widget="rotator">
+                            <div class="widget-item-header">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" class="widget-enable">
+                                    <span class="checkbox-custom"></span>
+                                    <span style="font-weight: bold;">Social / Sponsor Rotator</span>
+                                </label>
+                                <span style="font-size: 0.7rem; color: var(--primary); cursor: pointer;" class="btn-toggle-body">⚙ Settings</span>
+                            </div>
+                            <div class="widget-item-body">
+                                <div class="control-group">
+                                    <span class="control-label">Scale</span>
+                                    <div class="slider-container">
+                                        <input type="range" class="widget-scale" min="0.5" max="1.5" step="0.05" value="1.0">
+                                        <span class="slider-value">1.00x</span>
+                                    </div>
+                                </div>
+                                <div class="control-group">
+                                    <span class="control-label">Rotator Delay (Seconds)</span>
+                                    <div class="slider-container">
+                                        <input type="range" id="input-rotator-interval" min="3" max="20" step="1" value="6">
+                                        <span class="slider-value" id="rotator-interval-value">6s</span>
+                                    </div>
+                                </div>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="check-rotator-badge" checked>
+                                    <span class="checkbox-custom"></span>
+                                    <span>Display Rotator Badge</span>
+                                </label>
+                                <div class="control-group">
+                                    <span class="control-label">Reposition Preset</span>
+                                    <div class="dock-grid">
+                                        <button class="btn-dock" data-x="15" data-y="15">Top Left</button>
+                                        <button class="btn-dock" data-x="50" data-y="15">Top Center</button>
+                                        <button class="btn-dock" data-x="85" data-y="15">Top Right</button>
+                                        <button class="btn-dock" data-x="15" data-y="85">Bottom L</button>
+                                        <button class="btn-dock" data-x="50" data-y="85">Bottom C</button>
+                                        <button class="btn-dock" data-x="85" data-y="85">Bottom R</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preview Canvas & Integration -->
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <!-- Canvas Container -->
+                <div class="canvas-container">
+                    <div class="canvas-overlay">
+                        <span style="font-size: 1.5rem;">🖥️</span>
+                        <span style="font-family: var(--font-heading); font-size: 0.8rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;">16:9 Stream Canvas Preview</span>
+                        <span style="font-size: 0.75rem; color: var(--text-muted);">Hover to preview · Click and drag overlays to position</span>
+                    </div>
+                    <div class="aspect-ratio-box" id="canvas-preview">
+                        <!-- Telemetry HUD Mock -->
+                        <div id="preview-widget-hud" class="preview-widget select" data-widget="hud" style="left: 50%; top: 85%;">
+                            <div class="mock-widget-box theme-redline">
+                                <span style="font-size: 1.1rem; color: var(--secondary); font-family: monospace;">5</span>
+                                <div>
+                                    <span style="font-size: 0.8rem; font-weight: 800;">143</span> <span style="font-size: 0.5rem; color: var(--text-muted);">MPH</span>
+                                </div>
+                                <span style="font-size: 0.8rem;">⚙</span>
+                            </div>
+                        </div>
+
+                        <!-- Relative Standing Mock -->
+                        <div id="preview-widget-relative" class="preview-widget" data-widget="relative" style="left: 15%; top: 80%;">
+                            <div class="mock-widget-box theme-redline" style="display: flex; flex-direction: column; gap: 0.2rem; align-items: stretch;">
+                                <div style="display: flex; justify-content: space-between; font-size: 0.5rem; gap: 1rem;">
+                                    <span>P2 Hamilton</span> <span style="color: var(--primary);">+1.4s</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-size: 0.5rem; background: rgba(220,38,38,0.15); padding: 0.1rem 0.2rem; border-radius: 2px;">
+                                    <span>P3 Driver</span> <span style="color: var(--secondary);">--</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-size: 0.5rem; gap: 1rem;">
+                                    <span>P4 Verstappen</span> <span style="color: #10b981;">-0.8s</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Leaderboard Mock -->
+                        <div id="preview-widget-leaderboard" class="preview-widget" data-widget="leaderboard" style="left: 15%; top: 25%; display: none;">
+                            <div class="mock-widget-box theme-redline" style="display: flex; flex-direction: column; gap: 0.2rem; align-items: stretch;">
+                                <span style="font-size: 0.5rem; color: var(--text-muted); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.1rem; text-transform: uppercase;">Standings</span>
+                                <div style="display: flex; justify-content: space-between; font-size: 0.5rem; gap: 1rem;">
+                                    <span>1. Verstappen</span> <span>1:46.3</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-size: 0.5rem; gap: 1rem;">
+                                    <span>2. Norris</span> <span>+1.4s</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Session Mock -->
+                        <div id="preview-widget-session" class="preview-widget" data-widget="session" style="left: 50%; top: 12%;">
+                            <div class="mock-widget-box theme-redline">
+                                <span style="font-size: 0.55rem; color: #eab308;">RACE · LAP 3/25</span>
+                                <span style="background: rgba(16,185,129,0.15); color: #10b981; font-size: 0.5rem; padding: 0.1rem 0.3rem; border-radius: 4px;">GREEN</span>
+                            </div>
+                        </div>
+
+                        <!-- Rotator Mock -->
+                        <div id="preview-widget-rotator" class="preview-widget" data-widget="rotator" style="left: 85%; top: 85%; display: none;">
+                            <div class="mock-widget-box theme-redline">
+                                <span style="font-size: 0.5rem; background: var(--secondary); padding: 0.1rem 0.2rem; border-radius: 2px;">SOCIAL</span>
+                                <span style="font-size: 0.55rem;">JOIN DISCORD</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Integration Panel -->
+                <div class="config-card">
+                    <div class="card-title">
+                        <span style="color: var(--primary);">🔗</span> OBS Studio Integration
+                    </div>
+
+                    <div class="control-group">
+                        <span class="control-label">OBS Browser Source URL</span>
+                        <div class="url-box">
+                            <input type="text" id="obs-url-input" readonly value="">
+                            <button class="btn-action" id="btn-copy">Copy URL</button>
+                        </div>
+                    </div>
+
+                    <div style="border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 1.25rem;">
+                        <span class="control-label" style="display: block; margin-bottom: 0.5rem;">How to load this into OBS Studio</span>
+                        <ol class="guide-steps">
+                            <li>Launch OBS Studio. In the <strong>Sources</strong> dock, click the <strong>+</strong> button and select <strong>Browser</strong>.</li>
+                            <li>Name the source (e.g. <code>GRiD UP Telemetry</code>).</li>
+                            <li>Copy and paste the URL from the field above into the <strong>URL</strong> field.</li>
+                            <li>Set Width to <code>1920</code> and Height to <code>1080</code>.</li>
+                            <li>Ensure <strong>Shutdown source when not visible</strong> is checked. Click OK!</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vanilla Javascript Logic -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const canvas = document.getElementById("canvas-preview");
+            const selectTheme = document.getElementById("select-theme");
+            const selectUnit = document.getElementById("select-unit");
+            const checkGlow = document.getElementById("check-glow");
+            const checkSim = document.getElementById("check-sim");
+            const obsUrlInput = document.getElementById("obs-url-input");
+            const btnCopy = document.getElementById("btn-copy");
+
+            // Rotator specifics
+            const inputRotatorInterval = document.getElementById("input-rotator-interval");
+            const labelRotatorInterval = document.getElementById("rotator-interval-value");
+            const checkRotatorBadge = document.getElementById("check-rotator-badge");
+
+            // Initialize widget properties
+            const widgets = {
+                hud: { enabled: true, x: 50, y: 85, scale: 1.0 },
+                relative: { enabled: true, x: 15, y: 80, scale: 0.95 },
+                leaderboard: { enabled: false, x: 15, y: 25, scale: 0.9 },
+                session: { enabled: true, x: 50, y: 12, scale: 0.9 },
+                rotator: { enabled: false, x: 85, y: 85, scale: 1.0 }
+            };
+
+            // Set up configurations toggle listeners
+            document.querySelectorAll(".widget-item-config").forEach(item => {
+                const id = item.dataset.widget;
+                const enableCheckbox = item.querySelector(".widget-enable");
+                const scaleSlider = item.querySelector(".widget-scale");
+                const toggleSettings = item.querySelector(".btn-toggle-body");
+
+                // Toggle body view
+                toggleSettings.addEventListener("click", () => {
+                    item.classList.toggle("active");
+                });
+
+                // Toggle enable
+                enableCheckbox.addEventListener("change", (e) => {
+                    widgets[id].enabled = e.target.checked;
+                    const el = document.getElementById(`preview-widget-${id}`);
+                    el.style.display = widgets[id].enabled ? "block" : "none";
+                    updateUrl();
+                });
+
+                // Scale slider
+                scaleSlider.addEventListener("input", (e) => {
+                    const scale = parseFloat(e.target.value);
+                    widgets[id].scale = scale;
+                    item.querySelector(".slider-value").textContent = scale.toFixed(2) + "x";
+                    
+                    const el = document.getElementById(`preview-widget-${id}`);
+                    const box = el.querySelector(".mock-widget-box");
+                    box.style.transform = `scale(${scale})`;
+                    updateUrl();
+                });
+
+                // Quick Docks
+                item.querySelectorAll(".btn-dock").forEach(btn => {
+                    btn.addEventListener("click", () => {
+                        const targetX = parseInt(btn.dataset.x, 10);
+                        const targetY = parseInt(btn.dataset.y, 10);
+                        widgets[id].x = targetX;
+                        widgets[id].y = targetY;
+
+                        const el = document.getElementById(`preview-widget-${id}`);
+                        el.style.left = `${targetX}%`;
+                        el.style.top = `${targetY}%`;
+                        updateUrl();
+                    });
+                });
+            });
+
+            // Rotator Interval
+            inputRotatorInterval.addEventListener("input", (e) => {
+                const val = e.target.value;
+                labelRotatorInterval.textContent = val + "s";
+                updateUrl();
+            });
+            checkRotatorBadge.addEventListener("change", updateUrl);
+
+            // Theme, unit, and style inputs
+            selectTheme.addEventListener("change", updateThemes);
+            selectUnit.addEventListener("change", updateUrl);
+            checkGlow.addEventListener("change", updateUrl);
+            checkSim.addEventListener("change", updateUrl);
+
+            // Theme preview updates
+            function updateThemes() {
+                const theme = selectTheme.value;
+                document.querySelectorAll(".mock-widget-box").forEach(box => {
+                    box.className = `mock-widget-box theme-${theme}`;
+                });
+                updateUrl();
+            }
+
+            // Interactive Drag-to-Position Implementation
+            let activeDragWidget = null;
+            let startX = 0;
+            let startY = 0;
+
+            document.querySelectorAll(".preview-widget").forEach(widgetEl => {
+                const id = widgetEl.dataset.widget;
+
+                // Click select highlight
+                widgetEl.addEventListener("mousedown", (e) => {
+                    e.preventDefault();
+                    document.querySelectorAll(".mock-widget-box").forEach(b => b.classList.remove("selected"));
+                    widgetEl.querySelector(".mock-widget-box").classList.add("selected");
+                    
+                    // Activate configuration panel item
+                    document.querySelectorAll(".widget-item-config").forEach(card => {
+                        if (card.dataset.widget === id) {
+                            card.classList.add("active");
+                        } else {
+                            card.classList.remove("active");
+                        }
+                    });
+
+                    activeDragWidget = id;
+                    
+                    const rect = canvas.getBoundingClientRect();
+                    startX = e.clientX - widgetEl.offsetLeft;
+                    startY = e.clientY - widgetEl.offsetTop;
+
+                    document.addEventListener("mousemove", onMouseMove);
+                    document.addEventListener("mouseup", onMouseUp);
+                });
+            });
+
+            function onMouseMove(e) {
+                if (!activeDragWidget) return;
+                const widgetEl = document.getElementById(`preview-widget-${activeDragWidget}`);
+                const rect = canvas.getBoundingClientRect();
+                
+                let x = e.clientX - rect.left;
+                let y = e.clientY - rect.top;
+
+                // Clamp to boundary percentages
+                let pctX = Math.max(0, Math.min(100, (x / rect.width) * 100));
+                let pctY = Math.max(0, Math.min(100, (y / rect.height) * 100));
+
+                widgets[activeDragWidget].x = pctX;
+                widgets[activeDragWidget].y = pctY;
+
+                widgetEl.style.left = `${pctX}%`;
+                widgetEl.style.top = `${pctY}%`;
+                
+                updateUrl();
+            }
+
+            function onMouseUp() {
+                activeDragWidget = null;
+                document.removeEventListener("mousemove", onMouseMove);
+                document.removeEventListener("mouseup", onMouseUp);
+            }
+
+            // Compile OBS URL
+            function updateUrl() {
+                const theme = selectTheme.value;
+                const speedUnit = selectUnit.value;
+                const glow = checkGlow.checked;
+                const sim = checkSim.checked;
+                const rotatorInterval = inputRotatorInterval.value;
+                const rotatorBadge = checkRotatorBadge.checked;
+
+                const activeWidgetIds = Object.keys(widgets).filter(id => widgets[id].enabled).join(",");
+                
+                // Get page base path relative to widget render location
+                const pathParts = window.location.pathname.split("/");
+                pathParts.pop(); // Remove "index.html" or trailing empty
+                const basePath = pathParts.join("/");
+                
+                let compiledUrl = `${window.location.origin}${basePath}/widget.html?active=${activeWidgetIds}&theme=${theme}&glow=${glow}&unit=${speedUnit}&sim=${sim}&rotatorInterval=${rotatorInterval}&rotatorBadge=${rotatorBadge}`;
+
+                Object.keys(widgets).forEach(id => {
+                    if (widgets[id].enabled) {
+                        compiledUrl += `&${id}_x=${widgets[id].x.toFixed(0)}&${id}_y=${widgets[id].y.toFixed(0)}&${id}_s=${widgets[id].scale.toFixed(2)}`;
+                    }
+                });
+
+                obsUrlInput.value = compiledUrl;
+            }
+
+            // Copy to Clipboard
+            btnCopy.addEventListener("click", () => {
+                obsUrlInput.select();
+                navigator.clipboard.writeText(obsUrlInput.value).then(() => {
+                    const originalText = btnCopy.textContent;
+                    btnCopy.textContent = "Copied! ✓";
+                    btnCopy.style.background = "linear-gradient(135deg, #10b981 0%, #059669 100%)";
+                    setTimeout(() => {
+                        btnCopy.textContent = originalText;
+                        btnCopy.style.background = "";
+                    }, 2000);
+                });
+            });
+
+            // Run initial settings compilation
+            updateThemes();
+        });
+    </script>
+</body>
+</html>
