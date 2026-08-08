@@ -541,7 +541,6 @@
             const rotatorInterval = parseInt(params.get("rotatorInterval") || "6", 10) * 1000;
             const rotatorBadge = params.get("rotatorBadge") !== "false";
             const border = params.get("border") !== "false";
-            const bgOpacity = parseFloat(params.get("bgOpacity") || "0.95");
 
             // Apply Theme to Canvas Container
             const canvasEl = document.getElementById("main-canvas");
@@ -553,12 +552,8 @@
                 });
             }
 
-            document.querySelectorAll(".widget-card").forEach(card => {
-                card.style.backgroundColor = `rgba(10, 12, 18, ${bgOpacity})`;
-            });
-
             // Widget Positioning & Scale Configuration Helper
-            function setupWidget(id, defaultX, defaultY, defaultScale) {
+            function setupWidget(id, defaultX, defaultY, defaultScale, defaultOpacity) {
                 const wrapper = document.getElementById(`widget-${id}`);
                 if (!wrapper) return;
 
@@ -568,21 +563,27 @@
                     const x = params.get(`${id}_x`) || defaultX;
                     const y = params.get(`${id}_y`) || defaultY;
                     const s = params.get(`${id}_s`) || defaultScale;
+                    const o = parseFloat(params.get(`${id}_o`) || defaultOpacity);
 
                     wrapper.style.left = `${x}%`;
                     wrapper.style.top = `${y}%`;
                     wrapper.style.transform = `translate(-50%, -50%) scale(${s})`;
+                    
+                    const card = wrapper.querySelector(".widget-card");
+                    if (card) {
+                        card.style.backgroundColor = `rgba(10, 12, 18, ${o})`;
+                    }
                 } else {
                     wrapper.style.display = "none";
                 }
             }
 
             // Load and position active widgets
-            setupWidget("hud", 50, 85, 1.0);
-            setupWidget("relative", 15, 80, 0.95);
-            setupWidget("leaderboard", 15, 25, 0.9);
-            setupWidget("session", 50, 12, 0.9);
-            setupWidget("rotator", 85, 85, 1.0);
+            setupWidget("hud", 50, 85, 1.0, 0.95);
+            setupWidget("relative", 15, 80, 0.95, 0.95);
+            setupWidget("leaderboard", 15, 25, 0.9, 0.95);
+            setupWidget("session", 50, 12, 0.9, 0.95);
+            setupWidget("rotator", 85, 85, 1.0, 0.95);
 
             // Rotator sliding list items
             const rotatorImagesList = ["Untitled_12", "Untitled_14", "new_discord_link_2"];

@@ -451,13 +451,7 @@
                         </select>
                     </div>
 
-                    <div class="control-group">
-                        <span class="control-label">Background Opacity</span>
-                        <div class="slider-container">
-                            <input type="range" id="input-bg-opacity" min="0" max="100" step="5" value="95">
-                            <span class="slider-value" id="bg-opacity-value">95%</span>
-                        </div>
-                    </div>
+
 
                     <div class="flex gap-4" style="display: flex; gap: 1.5rem; justify-content: space-between;">
                         <label class="checkbox-label">
@@ -507,6 +501,13 @@
                                     </div>
                                 </div>
                                 <div class="control-group">
+                                    <span class="control-label">Background Opacity</span>
+                                    <div class="slider-container">
+                                        <input type="range" class="widget-opacity" min="0" max="100" step="5" value="95">
+                                        <span class="slider-value">95%</span>
+                                    </div>
+                                </div>
+                                <div class="control-group">
                                     <span class="control-label">Reposition Preset</span>
                                     <div class="dock-grid">
                                         <button class="btn-dock" data-x="15" data-y="15">Top Left</button>
@@ -536,6 +537,13 @@
                                     <div class="slider-container">
                                         <input type="range" class="widget-scale" min="0.5" max="1.5" step="0.05" value="0.95">
                                         <span class="slider-value">0.95x</span>
+                                    </div>
+                                </div>
+                                <div class="control-group">
+                                    <span class="control-label">Background Opacity</span>
+                                    <div class="slider-container">
+                                        <input type="range" class="widget-opacity" min="0" max="100" step="5" value="95">
+                                        <span class="slider-value">95%</span>
                                     </div>
                                 </div>
                                 <div class="control-group">
@@ -571,6 +579,13 @@
                                     </div>
                                 </div>
                                 <div class="control-group">
+                                    <span class="control-label">Background Opacity</span>
+                                    <div class="slider-container">
+                                        <input type="range" class="widget-opacity" min="0" max="100" step="5" value="95">
+                                        <span class="slider-value">95%</span>
+                                    </div>
+                                </div>
+                                <div class="control-group">
                                     <span class="control-label">Reposition Preset</span>
                                     <div class="dock-grid">
                                         <button class="btn-dock" data-x="15" data-y="25">Top Left</button>
@@ -603,6 +618,13 @@
                                     </div>
                                 </div>
                                 <div class="control-group">
+                                    <span class="control-label">Background Opacity</span>
+                                    <div class="slider-container">
+                                        <input type="range" class="widget-opacity" min="0" max="100" step="5" value="95">
+                                        <span class="slider-value">95%</span>
+                                    </div>
+                                </div>
+                                <div class="control-group">
                                     <span class="control-label">Reposition Preset</span>
                                     <div class="dock-grid">
                                         <button class="btn-dock" data-x="15" data-y="12">Top Left</button>
@@ -632,6 +654,13 @@
                                     <div class="slider-container">
                                         <input type="range" class="widget-scale" min="0.5" max="1.5" step="0.05" value="1.0">
                                         <span class="slider-value">1.00x</span>
+                                    </div>
+                                </div>
+                                <div class="control-group">
+                                    <span class="control-label">Background Opacity</span>
+                                    <div class="slider-container">
+                                        <input type="range" class="widget-opacity" min="0" max="100" step="5" value="95">
+                                        <span class="slider-value">95%</span>
                                     </div>
                                 </div>
                                 <div class="control-group">
@@ -764,8 +793,6 @@
             const obsUrlInput = document.getElementById("obs-url-input");
             const btnCopy = document.getElementById("btn-copy");
             const checkBorder = document.getElementById("check-border");
-            const inputBgOpacity = document.getElementById("input-bg-opacity");
-            const labelBgOpacity = document.getElementById("bg-opacity-value");
 
             // Rotator specifics
             const inputRotatorInterval = document.getElementById("input-rotator-interval");
@@ -786,11 +813,11 @@
 
             // Initialize widget properties
             const widgets = {
-                hud: { enabled: true, x: 50, y: 85, scale: 1.0 },
-                relative: { enabled: true, x: 15, y: 80, scale: 0.95 },
-                leaderboard: { enabled: false, x: 15, y: 25, scale: 0.9 },
-                session: { enabled: true, x: 50, y: 12, scale: 0.9 },
-                rotator: { enabled: false, x: 85, y: 85, scale: 1.0 }
+                hud: { enabled: true, x: 50, y: 85, scale: 1.0, opacity: 0.95 },
+                relative: { enabled: true, x: 15, y: 80, scale: 0.95, opacity: 0.95 },
+                leaderboard: { enabled: false, x: 15, y: 25, scale: 0.9, opacity: 0.95 },
+                session: { enabled: true, x: 50, y: 12, scale: 0.9, opacity: 0.95 },
+                rotator: { enabled: false, x: 85, y: 85, scale: 1.0, opacity: 0.95 }
             };
 
             // Set up configurations toggle listeners
@@ -817,13 +844,28 @@
                 scaleSlider.addEventListener("input", (e) => {
                     const scale = parseFloat(e.target.value);
                     widgets[id].scale = scale;
-                    item.querySelector(".slider-value").textContent = scale.toFixed(2) + "x";
+                    scaleSlider.nextElementSibling.textContent = scale.toFixed(2) + "x";
                     
                     const el = document.getElementById(`preview-widget-${id}`);
                     const box = el.querySelector(".mock-widget-box");
                     box.style.transform = `scale(${scale})`;
                     updateUrl();
                 });
+
+                // Opacity slider
+                const opacitySlider = item.querySelector(".widget-opacity");
+                if (opacitySlider) {
+                    opacitySlider.addEventListener("input", (e) => {
+                        const opacity = parseFloat(e.target.value) / 100;
+                        widgets[id].opacity = opacity;
+                        opacitySlider.nextElementSibling.textContent = Math.round(opacity * 100) + "%";
+                        
+                        const el = document.getElementById(`preview-widget-${id}`);
+                        const box = el.querySelector(".mock-widget-box");
+                        box.style.backgroundColor = `rgba(10, 12, 18, ${opacity})`;
+                        updateUrl();
+                    });
+                }
 
                 // Quick Docks
                 item.querySelectorAll(".btn-dock").forEach(btn => {
@@ -854,16 +896,6 @@
             checkGlow.addEventListener("change", updateUrl);
             checkSim.addEventListener("change", updateUrl);
             
-            inputBgOpacity.addEventListener("input", (e) => {
-                const val = e.target.value;
-                labelBgOpacity.textContent = val + "%";
-                const alpha = val / 100;
-                document.querySelectorAll(".mock-widget-box").forEach(box => {
-                    box.style.backgroundColor = `rgba(10, 12, 18, ${alpha})`;
-                });
-                updateUrl();
-            });
-            
             checkBorder.addEventListener("change", () => {
                 document.querySelectorAll(".mock-widget-box").forEach(box => {
                     if (checkBorder.checked) {
@@ -878,12 +910,17 @@
             // Theme preview updates
             function updateThemes() {
                 const theme = selectTheme.value;
-                const alpha = inputBgOpacity.value / 100;
-                document.querySelectorAll(".mock-widget-box").forEach(box => {
-                    box.className = `mock-widget-box theme-${theme}`;
-                    box.style.backgroundColor = `rgba(10, 12, 18, ${alpha})`;
-                    if (!checkBorder.checked) {
-                        box.classList.add("border-off");
+                Object.keys(widgets).forEach(id => {
+                    const el = document.getElementById(`preview-widget-${id}`);
+                    if (el) {
+                        const box = el.querySelector(".mock-widget-box");
+                        if (box) {
+                            box.className = `mock-widget-box theme-${theme}`;
+                            box.style.backgroundColor = `rgba(10, 12, 18, ${widgets[id].opacity})`;
+                            if (!checkBorder.checked) {
+                                box.classList.add("border-off");
+                            }
+                        }
                     }
                 });
                 updateUrl();
@@ -958,7 +995,6 @@
                 const sim = checkSim.checked;
                 const rotatorInterval = inputRotatorInterval.value;
                 const border = checkBorder.checked;
-                const bgOpacity = inputBgOpacity.value / 100;
 
                 const activeWidgetIds = Object.keys(widgets).filter(id => widgets[id].enabled).join(",");
                 
@@ -967,11 +1003,11 @@
                 pathParts.pop(); // Remove "index.html" or trailing empty
                 const basePath = pathParts.join("/");
                 
-                let compiledUrl = `${window.location.origin}${basePath}/widget.html?active=${activeWidgetIds}&theme=${theme}&glow=${glow}&unit=${speedUnit}&sim=${sim}&rotatorInterval=${rotatorInterval}&border=${border}&bgOpacity=${bgOpacity}`;
+                let compiledUrl = `${window.location.origin}${basePath}/widget.html?active=${activeWidgetIds}&theme=${theme}&glow=${glow}&unit=${speedUnit}&sim=${sim}&rotatorInterval=${rotatorInterval}&border=${border}`;
 
                 Object.keys(widgets).forEach(id => {
                     if (widgets[id].enabled) {
-                        compiledUrl += `&${id}_x=${widgets[id].x.toFixed(0)}&${id}_y=${widgets[id].y.toFixed(0)}&${id}_s=${widgets[id].scale.toFixed(2)}`;
+                        compiledUrl += `&${id}_x=${widgets[id].x.toFixed(0)}&${id}_y=${widgets[id].y.toFixed(0)}&${id}_s=${widgets[id].scale.toFixed(2)}&${id}_o=${widgets[id].opacity.toFixed(2)}`;
                     }
                 });
 
