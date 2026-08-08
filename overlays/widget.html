@@ -47,77 +47,31 @@
 
         /* --- THEMES STYLING SYSTEM --- */
         .widget-card {
+            background: rgba(10, 12, 18, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-left: 4px solid var(--theme-accent);
+            border-radius: 0 12px 12px 0;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             transition: all 0.3s ease;
         }
 
-        /* 1. Redline Premium Theme */
-        .theme-redline .widget-card {
-            background: rgba(10, 12, 18, 0.95);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-left: 4px solid var(--secondary);
-            border-radius: 0 12px 12px 0;
-        }
-        .theme-redline.glow-on .widget-card {
-            box-shadow: 0 0 25px rgba(225, 29, 72, 0.22);
-            border-color: rgba(225, 29, 72, 0.4);
-        }
-        .theme-redline .accent-text {
-            color: var(--secondary);
+        .glow-on .widget-card {
+            box-shadow: 0 0 25px rgba(var(--theme-accent-rgb), 0.22);
+            border-color: rgba(var(--theme-accent-rgb), 0.4);
         }
 
-        /* 2. Glassmorphism Pro Theme */
-        .theme-glass-pro .widget-card {
-            background: rgba(15, 23, 42, 0.25);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 16px;
-            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
-        }
-        .theme-glass-pro.glow-on .widget-card {
-            box-shadow: 0 8px 32px 0 rgba(255, 255, 255, 0.08);
-            border-color: rgba(255, 255, 255, 0.25);
-        }
-        .theme-glass-pro .accent-text {
-            color: #fff;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+        .accent-text {
+            color: var(--theme-accent) !important;
         }
 
-        /* 3. Championship Gold Theme */
-        .theme-gold .widget-card {
-            background: linear-gradient(135deg, #0f0e0a 0%, #030302 100%);
-            border: 1px solid rgba(234, 179, 8, 0.25);
-            border-radius: 12px;
-        }
-        .theme-gold.glow-on .widget-card {
-            box-shadow: 0 0 20px rgba(234, 179, 8, 0.16);
-            border-color: rgba(234, 179, 8, 0.45);
-        }
-        .theme-gold .accent-text {
-            color: var(--accent-gold);
-        }
-
-        /* 4. Solid Dark Theme */
-        .theme-dark .widget-card {
-            background: #090a0f;
-            border: 1px solid #1e293b;
-            border-radius: 10px;
-        }
-        .theme-dark .accent-text {
-            color: var(--primary);
-        }
-
-        /* 5. Stealth Theme */
-        .theme-stealth .widget-card {
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 8px;
-            box-shadow: none;
-        }
-        .theme-stealth .accent-text {
-            color: #fff;
-        }
+        .theme-white { --theme-accent: #ffffff; --theme-accent-rgb: 255, 255, 255; }
+        .theme-red { --theme-accent: #dc2626; --theme-accent-rgb: 220, 38, 38; }
+        .theme-blue { --theme-accent: #0ea5e9; --theme-accent-rgb: 14, 165, 233; }
+        .theme-gold { --theme-accent: #eab308; --theme-accent-rgb: 234, 179, 8; }
+        .theme-green { --theme-accent: #10b981; --theme-accent-rgb: 16, 185, 129; }
+        .theme-purple { --theme-accent: #a855f7; --theme-accent-rgb: 168, 85, 247; }
+        .theme-orange { --theme-accent: #f97316; --theme-accent-rgb: 249, 115, 22; }
+        .theme-black { --theme-accent: #1e293b; --theme-accent-rgb: 30, 41, 59; }
 
         /* --- TELEMETRY HUD WIDGET --- */
         .hud-widget {
@@ -138,11 +92,6 @@
             right: 0;
             height: 3px;
             background: rgba(255,255,255,0.06);
-            display: none; /* Shown for Redline theme */
-        }
-
-        .theme-redline .hud-led-bar {
-            display: block;
         }
 
         .hud-led-fill {
@@ -293,8 +242,8 @@
         }
 
         .relative-row.driver-focused {
-            background: rgba(225, 29, 72, 0.12);
-            border: 1px solid rgba(225, 29, 72, 0.25);
+            background: rgba(var(--theme-accent-rgb), 0.12);
+            border: 1px solid rgba(var(--theme-accent-rgb), 0.25);
             padding: 3px 6px;
             border-radius: 4px;
             color: #fff;
@@ -313,7 +262,7 @@
         }
 
         .gap-focused {
-            color: var(--secondary);
+            color: var(--theme-accent);
         }
 
         /* --- LEADERBOARD WIDGET --- */
@@ -565,9 +514,9 @@
 
         <!-- Sponsor / Social Rotator Container -->
         <div id="widget-rotator" class="widget-wrapper">
-            <div class="widget-card" style="padding: 0.25rem 0.5rem; display: flex; align-items: center; justify-content: center; height: 45px; min-width: 170px; background: rgba(0,0,0,0.5);">
+            <div class="widget-card" style="padding: 0.25rem 0.5rem; display: flex; align-items: center; justify-content: center; height: 45px; min-width: 170px;">
                 <div class="rotator-content" id="rotator-content-wrapper" style="display: flex; align-items: center; justify-content: center;">
-                    <img id="rotator-img-el" src="../assets/overlays/white/gridup_online.png" alt="Sponsor Logo" style="height: 25px; max-width: 150px; object-fit: contain; filter: drop-shadow(0 0 5px rgba(255,255,255,0.1));">
+                    <img id="rotator-img-el" src="../assets/overlays/gridup_online.png" alt="Sponsor Logo" style="height: 25px; max-width: 150px; object-fit: contain; filter: drop-shadow(0 0 5px rgba(255,255,255,0.1));">
                 </div>
             </div>
         </div>
@@ -623,11 +572,10 @@
             let rotatorIndex = 0;
             const rotatorImgEl = document.getElementById("rotator-img-el");
             const rotatorContentEl = document.getElementById("rotator-content-wrapper");
-            const logoColor = params.get("logoColor") || "white";
 
             if (activeWidgets.includes("rotator")) {
                 // Set initial image
-                rotatorImgEl.src = `../assets/overlays/${logoColor}/${rotatorImagesList[0]}.png`;
+                rotatorImgEl.src = `../assets/overlays/${rotatorImagesList[0]}.png`;
 
                 // Rotator interval loop
                 setInterval(() => {
@@ -636,7 +584,7 @@
                     
                     setTimeout(() => {
                         rotatorIndex = (rotatorIndex + 1) % rotatorImagesList.length;
-                        rotatorImgEl.src = `../assets/overlays/${logoColor}/${rotatorImagesList[rotatorIndex]}.png`;
+                        rotatorImgEl.src = `../assets/overlays/${rotatorImagesList[rotatorIndex]}.png`;
                         
                         rotatorContentEl.style.opacity = "1";
                         rotatorContentEl.style.transform = "translateY(0)";

@@ -302,33 +302,23 @@
         }
 
         /* Themes styling in preview */
-        .theme-redline {
-            background: #000;
-            border-left: 3px solid #dc2626 !important;
+        .mock-widget-box {
+            background: rgba(10, 12, 18, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-left: 3px solid var(--theme-accent) !important;
             color: #fff;
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
         }
-        .theme-glass-pro {
-            background: rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(8px);
-            border-color: rgba(255,255,255,0.12) !important;
-            color: #fff;
-        }
-        .theme-gold {
-            background: linear-gradient(135deg, #111, #000);
-            border-color: rgba(234, 179, 8, 0.4) !important;
-            color: #eab308;
-        }
-        .theme-dark {
-            background: #07090e;
-            border-color: #1e293b !important;
-            color: #fff;
-        }
-        .theme-stealth {
-            background: transparent;
-            border-color: rgba(255,255,255,0.2) !important;
-            color: #fff;
-            border-style: dashed !important;
-        }
+
+        .theme-white { --theme-accent: #ffffff; }
+        .theme-red { --theme-accent: #dc2626; }
+        .theme-blue { --theme-accent: #0ea5e9; }
+        .theme-gold { --theme-accent: #eab308; }
+        .theme-green { --theme-accent: #10b981; }
+        .theme-purple { --theme-accent: #a855f7; }
+        .theme-orange { --theme-accent: #f97316; }
+        .theme-black { --theme-accent: #1e293b; }
 
         /* Integration Panel */
         .url-box {
@@ -437,11 +427,14 @@
                     <div class="control-group">
                         <span class="control-label">Visual Theme</span>
                         <select id="select-theme" class="custom-select">
-                            <option value="redline">Premium Redline (Sporty Red Accent)</option>
-                            <option value="glass-pro">Glassmorphism Pro (Frosted Glass)</option>
-                            <option value="gold">Championship Gold (Premium Luxury)</option>
-                            <option value="dark">Solid Dark (Matte Black)</option>
-                            <option value="stealth">Stealth HUD (Fully Transparent Outline)</option>
+                            <option value="white">White (Original)</option>
+                            <option value="red">Red (Sporty Accent)</option>
+                            <option value="blue">Blue (Grid Up Blue)</option>
+                            <option value="gold">Gold (Championship Gold)</option>
+                            <option value="green">Green (Emerald Green)</option>
+                            <option value="purple">Purple (Sleek Purple)</option>
+                            <option value="orange">Orange (Sporty Orange)</option>
+                            <option value="black">Black (High Contrast)</option>
                         </select>
                     </div>
 
@@ -629,19 +622,6 @@
                                     </div>
                                 </div>
                                 <div class="control-group">
-                                    <span class="control-label">Logo Color</span>
-                                    <select id="select-logo-color" class="custom-select">
-                                        <option value="white">White (Original)</option>
-                                        <option value="red">Red</option>
-                                        <option value="blue">Blue</option>
-                                        <option value="gold">Gold</option>
-                                        <option value="green">Green</option>
-                                        <option value="purple">Purple</option>
-                                        <option value="orange">Orange</option>
-                                        <option value="black">Black (Inverted Outline)</option>
-                                    </select>
-                                </div>
-                                <div class="control-group">
                                     <span class="control-label">Reposition Preset</span>
                                     <div class="dock-grid">
                                         <button class="btn-dock" data-x="15" data-y="15">Top Left</button>
@@ -718,7 +698,7 @@
                         <!-- Rotator Mock -->
                         <div id="preview-widget-rotator" class="preview-widget" data-widget="rotator" style="left: 85%; top: 85%; display: none;">
                             <div class="mock-widget-box theme-redline" style="padding: 0.25rem 0.5rem; display: flex; align-items: center; justify-content: center; height: 35px; min-width: 150px; background: rgba(0,0,0,0.5);">
-                                <img id="preview-rotator-img" src="../assets/overlays/white/gridup_online.png" alt="Sponsor Logo" style="height: 20px; max-width: 140px; object-fit: contain; filter: drop-shadow(0 0 4px rgba(255,255,255,0.15));">
+                                <img id="preview-rotator-img" src="../assets/overlays/gridup_online.png" alt="Sponsor Logo" style="height: 20px; max-width: 140px; object-fit: contain; filter: drop-shadow(0 0 4px rgba(255,255,255,0.15));">
                             </div>
                         </div>
                     </div>
@@ -767,7 +747,6 @@
             // Rotator specifics
             const inputRotatorInterval = document.getElementById("input-rotator-interval");
             const labelRotatorInterval = document.getElementById("rotator-interval-value");
-            const selectLogoColor = document.getElementById("select-logo-color");
 
             // Rotator preview loop
             const rotatorImagesList = ["gridup_online", "gridup_shop", "discord_gridup"];
@@ -776,9 +755,8 @@
                 if (widgets.rotator.enabled) {
                     previewRotatorIndex = (previewRotatorIndex + 1) % rotatorImagesList.length;
                     const imgEl = document.getElementById("preview-rotator-img");
-                    const logoColor = selectLogoColor.value;
                     if (imgEl) {
-                        imgEl.src = `../assets/overlays/${logoColor}/${rotatorImagesList[previewRotatorIndex]}.png`;
+                        imgEl.src = `../assets/overlays/${rotatorImagesList[previewRotatorIndex]}.png`;
                     }
                 }
             }, 3000);
@@ -840,19 +818,10 @@
                 });
             });
 
-            // Rotator Interval & Logo Color listener
+            // Rotator Interval
             inputRotatorInterval.addEventListener("input", (e) => {
                 const val = e.target.value;
                 labelRotatorInterval.textContent = val + "s";
-                updateUrl();
-            });
-            
-            selectLogoColor.addEventListener("change", () => {
-                const logoColor = selectLogoColor.value;
-                const imgEl = document.getElementById("preview-rotator-img");
-                if (imgEl) {
-                    imgEl.src = `../assets/overlays/${logoColor}/${rotatorImagesList[previewRotatorIndex]}.png`;
-                }
                 updateUrl();
             });
 
@@ -939,7 +908,6 @@
                 const glow = checkGlow.checked;
                 const sim = checkSim.checked;
                 const rotatorInterval = inputRotatorInterval.value;
-                const logoColor = selectLogoColor.value;
 
                 const activeWidgetIds = Object.keys(widgets).filter(id => widgets[id].enabled).join(",");
                 
@@ -948,7 +916,7 @@
                 pathParts.pop(); // Remove "index.html" or trailing empty
                 const basePath = pathParts.join("/");
                 
-                let compiledUrl = `${window.location.origin}${basePath}/widget.html?active=${activeWidgetIds}&theme=${theme}&glow=${glow}&unit=${speedUnit}&sim=${sim}&rotatorInterval=${rotatorInterval}&logoColor=${logoColor}`;
+                let compiledUrl = `${window.location.origin}${basePath}/widget.html?active=${activeWidgetIds}&theme=${theme}&glow=${glow}&unit=${speedUnit}&sim=${sim}&rotatorInterval=${rotatorInterval}`;
 
                 Object.keys(widgets).forEach(id => {
                     if (widgets[id].enabled) {
