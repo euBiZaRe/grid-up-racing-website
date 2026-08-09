@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <!-- Google tag (gtag.js) -->
@@ -205,6 +205,38 @@
             box-shadow: 0 0 10px rgba(168, 85, 247, 0.3) !important;
         }
 
+        /* Hide Portal & Profile on M2RC page — not relevant here */
+        nav#navbar #navbar-portal-btn,
+        nav#navbar #navbar-user-ui a[href*="profile.html"] {
+            display: none !important;
+        }
+
+        /* Back to GRiD UP button */
+        .m2rc-back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0.45rem 0.9rem;
+            border-radius: 6px;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(168, 85, 247, 0.35);
+            color: #C084FC;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+        .m2rc-back-btn:hover {
+            background: rgba(168, 85, 247, 0.15);
+            border-color: rgba(168, 85, 247, 0.6);
+            color: #E9D5FF;
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.25);
+        }
+
         /* Modern Motorsport Cards */
         .m2rc-card {
             background: var(--m-card);
@@ -383,7 +415,6 @@
         <div class="container nav-content">
             <a href="m2rc.html" class="logo" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
                 <img src="assets/logo.png" alt="GRiD UP" style="height: 32px; vertical-align: middle;">
-                <span class="m2rc-nav-badge">M2RC // SEASON 4</span>
             </a>
             <div class="menu-toggle">
                 <span></span>
@@ -401,6 +432,14 @@
                 <li><a href="#rules" class="hash-link">Rules</a></li>
                 <li><a href="#register" class="hash-link btn" style="padding: 0.45rem 1rem; border-radius: 6px; margin-left: 0.5rem; background: linear-gradient(90deg, #C084FC, #7C3AED); color: #000000; font-family: 'Space Grotesk', sans-serif; font-weight: 900; font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase; border: none; box-shadow: 0 0 15px rgba(192, 132, 252, 0.5); transition: all 0.2s ease;">Driver Entry</a></li>
             </ul>
+            <div class="nav-actions">
+                <a href="index.html" class="m2rc-back-btn">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M7.5 2L3.5 6L7.5 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    GRiD UP
+                </a>
+            </div>
         </div>
     </nav>
 
