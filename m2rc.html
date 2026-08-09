@@ -12,23 +12,75 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BMW M2 Racing Cup | GRiD UP Sim Racing</title>
-    <link rel="stylesheet" href="style.css?v=7">
-    <link rel="icon" type="image/png" href="assets/G_2.png">
-    
-    <!-- ChartJS for Driver History Charts -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts for Motorsport Aesthetic -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
 
     <style>
-        /* M2RC Premium Styling */
+        :root {
+            --m-blue: #0066B1;
+            --m-purple: #2B2A70;
+            --m-red: #E21B23;
+            --m-cyan: #00D2FF;
+            --m-dark: #07090E;
+            --m-dark-glass: rgba(12, 16, 24, 0.85);
+            --m-card: rgba(16, 22, 34, 0.7);
+            --m-border: rgba(0, 210, 255, 0.12);
+            --m-gold: #FFB800;
+            --m-text: #F1F5F9;
+            --m-muted: #94A3B8;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--m-dark);
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(0, 102, 177, 0.12) 0%, transparent 45%),
+                radial-gradient(circle at 85% 60%, rgba(226, 27, 35, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 50% 90%, rgba(43, 42, 112, 0.15) 0%, transparent 50%);
+            background-attachment: fixed;
+            color: var(--m-text);
+        }
+
+        /* BMW M Stripe Top Accent */
+        .m-topbar {
+            height: 4px;
+            background: linear-gradient(90deg, var(--m-blue) 33.3%, var(--m-purple) 33.3% 66.6%, var(--m-red) 66.6%);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 10000;
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.5);
+        }
+
+        /* M2RC Hero Banner */
         .m2rc-hero {
-            padding: 8rem 0 4rem;
-            background: linear-gradient(to bottom, rgba(10, 12, 16, 0.65), var(--bg-dark)), url('assets/bg-banner.png');
+            padding: 9rem 0 5rem;
+            background: linear-gradient(180deg, rgba(7, 9, 14, 0.4) 0%, var(--m-dark) 100%), 
+                        url('assets/bg-banner.png');
             background-size: cover;
             background-position: center;
+            position: relative;
             text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
-        
+
+        .m2rc-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(
+                45deg,
+                rgba(0,0,0,0.1),
+                rgba(0,0,0,0.1) 10px,
+                transparent 10px,
+                transparent 20px
+            );
+            pointer-events: none;
+        }
+
         .tab-section {
             display: none;
             padding: 3rem 0;
@@ -36,19 +88,50 @@
 
         .tab-section.active {
             display: block;
+            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Sleek Glass Navigation */
+        .navbar {
+            background: rgba(7, 9, 14, 0.85) !important;
+            backdrop-filter: blur(16px) !important;
+            border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+            top: 4px !important;
+        }
+
+        .nav-links li a {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            letter-spacing: 1px;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: var(--m-muted) !important;
+            transition: all 0.2s ease;
+        }
+
+        .nav-links li a:hover,
+        .nav-links li a.active-hash {
+            color: #fff !important;
+            text-shadow: 0 0 10px rgba(0, 210, 255, 0.6);
         }
 
         .nav-links li a.active-hash {
-            color: var(--primary);
-            border-bottom: 2px solid var(--primary);
+            border-bottom: 2px solid var(--m-cyan) !important;
         }
 
+        /* Modern Motorsport Cards */
         .m2rc-card {
-            background: var(--bg-card);
-            border: 1px solid var(--glass-border);
+            background: var(--m-card);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--m-border);
             border-radius: 16px;
             padding: 2rem;
-            transition: var(--transition);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             position: relative;
             overflow: hidden;
             display: flex;
@@ -56,20 +139,37 @@
             gap: 1rem;
         }
 
-        .m2rc-card:hover {
-            border-color: var(--primary);
-            background: rgba(0, 207, 255, 0.02);
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-premium);
+        .m2rc-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--m-cyan), var(--m-blue));
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
+        .m2rc-card:hover {
+            border-color: rgba(0, 210, 255, 0.3);
+            background: rgba(20, 28, 44, 0.8);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 210, 255, 0.1);
+        }
+
+        .m2rc-card:hover::after {
+            opacity: 1;
+        }
+
+        /* Live Indicator */
         .live-indicator-badge {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: rgba(255, 0, 85, 0.15);
-            border: 1px solid rgba(255, 0, 85, 0.3);
-            color: #ff0055;
+            background: rgba(226, 27, 35, 0.15);
+            border: 1px solid rgba(226, 27, 35, 0.4);
+            color: #ff3344;
             padding: 0.5rem 1.25rem;
             border-radius: 50px;
             font-weight: 800;
@@ -80,9 +180,9 @@
         }
 
         @keyframes pulse-glow {
-            0% { box-shadow: 0 0 0 0 rgba(255,0,85,0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(255,0,85,0); }
-            100% { box-shadow: 0 0 0 0 rgba(255,0,85,0); }
+            0% { box-shadow: 0 0 0 0 rgba(226, 27, 35, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(226, 27, 35, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(226, 27, 35, 0); }
         }
 
         .standings-tabs {
@@ -93,9 +193,10 @@
 
         .standings-table-container {
             overflow-x: auto;
-            background: rgba(255, 255, 255, 0.01);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
+            background: rgba(12, 16, 24, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
         }
 
         .standings-table {
@@ -106,37 +207,40 @@
 
         .standings-table th, .standings-table td {
             padding: 1.25rem;
-            border-bottom: 1px solid var(--glass-border);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .standings-table th {
-            font-family: var(--font-heading);
-            color: var(--primary);
+            font-family: 'Space Grotesk', sans-serif;
+            color: var(--m-cyan);
             font-size: 0.8rem;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
+            font-weight: 700;
+            background: rgba(0, 0, 0, 0.2);
         }
 
         .standings-table tbody tr:hover {
-            background: rgba(255, 255, 255, 0.02);
+            background: rgba(0, 210, 255, 0.04);
         }
 
-        /* Number Circle */
+        /* Racing Badges */
         .number-badge {
-            background: var(--primary-gradient);
+            background: linear-gradient(135deg, var(--m-gold), #ff8800);
             color: #000;
             font-weight: 900;
             padding: 0.3rem 0.6rem;
             border-radius: 6px;
-            font-family: var(--font-heading);
+            font-family: 'Space Grotesk', sans-serif;
             font-size: 0.85rem;
+            box-shadow: 0 2px 10px rgba(255, 184, 0, 0.3);
         }
 
         .rookie-badge {
             font-size: 0.65rem;
-            background: rgba(234, 179, 8, 0.15);
-            border: 1px solid rgba(234, 179, 8, 0.3);
-            color: var(--accent-gold);
+            background: rgba(255, 184, 0, 0.15);
+            border: 1px solid rgba(255, 184, 0, 0.3);
+            color: var(--m-gold);
             padding: 2px 6px;
             border-radius: 4px;
             font-weight: 700;
@@ -160,11 +264,15 @@
 </head>
 <body class="m2rc-page">
 
-    <!-- Navbar -->
+    <!-- BMW M Tri-Color Top Accent Bar -->
+    <div class="m-topbar"></div>
+
+    <!-- League Navigation Bar -->
     <nav id="navbar" class="scrolled">
         <div class="container nav-content">
-            <a href="index.html" class="logo">
-                <img src="assets/logo.png" alt="GRiD UP" style="height: 40px; vertical-align: middle;">
+            <a href="m2rc.html" class="logo" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
+                <img src="assets/logo.png" alt="GRiD UP" style="height: 38px; vertical-align: middle;">
+                <span style="display: flex; align-items: center; background: linear-gradient(90deg, #0066B1, #E21B23); color: #fff; font-family: 'Space Grotesk', sans-serif; font-size: 0.75rem; font-weight: 800; padding: 2px 8px; border-radius: 4px; letter-spacing: 1.5px; text-transform: uppercase;">M2RC // SEASON 4</span>
             </a>
             <div class="menu-toggle">
                 <span></span>
@@ -180,7 +288,7 @@
                 <li><a href="#results" class="hash-link">Results</a></li>
                 <li><a href="#stewarding" class="hash-link">Stewarding</a></li>
                 <li><a href="#rules" class="hash-link">Rules</a></li>
-                <li><a href="#register" class="hash-link btn btn-outline" style="padding: 0.4rem 1rem; border-radius: 4px; margin-left: 0.5rem;">Register</a></li>
+                <li><a href="#register" class="hash-link btn" style="padding: 0.5rem 1.2rem; border-radius: 6px; margin-left: 0.5rem; background: linear-gradient(90deg, var(--m-cyan), var(--m-blue)); color: #000; font-weight: 900;">Driver Entry</a></li>
             </ul>
         </div>
     </nav>
@@ -190,16 +298,20 @@
         <div class="container">
             <div style="display: flex; justify-content: center; margin-bottom: 1.5rem;">
                 <span id="live-indicator" class="live-indicator-badge" style="display: none;">
-                    <span style="display: inline-block; width: 8px; height: 8px; background: #ff0055; border-radius: 50%;"></span>
+                    <span style="display: inline-block; width: 8px; height: 8px; background: #ff3344; border-radius: 50%;"></span>
                     Live Broadcast In Progress
                 </span>
             </div>
-            <h1 class="glow-text" style="font-size: clamp(2rem, 5vw, 4rem); font-weight: 900; line-height: 1.1; margin-bottom: 0.5rem; text-transform: uppercase;">BMW M2 Racing Cup</h1>
-            <p style="font-family: var(--font-heading); font-size: 1rem; letter-spacing: 6px; color: var(--primary); font-weight: 700; margin-bottom: 2rem;">OFFICIAL IRACING LEAGUE</p>
-            <div id="m2rc-hero-countdown" class="countdown-container" style="display: none; margin: 0 auto 2rem; padding: 1rem; background: rgba(0, 207, 255, 0.04); border: 1px solid rgba(0, 207, 255, 0.15); border-radius: 12px; max-width: 400px; backdrop-filter: blur(10px);">
-                <span style="font-size: 0.7rem; font-weight: 800; letter-spacing: 2px; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 0.5rem;">Next Race Countdown</span>
-                <span id="m2rc-timer" style="font-family: monospace; font-size: 1.6rem; font-weight: 900; color: var(--primary); letter-spacing: 2px;">--d --h --m --s</span>
-                <span id="m2rc-next-round-info" style="display: block; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">Round 3 - Thruxton Circuit</span>
+            <div style="display: inline-flex; align-items: center; gap: 8px; padding: 4px 14px; background: rgba(0, 210, 255, 0.1); border: 1px solid rgba(0, 210, 255, 0.25); border-radius: 20px; color: var(--m-cyan); font-family: 'Space Grotesk', sans-serif; font-size: 0.8rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 1rem;">
+                <span>🏁</span> OFFICIAL IRACING TOURING CAR CHAMPIONSHIP
+            </div>
+            <h1 style="font-family: 'Space Grotesk', sans-serif; font-size: clamp(2.2rem, 6vw, 4.5rem); font-weight: 900; line-height: 1.05; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: -1px; background: linear-gradient(135deg, #ffffff 40%, var(--m-cyan) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">BMW M2 Racing Cup</h1>
+            <p style="font-family: 'Space Grotesk', sans-serif; font-size: 1rem; letter-spacing: 6px; color: var(--m-gold); font-weight: 700; margin-bottom: 2rem;">SEASON 4 // 10 ROUNDS // 60 MINUTE ENDURANCE FORMAT</p>
+            
+            <div id="m2rc-hero-countdown" class="countdown-container" style="display: none; margin: 0 auto 2rem; padding: 1.25rem; background: rgba(12, 16, 24, 0.85); border: 1px solid rgba(0, 210, 255, 0.2); border-radius: 16px; max-width: 440px; backdrop-filter: blur(16px); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                <span style="font-size: 0.7rem; font-weight: 800; letter-spacing: 2px; color: var(--m-muted); text-transform: uppercase; display: block; margin-bottom: 0.5rem;">Official Season Opening Countdown</span>
+                <span id="m2rc-timer" style="font-family: 'Space Grotesk', monospace; font-size: 1.8rem; font-weight: 900; color: var(--m-cyan); letter-spacing: 3px;">--d --h --m --s</span>
+                <span id="m2rc-next-round-info" style="display: block; font-size: 0.8rem; color: #fff; font-weight: 600; margin-top: 0.5rem;">Round 1 - Oulton Park (International)</span>
                 <div id="m2rc-sim-conditions" style="display:none;"></div>
             </div>
         </div>
@@ -213,18 +325,18 @@
             <div class="grid" style="grid-template-columns: 2fr 1fr; gap: 2.5rem; align-items: start;">
                 <!-- Left Column: Round Overview & Intro -->
                 <div style="display: flex; flex-direction: column; gap: 2rem;">
-                    <div class="glass" style="padding: 2.5rem;">
-                        <h2 style="color: var(--primary); margin-bottom: 1.5rem;">Welcome to the M2CS Cup</h2>
-                        <p style="font-size: 1.05rem; line-height: 1.8; color: var(--text-main); margin-bottom: 1.5rem;">
-                            The BMW M2 Racing Cup (M2RC) is GRiD UP's premier touring car championship. Running the agile, aggressive BMW M2 CS Racing car, this series brings together tight packs, intense door-to-door battles, and a friendly yet highly competitive esports racing experience.
+                    <div class="m2rc-card" style="padding: 2.5rem; border: 1px solid rgba(0, 210, 255, 0.15);">
+                        <h2 style="font-family: 'Space Grotesk', sans-serif; color: var(--m-cyan); font-size: 1.8rem; font-weight: 800; margin-bottom: 1.25rem; text-transform: uppercase; letter-spacing: -0.5px;">Welcome to Season 4</h2>
+                        <p style="font-size: 1.05rem; line-height: 1.8; color: var(--m-text); margin-bottom: 1.5rem;">
+                            The BMW M2 Racing Cup (M2RC) is GRiD UP's flagship touring car championship. Competing in the agile, aggressive BMW M2 CS Racing car, drivers engage in high-octane 60-minute endurance battles across iconic international circuits.
                         </p>
-                        <p style="font-size: 1.05rem; line-height: 1.8; color: var(--text-muted);">
-                            Whether you are fighting for the Overall Championship, the Rookie Class trophy, or the Team Shield, every point matters. We feature professional commentators, dynamic drop-round calculations, and a dedicated steward panel to guarantee fair competition.
+                        <p style="font-size: 1.05rem; line-height: 1.8; color: var(--m-muted);">
+                            Whether fighting for the Overall Championship, the Rookie Class trophy, or Team Shield honors, every point counts. Season 4 introduces dynamic iRacing simulation time of day variations, authentic atmospheric weather conditions, drop-round calculations, and steward reviews.
                         </p>
                     </div>
 
-                    <div class="glass" style="padding: 2.5rem;">
-                        <h3 style="color: var(--primary); margin-bottom: 1.5rem;">Quick Schedule Preview</h3>
+                    <div class="m2rc-card" style="padding: 2.5rem; border: 1px solid rgba(0, 210, 255, 0.15);">
+                        <h3 style="font-family: 'Space Grotesk', sans-serif; color: var(--m-cyan); font-size: 1.3rem; font-weight: 800; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 1px;">Schedule At A Glance</h3>
                         <div id="m2rc-schedule-preview" style="display: flex; flex-direction: column; gap: 1rem;">
                             <!-- Dynamically loaded -->
                         </div>
@@ -232,41 +344,46 @@
                 </div>
 
                 <!-- Right Column: Standings Overview -->
-                <div class="glass" style="padding: 2rem;">
-                    <h3 style="color: var(--primary); margin-bottom: 1.5rem;">Championship Top 5</h3>
+                <div class="m2rc-card" style="padding: 2rem; border: 1px solid rgba(0, 210, 255, 0.15);">
+                    <h3 style="font-family: 'Space Grotesk', sans-serif; color: var(--m-cyan); font-size: 1.3rem; font-weight: 800; margin-bottom: 1.25rem; text-transform: uppercase; letter-spacing: 1px;">Championship Top 5</h3>
                     <div style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem;">
-                        <button class="btn btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.65rem;" onclick="switchHomeStandings('drivers')">Drivers</button>
-                        <button class="btn btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.65rem;" onclick="switchHomeStandings('teams')">Teams</button>
+                        <button class="btn" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; background: rgba(0, 210, 255, 0.15); color: var(--m-cyan); border: 1px solid rgba(0, 210, 255, 0.3); font-weight: 800;" onclick="switchHomeStandings('drivers')">Drivers</button>
+                        <button class="btn" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; background: rgba(255,255,255,0.05); color: var(--m-muted); border: 1px solid rgba(255,255,255,0.1); font-weight: 800;" onclick="switchHomeStandings('teams')">Teams</button>
                     </div>
                     <div id="m2rc-home-standings" style="min-height: 200px;">
                         <!-- Dynamically loaded -->
                     </div>
-                    <a href="#standings" class="btn btn-outline" style="width: 100%; margin-top: 1rem; text-align: center; font-size: 0.8rem;">Full Standings &rarr;</a>
+                    <a href="#standings" class="btn" style="width: 100%; margin-top: 1.25rem; text-align: center; font-size: 0.8rem; font-weight: 800; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff;">View Full Standings &rarr;</a>
                 </div>
             </div>
         </section>
 
         <!-- 2. Calendar Section -->
         <section id="sect-calendar" class="tab-section">
-            <h2 style="color: var(--primary); margin-bottom: 1rem;">BMW M2CS Cup Calendar</h2>
-            <p style="color: var(--text-muted); margin-bottom: 3rem;">Complete official schedule for the current championship season.</p>
-            
-            <div id="m2rc-calendar-grid" class="grid" style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 2.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <div style="display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; background: rgba(0,210,255,0.08); border: 1px solid rgba(0,210,255,0.2); border-radius: 20px; color: var(--m-cyan); font-size: 0.7rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.75rem;">SEASON 4 // 10 ROUNDS</div>
+                    <h2 style="font-family: 'Space Grotesk', sans-serif; color: #fff; font-size: 2.2rem; font-weight: 900; margin-bottom: 0.5rem; letter-spacing: -0.5px;">Race Calendar</h2>
+                    <p style="color: var(--m-muted);">Official BMW M2 Racing Cup schedule. All races are 60-minute endurance sessions on iRacing.</p>
+                </div>
+            </div>
+            <div id="m2rc-calendar-grid" class="grid" style="grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 2rem;">
                 <!-- Cards loaded dynamically -->
             </div>
         </section>
 
         <!-- 3. Standings Section -->
         <section id="sect-standings" class="tab-section">
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2.5rem; flex-wrap: wrap; gap: 1rem;">
                 <div>
-                    <h2 style="color: var(--primary); margin-bottom: 0.5rem;">Championship Standings</h2>
-                    <p style="color: var(--text-muted);">Points are dynamically updated after every round, accounting for drop rounds.</p>
+                    <div style="display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; background: rgba(0,210,255,0.08); border: 1px solid rgba(0,210,255,0.2); border-radius: 20px; color: var(--m-cyan); font-size: 0.7rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.75rem;">LIVE STANDINGS</div>
+                    <h2 style="font-family: 'Space Grotesk', sans-serif; color: #fff; font-size: 2.2rem; font-weight: 900; margin-bottom: 0.5rem; letter-spacing: -0.5px;">Championship Standings</h2>
+                    <p style="color: var(--m-muted);">Points updated dynamically after every round. Drop-round calculation applied at season end.</p>
                 </div>
                 <div class="standings-tabs">
-                    <button id="st-tab-drivers" class="btn btn-primary" onclick="loadStandingsTable('drivers')">Drivers</button>
-                    <button id="st-tab-teams" class="btn btn-outline" onclick="loadStandingsTable('teams')">Teams</button>
-                    <button id="st-tab-rookies" class="btn btn-outline" onclick="loadStandingsTable('rookies')">Rookies</button>
+                    <button id="st-tab-drivers" class="btn" style="background: rgba(0,210,255,0.15); color: var(--m-cyan); border: 1px solid rgba(0,210,255,0.3); font-weight: 800;" onclick="loadStandingsTable('drivers')">Drivers</button>
+                    <button id="st-tab-teams" class="btn" style="background: rgba(255,255,255,0.05); color: var(--m-muted); border: 1px solid rgba(255,255,255,0.1); font-weight: 800;" onclick="loadStandingsTable('teams')">Teams</button>
+                    <button id="st-tab-rookies" class="btn" style="background: rgba(255,255,255,0.05); color: var(--m-muted); border: 1px solid rgba(255,255,255,0.1); font-weight: 800;" onclick="loadStandingsTable('rookies')">Rookies</button>
                 </div>
             </div>
 
@@ -276,8 +393,8 @@
                 </table>
             </div>
             
-            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 1rem; line-height: 1.4;">
-                * Gross represents all points earned. Net points represent standings with the worst single round score subtracted (Drop Round policy applied). Rookie class contains drivers in their first two competitive iRacing seasons.
+            <p style="font-size: 0.75rem; color: var(--m-muted); margin-top: 1rem; line-height: 1.4;">
+                * Gross = all points earned. Net = standings after subtracting the driver's single lowest-scoring round (Drop Round policy). Rookie Class = first or second competitive iRacing season.
             </p>
         </section>
 
@@ -285,38 +402,43 @@
         <section id="sect-drivers" class="tab-section">
             <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem; flex-wrap: wrap; gap: 1rem;">
                 <div>
-                    <h2 style="color: var(--primary); margin-bottom: 0.5rem;">Registered Drivers</h2>
-                    <p style="color: var(--text-muted);">Meet the competitors of the BMW M2 CS Cup.</p>
+                    <div style="display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; background: rgba(0,210,255,0.08); border: 1px solid rgba(0,210,255,0.2); border-radius: 20px; color: var(--m-cyan); font-size: 0.7rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.75rem;">SEASON 4 GRID</div>
+                    <h2 style="font-family: 'Space Grotesk', sans-serif; color: #fff; font-size: 2.2rem; font-weight: 900; margin-bottom: 0.5rem; letter-spacing: -0.5px;">Registered Drivers</h2>
+                    <p style="color: var(--m-muted);">The full grid of confirmed BMW M2 Racing Cup Season 4 competitors.</p>
                 </div>
                 <div>
-                    <input type="text" id="m2rc-driver-search" class="btn btn-outline" placeholder="Search driver name..." style="text-align: left; padding: 0.75rem 1.5rem; width: 280px;" oninput="filterDriversList(this.value)">
+                    <input type="text" id="m2rc-driver-search" placeholder="Search driver..." style="background: rgba(12,16,24,0.9); border: 1px solid rgba(0,210,255,0.25); color: #fff; padding: 0.75rem 1.25rem; border-radius: 8px; font-family: 'Outfit', sans-serif; font-size: 0.9rem; width: 260px; outline: none;" oninput="filterDriversList(this.value)">
                 </div>
             </div>
 
-            <div id="m2rc-drivers-grid" class="grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem;">
+            <div id="m2rc-drivers-grid" class="grid" style="grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 2rem;">
                 <!-- Driver Cards loaded dynamically -->
             </div>
         </section>
 
         <!-- 5. Teams Section -->
         <section id="sect-teams" class="tab-section">
-            <h2 style="color: var(--primary); margin-bottom: 0.5rem;">Championship Teams</h2>
-            <p style="color: var(--text-muted); margin-bottom: 3rem;">View the rosters and constructors competing for the M2RC Team Shield.</p>
+            <div style="margin-bottom: 3rem;">
+                <div style="display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; background: rgba(0,210,255,0.08); border: 1px solid rgba(0,210,255,0.2); border-radius: 20px; color: var(--m-cyan); font-size: 0.7rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.75rem;">CONSTRUCTOR STANDINGS</div>
+                <h2 style="font-family: 'Space Grotesk', sans-serif; color: #fff; font-size: 2.2rem; font-weight: 900; margin-bottom: 0.5rem; letter-spacing: -0.5px;">Championship Teams</h2>
+                <p style="color: var(--m-muted);">Teams battling for the coveted M2RC Team Shield. Combined driver points determine constructor standings.</p>
+            </div>
 
-            <div id="m2rc-teams-grid" class="grid" style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 2.5rem;">
+            <div id="m2rc-teams-grid" class="grid" style="grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 2rem;">
                 <!-- Team Cards loaded dynamically -->
             </div>
         </section>
 
         <!-- 6. Results Section -->
         <section id="sect-results" class="tab-section">
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2.5rem; flex-wrap: wrap; gap: 1rem;">
                 <div>
-                    <h2 style="color: var(--primary); margin-bottom: 0.5rem;">Race Results</h2>
-                    <p style="color: var(--text-muted);">Official finishing positions, incident logs, and points distributions.</p>
+                    <div style="display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; background: rgba(0,210,255,0.08); border: 1px solid rgba(0,210,255,0.2); border-radius: 20px; color: var(--m-cyan); font-size: 0.7rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.75rem;">OFFICIAL RESULTS</div>
+                    <h2 style="font-family: 'Space Grotesk', sans-serif; color: #fff; font-size: 2.2rem; font-weight: 900; margin-bottom: 0.5rem; letter-spacing: -0.5px;">Race Results</h2>
+                    <p style="color: var(--m-muted);">Official finishing positions, fastest laps, incident points, and points distributions.</p>
                 </div>
                 <div>
-                    <select id="m2rc-results-round-select" class="btn btn-outline" style="padding: 0.75rem 1.5rem; text-align: left;" onchange="loadRoundResultsUI(this.value)">
+                    <select id="m2rc-results-round-select" style="background: rgba(12,16,24,0.9); border: 1px solid rgba(0,210,255,0.25); color: #fff; padding: 0.75rem 1.25rem; border-radius: 8px; font-family: 'Outfit', sans-serif; font-size: 0.9rem; min-width: 220px; outline: none; cursor: pointer;" onchange="loadRoundResultsUI(this.value)">
                         <option value="">-- Select Round --</option>
                     </select>
                 </div>
@@ -334,8 +456,9 @@
             <div class="grid" style="grid-template-columns: 2fr 1fr; gap: 3rem; align-items: start;">
                 <!-- Left: Public Decisions -->
                 <div>
-                    <h2 style="color: var(--primary); margin-bottom: 1rem;">Public Decisions</h2>
-                    <p style="color: var(--text-muted); margin-bottom: 2rem;">Official incident reviews and steward panel rulings.</p>
+                    <div style="display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; background: rgba(226,27,35,0.12); border: 1px solid rgba(226,27,35,0.3); border-radius: 20px; color: var(--m-red); font-size: 0.7rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.75rem;">⚖️ STEWARD PANEL</div>
+                    <h2 style="font-family: 'Space Grotesk', sans-serif; color: #fff; font-size: 2.2rem; font-weight: 900; margin-bottom: 0.5rem; letter-spacing: -0.5px;">Public Decisions</h2>
+                    <p style="color: var(--m-muted); margin-bottom: 2rem;">Official incident reviews, protest outcomes, and steward panel rulings. All decisions are final.</p>
 
                     <div style="display: flex; flex-direction: column; gap: 1.5rem;" id="m2rc-stewards-decisions-container">
                         <!-- Loaded dynamically -->
@@ -343,8 +466,9 @@
                 </div>
 
                 <!-- Right: Protest Form -->
-                <div class="glass" style="padding: 2.5rem;" id="protest-form-wrapper">
-                    <h3 style="color: var(--primary); margin-bottom: 1.5rem;">Submit a Protest</h3>
+                <div class="m2rc-card" style="padding: 2.5rem; border: 1px solid rgba(226,27,35,0.2); position: relative;" id="protest-form-wrapper">
+                    <div style="position: absolute; top:0; left:0; right:0; height: 3px; background: linear-gradient(90deg, var(--m-red), var(--m-blue));"></div>
+                    <h3 style="font-family: 'Space Grotesk', sans-serif; color: var(--m-red); font-size: 1.2rem; font-weight: 800; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 1px;">⚠️ Submit a Protest</h3>
                     
                     <!-- Authenticated View -->
                     <form id="m2rc-protest-form" style="display: none;">
@@ -392,131 +516,146 @@
 
         <!-- 8. Rules Section -->
         <section id="sect-rules" class="tab-section">
-            <h2 style="color: var(--primary); margin-bottom: 0.5rem;">Sporting Regulations</h2>
-            <p style="color: var(--text-muted); margin-bottom: 3rem;">BMW M2 Racing Cup Rules & Policy Guidelines.</p>
+            <div style="margin-bottom: 3rem;">
+                <div style="display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; background: rgba(0,210,255,0.08); border: 1px solid rgba(0,210,255,0.2); border-radius: 20px; color: var(--m-cyan); font-size: 0.7rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.75rem;">v1.2 — AUGUST 2026</div>
+                <h2 style="font-family: 'Space Grotesk', sans-serif; color: #fff; font-size: 2.2rem; font-weight: 900; margin-bottom: 0.5rem; letter-spacing: -0.5px;">Sporting Regulations</h2>
+                <p style="color: var(--m-muted);">BMW M2 Racing Cup official rules, points system, and conduct policies for Season 4.</p>
+            </div>
 
-            <div class="glass" style="padding: 3rem; line-height: 1.8; display: flex; flex-direction: column; gap: 2.5rem;">
+            <div class="m2rc-card" style="padding: 3rem; line-height: 1.8; display: flex; flex-direction: column; gap: 2.5rem; border: 1px solid rgba(0,210,255,0.12);">
                 <div>
-                    <h3 style="color: var(--primary); border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem; margin-bottom: 1rem;">1. Championship Format</h3>
-                    <p>The BMW M2 CS Cup consists of 6 rounds. All drivers run the official BMW M2 CS Racing car on fixed setups to ensure the closest racing format. Up to 35 grid slots are available.</p>
+                    <h3 style="font-family: 'Space Grotesk', sans-serif; color: var(--m-cyan); font-size: 1.1rem; font-weight: 800; border-bottom: 1px solid rgba(0,210,255,0.15); padding-bottom: 0.75rem; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 1px;">1. Championship Format</h3>
+                    <p style="color: var(--m-text);">Season 4 consists of <strong>10 rounds</strong>, each a <strong>60-minute endurance session</strong> on iRacing using the official BMW M2 CS Racing car on fixed setups to ensure the closest possible racing. Up to 35 grid slots are available. Cars are spec — no setup changes permitted.</p>
                 </div>
 
                 <div>
-                    <h3 style="color: var(--primary); border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem; margin-bottom: 1rem;">2. Point System & Drop Rounds</h3>
-                    <p>Points are awarded to the top 20 finishers of each round as follows:</p>
-                    <div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px; font-family: monospace; font-size: 0.85rem; margin: 1rem 0;">
-                        1st: 25pts | 2nd: 20pts | 3rd: 16pts | 4th: 13pts | 5th: 11pts | 6th: 10pts | 7th: 9pts | 8th: 8pts... <br>
-                        Fastest Lap: +1pt | Pole Position: +1pt
+                    <h3 style="font-family: 'Space Grotesk', sans-serif; color: var(--m-cyan); font-size: 1.1rem; font-weight: 800; border-bottom: 1px solid rgba(0,210,255,0.15); padding-bottom: 0.75rem; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 1px;">2. Points System &amp; Drop Rounds</h3>
+                    <p style="color: var(--m-text);">Points are awarded to the top 20 finishers of each round:</p>
+                    <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(0,210,255,0.12); padding: 1.25rem; border-radius: 10px; font-family: 'Space Grotesk', monospace; font-size: 0.85rem; margin: 1rem 0; color: var(--m-cyan); line-height: 2;">
+                        🥇 1st: 25pts &nbsp;|&nbsp; 🥈 2nd: 20pts &nbsp;|&nbsp; 🥉 3rd: 16pts &nbsp;|&nbsp; 4th: 13pts &nbsp;|&nbsp; 5th: 11pts<br>
+                        6th: 10pts &nbsp;|&nbsp; 7th: 9pts &nbsp;|&nbsp; 8th: 8pts &nbsp;|&nbsp; 9th: 7pts &nbsp;|&nbsp; 10th–20th: decreasing<br>
+                        <span style="color: var(--m-gold);">⚡ Fastest Lap: +1pt &nbsp;|&nbsp; 🏁 Pole Position: +1pt</span>
                     </div>
-                    <p><strong>Drop Round Rule:</strong> To account for real-life obligations, each driver's single worst round score (the round with the lowest points earned) is automatically subtracted from their total at the end of the season.</p>
+                    <p style="color: var(--m-text);"><strong style="color: #fff;">Drop Round Rule:</strong> Each driver's single lowest-scoring round is automatically excluded from their total at season end — accounting for real-life obligations.</p>
                 </div>
 
                 <div>
-                    <h3 style="color: var(--primary); border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem; margin-bottom: 1rem;">3. Incidents & Penalties</h3>
-                    <p>Standard iRacing incident point rules apply. Incident point caps and corresponding penalties are:</p>
-                    <ul>
-                        <li><strong>12 Incident Points (12x):</strong> Drive-through penalty.</li>
-                        <li><strong>17 Incident Points (17x):</strong> Disqualification from the session.</li>
-                        <li><strong>Steward Review:</strong> Protests filed within 24 hours of race completion will be reviewed. Panel decisions are final.</li>
-                    </ul>
+                    <h3 style="font-family: 'Space Grotesk', sans-serif; color: var(--m-cyan); font-size: 1.1rem; font-weight: 800; border-bottom: 1px solid rgba(0,210,255,0.15); padding-bottom: 0.75rem; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 1px;">3. Incidents &amp; Penalties</h3>
+                    <p style="color: var(--m-text); margin-bottom: 1rem;">Standard iRacing incident point rules apply. Penalty thresholds:</p>
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        <div style="display: flex; align-items: flex-start; gap: 1rem; padding: 0.75rem 1rem; background: rgba(255,200,0,0.05); border-left: 3px solid var(--m-gold); border-radius: 0 8px 8px 0;">
+                            <strong style="color: var(--m-gold); white-space: nowrap; font-family: 'Space Grotesk', sans-serif;">12x</strong>
+                            <span style="color: var(--m-text);">Drive-through penalty applied automatically by iRacing.</span>
+                        </div>
+                        <div style="display: flex; align-items: flex-start; gap: 1rem; padding: 0.75rem 1rem; background: rgba(226,27,35,0.06); border-left: 3px solid var(--m-red); border-radius: 0 8px 8px 0;">
+                            <strong style="color: var(--m-red); white-space: nowrap; font-family: 'Space Grotesk', sans-serif;">17x</strong>
+                            <span style="color: var(--m-text);">Disqualification from the session.</span>
+                        </div>
+                        <div style="display: flex; align-items: flex-start; gap: 1rem; padding: 0.75rem 1rem; background: rgba(0,210,255,0.05); border-left: 3px solid var(--m-cyan); border-radius: 0 8px 8px 0;">
+                            <strong style="color: var(--m-cyan); white-space: nowrap; font-family: 'Space Grotesk', sans-serif;">Review</strong>
+                            <span style="color: var(--m-text);">Protests filed within 24 hours of race completion. Steward panel decisions are final and binding.</span>
+                        </div>
+                    </div>
                 </div>
 
-                <div style="border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 2rem;">
-                    <h4 style="color: var(--text-muted); font-size: 0.85rem; font-family: var(--font-heading);">DOCUMENT VERSION HISTORY</h4>
-                    <span style="font-size: 0.75rem; color: var(--primary);">Version 1.2.0 (Last Updated: August 9, 2026)</span>
+                <div style="border-top: 1px dashed rgba(0,210,255,0.15); padding-top: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <h4 style="color: var(--m-muted); font-size: 0.75rem; font-family: 'Space Grotesk', sans-serif; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.25rem;">Document Version</h4>
+                        <span style="font-size: 0.85rem; color: var(--m-cyan); font-weight: 700;">v1.2.0 — Last Updated: 9 August 2026</span>
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--m-muted);">GRiD UP Esports // BMW M2 Racing Cup Series</div>
                 </div>
             </div>
         </section>
 
         <!-- 9. Register Section -->
         <section id="sect-register" class="tab-section">
-            <div style="text-align: center; margin-bottom: 3rem;">
-                <span style="font-family: var(--font-heading); font-size: 0.8rem; color: var(--accent-gold); font-weight: 800; letter-spacing: 2px; text-transform: uppercase;">SEASON 4 REGISTRATION</span>
-                <h2 style="color: #fff; font-size: 2.5rem; margin-top: 0.25rem;">BMW M2 CS Racing Cup Entry</h2>
-                <p style="color: var(--text-muted); max-width: 600px; margin: 0.5rem auto 0;">Official driver sign-up portal. Claim your unique racing number for Season 4. Numbers are strictly single-occupancy and reserved upon submission.</p>
+            <div style="text-align: center; margin-bottom: 3.5rem;">
+                <div style="display: inline-flex; align-items: center; gap: 6px; padding: 3px 12px; background: rgba(255,184,0,0.1); border: 1px solid rgba(255,184,0,0.3); border-radius: 20px; color: var(--m-gold); font-size: 0.7rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.75rem;">🏎️ SEASON 4 REGISTRATION OPEN</div>
+                <h2 style="font-family: 'Space Grotesk', sans-serif; color: #fff; font-size: 2.5rem; font-weight: 900; margin-bottom: 0.75rem; letter-spacing: -1px;">Driver Entry Portal</h2>
+                <p style="color: var(--m-muted); max-width: 600px; margin: 0 auto;">Claim your unique racing number for BMW M2 Racing Cup Season 4. Numbers are strictly single-occupancy — first come, first served.</p>
             </div>
 
             <div class="grid" style="grid-template-columns: 1.2fr 0.8fr; gap: 2.5rem; align-items: start;">
                 <!-- Left: Professional Form -->
-                <div class="glass" style="padding: 3rem; border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; background: rgba(10, 12, 16, 0.7); position: relative; overflow: hidden;">
-                    <div style="position: absolute; top:0; left:0; right:0; height: 3px; background: linear-gradient(90deg, var(--primary), var(--accent-gold));"></div>
+                <div class="m2rc-card" style="padding: 3rem; border: 1px solid rgba(0,210,255,0.2); position: relative; overflow: hidden;">
+                    <div style="position: absolute; top:0; left:0; right:0; height: 3px; background: linear-gradient(90deg, var(--m-cyan), var(--m-blue), var(--m-red));"></div>
 
-                    <h3 style="color: var(--primary); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
-                        <span>🏎️</span> Driver Entry Form
+                    <h3 style="font-family: 'Space Grotesk', sans-serif; color: var(--m-cyan); font-size: 1.2rem; font-weight: 800; margin-bottom: 1.75rem; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 0.5rem;">
+                        🏎️ Driver Entry Form
                     </h3>
 
                     <form id="m2rc-registration-form">
-                        <div class="bug-form-group" style="margin-bottom: 1.25rem;">
-                            <label style="display:block; font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:0.5rem;">Driver Full Name (iRacing Display Name) *</label>
-                            <input type="text" id="reg-name" class="btn btn-outline" style="width:100%; text-align:left; background:rgba(0,0,0,0.3); border-color:rgba(255,255,255,0.1);" placeholder="e.g. Matty Roberts" required>
+                        <div style="margin-bottom: 1.25rem;">
+                            <label style="display:block; font-size:0.7rem; color:var(--m-muted); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:0.5rem; font-family:'Space Grotesk',sans-serif; font-weight:700;">Driver Full Name (iRacing Display Name) *</label>
+                            <input type="text" id="reg-name" style="width:100%; background:rgba(0,0,0,0.4); border:1px solid rgba(0,210,255,0.2); border-radius:8px; color:#fff; padding:0.75rem 1rem; font-family:'Outfit',sans-serif; font-size:0.95rem; outline:none; transition: border-color 0.2s;" placeholder="e.g. Matty Roberts" required onfocus="this.style.borderColor='rgba(0,210,255,0.5)'" onblur="this.style.borderColor='rgba(0,210,255,0.2)'">
                         </div>
 
-                        <div class="form-row" style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
-                            <div class="bug-form-group">
-                                <label style="display:block; font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:0.5rem;">iRacing Customer ID *</label>
-                                <input type="text" id="reg-iracing-id" class="btn btn-outline" style="width:100%; text-align:left; background:rgba(0,0,0,0.3); border-color:rgba(255,255,255,0.1);" placeholder="e.g. 298711" required>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+                            <div>
+                                <label style="display:block; font-size:0.7rem; color:var(--m-muted); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:0.5rem; font-family:'Space Grotesk',sans-serif; font-weight:700;">iRacing Customer ID *</label>
+                                <input type="text" id="reg-iracing-id" style="width:100%; background:rgba(0,0,0,0.4); border:1px solid rgba(0,210,255,0.2); border-radius:8px; color:#fff; padding:0.75rem 1rem; font-family:'Outfit',sans-serif; font-size:0.95rem; outline:none;" placeholder="e.g. 298711" required>
                             </div>
 
-                            <div class="bug-form-group">
-                                <label style="display:block; font-size:0.75rem; color:var(--accent-gold); text-transform:uppercase; letter-spacing:1px; margin-bottom:0.5rem;">Requested Car Number * (1-999)</label>
-                                <div style="position:relative;">
-                                    <input type="number" id="reg-car-number" class="btn btn-outline" style="width:100%; text-align:left; background:rgba(0,0,0,0.3); border-color:var(--accent-gold); font-weight:bold; font-size:1.1rem; color:var(--accent-gold);" placeholder="77" min="1" max="999" required oninput="checkCarNumberAvailability(this.value)">
-                                </div>
-                                <span id="number-availability-status" style="display: block; font-size: 0.75rem; margin-top: 6px; font-weight: 600;"></span>
+                            <div>
+                                <label style="display:block; font-size:0.7rem; color:var(--m-gold); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:0.5rem; font-family:'Space Grotesk',sans-serif; font-weight:700;">Racing Number * (1–999)</label>
+                                <input type="number" id="reg-car-number" style="width:100%; background:rgba(0,0,0,0.4); border:2px solid rgba(255,184,0,0.4); border-radius:8px; color:var(--m-gold); padding:0.75rem 1rem; font-family:'Space Grotesk',sans-serif; font-size:1.1rem; font-weight:900; outline:none;" placeholder="77" min="1" max="999" required oninput="checkCarNumberAvailability(this.value)">
+                                <span id="number-availability-status" style="display: block; font-size: 0.75rem; margin-top: 6px; font-weight: 700; font-family:'Space Grotesk',sans-serif;"></span>
                             </div>
                         </div>
 
-                        <div class="form-row" style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
-                            <div class="bug-form-group">
-                                <label style="display:block; font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:0.5rem;">Team / Sponsor Name (Optional)</label>
-                                <input type="text" id="reg-team" class="btn btn-outline" style="width:100%; text-align:left; background:rgba(0,0,0,0.3); border-color:rgba(255,255,255,0.1);" placeholder="e.g. GRiD UP Black">
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                            <div>
+                                <label style="display:block; font-size:0.7rem; color:var(--m-muted); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:0.5rem; font-family:'Space Grotesk',sans-serif; font-weight:700;">Team / Sponsor (Optional)</label>
+                                <input type="text" id="reg-team" style="width:100%; background:rgba(0,0,0,0.4); border:1px solid rgba(0,210,255,0.2); border-radius:8px; color:#fff; padding:0.75rem 1rem; font-family:'Outfit',sans-serif; font-size:0.95rem; outline:none;" placeholder="e.g. GRiD UP Black">
                             </div>
-                            <div class="bug-form-group">
-                                <label style="display:block; font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:0.5rem;">Driver Classification *</label>
-                                <select id="reg-rookie" class="btn btn-outline" style="width:100%; padding:0.75rem; text-align:left; background:rgba(0,0,0,0.3); border-color:rgba(255,255,255,0.1);">
-                                    <option value="false">Pro Class (Experienced Driver)</option>
-                                    <option value="true">Rookie Class (First/Second Season)</option>
+                            <div>
+                                <label style="display:block; font-size:0.7rem; color:var(--m-muted); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:0.5rem; font-family:'Space Grotesk',sans-serif; font-weight:700;">Driver Class *</label>
+                                <select id="reg-rookie" style="width:100%; background:rgba(0,0,0,0.4); border:1px solid rgba(0,210,255,0.2); border-radius:8px; color:#fff; padding:0.75rem 1rem; font-family:'Outfit',sans-serif; font-size:0.9rem; outline:none; cursor:pointer;">
+                                    <option value="false">Pro Class (Experienced)</option>
+                                    <option value="true">Rookie Class (1st/2nd Season)</option>
                                 </select>
                             </div>
                         </div>
 
                         <!-- Live Card Preview -->
-                        <div style="background: rgba(0,0,0,0.4); border: 1px border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between;">
+                        <div style="background: rgba(0,0,0,0.4); border: 1px dashed rgba(0,210,255,0.2); border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between;">
                             <div style="display: flex; align-items: center; gap: 1rem;">
-                                <div id="reg-preview-badge" style="width: 50px; height: 50px; border-radius: 10px; background: var(--accent-gold); color: #000; font-family: var(--font-heading); font-size: 1.5rem; font-weight: 900; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(234, 179, 8, 0.3);">#--</div>
+                                <div id="reg-preview-badge" style="width: 52px; height: 52px; border-radius: 10px; background: var(--m-gold); color: #000; font-family: 'Space Grotesk',sans-serif; font-size: 1.4rem; font-weight: 900; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 18px rgba(255,184,0,0.35);">#--</div>
                                 <div>
-                                    <h4 id="reg-preview-name" style="color: #fff; margin: 0; font-size: 1rem;">Driver Name</h4>
-                                    <span id="reg-preview-team" style="color: var(--text-muted); font-size: 0.75rem;">Privateer Entry</span>
+                                    <h4 id="reg-preview-name" style="color: #fff; margin: 0; font-size: 1rem; font-family:'Space Grotesk',sans-serif; font-weight:800;">Driver Name</h4>
+                                    <span id="reg-preview-team" style="color: var(--m-muted); font-size: 0.75rem;">Privateer Entry</span>
                                 </div>
                             </div>
-                            <span id="reg-preview-class" style="font-size: 0.65rem; padding: 3px 8px; border-radius: 4px; background: rgba(0,207,255,0.15); color: var(--primary); font-weight: bold; text-transform: uppercase;">PRO CLASS</span>
+                            <span id="reg-preview-class" style="font-size: 0.65rem; padding: 4px 10px; border-radius: 4px; background: rgba(0,210,255,0.12); color: var(--m-cyan); font-weight: 800; font-family:'Space Grotesk',sans-serif; text-transform: uppercase; letter-spacing: 1px;">PRO CLASS</span>
                         </div>
 
-                        <button type="submit" id="reg-submit-btn" class="btn btn-primary" style="width:100%; padding: 1.1rem; font-weight:800; font-size:1rem; letter-spacing:1.5px; border-radius: 8px; background: linear-gradient(90deg, var(--primary), #0099ff); color: #000;">CLAIM NUMBER & REGISTER</button>
+                        <button type="submit" id="reg-submit-btn" style="width:100%; padding: 1.1rem; font-weight:900; font-size:1rem; letter-spacing:2px; border-radius: 8px; background: linear-gradient(90deg, var(--m-cyan), var(--m-blue)); color: #000; border: none; cursor: pointer; font-family:'Space Grotesk',sans-serif; text-transform:uppercase; transition: all 0.3s ease;">CLAIM NUMBER &amp; REGISTER →</button>
                     </form>
                 </div>
 
                 <!-- Right: Claimed Numbers Grid & Rules -->
                 <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-                    <div class="glass" style="padding: 2rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08); background: rgba(10, 12, 16, 0.7);">
-                        <h3 style="color: var(--primary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-                            <span>🔒</span> Claimed Car Numbers
+                    <div class="m2rc-card" style="padding: 2rem; border: 1px solid rgba(255,184,0,0.15);">
+                        <h3 style="font-family: 'Space Grotesk', sans-serif; color: var(--m-gold); font-size: 1.1rem; font-weight: 800; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 0.5rem;">
+                            🔒 Claimed Numbers
                         </h3>
-                        <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 1.5rem;">The numbers below are officially reserved. Hover to inspect driver ownership.</p>
+                        <p style="color: var(--m-muted); font-size: 0.8rem; margin-bottom: 1.5rem;">These numbers are officially reserved. Hover to inspect driver ownership.</p>
                         
                         <div id="m2rc-claimed-numbers-grid" style="display: flex; gap: 8px; flex-wrap: wrap; max-height: 320px; overflow-y: auto; padding-right: 5px;">
                             <!-- Dynamic Numbers -->
-                            <span style="color: var(--text-muted); font-size: 0.85rem;">Loading grid reservations...</span>
+                            <span style="color: var(--m-muted); font-size: 0.85rem;">Loading grid reservations...</span>
                         </div>
                     </div>
 
                     <!-- Guidelines -->
-                    <div class="glass" style="padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.02);">
-                        <h4 style="color: var(--accent-gold); font-size: 0.8rem; letter-spacing: 1px; margin-bottom: 0.75rem; text-transform: uppercase;">Registration Guidelines</h4>
-                        <ul style="color: var(--text-muted); font-size: 0.8rem; line-height: 1.6; padding-left: 1.2rem; margin: 0;">
-                            <li>Numbers 1 through 999 are valid for entry.</li>
-                            <li>Strictly <strong>1 driver per car number</strong>. Duplicate claims will be rejected automatically.</li>
-                            <li>Pending entries hold a temporary lock while under steward verification.</li>
+                    <div class="m2rc-card" style="padding: 1.5rem; border: 1px solid rgba(0,210,255,0.12);">
+                        <h4 style="font-family: 'Space Grotesk', sans-serif; color: var(--m-cyan); font-size: 0.8rem; letter-spacing: 1.5px; margin-bottom: 0.75rem; text-transform: uppercase; font-weight: 800;">Registration Rules</h4>
+                        <ul style="color: var(--m-muted); font-size: 0.82rem; line-height: 1.8; padding-left: 1.2rem; margin: 0;">
+                            <li>Numbers <strong style="color:#fff;">1–999</strong> are valid for Season 4 entry.</li>
+                            <li>Strictly <strong style="color:#fff;">1 driver per car number</strong>. Duplicates are rejected automatically.</li>
+                            <li>Pending entries hold a temporary reservation while under steward review.</li>
+                            <li>Approved registrations are locked and permanent for the season.</li>
                         </ul>
                     </div>
                 </div>
@@ -526,48 +665,49 @@
     </main>
 
     <!-- Driver Detail Modal -->
-    <div id="m2rc-driver-modal-backdrop" onclick="closeDriverModal()" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 10002; backdrop-filter: blur(5px);"></div>
-    <div id="m2rc-driver-modal" class="modal-glass" style="display: none; max-width: 800px; width: 90%; padding: 2.5rem; background: #0a0a0c; z-index: 10003; border-radius: 20px; overflow-y: auto; max-height: 90vh;">
-        <button onclick="closeDriverModal()" class="btn btn-outline" style="position: absolute; top: 1rem; right: 1rem; border-radius: 50%; width: 36px; height: 36px; padding: 0; font-size: 1.25rem;">&times;</button>
+    <div id="m2rc-driver-modal-backdrop" onclick="closeDriverModal()" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 10002; backdrop-filter: blur(8px);"></div>
+    <div id="m2rc-driver-modal" class="modal-glass" style="display: none; max-width: 820px; width: 92%; padding: 2.5rem; background: rgba(10, 14, 22, 0.98); border: 1px solid rgba(0,210,255,0.2); z-index: 10003; border-radius: 20px; overflow-y: auto; max-height: 90vh; box-shadow: 0 20px 60px rgba(0,0,0,0.7);">
+        <div style="position: absolute; top:0; left:0; right:0; height: 3px; background: linear-gradient(90deg, var(--m-blue) 33.3%, #2B2A70 33.3% 66.6%, var(--m-red) 66.6%); border-radius: 20px 20px 0 0;"></div>
+        <button onclick="closeDriverModal()" style="position: absolute; top: 1.2rem; right: 1.2rem; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 50%; width: 36px; height: 36px; padding: 0; font-size: 1.25rem; cursor: pointer; line-height: 1; transition: all 0.2s;">&times;</button>
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
             <div>
                 <span id="modal-driver-number" class="number-badge">#--</span>
                 <span id="modal-driver-rookie" class="rookie-badge" style="display:none;">Rookie</span>
-                <h2 id="modal-driver-name" class="glow-text" style="margin-top: 0.5rem; margin-bottom: 0.25rem;">Driver Name</h2>
-                <p id="modal-driver-team" style="color: var(--text-muted); font-size: 0.9rem;">Team Name</p>
+                <h2 id="modal-driver-name" style="font-family: 'Space Grotesk', sans-serif; font-size: 2rem; font-weight: 900; color: #fff; margin-top: 0.75rem; margin-bottom: 0.25rem; letter-spacing: -0.5px;">Driver Name</h2>
+                <p id="modal-driver-team" style="color: var(--m-muted); font-size: 0.9rem;">Team Name</p>
             </div>
             <div style="text-align: right;">
-                <p style="font-size:0.7rem; color:var(--primary); font-weight:800; letter-spacing:1px; margin-bottom:0.25rem;">NET POINTS</p>
-                <h2 id="modal-driver-points" style="font-size:2rem; font-weight:900; line-height:1; color:#fff;">--</h2>
+                <p style="font-size:0.7rem; color:var(--m-cyan); font-weight:800; letter-spacing:1.5px; margin-bottom:0.25rem; font-family:'Space Grotesk',sans-serif;">NET POINTS</p>
+                <h2 id="modal-driver-points" style="font-family:'Space Grotesk',sans-serif; font-size:2.5rem; font-weight:900; line-height:1; color:#fff;">--</h2>
             </div>
         </div>
 
         <div class="grid" style="grid-template-columns: 1fr 2fr; gap: 2rem; margin-top: 1rem;">
             <!-- Key Stats -->
             <div style="display: flex; flex-direction: column; gap: 1rem;">
-                <div class="glass" style="padding: 1rem; text-align: center;">
-                    <span style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase;">Wins</span>
-                    <h3 id="modal-stat-wins" style="font-size: 1.8rem; color: var(--accent-gold);">0</h3>
+                <div class="m2rc-card" style="padding: 1rem; text-align: center; border: 1px solid rgba(255,184,0,0.2);">
+                    <span style="font-size:0.65rem; color:var(--m-muted); text-transform:uppercase; letter-spacing:1.5px; font-family:'Space Grotesk',sans-serif; font-weight:700;">Wins</span>
+                    <h3 id="modal-stat-wins" style="font-family:'Space Grotesk',sans-serif; font-size: 2rem; color: var(--m-gold); font-weight:900; margin:0;">0</h3>
                 </div>
-                <div class="glass" style="padding: 1rem; text-align: center;">
-                    <span style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase;">Podiums</span>
-                    <h3 id="modal-stat-podiums" style="font-size: 1.8rem; color: #fff;">0</h3>
+                <div class="m2rc-card" style="padding: 1rem; text-align: center; border: 1px solid rgba(0,210,255,0.15);">
+                    <span style="font-size:0.65rem; color:var(--m-muted); text-transform:uppercase; letter-spacing:1.5px; font-family:'Space Grotesk',sans-serif; font-weight:700;">Podiums</span>
+                    <h3 id="modal-stat-podiums" style="font-family:'Space Grotesk',sans-serif; font-size: 2rem; color: #fff; font-weight:900; margin:0;">0</h3>
                 </div>
-                <div class="glass" style="padding: 1rem; text-align: center;">
-                    <span style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase;">Avg Finish</span>
-                    <h3 id="modal-stat-avg" style="font-size: 1.8rem; color: var(--primary);">0</h3>
+                <div class="m2rc-card" style="padding: 1rem; text-align: center; border: 1px solid rgba(0,210,255,0.15);">
+                    <span style="font-size:0.65rem; color:var(--m-muted); text-transform:uppercase; letter-spacing:1.5px; font-family:'Space Grotesk',sans-serif; font-weight:700;">Avg Finish</span>
+                    <h3 id="modal-stat-avg" style="font-family:'Space Grotesk',sans-serif; font-size: 2rem; color: var(--m-cyan); font-weight:900; margin:0;">0</h3>
                 </div>
             </div>
 
             <!-- Position Progress Chart -->
-            <div class="glass" style="padding: 1.5rem; min-height: 250px;">
-                <h4 style="color: var(--primary); font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 1rem;">Finishing Position History</h4>
+            <div class="m2rc-card" style="padding: 1.5rem; min-height: 250px; border: 1px solid rgba(0,210,255,0.15);">
+                <h4 style="font-family:'Space Grotesk',sans-serif; color: var(--m-cyan); font-size: 0.75rem; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 1rem; font-weight:800;">Finishing Position History</h4>
                 <canvas id="driverProgressChart" style="width: 100%; height: 200px;"></canvas>
             </div>
         </div>
 
         <div style="margin-top: 2rem;">
-            <h4 style="color: var(--primary); font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 1rem;">Season Round History</h4>
+            <h4 style="font-family:'Space Grotesk',sans-serif; color: var(--m-cyan); font-size: 0.75rem; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 1rem; font-weight:800;">Season Round History</h4>
             <div class="standings-table-container">
                 <table class="standings-table" style="font-size:0.85rem;">
                     <thead>
@@ -588,6 +728,35 @@
             </div>
         </div>
     </div>
+
+    <!-- M2RC Page Footer -->
+    <footer style="background: rgba(7,9,14,0.95); border-top: 1px solid rgba(0,210,255,0.1); padding: 2.5rem 0 1.5rem; margin-top: 4rem;">
+        <div class="container">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2rem; margin-bottom: 2rem;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <img src="assets/logo.png" alt="GRiD UP" style="height: 32px; opacity: 0.9;">
+                    <div>
+                        <div style="font-family:'Space Grotesk',sans-serif; font-weight:900; font-size:0.9rem; color:#fff; letter-spacing:1px;">BMW M2 RACING CUP</div>
+                        <div style="font-size:0.7rem; color:var(--m-muted); letter-spacing:2px; text-transform:uppercase;">GRiD UP Esports // Season 4</div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 1.5rem; align-items: center;">
+                    <a href="#home" class="hash-link" style="color:var(--m-muted); font-size:0.8rem; text-decoration:none; font-family:'Space Grotesk',sans-serif; font-weight:600; transition: color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--m-muted)'">Home</a>
+                    <a href="#calendar" class="hash-link" style="color:var(--m-muted); font-size:0.8rem; text-decoration:none; font-family:'Space Grotesk',sans-serif; font-weight:600; transition: color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--m-muted)'">Calendar</a>
+                    <a href="#standings" class="hash-link" style="color:var(--m-muted); font-size:0.8rem; text-decoration:none; font-family:'Space Grotesk',sans-serif; font-weight:600; transition: color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--m-muted)'">Standings</a>
+                    <a href="#register" class="hash-link" style="background: linear-gradient(90deg, var(--m-cyan), var(--m-blue)); color:#000; font-size:0.8rem; text-decoration:none; font-family:'Space Grotesk',sans-serif; font-weight:900; padding: 0.4rem 1rem; border-radius: 6px;">Register Now</a>
+                </div>
+            </div>
+            <div style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.25rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; align-items: center;">
+                <p style="color:var(--m-muted); font-size:0.75rem; margin:0;">&copy; 2026 GRiD UP Esports. All rights reserved. BMW M2 CS Racing is a product of BMW M GmbH.</p>
+                <div style="display:flex; gap:8px; align-items: center;">
+                    <div style="width:12px; height:12px; border-radius:50%; background:var(--m-blue);"></div>
+                    <div style="width:12px; height:12px; border-radius:50%; background:#2B2A70;"></div>
+                    <div style="width:12px; height:12px; border-radius:50%; background:var(--m-red);"></div>
+                </div>
+            </div>
+        </div>
+    </footer>
 
     <!-- Firebase compatibility scripts -->
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
