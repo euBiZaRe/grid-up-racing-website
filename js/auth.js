@@ -335,10 +335,11 @@ async function updateAuthUI(user, isTentative = false) {
                 container.style.gap = "8px";
             }
 
-            const adminLink = IS_ADMIN ? `<a href="${basePath}admin.html" id="navbar-admin-btn" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border-color: rgba(0,207,255,0.3); color: #00cfff; border-radius: 4px;">Admin</a>` : '';
-            const portalLink = `<a href="${basePath}portal.html" id="navbar-portal-btn" class="btn btn-primary" style="position: relative; padding: 0.4rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border-radius: 4px;">Portal<span id="portal-badge" style="display: ${PORTAL_HAS_UNREAD ? 'block' : 'none'}; position: absolute; top: -4px; right: -4px; width: 8px; height: 8px; background-color: #ff3b30; border-radius: 50%; border: 1px solid #fff; box-shadow: 0 0 4px rgba(255,59,48,0.6);"></span></a>`;
-            const profileLink = `<a href="${basePath}profile.html" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border-radius: 4px;">Profile</a>`;
-            const logoutBtn = `<a href="#" onclick="if(confirm('Logout?')) firebase.auth().signOut()" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border-color: rgba(255,255,255,0.15); border-radius: 4px;"><img src="${avatar}" style="width: 16px; height: 16px; border-radius: 50%; vertical-align: middle; margin-right: 5px; object-fit: cover;"> Logout</a>`;
+            const btnBase = "padding: 0.45rem 0.9rem; font-size: 0.72rem; font-family: 'Space Grotesk', sans-serif; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; text-decoration: none; border-radius: 6px; white-space: nowrap; transition: all 0.2s ease;";
+            const adminLink = IS_ADMIN ? `<a href="${basePath}admin.html" id="navbar-admin-btn" style="${btnBase} background: rgba(255,59,48,0.12); border: 1px solid rgba(255,59,48,0.4); color: #FF6B6B;">Admin</a>` : '';
+            const portalLink = `<a href="${basePath}portal.html" id="navbar-portal-btn" style="position: relative; ${btnBase} background: linear-gradient(90deg, #00E5FF, #0088FF); color: #000000; border: none; box-shadow: 0 0 12px rgba(0,229,255,0.4);">Portal<span id="portal-badge" style="display: ${PORTAL_HAS_UNREAD ? 'block' : 'none'}; position: absolute; top: -4px; right: -4px; width: 8px; height: 8px; background-color: #ff3b30; border-radius: 50%; border: 1px solid #fff; box-shadow: 0 0 4px rgba(255,59,48,0.6);"></span></a>`;
+            const profileLink = `<a href="${basePath}profile.html" style="${btnBase} background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.2); color: #FFFFFF;">Profile</a>`;
+            const logoutBtn = `<a href="#" onclick="if(confirm('Logout?')) firebase.auth().signOut()" style="${btnBase} background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.15); color: #E2E8F0; display: inline-flex; align-items: center; gap: 6px;"><img src="${avatar}" style="width: 18px; height: 18px; border-radius: 50%; vertical-align: middle; object-fit: cover; border: 1px solid rgba(255,255,255,0.3);"> Logout</a>`;
 
             container.innerHTML = `${adminLink}${portalLink}${profileLink}${logoutBtn}`;
             navActions.innerHTML = '';
@@ -359,7 +360,7 @@ async function updateAuthUI(user, isTentative = false) {
     } else {
         // Logged Out State
         if (navActions) {
-            navActions.innerHTML = `<a href="${basePath}login.html" id="login-link" class="btn btn-outline" style="padding: 0.5rem 1.5rem; font-size: 0.75rem; border-radius: 50px;">Login</a>`;
+            navActions.innerHTML = `<a href="${basePath}login.html" id="login-link" style="padding: 0.45rem 1.2rem; font-size: 0.78rem; font-family: 'Space Grotesk', sans-serif; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; text-decoration: none; border-radius: 6px; background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.2); color: #FFFFFF; white-space: nowrap; transition: all 0.2s ease;">Login</a>`;
         }
         
         if (claimSection) claimSection.style.display = 'none';

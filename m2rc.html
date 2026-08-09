@@ -83,16 +83,16 @@
 
         /* Sleek Glass Navigation Override */
         nav#navbar {
-            background: rgba(6, 8, 14, 0.95) !important;
+            background: rgba(6, 8, 14, 0.96) !important;
             backdrop-filter: blur(24px) !important;
             -webkit-backdrop-filter: blur(24px) !important;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-bottom: 1px solid rgba(0, 210, 255, 0.25) !important;
             top: 4px !important;
             position: fixed !important;
             width: 100% !important;
             z-index: 1000 !important;
-            padding: 0.6rem 0 !important;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+            padding: 0.75rem 0 !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
         }
 
         nav#navbar .nav-content {
@@ -100,32 +100,33 @@
             justify-content: space-between !important;
             align-items: center !important;
             width: 100% !important;
-            max-width: 1400px !important;
+            max-width: 1440px !important;
             margin: 0 auto !important;
             padding: 0 1.5rem !important;
         }
 
         nav#navbar .m2rc-nav-badge {
-            display: inline-flex !alignment;
+            display: inline-flex;
             align-items: center;
-            padding: 3px 8px;
-            border-radius: 4px;
-            background: rgba(0, 210, 255, 0.08);
-            border: 1px solid rgba(0, 210, 255, 0.2);
-            color: var(--m-cyan);
+            padding: 4px 10px;
+            border-radius: 6px;
+            background: rgba(0, 210, 255, 0.15);
+            border: 1px solid rgba(0, 210, 255, 0.4);
+            color: #00E5FF;
             font-family: 'Space Grotesk', sans-serif;
-            font-size: 0.68rem;
+            font-size: 0.75rem;
             font-weight: 800;
             letter-spacing: 1.5px;
             text-transform: uppercase;
             white-space: nowrap;
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.2);
         }
 
         nav#navbar .nav-links {
             display: flex !important;
             flex-direction: row !important;
             align-items: center !important;
-            gap: 0.5rem !important;
+            gap: 0.65rem !important;
             list-style: none !important;
             margin: 0 !important;
             padding: 0 !important;
@@ -147,59 +148,61 @@
             font-family: 'Space Grotesk', sans-serif !important;
             font-weight: 700 !important;
             letter-spacing: 1px !important;
-            font-size: 0.72rem !important;
+            font-size: 0.82rem !important;
             text-transform: uppercase !important;
-            color: #94A3B8 !important;
+            color: #E2E8F0 !important;
             transition: all 0.2s ease !important;
             text-decoration: none !important;
-            padding: 0.4rem 0.65rem !important;
+            padding: 0.45rem 0.75rem !important;
             white-space: nowrap !important;
             border-radius: 6px !important;
         }
 
         nav#navbar .nav-links li a:hover {
             color: #ffffff !important;
-            background: rgba(255, 255, 255, 0.05) !important;
+            background: rgba(0, 210, 255, 0.15) !important;
+            text-shadow: 0 0 8px rgba(0, 210, 255, 0.6);
         }
 
         nav#navbar .nav-links li a.active-hash {
             color: #ffffff !important;
-            background: rgba(0, 210, 255, 0.12) !important;
-            border: 1px solid rgba(0, 210, 255, 0.3) !important;
-            box-shadow: 0 0 12px rgba(0, 210, 255, 0.2);
+            background: linear-gradient(135deg, rgba(0, 210, 255, 0.25), rgba(0, 102, 177, 0.3)) !important;
+            border: 1px solid rgba(0, 210, 255, 0.6) !important;
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.35);
         }
 
         nav#navbar .nav-actions {
             display: flex !important;
             align-items: center !important;
-            gap: 6px !important;
+            gap: 8px !important;
         }
 
         nav#navbar #navbar-user-ui {
             display: flex !important;
             align-items: center !important;
-            gap: 6px !important;
+            gap: 8px !important;
         }
 
         nav#navbar #navbar-user-ui a {
-            padding: 0.38rem 0.75rem !important;
-            font-size: 0.65rem !important;
+            padding: 0.45rem 0.85rem !important;
+            font-size: 0.72rem !important;
             font-family: 'Space Grotesk', sans-serif !important;
-            font-weight: 700 !important;
-            letter-spacing: 1px !important;
+            font-weight: 800 !important;
+            letter-spacing: 1.2px !important;
             text-transform: uppercase !important;
             border-radius: 6px !important;
             white-space: nowrap !important;
             transition: all 0.2s ease !important;
-            background: rgba(255, 255, 255, 0.03) !important;
-            border: 1px solid rgba(255, 255, 255, 0.08) !important;
-            color: #CBD5E1 !important;
+            background: rgba(15, 23, 42, 0.8) !important;
+            border: 1px solid rgba(255, 255, 255, 0.18) !important;
+            color: #FFFFFF !important;
         }
 
         nav#navbar #navbar-user-ui a:hover {
-            background: rgba(255, 255, 255, 0.08) !important;
+            background: rgba(0, 210, 255, 0.2) !important;
             color: #ffffff !important;
-            border-color: rgba(255, 255, 255, 0.15) !important;
+            border-color: rgba(0, 210, 255, 0.5) !important;
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.3) !important;
         }
 
         /* Modern Motorsport Cards */
@@ -396,7 +399,7 @@
                 <li><a href="#results" class="hash-link">Results</a></li>
                 <li><a href="#stewarding" class="hash-link">Stewarding</a></li>
                 <li><a href="#rules" class="hash-link">Rules</a></li>
-                <li><a href="#register" class="hash-link btn" style="padding: 0.38rem 0.9rem; border-radius: 6px; margin-left: 0.5rem; background: linear-gradient(90deg, #00D2FF, #0066B1); color: #000; font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 0.72rem; letter-spacing: 1px; text-transform: uppercase; border: none; box-shadow: 0 0 12px rgba(0, 210, 255, 0.3); transition: all 0.2s ease;">Driver Entry</a></li>
+                <li><a href="#register" class="hash-link btn" style="padding: 0.45rem 1rem; border-radius: 6px; margin-left: 0.5rem; background: linear-gradient(90deg, #00E5FF, #0088FF); color: #000000; font-family: 'Space Grotesk', sans-serif; font-weight: 900; font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase; border: none; box-shadow: 0 0 15px rgba(0, 229, 255, 0.5); transition: all 0.2s ease;">Driver Entry</a></li>
             </ul>
         </div>
     </nav>
