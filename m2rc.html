@@ -657,46 +657,22 @@
         // Initialize hash routing
         window.addEventListener('hashchange', handleRouting);
 
-        // Default Built-in Data for Season 4 (guarantees instant complete page rendering)
+        // Official Season 4 Schedule — Starts Oct 10, 2026 (Fortnightly Calendar)
         const FALLBACK_ROUNDS = [
-            { id: 'round-1', roundNumber: 1, track: 'Oulton Park', config: 'Fosters', date: 'July 12, 2026', status: 'completed', winnerName: 'Matty Roberts', laps: 25, broadcastUrl: 'https://youtube.com', reportUrl: '', simStartTime: '14:00', raceStyle: 'DAY', isFinale: false, weather: { airTemp: 18, trackTemp: 22, cloudCover: 40, windSpeed: 12, precipitation: 5, trackState: 'Heavy Rubber' } },
-            { id: 'round-2', roundNumber: 2, track: 'Donington Park', config: 'National', date: 'July 26, 2026', status: 'completed', winnerName: 'BiZaRe Racing', laps: 28, broadcastUrl: 'https://youtube.com', reportUrl: '', simStartTime: '17:30', raceStyle: 'EVENING', isFinale: false, weather: { airTemp: 22, trackTemp: 26, cloudCover: 15, windSpeed: 8, precipitation: 0, trackState: 'Medium Rubber' } },
-            { id: 'round-3', roundNumber: 3, track: 'Thruxton Circuit', config: 'Grand Prix', date: 'August 9, 2026', status: 'live', winnerName: '', laps: 30, broadcastUrl: 'https://twitch.tv', reportUrl: '', simStartTime: '15:00', raceStyle: 'AFTERNOON', isFinale: false, weather: { airTemp: 24, trackTemp: 30, cloudCover: 10, windSpeed: 6, precipitation: 0, trackState: 'Moderately Swept' } },
-            { id: 'round-4', roundNumber: 4, track: 'Brands Hatch', config: 'Indy', date: 'August 23, 2026', status: 'upcoming', winnerName: '', laps: 25, broadcastUrl: '', reportUrl: '', simStartTime: '19:00', raceStyle: 'SUNSET', isFinale: false, weather: { airTemp: 19, trackTemp: 21, cloudCover: 30, windSpeed: 10, precipitation: 5, trackState: 'Lightly Rubbered' } },
-            { id: 'round-5', roundNumber: 5, track: 'Silverstone', config: 'GP', date: 'September 6, 2026', status: 'upcoming', winnerName: '', laps: 20, broadcastUrl: '', reportUrl: '', simStartTime: '14:30', raceStyle: 'DAY', isFinale: false, weather: { airTemp: 16, trackTemp: 18, cloudCover: 60, windSpeed: 18, precipitation: 10, trackState: 'Heavy Rubber' } },
-            { id: 'round-6', roundNumber: 6, track: 'Snetterton', config: '300', date: 'September 20, 2026', status: 'upcoming', winnerName: '', laps: 22, broadcastUrl: '', reportUrl: '', simStartTime: '16:00', raceStyle: 'AFTERNOON', isFinale: false, weather: { airTemp: 20, trackTemp: 23, cloudCover: 45, windSpeed: 14, precipitation: 0, trackState: 'Medium Rubber' } },
-            { id: 'round-7', roundNumber: 7, track: 'Spa-Francorchamps', config: 'Grand Prix', date: 'October 4, 2026', status: 'upcoming', winnerName: '', laps: 15, broadcastUrl: '', reportUrl: '', simStartTime: '22:00', raceStyle: 'NIGHT', isFinale: false, weather: { airTemp: 12, trackTemp: 13, cloudCover: 5, windSpeed: 6, precipitation: 0, trackState: 'Lightly Rubbered' } },
-            { id: 'round-8', roundNumber: 8, track: 'Road Atlanta', config: 'Full Course', date: 'October 18, 2026', status: 'upcoming', winnerName: '', laps: 24, broadcastUrl: '', reportUrl: '', simStartTime: '21:30', raceStyle: 'NIGHT', isFinale: false, weather: { airTemp: 16, trackTemp: 17, cloudCover: 0, windSpeed: 4, precipitation: 0, trackState: 'Clean/Swept' } },
-            { id: 'round-9', roundNumber: 9, track: 'Nürburgring', config: 'Grand Prix', date: 'November 1, 2026', status: 'upcoming', winnerName: '', laps: 20, broadcastUrl: '', reportUrl: '', simStartTime: '18:00', raceStyle: 'EVENING', isFinale: false, weather: { airTemp: 10, trackTemp: 11, cloudCover: 70, windSpeed: 16, precipitation: 10, trackState: 'Lightly Rubbered' } },
-            { id: 'round-10', roundNumber: 10, track: 'Brands Hatch', config: 'Grand Prix', date: 'November 15, 2026', status: 'upcoming', winnerName: '', laps: 22, broadcastUrl: '', reportUrl: '', simStartTime: '20:30', raceStyle: 'EVENING', isFinale: true, weather: { airTemp: 8, trackTemp: 9, cloudCover: 85, windSpeed: 10, precipitation: 5, trackState: 'Clean/Swept' } }
+            { id: 'round-1', roundNumber: 1, track: 'Oulton Park', config: 'International', date: 'October 10, 2026', status: 'upcoming', winnerName: '', laps: 25, broadcastUrl: '', reportUrl: '', simStartTime: '14:00', raceStyle: 'DAY', isFinale: false, weather: { airTemp: 18, trackTemp: 22, cloudCover: 40, windSpeed: 12, precipitation: 5, trackState: 'Heavy Rubber' } },
+            { id: 'round-2', roundNumber: 2, track: 'Donington Park', config: 'National', date: 'October 24, 2026', status: 'upcoming', winnerName: '', laps: 28, broadcastUrl: '', reportUrl: '', simStartTime: '17:30', raceStyle: 'EVENING', isFinale: false, weather: { airTemp: 22, trackTemp: 26, cloudCover: 15, windSpeed: 8, precipitation: 0, trackState: 'Medium Rubber' } },
+            { id: 'round-3', roundNumber: 3, track: 'Thruxton Circuit', config: 'Grand Prix', date: 'November 7, 2026', status: 'upcoming', winnerName: '', laps: 30, broadcastUrl: '', reportUrl: '', simStartTime: '15:00', raceStyle: 'AFTERNOON', isFinale: false, weather: { airTemp: 24, trackTemp: 30, cloudCover: 10, windSpeed: 6, precipitation: 0, trackState: 'Moderately Swept' } },
+            { id: 'round-4', roundNumber: 4, track: 'Brands Hatch', config: 'Indy', date: 'November 21, 2026', status: 'upcoming', winnerName: '', laps: 25, broadcastUrl: '', reportUrl: '', simStartTime: '19:00', raceStyle: 'SUNSET', isFinale: false, weather: { airTemp: 19, trackTemp: 21, cloudCover: 30, windSpeed: 10, precipitation: 5, trackState: 'Lightly Rubbered' } },
+            { id: 'round-5', roundNumber: 5, track: 'Silverstone', config: 'GP', date: 'December 5, 2026', status: 'upcoming', winnerName: '', laps: 20, broadcastUrl: '', reportUrl: '', simStartTime: '14:30', raceStyle: 'DAY', isFinale: false, weather: { airTemp: 16, trackTemp: 18, cloudCover: 60, windSpeed: 18, precipitation: 10, trackState: 'Heavy Rubber' } },
+            { id: 'round-6', roundNumber: 6, track: 'Snetterton', config: '300', date: 'December 19, 2026', status: 'upcoming', winnerName: '', laps: 22, broadcastUrl: '', reportUrl: '', simStartTime: '16:00', raceStyle: 'AFTERNOON', isFinale: false, weather: { airTemp: 20, trackTemp: 23, cloudCover: 45, windSpeed: 14, precipitation: 0, trackState: 'Medium Rubber' } },
+            { id: 'round-7', roundNumber: 7, track: 'Spa-Francorchamps', config: 'Grand Prix', date: 'January 2, 2027', status: 'upcoming', winnerName: '', laps: 15, broadcastUrl: '', reportUrl: '', simStartTime: '22:00', raceStyle: 'NIGHT', isFinale: false, weather: { airTemp: 12, trackTemp: 13, cloudCover: 5, windSpeed: 6, precipitation: 0, trackState: 'Lightly Rubbered' } },
+            { id: 'round-8', roundNumber: 8, track: 'Road Atlanta', config: 'Full Course', date: 'January 16, 2027', status: 'upcoming', winnerName: '', laps: 24, broadcastUrl: '', reportUrl: '', simStartTime: '21:30', raceStyle: 'NIGHT', isFinale: false, weather: { airTemp: 16, trackTemp: 17, cloudCover: 0, windSpeed: 4, precipitation: 0, trackState: 'Clean/Swept' } },
+            { id: 'round-9', roundNumber: 9, track: 'Nürburgring', config: 'Grand Prix', date: 'January 30, 2027', status: 'upcoming', winnerName: '', laps: 20, broadcastUrl: '', reportUrl: '', simStartTime: '18:00', raceStyle: 'EVENING', isFinale: false, weather: { airTemp: 10, trackTemp: 11, cloudCover: 70, windSpeed: 16, precipitation: 10, trackState: 'Lightly Rubbered' } },
+            { id: 'round-10', roundNumber: 10, track: 'Brands Hatch', config: 'Grand Prix', date: 'February 13, 2027', status: 'upcoming', winnerName: '', laps: 22, broadcastUrl: '', reportUrl: '', simStartTime: '20:30', raceStyle: 'EVENING', isFinale: true, weather: { airTemp: 8, trackTemp: 9, cloudCover: 85, windSpeed: 10, precipitation: 5, trackState: 'Clean/Swept' } }
         ];
 
-        const FALLBACK_DRIVERS = [
-            { driverName: 'Matty Roberts', iracingId: '298711', carNumber: '77', teamName: 'GRiD UP Black', isRookie: false, status: 'approved' },
-            { driverName: 'BiZaRe Racing', iracingId: '304523', carNumber: '99', teamName: 'BiZaRe Esports', isRookie: false, status: 'approved' },
-            { driverName: 'David Miller', iracingId: '109823', carNumber: '17', teamName: 'GRiD UP White', isRookie: false, status: 'approved' },
-            { driverName: 'Alex Speedster', iracingId: '411202', carNumber: '4', teamName: 'Apex Racing Team', isRookie: true, status: 'approved' },
-            { driverName: 'Emma Watson', iracingId: '422312', carNumber: '28', teamName: 'Apex Racing Team', isRookie: true, status: 'approved' },
-            { driverName: 'Lucas Vance', iracingId: '512998', carNumber: '12', teamName: 'Velocity Motorsport', isRookie: true, status: 'approved' },
-            { driverName: 'Marcus Thorne', iracingId: '619284', carNumber: '44', teamName: 'GRiD UP Black', isRookie: false, status: 'approved' }
-        ];
-
-        const FALLBACK_RESULTS = {
-            'round-1': [
-                { pos: 1, driverName: 'Matty Roberts', teamName: 'GRiD UP Black', startPos: 1, gap: 'Leader', incidents: 1, points: 25, isRookie: false, isFastestLap: true },
-                { pos: 2, driverName: 'BiZaRe Racing', teamName: 'BiZaRe Esports', startPos: 3, gap: '+1.240', incidents: 0, points: 20, isRookie: false, isFastestLap: false },
-                { pos: 3, driverName: 'David Miller', teamName: 'GRiD UP White', startPos: 2, gap: '+5.890', incidents: 2, points: 16, isRookie: false, isFastestLap: false },
-                { pos: 4, driverName: 'Alex Speedster', teamName: 'Apex Racing Team', startPos: 5, gap: '+12.450', incidents: 4, points: 13, isRookie: true, isFastestLap: false },
-                { pos: 5, driverName: 'Emma Watson', teamName: 'Apex Racing Team', startPos: 4, gap: '+18.900', incidents: 3, points: 11, isRookie: true, isFastestLap: false }
-            ],
-            'round-2': [
-                { pos: 1, driverName: 'BiZaRe Racing', teamName: 'BiZaRe Esports', startPos: 2, gap: 'Leader', incidents: 0, points: 25, isRookie: false, isFastestLap: false },
-                { pos: 2, driverName: 'Matty Roberts', teamName: 'GRiD UP Black', startPos: 1, gap: '+0.542', incidents: 2, points: 21, isRookie: false, isFastestLap: true },
-                { pos: 3, driverName: 'David Miller', teamName: 'GRiD UP White', startPos: 4, gap: '+10.420', incidents: 3, points: 16, isRookie: false, isFastestLap: false },
-                { pos: 4, driverName: 'Alex Speedster', teamName: 'Apex Racing Team', startPos: 3, gap: '+12.981', incidents: 5, points: 13, isRookie: true, isFastestLap: false },
-                { pos: 5, driverName: 'Emma Watson', teamName: 'Apex Racing Team', startPos: 6, gap: '+25.110', incidents: 4, points: 11, isRookie: true, isFastestLap: false }
-            ]
-        };
+        const FALLBACK_DRIVERS = [];
+        const FALLBACK_RESULTS = {};
 
         // Core Loader
         async function initM2RC() {
