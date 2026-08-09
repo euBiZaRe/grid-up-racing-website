@@ -12,7 +12,8 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Google Fonts for Motorsport Aesthetic -->
+    <!-- Core Stylesheet & Google Fonts for Motorsport Aesthetic -->
+    <link rel="stylesheet" href="style.css?v=7">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
@@ -57,28 +58,12 @@
 
         /* M2RC Hero Banner */
         .m2rc-hero {
-            padding: 9rem 0 5rem;
-            background: linear-gradient(180deg, rgba(7, 9, 14, 0.4) 0%, var(--m-dark) 100%), 
-                        url('assets/bg-banner.png');
-            background-size: cover;
-            background-position: center;
+            padding: 8rem 0 4rem;
+            background: radial-gradient(circle at 50% 20%, rgba(0, 102, 177, 0.25) 0%, rgba(7, 9, 14, 0.95) 70%),
+                        linear-gradient(180deg, rgba(7, 9, 14, 0.8) 0%, var(--m-dark) 100%);
             position: relative;
             text-align: center;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .m2rc-hero::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: repeating-linear-gradient(
-                45deg,
-                rgba(0,0,0,0.1),
-                rgba(0,0,0,0.1) 10px,
-                transparent 10px,
-                transparent 20px
-            );
-            pointer-events: none;
+            border-bottom: 1px solid rgba(0, 210, 255, 0.15);
         }
 
         .tab-section {
@@ -96,32 +81,94 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Sleek Glass Navigation */
-        .navbar {
-            background: rgba(7, 9, 14, 0.85) !important;
+        /* Sleek Glass Navigation Override */
+        nav#navbar {
+            background: rgba(7, 9, 14, 0.95) !important;
             backdrop-filter: blur(16px) !important;
-            border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+            border-bottom: 1px solid rgba(0, 210, 255, 0.15) !important;
             top: 4px !important;
+            position: fixed !important;
+            width: 100% !important;
+            z-index: 1000 !important;
+            padding: 0.75rem 0 !important;
         }
 
-        .nav-links li a {
-            font-family: 'Space Grotesk', sans-serif;
-            font-weight: 700;
-            letter-spacing: 1px;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            color: var(--m-muted) !important;
-            transition: all 0.2s ease;
+        nav#navbar .nav-content {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            width: 100% !important;
+            max-width: 1300px !important;
+            margin: 0 auto !important;
+            padding: 0 1.5rem !important;
         }
 
-        .nav-links li a:hover,
-        .nav-links li a.active-hash {
+        nav#navbar .nav-links {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            gap: 0.75rem !important;
+            list-style: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            flex-wrap: nowrap !important;
+            position: static !important;
+            background: transparent !important;
+            width: auto !important;
+            height: auto !important;
+            box-shadow: none !important;
+        }
+
+        nav#navbar .nav-links li {
+            display: inline-block !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        nav#navbar .nav-links li a {
+            font-family: 'Space Grotesk', sans-serif !important;
+            font-weight: 700 !important;
+            letter-spacing: 1px !important;
+            font-size: 0.75rem !important;
+            text-transform: uppercase !important;
+            color: #94A3B8 !important;
+            transition: all 0.2s ease !important;
+            text-decoration: none !important;
+            padding: 0.35rem 0.5rem !important;
+            white-space: nowrap !important;
+        }
+
+        nav#navbar .nav-links li a:hover,
+        nav#navbar .nav-links li a.active-hash {
             color: #fff !important;
-            text-shadow: 0 0 10px rgba(0, 210, 255, 0.6);
+            text-shadow: 0 0 10px rgba(0, 210, 255, 0.6) !important;
         }
 
-        .nav-links li a.active-hash {
+        nav#navbar .nav-links li a.active-hash {
             border-bottom: 2px solid var(--m-cyan) !important;
+        }
+
+        nav#navbar .nav-actions {
+            display: flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+        }
+
+        nav#navbar #navbar-user-ui {
+            display: flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+        }
+
+        nav#navbar #navbar-user-ui a {
+            padding: 0.35rem 0.7rem !important;
+            font-size: 0.65rem !important;
+            font-family: 'Space Grotesk', sans-serif !important;
+            font-weight: 700 !important;
+            letter-spacing: 1px !important;
+            text-transform: uppercase !important;
+            border-radius: 4px !important;
+            white-space: nowrap !important;
         }
 
         /* Modern Motorsport Cards */
@@ -253,6 +300,17 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1.5rem;
+        }
+
+        @media (max-width: 992px) {
+            nav#navbar .nav-content {
+                flex-direction: column !important;
+                gap: 0.75rem !important;
+            }
+            nav#navbar .nav-links {
+                flex-wrap: wrap !important;
+                justify-content: center !important;
+            }
         }
 
         @media (max-width: 768px) {
