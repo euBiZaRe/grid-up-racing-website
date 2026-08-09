@@ -762,8 +762,8 @@
                             <div>
                                 <label style="display:block; font-size:0.7rem; color:var(--m-muted); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:0.5rem; font-family:'Space Grotesk',sans-serif; font-weight:700;">Driver Class *</label>
                                 <select id="reg-rookie" style="width:100%; background:rgba(0,0,0,0.4); border:1px solid rgba(168,85,247,0.2); border-radius:8px; color:#fff; padding:0.75rem 1rem; font-family:'Outfit',sans-serif; font-size:0.9rem; outline:none; cursor:pointer;">
-                                    <option value="false">Pro Class (Experienced)</option>
-                                    <option value="true">Rookie Class (1st/2nd Season)</option>
+                                    <option value="false">Pro Class (2500+ iRating)</option>
+                                    <option value="true">AM Class (Below 2500 iRating)</option>
                                 </select>
                             </div>
                         </div>
@@ -1980,10 +1980,10 @@
             }
             if (regRookie && previewClass) {
                 regRookie.addEventListener('change', (e) => {
-                    const isRookie = e.target.value === 'true';
-                    previewClass.textContent = isRookie ? 'ROOKIE CLASS' : 'PRO CLASS';
-                    previewClass.style.background = isRookie ? 'rgba(234, 179, 8, 0.15)' : 'rgba(0, 207, 255, 0.15)';
-                    previewClass.style.color = isRookie ? 'var(--accent-gold)' : 'var(--primary)';
+                    const isAM = e.target.value === 'true';
+                    previewClass.textContent = isAM ? 'AM CLASS' : 'PRO CLASS';
+                    previewClass.style.background = isAM ? 'rgba(234, 179, 8, 0.15)' : 'rgba(168, 85, 247, 0.15)';
+                    previewClass.style.color = isAM ? 'var(--accent-gold)' : 'var(--m-cyan)';
                 });
             }
         });
