@@ -3457,6 +3457,90 @@
                 <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">RACE REPORT LINK</label>
                 <input type="text" id="m2rc-round-report" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;" placeholder="e.g. reports.html?id=round-1">
             </div>
+            <!-- Simulation Conditions Section -->
+            <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05);">
+                <div style="font-size: 0.7rem; color: var(--accent-gold); margin-bottom: 1rem; letter-spacing: 2px; font-weight: bold;">SIMULATION CONDITIONS</div>
+                
+                <!-- Night Racing Warning Banner -->
+                <div id="m2rc-night-warning" style="display:none; background: rgba(255,165,0,0.15); border: 1px solid rgba(255,165,0,0.4); color: #ffa500; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.8rem; font-weight: 600;">⚠️ NIGHT RACING MAY NOT BE SUPPORTED FOR THIS TRACK/CONFIGURATION</div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">SIM START TIME</label>
+                        <input type="text" id="m2rc-round-simtime" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;" placeholder="14:30">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">RACE STYLE</label>
+                        <select id="m2rc-round-racestyle" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;" onchange="checkNightSupport()">
+                            <option value="DAY">☀️ DAY</option>
+                            <option value="AFTERNOON">☀️ AFTERNOON</option>
+                            <option value="SUNSET">🌇 SUNSET</option>
+                            <option value="EVENING">🌇 EVENING</option>
+                            <option value="NIGHT">🌙 NIGHT</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1rem;">
+                    <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">WEATHER PRESET</label>
+                    <select id="m2rc-weather-preset" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;" onchange="applyWeatherPreset()">
+                        <option value="">-- Custom / No Preset --</option>
+                        <option value="CLEAR_DAY">☀️ Clear Day</option>
+                        <option value="PARTLY_CLOUDY">⛅ Partly Cloudy</option>
+                        <option value="OVERCAST">☁️ Overcast</option>
+                        <option value="SUNSET_CLEAR">🌇 Sunset Clear</option>
+                        <option value="NIGHT_CLEAR">🌙 Night Clear</option>
+                        <option value="NIGHT_OVERCAST">🌙 Night Overcast</option>
+                    </select>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                    <div>
+                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">AIR TEMP (°C)</label>
+                        <input type="number" id="m2rc-round-airtemp" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;" placeholder="22">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">TRACK TEMP (°C)</label>
+                        <input type="number" id="m2rc-round-tracktemp" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;" placeholder="28">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">CLOUD COVER %</label>
+                        <input type="number" id="m2rc-round-clouds" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;" placeholder="10" min="0" max="100">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                    <div>
+                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">WIND (km/h)</label>
+                        <input type="number" id="m2rc-round-wind" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;" placeholder="8">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">PRECIPITATION %</label>
+                        <input type="number" id="m2rc-round-precip" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;" placeholder="0" min="0" max="100">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">TRACK STATE</label>
+                        <select id="m2rc-round-trackstate" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;">
+                            <option value="Automatically Generated">Auto Generated</option>
+                            <option value="Clean/Swept">Clean/Swept</option>
+                            <option value="Lightly Rubbered">Lightly Rubbered</option>
+                            <option value="Moderately Swept">Moderately Swept</option>
+                            <option value="Medium Rubber">Medium Rubber</option>
+                            <option value="Heavy Rubber">Heavy Rubber</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <input type="checkbox" id="m2rc-round-finale" style="accent-color: var(--accent-gold);">
+                        <label for="m2rc-round-finale" style="font-size: 0.8rem; color: var(--accent-gold);">🏁 Season Finale</label>
+                    </div>
+                    <div>
+                        <button onclick="copySessionSettings()" class="btn btn-outline" style="width:100%; padding: 0.7rem; font-size: 0.75rem; border-color: var(--accent-gold); color: var(--accent-gold);">📋 Copy Session Settings</button>
+                    </div>
+                </div>
+            </div>
             <div style="display: flex; gap: 1rem; margin-top: 1rem;">
                 <button onclick="saveM2RCRound()" class="btn btn-primary" style="flex: 2;">Save Round</button>
                 <button onclick="hideM2RCRoundModal()" class="btn btn-outline" style="flex: 1;">Cancel</button>
@@ -3652,12 +3736,16 @@
             try {
                 // 1. Seed Schedule
                 const rounds = [
-                    { id: 'round-1', roundNumber: 1, track: 'Oulton Park', config: 'Fosters', date: 'July 12, 2026', status: 'completed', winnerName: 'Matty Roberts', laps: 25, broadcastUrl: 'https://youtube.com', reportUrl: '' },
-                    { id: 'round-2', roundNumber: 2, track: 'Donington Park', config: 'National', date: 'July 26, 2026', status: 'completed', winnerName: 'BiZaRe Racing', laps: 28, broadcastUrl: 'https://youtube', reportUrl: '' },
-                    { id: 'round-3', roundNumber: 3, track: 'Thruxton Circuit', config: 'Grand Prix', date: 'August 9, 2026', status: 'live', winnerName: '', laps: 30, broadcastUrl: 'https://twitch.tv', reportUrl: '' },
-                    { id: 'round-4', roundNumber: 4, track: 'Brands Hatch', config: 'Indy', date: 'August 23, 2026', status: 'upcoming', winnerName: '', laps: 25, broadcastUrl: '', reportUrl: '' },
-                    { id: 'round-5', roundNumber: 5, track: 'Silverstone', config: 'GP', date: 'September 6, 2026', status: 'upcoming', winnerName: '', laps: 20, broadcastUrl: '', reportUrl: '' },
-                    { id: 'round-6', roundNumber: 6, track: 'Snetterton', config: '300', date: 'September 20, 2026', status: 'upcoming', winnerName: '', laps: 22, broadcastUrl: '', reportUrl: '' }
+                    { id: 'round-1', roundNumber: 1, track: 'Oulton Park', config: 'Fosters', date: 'July 12, 2026', status: 'completed', winnerName: 'Matty Roberts', laps: 25, broadcastUrl: 'https://youtube.com', reportUrl: '', simStartTime: '14:00', raceStyle: 'DAY', isFinale: false, weather: { airTemp: 18, trackTemp: 22, cloudCover: 40, windSpeed: 12, precipitation: 5, trackState: 'Heavy Rubber' } },
+                    { id: 'round-2', roundNumber: 2, track: 'Donington Park', config: 'National', date: 'July 26, 2026', status: 'completed', winnerName: 'BiZaRe Racing', laps: 28, broadcastUrl: 'https://youtube.com', reportUrl: '', simStartTime: '17:30', raceStyle: 'EVENING', isFinale: false, weather: { airTemp: 22, trackTemp: 26, cloudCover: 15, windSpeed: 8, precipitation: 0, trackState: 'Medium Rubber' } },
+                    { id: 'round-3', roundNumber: 3, track: 'Thruxton Circuit', config: 'Grand Prix', date: 'August 9, 2026', status: 'live', winnerName: '', laps: 30, broadcastUrl: 'https://twitch.tv', reportUrl: '', simStartTime: '15:00', raceStyle: 'AFTERNOON', isFinale: false, weather: { airTemp: 24, trackTemp: 30, cloudCover: 10, windSpeed: 6, precipitation: 0, trackState: 'Moderately Swept' } },
+                    { id: 'round-4', roundNumber: 4, track: 'Brands Hatch', config: 'Indy', date: 'August 23, 2026', status: 'upcoming', winnerName: '', laps: 25, broadcastUrl: '', reportUrl: '', simStartTime: '19:00', raceStyle: 'SUNSET', isFinale: false, weather: { airTemp: 19, trackTemp: 21, cloudCover: 30, windSpeed: 10, precipitation: 5, trackState: 'Lightly Rubbered' } },
+                    { id: 'round-5', roundNumber: 5, track: 'Silverstone', config: 'GP', date: 'September 6, 2026', status: 'upcoming', winnerName: '', laps: 20, broadcastUrl: '', reportUrl: '', simStartTime: '14:30', raceStyle: 'DAY', isFinale: false, weather: { airTemp: 16, trackTemp: 18, cloudCover: 60, windSpeed: 18, precipitation: 10, trackState: 'Heavy Rubber' } },
+                    { id: 'round-6', roundNumber: 6, track: 'Snetterton', config: '300', date: 'September 20, 2026', status: 'upcoming', winnerName: '', laps: 22, broadcastUrl: '', reportUrl: '', simStartTime: '16:00', raceStyle: 'AFTERNOON', isFinale: false, weather: { airTemp: 20, trackTemp: 23, cloudCover: 45, windSpeed: 14, precipitation: 0, trackState: 'Medium Rubber' } },
+                    { id: 'round-7', roundNumber: 7, track: 'Spa-Francorchamps', config: 'Grand Prix', date: 'October 4, 2026', status: 'upcoming', winnerName: '', laps: 15, broadcastUrl: '', reportUrl: '', simStartTime: '22:00', raceStyle: 'NIGHT', isFinale: false, weather: { airTemp: 12, trackTemp: 13, cloudCover: 5, windSpeed: 6, precipitation: 0, trackState: 'Lightly Rubbered' } },
+                    { id: 'round-8', roundNumber: 8, track: 'Road Atlanta', config: 'Full Course', date: 'October 18, 2026', status: 'upcoming', winnerName: '', laps: 24, broadcastUrl: '', reportUrl: '', simStartTime: '21:30', raceStyle: 'NIGHT', isFinale: false, weather: { airTemp: 16, trackTemp: 17, cloudCover: 0, windSpeed: 4, precipitation: 0, trackState: 'Clean/Swept' } },
+                    { id: 'round-9', roundNumber: 9, track: 'Nürburgring', config: 'Grand Prix', date: 'November 1, 2026', status: 'upcoming', winnerName: '', laps: 20, broadcastUrl: '', reportUrl: '', simStartTime: '18:00', raceStyle: 'EVENING', isFinale: false, weather: { airTemp: 10, trackTemp: 11, cloudCover: 70, windSpeed: 16, precipitation: 10, trackState: 'Lightly Rubbered' } },
+                    { id: 'round-10', roundNumber: 10, track: 'Brands Hatch', config: 'Grand Prix', date: 'November 15, 2026', status: 'upcoming', winnerName: '', laps: 22, broadcastUrl: '', reportUrl: '', simStartTime: '20:30', raceStyle: 'EVENING', isFinale: true, weather: { airTemp: 8, trackTemp: 9, cloudCover: 85, windSpeed: 10, precipitation: 5, trackState: 'Clean/Swept' } }
                 ];
                 
                 const batch = db.batch();
@@ -3751,6 +3839,7 @@
                         <td>${r.track} <span style="font-size:0.75rem; color:var(--text-muted);">(${r.config})</span></td>
                         <td>${r.date}</td>
                         <td>${r.laps} Laps</td>
+                        <td style="font-size:0.8rem;">${r.simStartTime || '—'} <span style="font-size:0.65rem; color:var(--text-muted);">${r.raceStyle || ''}</span></td>
                         <td>${statusBadge}</td>
                         <td>${r.winnerName || '—'}</td>
                         <td>
@@ -3788,6 +3877,17 @@
             document.getElementById('m2rc-round-winner').value = '';
             document.getElementById('m2rc-round-broadcast').value = '';
             document.getElementById('m2rc-round-report').value = '';
+            document.getElementById('m2rc-round-simtime').value = '';
+            document.getElementById('m2rc-round-racestyle').value = 'DAY';
+            document.getElementById('m2rc-weather-preset').value = '';
+            document.getElementById('m2rc-round-airtemp').value = '';
+            document.getElementById('m2rc-round-tracktemp').value = '';
+            document.getElementById('m2rc-round-clouds').value = '';
+            document.getElementById('m2rc-round-wind').value = '';
+            document.getElementById('m2rc-round-precip').value = '';
+            document.getElementById('m2rc-round-trackstate').value = 'Automatically Generated';
+            document.getElementById('m2rc-round-finale').checked = false;
+            document.getElementById('m2rc-night-warning').style.display = 'none';
             document.getElementById('m2rc-round-form-title').textContent = "Add M2RC Round";
         }
 
@@ -3804,6 +3904,16 @@
             document.getElementById('m2rc-round-winner').value = r.winnerName || '';
             document.getElementById('m2rc-round-broadcast').value = r.broadcastUrl || '';
             document.getElementById('m2rc-round-report').value = r.reportUrl || '';
+            document.getElementById('m2rc-round-simtime').value = r.simStartTime || '';
+            document.getElementById('m2rc-round-racestyle').value = r.raceStyle || 'DAY';
+            document.getElementById('m2rc-round-airtemp').value = r.weather?.airTemp || '';
+            document.getElementById('m2rc-round-tracktemp').value = r.weather?.trackTemp || '';
+            document.getElementById('m2rc-round-clouds').value = r.weather?.cloudCover || '';
+            document.getElementById('m2rc-round-wind').value = r.weather?.windSpeed || '';
+            document.getElementById('m2rc-round-precip').value = r.weather?.precipitation || '';
+            document.getElementById('m2rc-round-trackstate').value = r.weather?.trackState || 'Automatically Generated';
+            document.getElementById('m2rc-round-finale').checked = r.isFinale || false;
+            checkNightSupport();
             document.getElementById('m2rc-round-form-title').textContent = "Edit Round " + r.roundNumber;
 
             document.getElementById('m2rc-round-modal').style.display = 'block';
@@ -3824,6 +3934,16 @@
 
             if (isNaN(roundNumber) || !track) return alert("Round # and Track are required.");
 
+            const simStartTime = document.getElementById('m2rc-round-simtime').value.trim();
+            const raceStyle = document.getElementById('m2rc-round-racestyle').value;
+            const airTemp = parseFloat(document.getElementById('m2rc-round-airtemp').value);
+            const trackTemp = parseFloat(document.getElementById('m2rc-round-tracktemp').value);
+            const cloudCover = parseFloat(document.getElementById('m2rc-round-clouds').value);
+            const windSpeed = parseFloat(document.getElementById('m2rc-round-wind').value);
+            const precipitation = parseFloat(document.getElementById('m2rc-round-precip').value);
+            const trackState = document.getElementById('m2rc-round-trackstate').value;
+            const isFinale = document.getElementById('m2rc-round-finale').checked;
+
             const data = {
                 roundNumber,
                 track,
@@ -3833,7 +3953,18 @@
                 status,
                 winnerName,
                 broadcastUrl,
-                reportUrl
+                reportUrl,
+                simStartTime,
+                raceStyle,
+                isFinale,
+                weather: {
+                    airTemp: isNaN(airTemp) ? 0 : airTemp,
+                    trackTemp: isNaN(trackTemp) ? 0 : trackTemp,
+                    cloudCover: isNaN(cloudCover) ? 0 : cloudCover,
+                    windSpeed: isNaN(windSpeed) ? 0 : windSpeed,
+                    precipitation: isNaN(precipitation) ? 0 : precipitation,
+                    trackState
+                }
             };
 
             try {
@@ -3857,6 +3988,82 @@
             } catch(e) {
                 alert("Error: " + e.message);
             }
+        }
+
+        // --- Weather Presets ---
+        function applyWeatherPreset() {
+            const preset = document.getElementById('m2rc-weather-preset').value;
+            const presets = {
+                'CLEAR_DAY': { simTime: '14:00', raceStyle: 'DAY', airTemp: 24, trackTemp: 30, clouds: 5, wind: 6, precip: 0, trackState: 'Heavy Rubber' },
+                'PARTLY_CLOUDY': { simTime: '15:00', raceStyle: 'AFTERNOON', airTemp: 20, trackTemp: 24, clouds: 45, wind: 12, precip: 5, trackState: 'Medium Rubber' },
+                'OVERCAST': { simTime: '14:00', raceStyle: 'DAY', airTemp: 15, trackTemp: 16, clouds: 90, wind: 15, precip: 15, trackState: 'Lightly Rubbered' },
+                'SUNSET_CLEAR': { simTime: '18:30', raceStyle: 'EVENING', airTemp: 20, trackTemp: 22, clouds: 10, wind: 8, precip: 0, trackState: 'Medium Rubber' },
+                'NIGHT_CLEAR': { simTime: '22:00', raceStyle: 'NIGHT', airTemp: 14, trackTemp: 14, clouds: 5, wind: 5, precip: 0, trackState: 'Lightly Rubbered' },
+                'NIGHT_OVERCAST': { simTime: '21:00', raceStyle: 'NIGHT', airTemp: 10, trackTemp: 10, clouds: 85, wind: 8, precip: 10, trackState: 'Clean/Swept' }
+            };
+            if (!presets[preset]) return;
+            const p = presets[preset];
+            document.getElementById('m2rc-round-simtime').value = p.simTime;
+            document.getElementById('m2rc-round-racestyle').value = p.raceStyle;
+            document.getElementById('m2rc-round-airtemp').value = p.airTemp;
+            document.getElementById('m2rc-round-tracktemp').value = p.trackTemp;
+            document.getElementById('m2rc-round-clouds').value = p.clouds;
+            document.getElementById('m2rc-round-wind').value = p.wind;
+            document.getElementById('m2rc-round-precip').value = p.precip;
+            document.getElementById('m2rc-round-trackstate').value = p.trackState;
+            checkNightSupport();
+        }
+
+        // --- Night Support Check ---
+        const NIGHT_SUPPORTED_TRACKS = ['Spa', 'Road Atlanta', 'Nürburgring', 'Nurburgring', 'Daytona', 'Charlotte', 'Motegi', 'Suzuka'];
+        function checkNightSupport() {
+            const style = document.getElementById('m2rc-round-racestyle').value;
+            const track = document.getElementById('m2rc-round-track').value.trim();
+            const warn = document.getElementById('m2rc-night-warning');
+            if (style === 'NIGHT' && !NIGHT_SUPPORTED_TRACKS.some(t => track.toLowerCase().includes(t.toLowerCase()))) {
+                warn.style.display = 'block';
+            } else {
+                warn.style.display = 'none';
+            }
+        }
+
+        // --- Copy Session Settings ---
+        function copySessionSettings() {
+            const track = document.getElementById('m2rc-round-track').value || '???';
+            const config = document.getElementById('m2rc-round-config').value || '???';
+            const laps = document.getElementById('m2rc-round-laps').value || '?';
+            const simTime = document.getElementById('m2rc-round-simtime').value || '???';
+            const raceStyle = document.getElementById('m2rc-round-racestyle').value || 'DAY';
+            const airTemp = document.getElementById('m2rc-round-airtemp').value || '?';
+            const trackTemp = document.getElementById('m2rc-round-tracktemp').value || '?';
+            const clouds = document.getElementById('m2rc-round-clouds').value || '?';
+            const wind = document.getElementById('m2rc-round-wind').value || '?';
+            const precip = document.getElementById('m2rc-round-precip').value || '?';
+            const trackState = document.getElementById('m2rc-round-trackstate').value || '?';
+            const roundNum = document.getElementById('m2rc-round-number').value || '?';
+            const date = document.getElementById('m2rc-round-date').value || '???';
+            const text = `═══════════════════════════════
+🏁 M2RC Season 4 — Round ${roundNum}
+═══════════════════════════════
+📍 ${track} (${config})
+📅 ${date}
+🏎️ ${laps} Laps
+
+⏰ Sim Start: ${simTime}
+🎨 Race Style: ${raceStyle}
+
+🌡️ Air Temp: ${airTemp}°C
+🛣️ Track Temp: ${trackTemp}°C
+☁️ Cloud Cover: ${clouds}%
+💨 Wind: ${wind} km/h
+🌧️ Precipitation: ${precip}%
+🛞 Track State: ${trackState}
+═══════════════════════════════`;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Session settings copied to clipboard!');
+            }).catch(() => {
+                prompt('Copy these settings:', text);
+            });
         }
 
         // --- M2RC Results Management ---

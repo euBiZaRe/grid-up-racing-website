@@ -200,6 +200,7 @@
                 <span style="font-size: 0.7rem; font-weight: 800; letter-spacing: 2px; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 0.5rem;">Next Race Countdown</span>
                 <span id="m2rc-timer" style="font-family: monospace; font-size: 1.6rem; font-weight: 900; color: var(--primary); letter-spacing: 2px;">--d --h --m --s</span>
                 <span id="m2rc-next-round-info" style="display: block; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">Round 3 - Thruxton Circuit</span>
+                <div id="m2rc-sim-conditions" style="display:none;"></div>
             </div>
         </div>
     </header>
@@ -429,52 +430,94 @@
 
         <!-- 9. Register Section -->
         <section id="sect-register" class="tab-section">
-            <div class="grid" style="grid-template-columns: 3fr 2fr; gap: 3rem; align-items: start;">
-                <!-- Left: Form -->
-                <div class="glass" style="padding: 3rem;">
-                    <h2 style="color: var(--primary); margin-bottom: 1.5rem;">Join the Grid</h2>
-                    <p style="color: var(--text-muted); margin-bottom: 2.5rem;">Fill out the form below to request entry into the BMW M2 CS Cup. Entries are subject to review.</p>
+            <div style="text-align: center; margin-bottom: 3rem;">
+                <span style="font-family: var(--font-heading); font-size: 0.8rem; color: var(--accent-gold); font-weight: 800; letter-spacing: 2px; text-transform: uppercase;">SEASON 4 REGISTRATION</span>
+                <h2 style="color: #fff; font-size: 2.5rem; margin-top: 0.25rem;">BMW M2 CS Racing Cup Entry</h2>
+                <p style="color: var(--text-muted); max-width: 600px; margin: 0.5rem auto 0;">Official driver sign-up portal. Claim your unique racing number for Season 4. Numbers are strictly single-occupancy and reserved upon submission.</p>
+            </div>
+
+            <div class="grid" style="grid-template-columns: 1.2fr 0.8fr; gap: 2.5rem; align-items: start;">
+                <!-- Left: Professional Form -->
+                <div class="glass" style="padding: 3rem; border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; background: rgba(10, 12, 16, 0.7); position: relative; overflow: hidden;">
+                    <div style="position: absolute; top:0; left:0; right:0; height: 3px; background: linear-gradient(90deg, var(--primary), var(--accent-gold));"></div>
+
+                    <h3 style="color: var(--primary); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <span>🏎️</span> Driver Entry Form
+                    </h3>
 
                     <form id="m2rc-registration-form">
-                        <div class="bug-form-group">
-                            <label>Driver Full Name</label>
-                            <input type="text" id="reg-name" class="btn btn-outline" style="width:100%; text-align:left;" placeholder="Your iRacing Name" required>
+                        <div class="bug-form-group" style="margin-bottom: 1.25rem;">
+                            <label style="display:block; font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:0.5rem;">Driver Full Name (iRacing Display Name) *</label>
+                            <input type="text" id="reg-name" class="btn btn-outline" style="width:100%; text-align:left; background:rgba(0,0,0,0.3); border-color:rgba(255,255,255,0.1);" placeholder="e.g. Matty Roberts" required>
                         </div>
-                        <div class="form-row">
+
+                        <div class="form-row" style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
                             <div class="bug-form-group">
-                                <label>iRacing Member ID</label>
-                                <input type="text" id="reg-iracing-id" class="btn btn-outline" style="width:100%; text-align:left;" placeholder="e.g. 123456" required>
+                                <label style="display:block; font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:0.5rem;">iRacing Customer ID *</label>
+                                <input type="text" id="reg-iracing-id" class="btn btn-outline" style="width:100%; text-align:left; background:rgba(0,0,0,0.3); border-color:rgba(255,255,255,0.1);" placeholder="e.g. 298711" required>
                             </div>
+
                             <div class="bug-form-group">
-                                <label>Car Number Choice</label>
-                                <input type="number" id="reg-car-number" class="btn btn-outline" style="width:100%; text-align:left;" placeholder="e.g. 77" min="1" max="999" required oninput="checkCarNumberAvailability(this.value)">
-                                <span id="number-availability-status" style="display: block; font-size: 0.75rem; margin-top: 5px;"></span>
+                                <label style="display:block; font-size:0.75rem; color:var(--accent-gold); text-transform:uppercase; letter-spacing:1px; margin-bottom:0.5rem;">Requested Car Number * (1-999)</label>
+                                <div style="position:relative;">
+                                    <input type="number" id="reg-car-number" class="btn btn-outline" style="width:100%; text-align:left; background:rgba(0,0,0,0.3); border-color:var(--accent-gold); font-weight:bold; font-size:1.1rem; color:var(--accent-gold);" placeholder="77" min="1" max="999" required oninput="checkCarNumberAvailability(this.value)">
+                                </div>
+                                <span id="number-availability-status" style="display: block; font-size: 0.75rem; margin-top: 6px; font-weight: 600;"></span>
                             </div>
                         </div>
-                        <div class="form-row">
+
+                        <div class="form-row" style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
                             <div class="bug-form-group">
-                                <label>Team Name (Optional)</label>
-                                <input type="text" id="reg-team" class="btn btn-outline" style="width:100%; text-align:left;" placeholder="e.g. Apex Racing">
+                                <label style="display:block; font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:0.5rem;">Team / Sponsor Name (Optional)</label>
+                                <input type="text" id="reg-team" class="btn btn-outline" style="width:100%; text-align:left; background:rgba(0,0,0,0.3); border-color:rgba(255,255,255,0.1);" placeholder="e.g. GRiD UP Black">
                             </div>
                             <div class="bug-form-group">
-                                <label>Category</label>
-                                <select id="reg-rookie" class="btn btn-outline" style="width:100%; padding:0.75rem; text-align:left;">
+                                <label style="display:block; font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:0.5rem;">Driver Classification *</label>
+                                <select id="reg-rookie" class="btn btn-outline" style="width:100%; padding:0.75rem; text-align:left; background:rgba(0,0,0,0.3); border-color:rgba(255,255,255,0.1);">
                                     <option value="false">Pro Class (Experienced Driver)</option>
                                     <option value="true">Rookie Class (First/Second Season)</option>
                                 </select>
                             </div>
                         </div>
-                        <button type="submit" id="reg-submit-btn" class="btn btn-primary" style="width:100%; margin-top: 1.5rem; font-weight:800; font-size:1rem; letter-spacing:1px;">SUBMIT LEAGUE ENTRY</button>
+
+                        <!-- Live Card Preview -->
+                        <div style="background: rgba(0,0,0,0.4); border: 1px border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between;">
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div id="reg-preview-badge" style="width: 50px; height: 50px; border-radius: 10px; background: var(--accent-gold); color: #000; font-family: var(--font-heading); font-size: 1.5rem; font-weight: 900; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(234, 179, 8, 0.3);">#--</div>
+                                <div>
+                                    <h4 id="reg-preview-name" style="color: #fff; margin: 0; font-size: 1rem;">Driver Name</h4>
+                                    <span id="reg-preview-team" style="color: var(--text-muted); font-size: 0.75rem;">Privateer Entry</span>
+                                </div>
+                            </div>
+                            <span id="reg-preview-class" style="font-size: 0.65rem; padding: 3px 8px; border-radius: 4px; background: rgba(0,207,255,0.15); color: var(--primary); font-weight: bold; text-transform: uppercase;">PRO CLASS</span>
+                        </div>
+
+                        <button type="submit" id="reg-submit-btn" class="btn btn-primary" style="width:100%; padding: 1.1rem; font-weight:800; font-size:1rem; letter-spacing:1.5px; border-radius: 8px; background: linear-gradient(90deg, var(--primary), #0099ff); color: #000;">CLAIM NUMBER & REGISTER</button>
                     </form>
                 </div>
 
-                <!-- Right: Active Numbers List -->
-                <div class="glass" style="padding: 2.5rem;">
-                    <h3 style="color: var(--primary); margin-bottom: 1.5rem;">Claimed Car Numbers</h3>
-                    <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 2rem;">Numbers already claimed and approved for this season.</p>
-                    <div id="m2rc-claimed-numbers-grid" style="display: flex; gap: 8px; flex-wrap: wrap;">
-                        <!-- Numbers loaded dynamically -->
-                        <span style="color: var(--text-muted); font-size: 0.85rem;">Loading claimed numbers...</span>
+                <!-- Right: Claimed Numbers Grid & Rules -->
+                <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                    <div class="glass" style="padding: 2rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08); background: rgba(10, 12, 16, 0.7);">
+                        <h3 style="color: var(--primary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span>🔒</span> Claimed Car Numbers
+                        </h3>
+                        <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 1.5rem;">The numbers below are officially reserved. Hover to inspect driver ownership.</p>
+                        
+                        <div id="m2rc-claimed-numbers-grid" style="display: flex; gap: 8px; flex-wrap: wrap; max-height: 320px; overflow-y: auto; padding-right: 5px;">
+                            <!-- Dynamic Numbers -->
+                            <span style="color: var(--text-muted); font-size: 0.85rem;">Loading grid reservations...</span>
+                        </div>
+                    </div>
+
+                    <!-- Guidelines -->
+                    <div class="glass" style="padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.02);">
+                        <h4 style="color: var(--accent-gold); font-size: 0.8rem; letter-spacing: 1px; margin-bottom: 0.75rem; text-transform: uppercase;">Registration Guidelines</h4>
+                        <ul style="color: var(--text-muted); font-size: 0.8rem; line-height: 1.6; padding-left: 1.2rem; margin: 0;">
+                            <li>Numbers 1 through 999 are valid for entry.</li>
+                            <li>Strictly <strong>1 driver per car number</strong>. Duplicate claims will be rejected automatically.</li>
+                            <li>Pending entries hold a temporary lock while under steward verification.</li>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -708,6 +751,21 @@
             if (nextRound && nextRound.date) {
                 countdownBox.style.display = 'block';
                 nextRoundInfoText.textContent = `Round ${nextRound.roundNumber} - ${nextRound.track} (${nextRound.config})`;
+
+                // Display simulation conditions if available
+                const conditionsDiv = document.getElementById('m2rc-sim-conditions');
+                if (conditionsDiv && nextRound.simStartTime) {
+                    conditionsDiv.style.display = 'block';
+                    conditionsDiv.innerHTML = `
+                        <div style="display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:0.5rem;">
+                            <span style="font-size:0.75rem; padding:4px 10px; border-radius:6px; background:rgba(255,255,255,0.05); color:var(--text-muted);">⏰ ${nextRound.simStartTime}</span>
+                            ${nextRound.raceStyle ? `<span style="font-size:0.75rem; padding:4px 10px; border-radius:6px; ${getRaceStyleBadge(nextRound.raceStyle)}">${getRaceStyleLabel(nextRound.raceStyle)}</span>` : ''}
+                            ${nextRound.weather ? `<span style="font-size:0.75rem; padding:4px 10px; border-radius:6px; background:rgba(255,255,255,0.05); color:var(--text-muted);">🌡️ ${nextRound.weather.airTemp}°C / ☁️ ${nextRound.weather.cloudCover}%</span>` : ''}
+                        </div>
+                    `;
+                } else if (conditionsDiv) {
+                    conditionsDiv.style.display = 'none';
+                }
                 
                 // Set simple countdown
                 const dateParts = Date.parse(nextRound.date);
@@ -751,9 +809,12 @@
                 div.innerHTML = `
                     <div>
                         <strong style="color:var(--text-main); font-size:0.9rem;">Round ${r.roundNumber} - ${r.track}</strong><br>
-                        <span style="font-size:0.75rem; color:var(--text-muted);">${r.date}</span>
+                        <span style="font-size:0.75rem; color:var(--text-muted);">${r.date}${r.simStartTime ? ` • ⏰ ${r.simStartTime}` : ''}</span>
                     </div>
-                    <span style="font-size:0.75rem; font-weight:bold; text-transform:uppercase; color: ${statusColor};">${r.status}</span>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        ${r.raceStyle ? `<span style="font-size:0.6rem; padding:2px 5px; border-radius:3px; ${getRaceStyleBadge(r.raceStyle)}">${getRaceStyleLabel(r.raceStyle)}</span>` : ''}
+                        <span style="font-size:0.75rem; font-weight:bold; text-transform:uppercase; color: ${statusColor};">${r.status}</span>
+                    </div>
                 `;
                 previewContainer.appendChild(div);
             });
@@ -784,6 +845,27 @@
         // ==========================================
         // 2. CALENDAR PAGE VIEW RENDER
         // ==========================================
+        function getRaceStyleBadge(style) {
+            const styles = {
+                'DAY': 'background:rgba(250,204,21,0.15); color:#facc15;',
+                'AFTERNOON': 'background:rgba(251,146,60,0.15); color:#fb923c;',
+                'SUNSET': 'background:rgba(249,115,22,0.15); color:#f97316;',
+                'EVENING': 'background:rgba(168,85,247,0.15); color:#a855f7;',
+                'NIGHT': 'background:rgba(99,102,241,0.15); color:#818cf8;'
+            };
+            return styles[style] || '';
+        }
+        function getRaceStyleLabel(style) {
+            const labels = {
+                'DAY': '☀️ DAY',
+                'AFTERNOON': '☀️ AFTERNOON',
+                'SUNSET': '🌇 SUNSET',
+                'EVENING': '🌇 EVENING',
+                'NIGHT': '🌙 NIGHT'
+            };
+            return labels[style] || style;
+        }
+
         function renderCalendar() {
             const container = document.getElementById('m2rc-calendar-grid');
             if (!container) return;
@@ -806,12 +888,22 @@
 
                 card.innerHTML = `
                     <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                        <span style="font-family:var(--font-heading); font-size: 0.75rem; color: var(--primary); font-weight:800; letter-spacing:1px;">ROUND ${r.roundNumber}</span>
-                        <span style="font-size:0.65rem; padding:3px 8px; border-radius:4px; font-weight:bold; text-transform:uppercase; ${badgeStyle}">${r.status}</span>
+                        <span style="font-family:var(--font-heading); font-size: 0.75rem; color: var(--primary); font-weight:800; letter-spacing:1px;">ROUND ${r.roundNumber}${r.isFinale ? ' 🏁' : ''}</span>
+                        <div style="display:flex; gap:4px; align-items:center;">
+                            ${r.raceStyle ? `<span style="font-size:0.6rem; padding:2px 6px; border-radius:4px; font-weight:bold; ${getRaceStyleBadge(r.raceStyle)}">${getRaceStyleLabel(r.raceStyle)}</span>` : ''}
+                            <span style="font-size:0.65rem; padding:3px 8px; border-radius:4px; font-weight:bold; text-transform:uppercase; ${badgeStyle}">${r.status}</span>
+                        </div>
                     </div>
                     <h3 style="font-family:var(--font-heading); color:#fff; font-size:1.3rem; line-height:1.2; margin-top: 0.25rem;">${r.track}</h3>
                     <p style="font-size:0.85rem; color:var(--text-muted); margin-top:-5px;">${r.config} // ${r.laps} Laps</p>
                     <p style="font-size:0.8rem; color:var(--text-main); font-weight:600;"><span style="color:var(--primary);">&#x1F4C5;</span> ${r.date}</p>
+                    ${r.simStartTime ? `<p style="font-size:0.75rem; color:var(--text-muted); margin-top: -3px;">⏰ Sim Start: <span style="color:var(--primary); font-weight:600;">${r.simStartTime}</span></p>` : ''}
+                    ${r.weather ? `<div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:4px;">
+                        <span style="font-size:0.65rem; padding:2px 6px; border-radius:4px; background:rgba(255,255,255,0.04); color:var(--text-muted);">🌡️ ${r.weather.airTemp}°C</span>
+                        <span style="font-size:0.65rem; padding:2px 6px; border-radius:4px; background:rgba(255,255,255,0.04); color:var(--text-muted);">☁️ ${r.weather.cloudCover}%</span>
+                        <span style="font-size:0.65rem; padding:2px 6px; border-radius:4px; background:rgba(255,255,255,0.04); color:var(--text-muted);">💨 ${r.weather.windSpeed}km/h</span>
+                        ${r.weather.precipitation > 0 ? `<span style="font-size:0.65rem; padding:2px 6px; border-radius:4px; background:rgba(255,100,100,0.1); color:#ff8888;">🌧️ ${r.weather.precipitation}%</span>` : ''}
+                    </div>` : ''}
                     ${winnerBlock}
                     <div style="margin-top:auto; display:flex; gap:10px; padding-top:1rem;">
                         ${r.status === 'completed' ? `<a href="#results" onclick="document.getElementById('m2rc-results-round-select').value='${r.id}'; loadRoundResultsUI('${r.id}')" class="btn btn-outline" style="flex:1; text-align:center; padding: 0.5rem; font-size:0.75rem;">Results</a>` : ''}
@@ -1403,38 +1495,144 @@
             }
         }
 
+        // ==========================================
+        // 8. REGISTRATION & CAR NUMBER CHECKS
+        // ==========================================
+        async function renderRegistrationPage() {
+            const listGrid = document.getElementById('m2rc-claimed-numbers-grid');
+            if (!listGrid) return;
+            listGrid.innerHTML = '<span style="color:var(--text-muted); font-size:0.85rem;">Loading claimed numbers...</span>';
+
+            try {
+                // Fetch ALL registrations (both approved AND pending) to prevent number duplication
+                const snap = await db.collection("m2rc_registrations").get();
+                if (snap.empty) {
+                    listGrid.innerHTML = '<span style="color:var(--text-muted); font-size:0.85rem;">No claimed numbers yet. Feel free to choose any!</span>';
+                    return;
+                }
+
+                listGrid.innerHTML = '';
+                const sorted = [];
+                snap.forEach(doc => {
+                    const r = doc.data();
+                    if (r.carNumber) {
+                        sorted.push({
+                            num: parseInt(r.carNumber),
+                            driver: r.driverName || 'Unknown Driver',
+                            status: r.status || 'pending',
+                            team: r.teamName || 'Privateer'
+                        });
+                    }
+                });
+
+                sorted.sort((a,b) => a.num - b.num);
+                sorted.forEach(item => {
+                    const span = document.createElement('span');
+                    span.className = "number-badge";
+                    
+                    let bg = "rgba(0, 207, 255, 0.15)";
+                    let color = "var(--primary)";
+                    let border = "rgba(0, 207, 255, 0.3)";
+                    let statusLabel = "APPROVED";
+
+                    if (item.status === 'pending') {
+                        bg = "rgba(234, 179, 8, 0.15)";
+                        color = "var(--accent-gold)";
+                        border = "rgba(234, 179, 8, 0.3)";
+                        statusLabel = "PENDING LOCK";
+                    }
+
+                    span.style.cssText = `cursor:help; padding: 4px 10px; border-radius: 6px; background: ${bg}; color: ${color}; border: 1px solid ${border}; font-weight: 800; font-size: 0.85rem; font-family: var(--font-heading); margin-bottom:4px; display: inline-flex; align-items: center; gap: 4px;`;
+                    span.title = `#${item.num} — Claimed by ${item.driver} (${item.team}) [${statusLabel}]`;
+                    span.innerHTML = `#${item.num} ${item.status === 'pending' ? '⏳' : ''}`;
+                    listGrid.appendChild(span);
+                });
+            } catch(e) {
+                console.error("Error rendering claimed numbers:", e);
+                listGrid.innerHTML = '<span style="color:red; font-size:0.85rem;">Error loading numbers.</span>';
+            }
+        }
+
         async function checkCarNumberAvailability(number) {
             const statusLabel = document.getElementById('number-availability-status');
             const submitBtn = document.getElementById('reg-submit-btn');
-            if (!number) {
-                statusLabel.textContent = '';
+            const previewBadge = document.getElementById('reg-preview-badge');
+            
+            const numStr = String(number).trim();
+            if (previewBadge) previewBadge.textContent = numStr ? `#${numStr}` : '#--';
+
+            if (!numStr) {
+                if (statusLabel) statusLabel.textContent = '';
                 return;
             }
 
-            statusLabel.style.color = 'var(--text-muted)';
-            statusLabel.textContent = 'Checking availability...';
+            if (statusLabel) {
+                statusLabel.style.color = 'var(--text-muted)';
+                statusLabel.textContent = '🔍 Checking grid availability...';
+            }
 
             try {
+                // Check across all status states (approved OR pending) so 1 number = strictly 1 user!
                 const snap = await db.collection("m2rc_registrations")
-                    .where("carNumber", "==", String(number).trim())
-                    .where("status", "==", "approved")
+                    .where("carNumber", "==", numStr)
                     .get();
 
                 if (!snap.empty) {
-                    statusLabel.style.color = '#ff3333';
-                    statusLabel.textContent = '✗ Car Number is already taken!';
-                    submitBtn.disabled = true;
-                    submitBtn.style.opacity = '0.5';
+                    const existingDoc = snap.docs[0].data();
+                    const statusText = existingDoc.status === 'approved' ? 'Officially Reserved' : 'Pending Verification';
+                    if (statusLabel) {
+                        statusLabel.style.color = '#ff3333';
+                        statusLabel.textContent = `❌ Car #${numStr} is TAKEN (${existingDoc.driverName} - ${statusText})`;
+                    }
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.style.opacity = '0.4';
+                        submitBtn.style.cursor = 'not-allowed';
+                    }
                 } else {
-                    statusLabel.style.color = '#00ff88';
-                    statusLabel.textContent = '✓ Car Number is available!';
-                    submitBtn.disabled = false;
-                    submitBtn.style.opacity = '1';
+                    if (statusLabel) {
+                        statusLabel.style.color = '#00ff88';
+                        statusLabel.textContent = `✓ Car #${numStr} is AVAILABLE for Season 4!`;
+                    }
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.style.opacity = '1';
+                        submitBtn.style.cursor = 'pointer';
+                    }
                 }
             } catch(e) {
-                console.error(e);
+                console.error("Number check error:", e);
             }
         }
+
+        // Real-time Preview Form Binding
+        document.addEventListener('DOMContentLoaded', () => {
+            const regName = document.getElementById('reg-name');
+            const regTeam = document.getElementById('reg-team');
+            const regRookie = document.getElementById('reg-rookie');
+            const previewName = document.getElementById('reg-preview-name');
+            const previewTeam = document.getElementById('reg-preview-team');
+            const previewClass = document.getElementById('reg-preview-class');
+
+            if (regName && previewName) {
+                regName.addEventListener('input', (e) => {
+                    previewName.textContent = e.target.value.trim() || 'Driver Name';
+                });
+            }
+            if (regTeam && previewTeam) {
+                regTeam.addEventListener('input', (e) => {
+                    previewTeam.textContent = e.target.value.trim() || 'Privateer Entry';
+                });
+            }
+            if (regRookie && previewClass) {
+                regRookie.addEventListener('change', (e) => {
+                    const isRookie = e.target.value === 'true';
+                    previewClass.textContent = isRookie ? 'ROOKIE CLASS' : 'PRO CLASS';
+                    previewClass.style.background = isRookie ? 'rgba(234, 179, 8, 0.15)' : 'rgba(0, 207, 255, 0.15)';
+                    previewClass.style.color = isRookie ? 'var(--accent-gold)' : 'var(--primary)';
+                });
+            }
+        });
 
         // Handle Registration Submit
         const regForm = document.getElementById('m2rc-registration-form');
@@ -1447,32 +1645,34 @@
                 const team = document.getElementById('reg-team').value.trim();
                 const rookie = document.getElementById('reg-rookie').value === 'true';
 
-                if (!name || !iracingId || !carNum) return alert("Fill in all fields.");
+                if (!name || !iracingId || !carNum) return alert("Please complete all required fields.");
 
                 try {
-                    // Check availability one last time
+                    // Strict Double-Check Availability prior to insertion
                     const checkSnap = await db.collection("m2rc_registrations")
                         .where("carNumber", "==", carNum)
-                        .where("status", "==", "approved")
                         .get();
 
                     if (!checkSnap.empty) {
-                        return alert("Error: That car number choice was just taken. Choose another.");
+                        return alert(`Error: Car Number #${carNum} was claimed by another driver! Please pick a unique number.`);
                     }
 
                     await db.collection("m2rc_registrations").add({
                         driverName: name,
                         iracingId,
                         carNumber: carNum,
-                        teamName: team,
+                        teamName: team || 'Privateer',
                         isRookie: rookie,
                         status: 'pending',
                         timestamp: firebase.firestore.FieldValue.serverTimestamp()
                     });
 
-                    alert("Registration request submitted! Grid approval usually takes under 24 hours.");
+                    alert(`🎉 Success! Car #${carNum} has been locked for ${name}. Registration is pending steward review.`);
                     regForm.reset();
                     document.getElementById('number-availability-status').textContent = '';
+                    document.getElementById('reg-preview-badge').textContent = '#--';
+                    document.getElementById('reg-preview-name').textContent = 'Driver Name';
+                    document.getElementById('reg-preview-team').textContent = 'Privateer Entry';
                     renderRegistrationPage();
                 } catch(err) {
                     alert("Registration Error: " + err.message);
