@@ -2,18 +2,24 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Seed News Article</title>
+    <title>Seed News & Reports</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
 </head>
 <body style="background: #0a0c10; color: #fff; font-family: sans-serif; padding: 3rem; text-align: center;">
-    <h1>GRiD UP News Seeder & Clean-up</h1>
-    <p>This page removes duplicates and seeds an extended, detailed version of the E-Sports Division announcement including recruitment and target accomplishments into the live database.</p>
-    <button id="seed-btn" style="background: #00cfff; border: none; padding: 1rem 2rem; color: #000; font-weight: bold; border-radius: 8px; cursor: pointer; font-size: 1rem; margin-top: 1rem;">
-        Clean Duplicates & Seed Extended Article
-    </button>
-    <div id="status" style="margin-top: 2rem; font-size: 1.2rem; color: #a0aec0;">Click the button to process.</div>
+    <h1>GRiD UP Content Seeder</h1>
+    <p>This page seeds content directly into the live <strong>grid-up</strong> Firestore database via browser client credentials.</p>
+    
+    <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem;">
+        <button id="seed-esports-btn" style="background: #00cfff; border: none; padding: 1rem 2rem; color: #000; font-weight: bold; border-radius: 8px; cursor: pointer; font-size: 1rem;">
+            Clean & Seed Esports Article
+        </button>
+        <button id="seed-barcelona-btn" style="background: #e11d48; border: none; padding: 1rem 2rem; color: #fff; font-weight: bold; border-radius: 8px; cursor: pointer; font-size: 1rem;">
+            Seed Barcelona Race Report
+        </button>
+    </div>
+    
+    <div id="status" style="margin-top: 3rem; font-size: 1.2rem; color: #a0aec0;">Click a button above to process.</div>
 
     <script>
         const firebaseConfig = {
@@ -28,9 +34,9 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        document.getElementById('seed-btn').addEventListener('click', async () => {
+        document.getElementById('seed-esports-btn').addEventListener('click', async () => {
             const statusDiv = document.getElementById('status');
-            statusDiv.innerText = "Processing cleanup and seeding...";
+            statusDiv.innerText = "Processing Esports article...";
             
             const article = {
                 title: "Announcing the New GRiD UP E-Sports Division",
@@ -43,22 +49,65 @@
             };
 
             try {
-                // Find all existing documents with this title
                 const snap = await db.collection("reports").where("title", "==", article.title).get();
-                
-                // Delete all of them
                 if (!snap.empty) {
-                    statusDiv.innerText = `Found ${snap.size} old copies. Deleting...`;
                     for (const doc of snap.docs) {
                         await db.collection("reports").doc(doc.id).delete();
                     }
                 }
-                
-                // Write a single clean copy
                 const docRef = await db.collection("reports").add(article);
-                statusDiv.innerHTML = `<span style="color: #48bb78;">Success! Cleaned old copies and added the extended article (ID: <strong>${docRef.id}</strong>)!</span><br><br><a href="reports.html" style="color: #00cfff;">Go to News Page</a>`;
+                statusDiv.innerHTML = `<span style="color: #48bb78;">Success! Seeded Esports article (ID: <strong>${docRef.id}</strong>)</span>`;
             } catch (error) {
-                console.error(error);
+                statusDiv.innerHTML = `<span style="color: #f56565;">Error: ${error.message}</span>`;
+            }
+        });
+
+        document.getElementById('seed-barcelona-btn').addEventListener('click', async () => {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerText = "Processing Barcelona report...";
+            
+            const article = {
+                title: "Barcelona Rewards Rhythm, Endurance Racing Kills Rhythm",
+                slug: "barcelona-90-recap",
+                date: new Date(),
+                author: "GRiD UP Media",
+                bannerUrl: "assets/reports/barcelona-banner.jpg",
+                summary: "The Circuit de Barcelona-Catalunya tested the limits of consistency and flow, rewarding those who found a clean rhythm while severely punishing minor errors in a tense 1.5-hour battle.",
+                type: "report",
+                content: `<p>Consistency, precision, and an unshakeable driving flow were the deciding factors at the Circuit de Barcelona-Catalunya as the GRiD UP GT Endurance Series tackled a high-stakes 1.5-hour showdown. Renowned for its challenging mix of sweeping corners, heavy braking zones, and technical third sector, Barcelona proved to be a track where finding a clean rhythm is everything—and losing it is catastrophic.</p>
+
+<h2>The Battle for Rhythm in Catalonia</h2>
+<p>Endurance racing in multiclass environments always strains a driver’s focus, but Barcelona amplifies this pressure. Slower GT4 traffic meeting late-braking GT3s through the long sweeping Turns 3 and 4 required massive amounts of trust and perfect positioning. Early on, several frontrunners managed to lock into blisteringly quick lap times, but as tyres degraded under the warm Spanish sun, keeping that rhythm intact became a survival challenge.</p>
+
+<blockquote>"When you get into the zone around here, the lap times just flow effortlessly. But the moment you have to compromise your line to go off-line through traffic, or clip a kerb slightly too hard, your tyre temps spike, you miss your marks on the next three corners, and your entire rhythm is killed instantly." — Post-Race Driver Debrief</blockquote>
+
+<h2>Incidents and Attrition</h2>
+<p>The technical Turn 10 left-hander and the slow chicane before the main straight saw the highest density of action. Several cars suffered spins after touching the aggressive kerbs, forcing recovery drives from deep in the field. Contact during overtaking maneuvers led to drive-through penalties for a few entries, highlighting the razor-thin margin for error when fighting for track position.</p>
+
+<p>One of the most dramatic battles of the race occurred in the final twenty minutes, with a three-way fight for the final podium spot. Bumper-to-bumper through the stadium section, the competitors showcased extreme discipline, going side-by-side through the sweeping final turn before crossing the line separated by less than half a second.</p>
+
+<h2>Post-Race Interviews</h2>
+<p>Speaking in the paddock after the chequered flag, the race winners reflected on the sheer mental exhaustion of the 90-minute format:</p>
+
+<p><strong>GRiD UP Media:</strong> "Congratulations on the win. How critical was traffic management to your victory today?"</p>
+<p><strong>Winner:</strong> "It was everything. Barcelona rewards rhythm, but traffic kills it. We had to be extremely patient. There were moments I wanted to force a pass through Turn 3, but waiting for the straight allowed us to keep the tyres clean and maintain our lap times. That patience paid off in the end."</p>
+
+<p><strong>GRiD UP Media:</strong> "We saw a few close calls over the kerbs at Turn 10. How difficult was it to keep the car stable late in the stint?"</p>
+<p><strong>Podium Finisher:</strong> "The car was sliding a lot by lap 30. If you hit those kerbs wrong, the rear just snaps. We had to back off our entries slightly to guarantee we finished. Out here, consistency beats raw single-lap pace every time."</p>
+
+<p>With another dramatic round of the GT Endurance Series in the books, the grid looks ahead to the next challenge, knowing that the fight for championship points is tighter than ever.</p>`
+            };
+
+            try {
+                const snap = await db.collection("reports").where("slug", "==", article.slug).get();
+                if (!snap.empty) {
+                    for (const doc of snap.docs) {
+                        await db.collection("reports").doc(doc.id).delete();
+                    }
+                }
+                const docRef = await db.collection("reports").add(article);
+                statusDiv.innerHTML = `<span style="color: #48bb78;">Success! Seeded Barcelona report (ID: <strong>${docRef.id}</strong>)</span><br><br><a href="reports.html" style="color: #00cfff;">Go to News Page</a>`;
+            } catch (error) {
                 statusDiv.innerHTML = `<span style="color: #f56565;">Error: ${error.message}</span>`;
             }
         });
