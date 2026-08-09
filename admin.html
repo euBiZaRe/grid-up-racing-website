@@ -175,6 +175,13 @@
                     <button onclick="switchTab('reports')" class="btn btn-outline" id="tab-reports">RACE REPORTS</button>
                     <button onclick="switchTab('streams')" class="btn btn-outline" id="tab-streams">LIVE STREAMS</button>
                     <button onclick="switchTab('admins')" class="btn btn-outline" id="tab-admins">TEAM PERMISSIONS</button>
+                    
+                    <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.75rem; color: var(--primary); font-weight: bold; letter-spacing: 2px;">BMW M2 CUP (M2RC)</div>
+                    <button onclick="switchTab('m2-cup')" class="btn btn-outline" id="tab-m2-cup">BMW M2 CUP ADMIN</button>
+                    <button onclick="switchTab('m2rc-schedule')" class="btn btn-outline" id="tab-m2rc-schedule">M2RC SCHEDULE</button>
+                    <button onclick="switchTab('m2rc-results')" class="btn btn-outline" id="tab-m2rc-results">M2RC RESULTS</button>
+                    <button onclick="switchTab('m2rc-stewarding')" class="btn btn-outline" id="tab-m2rc-stewarding">M2RC STEWARDING</button>
+                    <button onclick="switchTab('m2rc-drivers')" class="btn btn-outline" id="tab-m2rc-drivers">M2RC REGISTRATIONS</button>
                 </aside>
 
                 <div class="admin-main">
@@ -729,7 +736,495 @@
                     </div>
                 </div>
             </div>
-        </div>
+
+            <!-- BMW M2 Cup Consolidated Admin Tab -->
+            <div id="section-m2-cup" class="tab-content" style="display: none;">
+                <div class="glass" style="padding: 2.5rem; margin-bottom: 2rem;">
+                    <h2 style="color: var(--primary); margin-bottom: 1.5rem; letter-spacing: -0.5px;">BMW M2 Cup Consolidated Admin Panel</h2>
+                    
+                    <div style="display: flex; gap: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 1rem; margin-bottom: 2rem; overflow-x: auto; white-space: nowrap;">
+                        <button onclick="switchM2SubTab('season')" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.5rem 1rem;" id="m2-subtab-season">Season Manager</button>
+                        <button onclick="switchM2SubTab('drivers')" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.5rem 1rem;" id="m2-subtab-drivers">Driver Registrations</button>
+                        <button onclick="switchM2SubTab('scheduler')" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.5rem 1rem;" id="m2-subtab-scheduler">Race Scheduler</button>
+                        <button onclick="switchM2SubTab('results')" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.5rem 1rem;" id="m2-subtab-results">Results & CSV Importer</button>
+                        <button onclick="switchM2SubTab('stewarding')" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.5rem 1rem;" id="m2-subtab-stewarding">Stewarding Panel</button>
+                        <button onclick="switchM2SubTab('integrity')" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.5rem 1rem;" id="m2-subtab-integrity">Database Integrity</button>
+                    </div>
+
+                    <!-- 1. Season Manager -->
+                    <div id="m2-subsect-season" class="m2-subtab-content" style="display: none;">
+                        <div class="grid" style="grid-template-columns: 1fr 1.5fr; gap: 2rem; align-items: start;">
+                            <div class="glass" style="padding: 1.5rem; border: 1px solid var(--glass-border);">
+                                <h3 style="color: var(--primary); margin-bottom: 1.5rem; font-size: 1rem;">Create New Season</h3>
+                                <div style="display: grid; gap: 1rem;">
+                                    <div>
+                                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">SEASON NAME</label>
+                                        <input type="text" id="m2-season-name" class="btn btn-outline" style="width: 100%; text-align: left; padding: 0.75rem;" placeholder="BMW M2 Cup - 2026 Season 3">
+                                    </div>
+                                    <div>
+                                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">STATUS</label>
+                                        <select id="m2-season-status" class="btn btn-outline" style="width: 100%; text-align: left; padding: 0.75rem;">
+                                            <option value="active">Active</option>
+                                            <option value="completed">Completed</option>
+                                            <option value="draft">Draft</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">POINTS SYSTEM PRESET</label>
+                                        <select id="m2-season-points-preset" class="btn btn-outline" style="width: 100%; text-align: left; padding: 0.75rem;" onchange="updateM2CustomPointsPlaceholder(this.value)">
+                                            <option value="standard">Standard Formula (25-18-15-12-10-8-6-4-2-1)</option>
+                                            <option value="m2-custom">BMW M2 Custom (30-26-24-22-20-18-16-14-12-10)</option>
+                                            <option value="custom">Custom (Comma separated list)</option>
+                                        </select>
+                                    </div>
+                                    <div id="m2-custom-points-container" style="display: none;">
+                                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">CUSTOM POINTS ARRAY</label>
+                                        <input type="text" id="m2-season-points-custom" class="btn btn-outline" style="width: 100%; text-align: left; padding: 0.75rem;" placeholder="25,18,15,12,10,8,6,4,2,1">
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <input type="checkbox" id="m2-season-duplicate" style="width: 20px; height: 20px;">
+                                        <label for="m2-season-duplicate" style="font-size: 0.8rem; color: var(--text-muted); cursor: pointer;">Duplicate layout from existing season</label>
+                                    </div>
+                                    <div id="m2-duplicate-source-container" style="display: none; margin-top: 0.5rem;">
+                                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">COPY FROM SEASON</label>
+                                        <select id="m2-season-duplicate-source" class="btn btn-outline" style="width: 100%; text-align: left; padding: 0.75rem;">
+                                            <option value="">-- Select Season --</option>
+                                        </select>
+                                    </div>
+                                    <button onclick="createM2Season()" class="btn btn-primary" style="margin-top: 1rem;">Create Season</button>
+                                </div>
+                            </div>
+                            <div class="glass" style="padding: 1.5rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                                    <h3 style="color: var(--primary); font-size: 1rem;">BMW M2 Cup Seasons</h3>
+                                    <button onclick="resetM2DemoDataBtn()" class="btn btn-outline" style="border-color: var(--accent-gold); color: var(--accent-gold); font-size: 0.75rem; padding: 0.5rem 1rem;">Reset Demo Data</button>
+                                </div>
+                                <div class="glass" style="padding: 0; background: none; overflow-x: auto;">
+                                    <table class="claims-table" style="font-size: 0.85rem; width: 100%;">
+                                        <thead>
+                                            <tr>
+                                                <th>Season Name</th>
+                                                <th>Status</th>
+                                                <th>Points Preset</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="m2-seasons-list">
+                                            <tr>
+                                                <td colspan="4" style="text-align: center; color: var(--text-muted);">Loading seasons...</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Driver Registrations -->
+                    <div id="m2-subsect-drivers" class="m2-subtab-content" style="display: none;">
+                        <div class="glass" style="padding: 1.5rem; margin-bottom: 2rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                                <h3 style="color: var(--primary); font-size: 1.1rem;">Review Driver Registrations</h3>
+                                <span id="m2-driver-regs-count" style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700;">0 Pending</span>
+                            </div>
+                            <div class="glass" style="padding: 0; background: none; overflow-x: auto; margin-bottom: 2rem;">
+                                <table class="claims-table" style="font-size: 0.85rem; width: 100%;">
+                                    <thead>
+                                        <tr>
+                                            <th>Driver Name</th>
+                                            <th>iRacing ID</th>
+                                            <th>Car Number</th>
+                                            <th>Team Name</th>
+                                            <th>Classification</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="m2-registrations-review-list">
+                                        <tr>
+                                            <td colspan="7" style="text-align: center; color: var(--text-muted);">Loading registrations...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.05); margin: 2rem 0;">
+
+                            <h3 style="color: var(--primary); font-size: 1.1rem; margin-bottom: 1.5rem;">Manage Grids, Numbers & Classes</h3>
+                            <div class="glass" style="padding: 0; background: none; overflow-x: auto;">
+                                <table class="claims-table" style="font-size: 0.85rem; width: 100%;">
+                                    <thead>
+                                        <tr>
+                                            <th>Driver Name</th>
+                                            <th>iRacing ID</th>
+                                            <th>Car Number</th>
+                                            <th>Grid Split / Category</th>
+                                            <th>Number Conflict Warning</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="m2-grids-numbers-list">
+                                        <tr>
+                                            <td colspan="6" style="text-align: center; color: var(--text-muted);">Loading drivers list...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Race Scheduler -->
+                    <div id="m2-subsect-scheduler" class="m2-subtab-content" style="display: none;">
+                        <div class="grid" style="grid-template-columns: 1fr 1.5fr; gap: 2rem; align-items: start;">
+                            <div class="glass" style="padding: 1.5rem; border: 1px solid var(--glass-border);">
+                                <h3 style="color: var(--primary); margin-bottom: 1.5rem; font-size: 1rem;">Schedule New Race</h3>
+                                <div style="display: grid; gap: 1rem;">
+                                    <input type="hidden" id="m2-race-edit-id">
+                                    <div>
+                                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">ROUND NUMBER</label>
+                                        <input type="number" id="m2-race-round" class="btn btn-outline" style="width: 100%; text-align: left; padding: 0.75rem;" placeholder="e.g. 1">
+                                    </div>
+                                    <div>
+                                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">TRACK NAME</label>
+                                        <input type="text" id="m2-race-track" class="btn btn-outline" style="width: 100%; text-align: left; padding: 0.75rem;" placeholder="e.g. Oulton Park">
+                                    </div>
+                                    <div>
+                                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">TRACK CONFIGURATION</label>
+                                        <input type="text" id="m2-race-config" class="btn btn-outline" style="width: 100%; text-align: left; padding: 0.75rem;" placeholder="e.g. Fosters">
+                                    </div>
+                                    <div>
+                                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">RACE DATE & TIME (Text Display)</label>
+                                        <input type="text" id="m2-race-date" class="btn btn-outline" style="width: 100%; text-align: left; padding: 0.75rem;" placeholder="e.g. July 12, 2026">
+                                    </div>
+                                    <div>
+                                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">LAPS / DURATION</label>
+                                        <input type="number" id="m2-race-laps" class="btn btn-outline" style="width: 100%; text-align: left; padding: 0.75rem;" placeholder="e.g. 25">
+                                    </div>
+                                    <div>
+                                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">DROP ROUND SETTINGS</label>
+                                        <select id="m2-race-drop-settings" class="btn btn-outline" style="width: 100%; text-align: left; padding: 0.75rem;">
+                                            <option value="inherit">Inherit Season Settings</option>
+                                            <option value="no-drop">Do Not Drop This Round</option>
+                                        </select>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <input type="checkbox" id="m2-race-standing-start" checked style="width: 20px; height: 20px;">
+                                        <label for="m2-race-standing-start" style="font-size: 0.8rem; color: var(--text-muted); cursor: pointer;">Use Standing Start</label>
+                                    </div>
+                                    <button onclick="saveM2RaceScheduled()" class="btn btn-primary" style="margin-top: 1rem;" id="m2-race-submit-btn">Schedule Race</button>
+                                </div>
+                            </div>
+                            <div class="glass" style="padding: 1.5rem;">
+                                <h3 style="color: var(--primary); font-size: 1rem; margin-bottom: 1.5rem;">Scheduled Rounds</h3>
+                                <div class="glass" style="padding: 0; background: none; overflow-x: auto;">
+                                    <table class="claims-table" style="font-size: 0.85rem; width: 100%;">
+                                        <thead>
+                                            <tr>
+                                                <th>Round</th>
+                                                <th>Track & Config</th>
+                                                <th>Date</th>
+                                                <th>Start Type</th>
+                                                <th>Laps</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="m2-races-scheduled-list">
+                                            <tr>
+                                                <td colspan="6" style="text-align: center; color: var(--text-muted);">Loading scheduled races...</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. Results & CSV Importer -->
+                    <div id="m2-subsect-results" class="m2-subtab-content" style="display: none;">
+                        <div class="grid" style="grid-template-columns: 1.2fr 1.8fr; gap: 2rem; align-items: start;">
+                            <div class="glass" style="padding: 1.5rem; border: 1px solid var(--glass-border);">
+                                <h3 style="color: var(--primary); margin-bottom: 1.5rem; font-size: 1rem;">CSV Results Importer</h3>
+                                <div style="display: grid; gap: 1rem;">
+                                    <div>
+                                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">SELECT ROUND</label>
+                                        <select id="m2-importer-round-selector" class="btn btn-outline" style="width: 100%; text-align: left; padding: 0.75rem;" onchange="loadM2RoundDraftResults(this.value)">
+                                            <option value="">-- Select Round --</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">PASTE CSV DATA</label>
+                                        <p style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 0.5rem;">Format: Pos, Driver Name, Team Name, Start Pos, Gap, Incidents, Points, Is Rookie, Is Fastest Lap</p>
+                                        <textarea id="m2-csv-input" class="btn btn-outline" style="width: 100%; height: 200px; font-family: monospace; font-size: 0.75rem; text-align: left; padding: 0.75rem; line-height: 1.4;" placeholder="1,Matty Roberts,GRiD UP Black,1,Leader,1,25,false,true&#10;2,BiZaRe Racing,BiZaRe Esports,4,+2.415,3,20,false,false"></textarea>
+                                    </div>
+                                    <div style="display: flex; gap: 10px;">
+                                        <button onclick="validateM2CSV()" class="btn btn-outline" style="flex: 1; border-color: var(--primary); color: var(--primary);">Validate CSV</button>
+                                        <button onclick="previewM2PointsImpact()" class="btn btn-outline" style="flex: 1; border-color: var(--secondary); color: var(--secondary);">Preview Points</button>
+                                    </div>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 1rem;">
+                                        <button onclick="saveM2ResultsDraft()" class="btn btn-outline" style="width: 100%;">Save Results Draft</button>
+                                        <button onclick="publishM2Results()" class="btn btn-primary" style="width: 100%;">Publish Results</button>
+                                    </div>
+                                    <button onclick="triggerRecalculateEngine()" class="btn btn-outline" style="width: 100%; border-style: dashed; border-color: var(--accent-gold); color: var(--accent-gold); margin-top: 0.5rem;">Recalculate Championship Engine</button>
+                                </div>
+                            </div>
+                            <div class="glass" style="padding: 1.5rem;">
+                                <h3 style="color: var(--primary); font-size: 1rem; margin-bottom: 1.5rem;" id="m2-results-preview-title">Points Impact Preview</h3>
+                                <div id="m2-results-validation-status" style="margin-bottom: 1rem; font-size: 0.8rem;"></div>
+                                <div class="glass" style="padding: 0; background: none; overflow-x: auto;">
+                                    <table class="claims-table" style="font-size: 0.85rem; width: 100%;">
+                                        <thead>
+                                            <tr>
+                                                <th>Pos</th>
+                                                <th>Driver Name</th>
+                                                <th>Team Name</th>
+                                                <th>Inc</th>
+                                                <th>Base Pts</th>
+                                                <th>Bonus</th>
+                                                <th>Total Pts</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="m2-results-preview-table-body">
+                                            <tr>
+                                                <td colspan="7" style="text-align: center; color: var(--text-muted);">Paste and validate CSV or preview point impacts.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 5. Stewarding Panel -->
+                    <div id="m2-subsect-stewarding" class="m2-subtab-content" style="display: none;">
+                        <div class="glass" style="padding: 1.5rem; margin-bottom: 2rem;">
+                            <h3 style="color: var(--primary); font-size: 1.1rem; margin-bottom: 1.5rem;">Protest Queue & Incident Decider</h3>
+                            <div class="glass" style="padding: 0; background: none; overflow-x: auto; margin-bottom: 2rem;">
+                                <table class="claims-table" style="font-size: 0.85rem; width: 100%;">
+                                    <thead>
+                                        <tr>
+                                            <th>Round</th>
+                                            <th>Protester</th>
+                                            <th>Accused Driver</th>
+                                            <th>Details</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="m2-protests-steward-list">
+                                        <tr>
+                                            <td colspan="6" style="text-align: center; color: var(--text-muted);">Loading protests...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div id="m2-steward-decision-area" style="display: none;" class="glass">
+                                <h3 style="color: var(--primary); font-size: 1.1rem; margin-bottom: 1.5rem;" id="m2-decision-protest-title">Steward Protest Review</h3>
+                                <input type="hidden" id="m2-steward-protest-id">
+                                <div style="display: grid; gap: 1.5rem;">
+                                    <div class="glass" style="padding: 1rem; background: rgba(0,0,0,0.2);">
+                                        <p id="m2-steward-protest-desc" style="font-size: 0.85rem; line-height: 1.4; color: var(--text-muted);"></p>
+                                    </div>
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                                        <div>
+                                            <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">DECISION / ACTION TAKEN</label>
+                                            <select id="m2-steward-action-type" class="btn btn-outline" style="width: 100%; text-align: left; padding: 0.75rem;" onchange="toggleM2StewardPenaltyFields(this.value)">
+                                                <option value="warning">Issue Warning</option>
+                                                <option value="time-penalty">Time Penalty</option>
+                                                <option value="points-penalty">Points Penalty</option>
+                                                <option value="dsq">Disqualification (DSQ)</option>
+                                                <option value="no-action">No Action / Dismissed</option>
+                                            </select>
+                                        </div>
+                                        <div id="m2-steward-value-container" style="display: none;">
+                                            <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;" id="m2-steward-value-label">PENALTY VALUE</label>
+                                            <input type="text" id="m2-steward-penalty-value" class="btn btn-outline" style="width: 100%; text-align: left; padding: 0.75rem;" placeholder="e.g. +5 seconds or -5 points">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">DECISION DESCRIPTION</label>
+                                        <textarea id="m2-steward-decision-notes" class="btn btn-outline" style="width: 100%; height: 80px; text-align: left; padding: 0.75rem;" placeholder="Provide public notes/ruling regarding this crash/protest..."></textarea>
+                                    </div>
+                                    <div style="display: flex; gap: 10px;">
+                                        <button onclick="saveM2StewardDecision()" class="btn btn-primary" style="flex: 2;">Save Stewarding Decision</button>
+                                        <button onclick="document.getElementById('m2-steward-decision-area').style.display = 'none'" class="btn btn-outline" style="flex: 1;">Cancel</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 6. Database Integrity Inspector -->
+                    <div id="m2-subsect-integrity" class="m2-subtab-content" style="display: none;">
+                        <div class="glass" style="padding: 1.5rem;">
+                            <h3 style="color: var(--primary); font-size: 1.1rem; margin-bottom: 1rem;">Database Integrity Scan</h3>
+                            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">Inspect the database collections for logical orphans, duplicate car numbers, or incorrect points math.</p>
+                            <button onclick="runM2DatabaseScan()" class="btn btn-primary" style="margin-bottom: 1.5rem;">Run Integrity Scan</button>
+                            <pre id="m2-integrity-results" class="glass" style="background:#050505; color:#00ff88; padding: 1.5rem; max-height: 400px; overflow-y: auto; font-family: monospace; font-size: 0.8rem; line-height: 1.5;">Ready to scan database...</pre>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- BMW M2 Racing Cup Schedule Tab -->
+            <div id="section-m2rc-schedule" class="tab-content" style="display: none;">
+                <div class="glass" style="padding: 2.5rem; margin-bottom: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <h3 style="color: var(--primary); font-size: 1.2rem; margin-bottom: 0.5rem;">BMW M2 Racing Cup Schedule</h3>
+                            <p style="color: var(--text-muted); font-size: 0.8rem;">Manage rounds, track configs, and completed winners.</p>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button onclick="seedM2RCDemoData()" class="btn btn-outline" style="border-color: var(--accent-gold); color: var(--accent-gold);">Seed Demo Data</button>
+                            <button onclick="showM2RCRoundModal()" class="btn btn-primary">+ Create Round</button>
+                        </div>
+                    </div>
+                    
+                    <div class="glass" style="padding: 0; background: none; overflow-x: auto;">
+                        <table class="claims-table">
+                            <thead>
+                                <tr>
+                                    <th>Round</th>
+                                    <th>Track & Config</th>
+                                    <th>Date</th>
+                                    <th>Laps</th>
+                                    <th>Status</th>
+                                    <th>Winner</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="m2rc-schedule-list">
+                                <tr>
+                                    <td colspan="7" style="text-align: center; color: var(--text-muted);">Loading M2RC schedule...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BMW M2 Racing Cup Results Tab -->
+            <div id="section-m2rc-results" class="tab-content" style="display: none;">
+                <div class="grid" style="grid-template-columns: 1fr 2.5fr; gap: 2rem; align-items: start;">
+                    <div class="glass" style="padding: 2rem;">
+                        <h3 style="color: var(--primary); margin-bottom: 1.5rem;">Select Round</h3>
+                        <div class="bug-form-group">
+                            <label>Target Round</label>
+                            <select id="m2rc-result-round-selector" class="btn btn-outline" style="width: 100%; text-align: left; padding: 0.75rem;" onchange="loadM2RCRoundResults(this.value)">
+                                <option value="">-- Select Round --</option>
+                            </select>
+                        </div>
+                        <div style="margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.5rem;">
+                            <h4 style="color: var(--primary); margin-bottom: 1rem; font-size: 0.9rem;">Batch Import (JSON Array)</h4>
+                            <p style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 1rem;">Paste JSON results array to overwrite quickly.</p>
+                            <textarea id="m2rc-results-json-import" class="btn btn-outline" style="width: 100%; height: 180px; font-family: monospace; font-size: 0.75rem; text-align: left; padding: 0.5rem;" placeholder='[{"pos":1,"driverName":"John Doe","teamName":"Red Bull","startPos":3,"gap":"Leader","incidents":2,"points":25,"isRookie":false,"isFastestLap":true}]'></textarea>
+                            <button onclick="importM2RCResultsJSON()" class="btn btn-outline" style="width: 100%; margin-top: 0.5rem; font-size: 0.8rem; border-color: var(--primary); color: var(--primary);">Apply JSON Import</button>
+                        </div>
+                    </div>
+
+                    <div class="glass" style="padding: 2rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                            <h3 style="color: var(--primary);">Results Table & Editor</h3>
+                            <button onclick="addM2RCDriverResultRow()" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.75rem;">+ Add Driver Row</button>
+                        </div>
+
+                        <form id="m2rc-results-editor-form">
+                            <div style="overflow-x: auto;">
+                                <table class="claims-table" style="font-size: 0.85rem; width: 100%; min-width: 800px;">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 50px;">Pos</th>
+                                            <th style="width: 180px;">Driver Name</th>
+                                            <th style="width: 150px;">Team Name</th>
+                                            <th style="width: 60px;">Start</th>
+                                            <th style="width: 100px;">Gap</th>
+                                            <th style="width: 60px;">Inc (x)</th>
+                                            <th style="width: 60px;">Pts</th>
+                                            <th style="width: 60px;">Rookie</th>
+                                            <th style="width: 60px;">FL</th>
+                                            <th style="width: 50px;">Del</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="m2rc-results-rows-container">
+                                        <tr>
+                                            <td colspan="10" style="text-align: center; color: var(--text-muted);">Please select a round first.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div style="margin-top: 1.5rem; text-align: right;">
+                                <button type="button" onclick="saveM2RCResults()" class="btn btn-primary" style="padding: 0.8rem 2rem;">Save All Results</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BMW M2 Racing Cup Stewarding Tab -->
+            <div id="section-m2rc-stewarding" class="tab-content" style="display: none;">
+                <div class="glass" style="padding: 2.5rem; margin-bottom: 2rem;">
+                    <h3 style="color: var(--primary); margin-bottom: 1.5rem;">Public Stewarding Decisions & Protests</h3>
+                    
+                    <div style="overflow-x: auto;">
+                        <table class="claims-table">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Round</th>
+                                    <th>Protester</th>
+                                    <th>Accused</th>
+                                    <th>Details</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="m2rc-stewards-list">
+                                <tr>
+                                    <td colspan="7" style="text-align: center; color: var(--text-muted);">Loading protests...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BMW M2 Racing Cup Driver Registrations Tab -->
+            <div id="section-m2rc-drivers" class="tab-content" style="display: none;">
+                <div class="glass" style="padding: 2.5rem; margin-bottom: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <div>
+                            <h3 style="color: var(--primary); font-size: 1.2rem; margin-bottom: 0.5rem;">BMW M2 CS Cup Driver Registrations</h3>
+                            <p style="color: var(--text-muted); font-size: 0.8rem;">Review number choices and approve entries.</p>
+                        </div>
+                        <span id="m2rc-reg-count" style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700;">0 Entries</span>
+                    </div>
+
+                    <div style="overflow-x: auto;">
+                        <table class="claims-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Driver Name</th>
+                                    <th>iRacing ID</th>
+                                    <th>Car Number</th>
+                                    <th>Team Name</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="m2rc-registrations-list">
+                                <tr>
+                                    <td colspan="8" style="text-align: center; color: var(--text-muted);">Loading registrations...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            </div>
         </div>
     </div>
 </main>
@@ -916,7 +1411,7 @@
             }
         }
         function switchTab(tab) {
-            const sections = ['applications', 'claims', 'races', 'admins', 'availability', 'roster', 'events', 'leagues', 'race-results', 'reports', 'posters', 'streams', 'system'];
+            const sections = ['applications', 'claims', 'races', 'admins', 'availability', 'roster', 'events', 'leagues', 'race-results', 'reports', 'posters', 'streams', 'system', 'm2rc-schedule', 'm2rc-results', 'm2rc-stewarding', 'm2rc-drivers', 'm2-cup'];
             sections.forEach(s => {
                 const el = document.getElementById(`section-${s}`);
                 if (el) el.style.display = (tab === s) ? 'block' : 'none';
@@ -933,11 +1428,16 @@
                 'leagues': 'League Event Schedule',
                 'race-results': 'Race Results Portal',
                 'reports': 'Race Reports',
-                'streams': 'Live Streams'
+                'streams': 'Live Streams',
+                'm2rc-schedule': 'M2RC Schedule & Rounds',
+                'm2rc-results': 'M2RC Results Uploader',
+                'm2rc-stewarding': 'M2RC Stewarding Decider',
+                'm2rc-drivers': 'M2RC Driver Registrations',
+                'm2-cup': 'BMW M2 Cup Admin'
             };
             document.getElementById('admin-title').textContent = titleMap[tab] || tab;
             
-            const tabs = ['applications', 'claims', 'races', 'admins', 'availability', 'roster', 'events', 'leagues', 'race-results', 'reports', 'streams'];
+            const tabs = ['applications', 'claims', 'races', 'admins', 'availability', 'roster', 'events', 'leagues', 'race-results', 'reports', 'streams', 'm2rc-schedule', 'm2rc-results', 'm2rc-stewarding', 'm2rc-drivers', 'm2-cup'];
             tabs.forEach(t => {
                 const btn = document.getElementById(`tab-${t}`);
                 if (btn) {
@@ -960,6 +1460,11 @@
             if (tab === 'streams') loadStreams();
             if (tab === 'posters') loadResults();
             if (tab === 'reports') loadAdminReports();
+            if (tab === 'm2rc-schedule') loadM2RCSchedule();
+            if (tab === 'm2rc-results') loadM2RCResultsAdmin();
+            if (tab === 'm2rc-stewarding') loadM2RCStewardingAdmin();
+            if (tab === 'm2rc-drivers') loadM2RCDriversAdmin();
+            if (tab === 'm2-cup') initM2CupAdmin();
         }
         let UPCOMING_EVENTS = [];
         let ALL_EVENTS = [];
@@ -2899,6 +3404,102 @@
         </div>
     </div>
 
+
+    <!-- M2RC Round Modal -->
+    <div id="m2rc-round-modal-backdrop" onclick="hideM2RCRoundModal()" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000; backdrop-filter: blur(5px);"></div>
+    <div id="m2rc-round-modal" class="modal-glass" style="display: none; max-width: 600px; padding: 2.5rem; background: #0a0a0c; z-index: 10001; border-radius: 20px;">
+        <h3 style="color: var(--primary); margin-bottom: 2rem;" id="m2rc-round-form-title">Add M2RC Round</h3>
+        <input type="hidden" id="edit-m2rc-round-id">
+        <div style="display: grid; gap: 1.5rem;">
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1rem;">
+                <div>
+                    <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">ROUND #</label>
+                    <input type="number" id="m2rc-round-number" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;" placeholder="1">
+                </div>
+                <div>
+                    <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">TRACK NAME</label>
+                    <input type="text" id="m2rc-round-track" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;" placeholder="Oulton Park">
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 1rem;">
+                <div>
+                    <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">TRACK CONFIGURATION</label>
+                    <input type="text" id="m2rc-round-config" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;" placeholder="Fosters">
+                </div>
+                <div>
+                    <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">LAPS</label>
+                    <input type="number" id="m2rc-round-laps" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;" placeholder="25">
+                </div>
+            </div>
+            <div>
+                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">RACE DATE (Display string)</label>
+                <input type="text" id="m2rc-round-date" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;" placeholder="August 23, 2026">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                    <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">STATUS</label>
+                    <select id="m2rc-round-status" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;">
+                        <option value="upcoming">Upcoming</option>
+                        <option value="live">LIVE</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">WINNER NAME (Completed)</label>
+                    <input type="text" id="m2rc-round-winner" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;" placeholder="Driver Name">
+                </div>
+            </div>
+            <div>
+                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">BROADCAST LINK (YouTube / Twitch)</label>
+                <input type="text" id="m2rc-round-broadcast" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;" placeholder="https://youtube.com/watch?v=...">
+            </div>
+            <div>
+                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">RACE REPORT LINK</label>
+                <input type="text" id="m2rc-round-report" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;" placeholder="e.g. reports.html?id=round-1">
+            </div>
+            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                <button onclick="saveM2RCRound()" class="btn btn-primary" style="flex: 2;">Save Round</button>
+                <button onclick="hideM2RCRoundModal()" class="btn btn-outline" style="flex: 1;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- M2RC Protest Modal -->
+    <div id="m2rc-protest-modal-backdrop" onclick="hideM2RCProtestModal()" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000; backdrop-filter: blur(5px);"></div>
+    <div id="m2rc-protest-modal" class="modal-glass" style="display: none; max-width: 600px; padding: 2.5rem; background: #0a0a0c; z-index: 10001; border-radius: 20px;">
+        <h3 style="color: var(--primary); margin-bottom: 1.5rem;">Review M2RC Protest</h3>
+        <input type="hidden" id="edit-protest-id">
+        <div style="display: grid; gap: 1.25rem;">
+            <div>
+                <strong style="color: var(--text-muted); font-size: 0.75rem;">INCIDENT DETAILS:</strong>
+                <p id="protest-modal-incident-text" style="font-size: 0.9rem; margin-top: 0.25rem; background: rgba(255,255,255,0.02); padding: 0.75rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05);"></p>
+            </div>
+            <div>
+                <strong style="color: var(--text-muted); font-size: 0.75rem;">DESCRIPTION:</strong>
+                <p id="protest-modal-desc" style="font-size: 0.85rem; margin-top: 0.25rem; background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 6px; white-space: pre-wrap; line-height: 1.4; border: 1px solid rgba(255,255,255,0.05);"></p>
+            </div>
+            <div id="protest-modal-video-container">
+                <strong style="color: var(--text-muted); font-size: 0.75rem;">VIDEO FOOTAGE:</strong>
+                <a id="protest-modal-video-link" href="#" target="_blank" style="display: block; margin-top: 0.25rem; color: var(--primary); font-size: 0.85rem; text-decoration: underline;">Watch Video Clip &rarr;</a>
+            </div>
+            <div>
+                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">STEWARD DECISION / PENALTY</label>
+                <textarea id="protest-decision-input" class="btn btn-outline" style="width: 100%; height: 100px; text-align: left; padding: 0.75rem; line-height: 1.4;" placeholder="e.g. Warning issued to driver / +5 Second time penalty applied / No Action."></textarea>
+            </div>
+            <div>
+                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">STATUS</label>
+                <select id="protest-status-input" class="btn btn-outline" style="width: 100%; padding: 0.75rem; text-align: left;">
+                    <option value="under-review">Under Review</option>
+                    <option value="resolved">Resolved</option>
+                    <option value="no-action">No Action Required</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                <button onclick="saveProtestDecision()" class="btn btn-primary" style="flex: 2;">Save Decision</button>
+                <button onclick="hideM2RCProtestModal()" class="btn btn-outline" style="flex: 1;">Cancel</button>
+            </div>
+        </div>
+    </div>
     <div id="autocomplete-overlay"></div>
     <datalist id="signed-up-drivers-list"></datalist>
 </body>
@@ -3034,6 +3635,524 @@
                 loadAdminReports();
             } catch (e) {
                 console.error("Error deleting report:", e);
+            }
+        }
+
+
+        // ==========================================
+        // BMW M2 RACING CUP (M2RC) ADMINISTRATION
+        // ==========================================
+
+        let M2RC_ROUNDS_CACHE = {};
+        let M2RC_REGISTRATIONS_CACHE = {};
+        let M2RC_PROTESTS_CACHE = {};
+
+        async function seedM2RCDemoData() {
+            if (!confirm("This will seed initial demo rounds, standings, results, and mock registrations for the BMW M2 CS Cup. Proceed?")) return;
+            try {
+                // 1. Seed Schedule
+                const rounds = [
+                    { id: 'round-1', roundNumber: 1, track: 'Oulton Park', config: 'Fosters', date: 'July 12, 2026', status: 'completed', winnerName: 'Matty Roberts', laps: 25, broadcastUrl: 'https://youtube.com', reportUrl: '' },
+                    { id: 'round-2', roundNumber: 2, track: 'Donington Park', config: 'National', date: 'July 26, 2026', status: 'completed', winnerName: 'BiZaRe Racing', laps: 28, broadcastUrl: 'https://youtube', reportUrl: '' },
+                    { id: 'round-3', roundNumber: 3, track: 'Thruxton Circuit', config: 'Grand Prix', date: 'August 9, 2026', status: 'live', winnerName: '', laps: 30, broadcastUrl: 'https://twitch.tv', reportUrl: '' },
+                    { id: 'round-4', roundNumber: 4, track: 'Brands Hatch', config: 'Indy', date: 'August 23, 2026', status: 'upcoming', winnerName: '', laps: 25, broadcastUrl: '', reportUrl: '' },
+                    { id: 'round-5', roundNumber: 5, track: 'Silverstone', config: 'GP', date: 'September 6, 2026', status: 'upcoming', winnerName: '', laps: 20, broadcastUrl: '', reportUrl: '' },
+                    { id: 'round-6', roundNumber: 6, track: 'Snetterton', config: '300', date: 'September 20, 2026', status: 'upcoming', winnerName: '', laps: 22, broadcastUrl: '', reportUrl: '' }
+                ];
+                
+                const batch = db.batch();
+                rounds.forEach(r => {
+                    batch.set(db.collection("m2rc_schedule").doc(r.id), r);
+                });
+                await batch.commit();
+
+                // 2. Seed Results for Round 1 & 2
+                const r1_results = [
+                    { pos: 1, driverName: 'Matty Roberts', teamName: 'GRiD UP Black', startPos: 1, gap: 'Leader', incidents: 1, points: 25, isRookie: false, isFastestLap: true },
+                    { pos: 2, driverName: 'BiZaRe Racing', teamName: 'BiZaRe Esports', startPos: 4, gap: '+2.415', incidents: 3, points: 20, isRookie: false, isFastestLap: false },
+                    { pos: 3, driverName: 'Alex Speedster', teamName: 'Apex Racing Team', startPos: 2, gap: '+5.811', incidents: 0, points: 16, isRookie: true, isFastestLap: false },
+                    { pos: 4, driverName: 'Emma Watson', teamName: 'Apex Racing Team', startPos: 5, gap: '+9.124', incidents: 2, points: 13, isRookie: true, isFastestLap: false },
+                    { pos: 5, driverName: 'David Miller', teamName: 'GRiD UP White', startPos: 3, gap: '+14.652', incidents: 6, points: 11, isRookie: false, isFastestLap: false }
+                ];
+                const r2_results = [
+                    { pos: 1, driverName: 'BiZaRe Racing', teamName: 'BiZaRe Esports', startPos: 2, gap: 'Leader', incidents: 0, points: 25, isRookie: false, isFastestLap: false },
+                    { pos: 2, driverName: 'Matty Roberts', teamName: 'GRiD UP Black', startPos: 1, gap: '+0.542', incidents: 2, points: 21, isRookie: false, isFastestLap: true },
+                    { pos: 3, driverName: 'David Miller', teamName: 'GRiD UP White', startPos: 4, gap: '+10.420', incidents: 3, points: 16, isRookie: false, isFastestLap: false },
+                    { pos: 4, driverName: 'Alex Speedster', teamName: 'Apex Racing Team', startPos: 3, gap: '+12.981', incidents: 5, points: 13, isRookie: true, isFastestLap: false },
+                    { pos: 5, driverName: 'Emma Watson', teamName: 'Apex Racing Team', startPos: 6, gap: '+25.110', incidents: 4, points: 11, isRookie: true, isFastestLap: false }
+                ];
+
+                await db.collection("m2rc_results").doc("round-1").set({ results: r1_results });
+                await db.collection("m2rc_results").doc("round-2").set({ results: r2_results });
+
+                // 3. Seed Protests
+                const demo_protest = {
+                    roundNumber: 1,
+                    protesterName: 'BiZaRe Racing',
+                    protesterUid: 'mock-u-1',
+                    accusedName: 'David Miller',
+                    lap: 4,
+                    corner: 3,
+                    description: 'Accused dive-bombed from 3 car lengths back and pushed me off track, causing cosmetic damage.',
+                    videoUrl: 'https://youtube.com',
+                    status: 'under-review',
+                    decision: '',
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                await db.collection("m2rc_stewarding").add(demo_protest);
+
+                // 4. Seed Registrations
+                const regs = [
+                    { driverName: 'Matty Roberts', iracingId: '298711', carNumber: '77', teamName: 'GRiD UP Black', isRookie: false, status: 'approved', timestamp: firebase.firestore.FieldValue.serverTimestamp() },
+                    { driverName: 'BiZaRe Racing', iracingId: '304523', carNumber: '99', teamName: 'BiZaRe Esports', isRookie: false, status: 'approved', timestamp: firebase.firestore.FieldValue.serverTimestamp() },
+                    { driverName: 'Alex Speedster', iracingId: '411202', carNumber: '4', teamName: 'Apex Racing Team', isRookie: true, status: 'approved', timestamp: firebase.firestore.FieldValue.serverTimestamp() },
+                    { driverName: 'Emma Watson', iracingId: '422312', carNumber: '28', teamName: 'Apex Racing Team', isRookie: true, status: 'approved', timestamp: firebase.firestore.FieldValue.serverTimestamp() },
+                    { driverName: 'David Miller', iracingId: '109823', carNumber: '17', teamName: 'GRiD UP White', isRookie: false, status: 'pending', timestamp: firebase.firestore.FieldValue.serverTimestamp() }
+                ];
+
+                for (const reg of regs) {
+                    await db.collection("m2rc_registrations").add(reg);
+                }
+
+                alert("M2RC Demo Data Seeded Successfully!");
+                loadM2RCSchedule();
+            } catch(e) {
+                console.error(e);
+                alert("Error seeding M2RC data: " + e.message);
+            }
+        }
+
+        async function loadM2RCSchedule() {
+            const list = document.getElementById('m2rc-schedule-list');
+            if (!list) return;
+            list.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">Loading rounds...</td></tr>';
+            try {
+                const snap = await db.collection("m2rc_schedule").orderBy("roundNumber", "asc").get();
+                M2RC_ROUNDS_CACHE = {};
+                
+                if (snap.empty) {
+                    list.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No rounds created yet. Click "Create Round" or "Seed Demo Data".</td></tr>';
+                    return;
+                }
+                
+                list.innerHTML = '';
+                snap.forEach(doc => {
+                    const r = doc.data();
+                    const id = doc.id;
+                    M2RC_ROUNDS_CACHE[id] = r;
+                    
+                    const tr = document.createElement('tr');
+                    let statusBadge = `<span class="status-badge status-pending">UPCOMING</span>`;
+                    if (r.status === 'live') statusBadge = `<span class="status-badge" style="background:#cc0000; color:#fff;">LIVE</span>`;
+                    if (r.status === 'completed') statusBadge = `<span class="status-badge status-verified">COMPLETED</span>`;
+
+                    tr.innerHTML = `
+                        <td><strong>Round ${r.roundNumber}</strong></td>
+                        <td>${r.track} <span style="font-size:0.75rem; color:var(--text-muted);">(${r.config})</span></td>
+                        <td>${r.date}</td>
+                        <td>${r.laps} Laps</td>
+                        <td>${statusBadge}</td>
+                        <td>${r.winnerName || '—'}</td>
+                        <td>
+                            <button onclick="editM2RCRound('${id}')" class="btn btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.7rem; margin-right: 5px;">Edit</button>
+                            <button onclick="deleteM2RCRound('${id}')" class="btn btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.7rem; border-color: #ff3333; color: #ff3333;">Del</button>
+                        </td>
+                    `;
+                    list.appendChild(tr);
+                });
+            } catch(e) {
+                console.error(e);
+                list.innerHTML = `<tr><td colspan="7" style="text-align: center; color: red;">Error: ${e.message}</td></tr>`;
+            }
+        }
+
+        function showM2RCRoundModal() {
+            resetM2RCRoundForm();
+            document.getElementById('m2rc-round-modal').style.display = 'block';
+            document.getElementById('m2rc-round-modal-backdrop').style.display = 'block';
+        }
+
+        function hideM2RCRoundModal() {
+            document.getElementById('m2rc-round-modal').style.display = 'none';
+            document.getElementById('m2rc-round-modal-backdrop').style.display = 'none';
+        }
+
+        function resetM2RCRoundForm() {
+            document.getElementById('edit-m2rc-round-id').value = '';
+            document.getElementById('m2rc-round-number').value = '';
+            document.getElementById('m2rc-round-track').value = '';
+            document.getElementById('m2rc-round-config').value = '';
+            document.getElementById('m2rc-round-laps').value = '';
+            document.getElementById('m2rc-round-date').value = '';
+            document.getElementById('m2rc-round-status').value = 'upcoming';
+            document.getElementById('m2rc-round-winner').value = '';
+            document.getElementById('m2rc-round-broadcast').value = '';
+            document.getElementById('m2rc-round-report').value = '';
+            document.getElementById('m2rc-round-form-title').textContent = "Add M2RC Round";
+        }
+
+        function editM2RCRound(id) {
+            const r = M2RC_ROUNDS_CACHE[id];
+            if (!r) return;
+            document.getElementById('edit-m2rc-round-id').value = id;
+            document.getElementById('m2rc-round-number').value = r.roundNumber || '';
+            document.getElementById('m2rc-round-track').value = r.track || '';
+            document.getElementById('m2rc-round-config').value = r.config || '';
+            document.getElementById('m2rc-round-laps').value = r.laps || '';
+            document.getElementById('m2rc-round-date').value = r.date || '';
+            document.getElementById('m2rc-round-status').value = r.status || 'upcoming';
+            document.getElementById('m2rc-round-winner').value = r.winnerName || '';
+            document.getElementById('m2rc-round-broadcast').value = r.broadcastUrl || '';
+            document.getElementById('m2rc-round-report').value = r.reportUrl || '';
+            document.getElementById('m2rc-round-form-title').textContent = "Edit Round " + r.roundNumber;
+
+            document.getElementById('m2rc-round-modal').style.display = 'block';
+            document.getElementById('m2rc-round-modal-backdrop').style.display = 'block';
+        }
+
+        async function saveM2RCRound() {
+            const id = document.getElementById('edit-m2rc-round-id').value;
+            const roundNumber = parseInt(document.getElementById('m2rc-round-number').value);
+            const track = document.getElementById('m2rc-round-track').value.trim();
+            const config = document.getElementById('m2rc-round-config').value.trim();
+            const laps = parseInt(document.getElementById('m2rc-round-laps').value);
+            const date = document.getElementById('m2rc-round-date').value.trim();
+            const status = document.getElementById('m2rc-round-status').value;
+            const winnerName = document.getElementById('m2rc-round-winner').value.trim();
+            const broadcastUrl = document.getElementById('m2rc-round-broadcast').value.trim();
+            const reportUrl = document.getElementById('m2rc-round-report').value.trim();
+
+            if (isNaN(roundNumber) || !track) return alert("Round # and Track are required.");
+
+            const data = {
+                roundNumber,
+                track,
+                config,
+                laps: isNaN(laps) ? 0 : laps,
+                date,
+                status,
+                winnerName,
+                broadcastUrl,
+                reportUrl
+            };
+
+            try {
+                const targetId = id || "round-" + roundNumber;
+                await db.collection("m2rc_schedule").doc(targetId).set(data, { merge: true });
+                alert("Round saved successfully!");
+                hideM2RCRoundModal();
+                loadM2RCSchedule();
+            } catch(e) {
+                alert("Error: " + e.message);
+            }
+        }
+
+        async function deleteM2RCRound(id) {
+            if (!confirm("Are you sure you want to delete this round?")) return;
+            try {
+                await db.collection("m2rc_schedule").doc(id).delete();
+                await db.collection("m2rc_results").doc(id).delete();
+                alert("Round deleted successfully!");
+                loadM2RCSchedule();
+            } catch(e) {
+                alert("Error: " + e.message);
+            }
+        }
+
+        // --- M2RC Results Management ---
+        async function loadM2RCResultsAdmin() {
+            const selector = document.getElementById('m2rc-result-round-selector');
+            if (!selector) return;
+            try {
+                const snap = await db.collection("m2rc_schedule").orderBy("roundNumber", "asc").get();
+                selector.innerHTML = '<option value="">-- Select Round --</option>';
+                snap.forEach(doc => {
+                    const r = doc.data();
+                    const option = document.createElement('option');
+                    option.value = doc.id;
+                    option.textContent = `Round ${r.roundNumber} - ${r.track}`;
+                    selector.appendChild(option);
+                });
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        async function loadM2RCRoundResults(roundId) {
+            const container = document.getElementById('m2rc-results-rows-container');
+            if (!container) return;
+            if (!roundId) {
+                container.innerHTML = '<tr><td colspan="10" style="text-align: center; color: var(--text-muted);">Please select a round first.</td></tr>';
+                return;
+            }
+
+            container.innerHTML = '<tr><td colspan="10" style="text-align: center; color: var(--text-muted);">Loading results...</td></tr>';
+            try {
+                const doc = await db.collection("m2rc_results").doc(roundId).get();
+                if (!doc.exists) {
+                    container.innerHTML = '<tr><td colspan="10" style="text-align: center; color: var(--text-muted);">No results found for this round. Add a driver row or import JSON to start.</td></tr>';
+                    return;
+                }
+                const data = doc.data();
+                const results = data.results || [];
+                container.innerHTML = '';
+                
+                results.forEach((r, idx) => {
+                    appendResultRow(r, idx);
+                });
+            } catch(e) {
+                container.innerHTML = `<tr><td colspan="10" style="color: red; text-align: center;">Error: ${e.message}</td></tr>`;
+            }
+        }
+
+        function appendResultRow(r = {}, index = 0) {
+            const container = document.getElementById('m2rc-results-rows-container');
+            if (!container) return;
+
+            // Remove placeholder if it exists
+            if (container.rows.length === 1 && (container.rows[0].cells[0].colSpan > 1)) {
+                container.innerHTML = '';
+            }
+
+            const tr = document.createElement('tr');
+            tr.className = "result-editor-row";
+            tr.innerHTML = `
+                <td><input type="number" class="res-pos btn btn-outline" style="padding: 0.5rem; text-align: center; width: 50px;" value="${r.pos || ''}"></td>
+                <td><input type="text" class="res-name btn btn-outline" style="padding: 0.5rem; text-align: left; width: 100%;" value="${r.driverName || ''}"></td>
+                <td><input type="text" class="res-team btn btn-outline" style="padding: 0.5rem; text-align: left; width: 100%;" value="${r.teamName || ''}"></td>
+                <td><input type="number" class="res-start btn btn-outline" style="padding: 0.5rem; text-align: center; width: 60px;" value="${r.startPos || ''}"></td>
+                <td><input type="text" class="res-gap btn btn-outline" style="padding: 0.5rem; text-align: left; width: 100%;" value="${r.gap || ''}"></td>
+                <td><input type="number" class="res-inc btn btn-outline" style="padding: 0.5rem; text-align: center; width: 60px;" value="${r.incidents !== undefined ? r.incidents : 0}"></td>
+                <td><input type="number" class="res-pts btn btn-outline" style="padding: 0.5rem; text-align: center; width: 60px;" value="${r.points || 0}"></td>
+                <td><input type="checkbox" class="res-rookie" style="width: 20px; height: 20px;" ${r.isRookie ? 'checked' : ''}></td>
+                <td><input type="checkbox" class="res-fl" style="width: 20px; height: 20px;" ${r.isFastestLap ? 'checked' : ''}></td>
+                <td><button type="button" onclick="this.closest('tr').remove()" class="btn btn-outline" style="border-color: #ff3333; color: #ff3333; padding: 0.4rem 0.6rem;">&times;</button></td>
+            `;
+            container.appendChild(tr);
+        }
+
+        function addM2RCDriverResultRow() {
+            appendResultRow({}, document.getElementById('m2rc-results-rows-container').children.length);
+        }
+
+        async function saveM2RCResults() {
+            const roundId = document.getElementById('m2rc-result-round-selector').value;
+            if (!roundId) return alert("Select a round first.");
+
+            const rows = document.querySelectorAll('.result-editor-row');
+            const results = [];
+            let isValid = true;
+
+            rows.forEach(row => {
+                const pos = parseInt(row.querySelector('.res-pos').value);
+                const driverName = row.querySelector('.res-name').value.trim();
+                const teamName = row.querySelector('.res-team').value.trim();
+                const startPos = parseInt(row.querySelector('.res-start').value);
+                const gap = row.querySelector('.res-gap').value.trim();
+                const incidents = parseInt(row.querySelector('.res-inc').value);
+                const points = parseInt(row.querySelector('.res-pts').value);
+                const isRookie = row.querySelector('.res-rookie').checked;
+                const isFastestLap = row.querySelector('.res-fl').checked;
+
+                if (isNaN(pos) || !driverName) {
+                    isValid = false;
+                    return;
+                }
+
+                results.push({
+                    pos,
+                    driverName,
+                    teamName,
+                    startPos: isNaN(startPos) ? 1 : startPos,
+                    gap,
+                    incidents: isNaN(incidents) ? 0 : incidents,
+                    points: isNaN(points) ? 0 : points,
+                    isRookie,
+                    isFastestLap
+                });
+            });
+
+            if (!isValid) return alert("Make sure all rows have Position and Driver Name.");
+
+            try {
+                await db.collection("m2rc_results").doc(roundId).set({ results });
+                alert("Results saved successfully!");
+                loadM2RCRoundResults(roundId);
+            } catch(e) {
+                alert("Error saving: " + e.message);
+            }
+        }
+
+        function importM2RCResultsJSON() {
+            const jsonText = document.getElementById('m2rc-results-json-import').value.trim();
+            if (!jsonText) return alert("Paste a JSON string first.");
+            try {
+                const data = JSON.parse(jsonText);
+                if (!Array.isArray(data)) return alert("JSON must be an array of objects.");
+                
+                const container = document.getElementById('m2rc-results-rows-container');
+                container.innerHTML = '';
+                data.forEach((r, idx) => {
+                    appendResultRow(r, idx);
+                });
+                alert("JSON imported into editor! Don't forget to click 'Save All Results'.");
+            } catch(e) {
+                alert("Invalid JSON: " + e.message);
+            }
+        }
+
+        // --- M2RC Stewarding Decisions ---
+        async function loadM2RCStewardingAdmin() {
+            const list = document.getElementById('m2rc-stewards-list');
+            if (!list) return;
+            list.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">Loading protests...</td></tr>';
+            try {
+                const snap = await db.collection("m2rc_stewarding").orderBy("timestamp", "desc").get();
+                M2RC_PROTESTS_CACHE = {};
+                
+                if (snap.empty) {
+                    list.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No protests submitted yet.</td></tr>';
+                    return;
+                }
+
+                list.innerHTML = '';
+                snap.forEach(doc => {
+                    const p = doc.data();
+                    const id = doc.id;
+                    M2RC_PROTESTS_CACHE[id] = p;
+                    const date = p.timestamp ? p.timestamp.toDate().toLocaleDateString() : 'N/A';
+
+                    let badge = '';
+                    if (p.status === 'submitted') badge = '<span class="status-badge status-pending">SUBMITTED</span>';
+                    else if (p.status === 'under-review') badge = '<span class="status-badge" style="background:#eab308; color:#000;">UNDER REVIEW</span>';
+                    else if (p.status === 'resolved') badge = '<span class="status-badge status-verified">RESOLVED</span>';
+                    else if (p.status === 'no-action') badge = '<span class="status-badge" style="background:#555; color:#fff;">NO ACTION</span>';
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${date}</td>
+                        <td>Round ${p.roundNumber}</td>
+                        <td><strong>${p.protesterName}</strong></td>
+                        <td><strong style="color:var(--secondary);">${p.accusedName}</strong></td>
+                        <td style="font-size:0.8rem; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${p.description}</td>
+                        <td>${badge}</td>
+                        <td>
+                            <button onclick="reviewM2RCProtest('${id}')" class="btn btn-outline" style="padding:0.3rem 0.6rem; font-size:0.7rem;">Review</button>
+                        </td>
+                    `;
+                    list.appendChild(tr);
+                });
+            } catch(e) {
+                console.error(e);
+                list.innerHTML = `<tr><td colspan="7" style="text-align: center; color: red;">Error: ${e.message}</td></tr>`;
+            }
+        }
+
+        function reviewM2RCProtest(id) {
+            const p = M2RC_PROTESTS_CACHE[id];
+            if (!p) return;
+            document.getElementById('edit-protest-id').value = id;
+            document.getElementById('protest-modal-incident-text').textContent = `Round ${p.roundNumber} // Protester: ${p.protesterName} vs Accused: ${p.accusedName} (Lap ${p.lap}, Turn ${p.corner})`;
+            document.getElementById('protest-modal-desc').textContent = p.description;
+            
+            const videoLink = document.getElementById('protest-modal-video-link');
+            if (p.videoUrl) {
+                document.getElementById('protest-modal-video-container').style.display = 'block';
+                videoLink.href = p.videoUrl;
+            } else {
+                document.getElementById('protest-modal-video-container').style.display = 'none';
+            }
+
+            document.getElementById('protest-decision-input').value = p.decision || '';
+            document.getElementById('protest-status-input').value = p.status || 'submitted';
+
+            document.getElementById('m2rc-protest-modal').style.display = 'block';
+            document.getElementById('m2rc-protest-modal-backdrop').style.display = 'block';
+        }
+
+        function hideM2RCProtestModal() {
+            document.getElementById('m2rc-protest-modal').style.display = 'none';
+            document.getElementById('m2rc-protest-modal-backdrop').style.display = 'none';
+        }
+
+        async function saveProtestDecision() {
+            const id = document.getElementById('edit-protest-id').value;
+            const decision = document.getElementById('protest-decision-input').value.trim();
+            const status = document.getElementById('protest-status-input').value;
+
+            try {
+                await db.collection("m2rc_stewarding").doc(id).update({
+                    decision,
+                    status
+                });
+                alert("Decision saved!");
+                hideM2RCProtestModal();
+                loadM2RCStewardingAdmin();
+            } catch(e) {
+                alert("Error: " + e.message);
+            }
+        }
+
+        // --- M2RC Driver Registrations ---
+        async function loadM2RCDriversAdmin() {
+            const list = document.getElementById('m2rc-registrations-list');
+            if (!list) return;
+            list.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted);">Loading registrations...</td></tr>';
+            try {
+                const snap = await db.collection("m2rc_registrations").orderBy("timestamp", "desc").get();
+                let count = 0;
+
+                if (snap.empty) {
+                    list.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted);">No driver registrations found.</td></tr>';
+                    document.getElementById('m2rc-reg-count').textContent = '0 Entries';
+                    return;
+                }
+
+                list.innerHTML = '';
+                snap.forEach(doc => {
+                    const r = doc.data();
+                    const id = doc.id;
+                    const date = r.timestamp ? r.timestamp.toDate().toLocaleDateString() : 'N/A';
+                    count++;
+
+                    let statusColor = 'var(--text-muted)';
+                    if (r.status === 'pending') statusColor = 'orange';
+                    if (r.status === 'approved') statusColor = '#00ff88';
+                    if (r.status === 'denied') statusColor = '#ff3333';
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${date}</td>
+                        <td><strong>${r.driverName}</strong></td>
+                        <td style="font-family: monospace;">${r.iracingId}</td>
+                        <td style="font-size: 1.1rem; color: var(--primary); font-weight: bold; text-align: center;">#${r.carNumber}</td>
+                        <td>${r.teamName || 'Privateer'}</td>
+                        <td>${r.isRookie ? '<span style="color:var(--accent-gold); font-size:0.75rem; font-weight:bold;">ROOKIE</span>' : '<span style="color:#aaa; font-size:0.75rem;">PRO</span>'}</td>
+                        <td style="color: ${statusColor}; font-weight: bold; text-transform: uppercase; font-size: 0.8rem;">${r.status}</td>
+                        <td>
+                            <div style="display:flex; gap: 5px;">
+                                ${r.status !== 'approved' ? `<button onclick="updateM2RCRegStatus('${id}', 'approved')" class="btn btn-primary" style="padding:0.3rem 0.6rem; font-size:0.7rem; background:#00ff88; color:#000; border:none;">Approve</button>` : ''}
+                                ${r.status !== 'denied' ? `<button onclick="updateM2RCRegStatus('${id}', 'denied')" class="btn btn-outline" style="padding:0.3rem 0.6rem; font-size:0.7rem; border-color:#ff3333; color:#ff3333;">Deny</button>` : ''}
+                            </div>
+                        </td>
+                    `;
+                    list.appendChild(tr);
+                });
+                document.getElementById('m2rc-reg-count').textContent = `${count} Entries`;
+            } catch(e) {
+                console.error(e);
+                list.innerHTML = `<tr><td colspan="8" style="text-align: center; color: red;">Error: ${e.message}</td></tr>`;
+            }
+        }
+
+        async function updateM2RCRegStatus(id, status) {
+            if (!confirm(`Are you sure you want to set status to ${status.toUpperCase()}?`)) return;
+            try {
+                await db.collection("m2rc_registrations").doc(id).update({ status });
+                alert("Registration updated!");
+                loadM2RCDriversAdmin();
+            } catch(e) {
+                alert("Error updating status: " + e.message);
             }
         }
 

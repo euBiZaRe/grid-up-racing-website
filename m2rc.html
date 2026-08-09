@@ -1,0 +1,1488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5JMPYRH8H9"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-5JMPYRH8H9');
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMW M2 Racing Cup | GRiD UP Sim Racing</title>
+    <link rel="stylesheet" href="style.css?v=7">
+    <link rel="icon" type="image/png" href="assets/G_2.png">
+    
+    <!-- ChartJS for Driver History Charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* M2RC Premium Styling */
+        .m2rc-hero {
+            padding: 8rem 0 4rem;
+            background: linear-gradient(to bottom, rgba(10, 12, 16, 0.65), var(--bg-dark)), url('assets/bg-banner.png');
+            background-size: cover;
+            background-position: center;
+            text-align: center;
+        }
+        
+        .tab-section {
+            display: none;
+            padding: 3rem 0;
+        }
+
+        .tab-section.active {
+            display: block;
+        }
+
+        .nav-links li a.active-hash {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .m2rc-card {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .m2rc-card:hover {
+            border-color: var(--primary);
+            background: rgba(0, 207, 255, 0.02);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-premium);
+        }
+
+        .live-indicator-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 0, 85, 0.15);
+            border: 1px solid rgba(255, 0, 85, 0.3);
+            color: #ff0055;
+            padding: 0.5rem 1.25rem;
+            border-radius: 50px;
+            font-weight: 800;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            animation: pulse-glow 1.5s infinite;
+        }
+
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 0 0 rgba(255,0,85,0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(255,0,85,0); }
+            100% { box-shadow: 0 0 0 0 rgba(255,0,85,0); }
+        }
+
+        .standings-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 2rem;
+        }
+
+        .standings-table-container {
+            overflow-x: auto;
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+        }
+
+        .standings-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .standings-table th, .standings-table td {
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .standings-table th {
+            font-family: var(--font-heading);
+            color: var(--primary);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .standings-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        /* Number Circle */
+        .number-badge {
+            background: var(--primary-gradient);
+            color: #000;
+            font-weight: 900;
+            padding: 0.3rem 0.6rem;
+            border-radius: 6px;
+            font-family: var(--font-heading);
+            font-size: 0.85rem;
+        }
+
+        .rookie-badge {
+            font-size: 0.65rem;
+            background: rgba(234, 179, 8, 0.15);
+            border: 1px solid rgba(234, 179, 8, 0.3);
+            color: var(--accent-gold);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-left: 8px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="m2rc-page">
+
+    <!-- Navbar -->
+    <nav id="navbar" class="scrolled">
+        <div class="container nav-content">
+            <a href="index.html" class="logo">
+                <img src="assets/logo.png" alt="GRiD UP" style="height: 40px; vertical-align: middle;">
+            </a>
+            <div class="menu-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#home" class="hash-link">Home</a></li>
+                <li><a href="#calendar" class="hash-link">Calendar</a></li>
+                <li><a href="#standings" class="hash-link">Standings</a></li>
+                <li><a href="#drivers" class="hash-link">Drivers</a></li>
+                <li><a href="#teams" class="hash-link">Teams</a></li>
+                <li><a href="#results" class="hash-link">Results</a></li>
+                <li><a href="#stewarding" class="hash-link">Stewarding</a></li>
+                <li><a href="#rules" class="hash-link">Rules</a></li>
+                <li><a href="#register" class="hash-link btn btn-outline" style="padding: 0.4rem 1rem; border-radius: 4px; margin-left: 0.5rem;">Register</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Header -->
+    <header class="m2rc-hero">
+        <div class="container">
+            <div style="display: flex; justify-content: center; margin-bottom: 1.5rem;">
+                <span id="live-indicator" class="live-indicator-badge" style="display: none;">
+                    <span style="display: inline-block; width: 8px; height: 8px; background: #ff0055; border-radius: 50%;"></span>
+                    Live Broadcast In Progress
+                </span>
+            </div>
+            <h1 class="glow-text" style="font-size: clamp(2rem, 5vw, 4rem); font-weight: 900; line-height: 1.1; margin-bottom: 0.5rem; text-transform: uppercase;">BMW M2 Racing Cup</h1>
+            <p style="font-family: var(--font-heading); font-size: 1rem; letter-spacing: 6px; color: var(--primary); font-weight: 700; margin-bottom: 2rem;">OFFICIAL IRACING LEAGUE</p>
+            <div id="m2rc-hero-countdown" class="countdown-container" style="display: none; margin: 0 auto 2rem; padding: 1rem; background: rgba(0, 207, 255, 0.04); border: 1px solid rgba(0, 207, 255, 0.15); border-radius: 12px; max-width: 400px; backdrop-filter: blur(10px);">
+                <span style="font-size: 0.7rem; font-weight: 800; letter-spacing: 2px; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 0.5rem;">Next Race Countdown</span>
+                <span id="m2rc-timer" style="font-family: monospace; font-size: 1.6rem; font-weight: 900; color: var(--primary); letter-spacing: 2px;">--d --h --m --s</span>
+                <span id="m2rc-next-round-info" style="display: block; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">Round 3 - Thruxton Circuit</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="container section">
+
+        <!-- 1. Homepage Section -->
+        <section id="sect-home" class="tab-section">
+            <div class="grid" style="grid-template-columns: 2fr 1fr; gap: 2.5rem; align-items: start;">
+                <!-- Left Column: Round Overview & Intro -->
+                <div style="display: flex; flex-direction: column; gap: 2rem;">
+                    <div class="glass" style="padding: 2.5rem;">
+                        <h2 style="color: var(--primary); margin-bottom: 1.5rem;">Welcome to the M2CS Cup</h2>
+                        <p style="font-size: 1.05rem; line-height: 1.8; color: var(--text-main); margin-bottom: 1.5rem;">
+                            The BMW M2 Racing Cup (M2RC) is GRiD UP's premier touring car championship. Running the agile, aggressive BMW M2 CS Racing car, this series brings together tight packs, intense door-to-door battles, and a friendly yet highly competitive esports racing experience.
+                        </p>
+                        <p style="font-size: 1.05rem; line-height: 1.8; color: var(--text-muted);">
+                            Whether you are fighting for the Overall Championship, the Rookie Class trophy, or the Team Shield, every point matters. We feature professional commentators, dynamic drop-round calculations, and a dedicated steward panel to guarantee fair competition.
+                        </p>
+                    </div>
+
+                    <div class="glass" style="padding: 2.5rem;">
+                        <h3 style="color: var(--primary); margin-bottom: 1.5rem;">Quick Schedule Preview</h3>
+                        <div id="m2rc-schedule-preview" style="display: flex; flex-direction: column; gap: 1rem;">
+                            <!-- Dynamically loaded -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Standings Overview -->
+                <div class="glass" style="padding: 2rem;">
+                    <h3 style="color: var(--primary); margin-bottom: 1.5rem;">Championship Top 5</h3>
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem;">
+                        <button class="btn btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.65rem;" onclick="switchHomeStandings('drivers')">Drivers</button>
+                        <button class="btn btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.65rem;" onclick="switchHomeStandings('teams')">Teams</button>
+                    </div>
+                    <div id="m2rc-home-standings" style="min-height: 200px;">
+                        <!-- Dynamically loaded -->
+                    </div>
+                    <a href="#standings" class="btn btn-outline" style="width: 100%; margin-top: 1rem; text-align: center; font-size: 0.8rem;">Full Standings &rarr;</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. Calendar Section -->
+        <section id="sect-calendar" class="tab-section">
+            <h2 style="color: var(--primary); margin-bottom: 1rem;">BMW M2CS Cup Calendar</h2>
+            <p style="color: var(--text-muted); margin-bottom: 3rem;">Complete official schedule for the current championship season.</p>
+            
+            <div id="m2rc-calendar-grid" class="grid" style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 2.5rem;">
+                <!-- Cards loaded dynamically -->
+            </div>
+        </section>
+
+        <!-- 3. Standings Section -->
+        <section id="sect-standings" class="tab-section">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h2 style="color: var(--primary); margin-bottom: 0.5rem;">Championship Standings</h2>
+                    <p style="color: var(--text-muted);">Points are dynamically updated after every round, accounting for drop rounds.</p>
+                </div>
+                <div class="standings-tabs">
+                    <button id="st-tab-drivers" class="btn btn-primary" onclick="loadStandingsTable('drivers')">Drivers</button>
+                    <button id="st-tab-teams" class="btn btn-outline" onclick="loadStandingsTable('teams')">Teams</button>
+                    <button id="st-tab-rookies" class="btn btn-outline" onclick="loadStandingsTable('rookies')">Rookies</button>
+                </div>
+            </div>
+
+            <div class="standings-table-container">
+                <table class="standings-table" id="m2rc-main-standings-table">
+                    <!-- Populated dynamically -->
+                </table>
+            </div>
+            
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 1rem; line-height: 1.4;">
+                * Gross represents all points earned. Net points represent standings with the worst single round score subtracted (Drop Round policy applied). Rookie class contains drivers in their first two competitive iRacing seasons.
+            </p>
+        </section>
+
+        <!-- 4. Drivers Section -->
+        <section id="sect-drivers" class="tab-section">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h2 style="color: var(--primary); margin-bottom: 0.5rem;">Registered Drivers</h2>
+                    <p style="color: var(--text-muted);">Meet the competitors of the BMW M2 CS Cup.</p>
+                </div>
+                <div>
+                    <input type="text" id="m2rc-driver-search" class="btn btn-outline" placeholder="Search driver name..." style="text-align: left; padding: 0.75rem 1.5rem; width: 280px;" oninput="filterDriversList(this.value)">
+                </div>
+            </div>
+
+            <div id="m2rc-drivers-grid" class="grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem;">
+                <!-- Driver Cards loaded dynamically -->
+            </div>
+        </section>
+
+        <!-- 5. Teams Section -->
+        <section id="sect-teams" class="tab-section">
+            <h2 style="color: var(--primary); margin-bottom: 0.5rem;">Championship Teams</h2>
+            <p style="color: var(--text-muted); margin-bottom: 3rem;">View the rosters and constructors competing for the M2RC Team Shield.</p>
+
+            <div id="m2rc-teams-grid" class="grid" style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 2.5rem;">
+                <!-- Team Cards loaded dynamically -->
+            </div>
+        </section>
+
+        <!-- 6. Results Section -->
+        <section id="sect-results" class="tab-section">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h2 style="color: var(--primary); margin-bottom: 0.5rem;">Race Results</h2>
+                    <p style="color: var(--text-muted);">Official finishing positions, incident logs, and points distributions.</p>
+                </div>
+                <div>
+                    <select id="m2rc-results-round-select" class="btn btn-outline" style="padding: 0.75rem 1.5rem; text-align: left;" onchange="loadRoundResultsUI(this.value)">
+                        <option value="">-- Select Round --</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="standings-table-container">
+                <table class="standings-table" id="m2rc-results-table">
+                    <!-- Populated dynamically -->
+                </table>
+            </div>
+        </section>
+
+        <!-- 7. Stewarding Section -->
+        <section id="sect-stewarding" class="tab-section">
+            <div class="grid" style="grid-template-columns: 2fr 1fr; gap: 3rem; align-items: start;">
+                <!-- Left: Public Decisions -->
+                <div>
+                    <h2 style="color: var(--primary); margin-bottom: 1rem;">Public Decisions</h2>
+                    <p style="color: var(--text-muted); margin-bottom: 2rem;">Official incident reviews and steward panel rulings.</p>
+
+                    <div style="display: flex; flex-direction: column; gap: 1.5rem;" id="m2rc-stewards-decisions-container">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Right: Protest Form -->
+                <div class="glass" style="padding: 2.5rem;" id="protest-form-wrapper">
+                    <h3 style="color: var(--primary); margin-bottom: 1.5rem;">Submit a Protest</h3>
+                    
+                    <!-- Authenticated View -->
+                    <form id="m2rc-protest-form" style="display: none;">
+                        <div class="bug-form-group">
+                            <label>Target Round</label>
+                            <select id="protest-round" class="btn btn-outline" style="width: 100%; text-align: left; padding: 0.75rem;" required>
+                                <option value="">-- Choose Round --</option>
+                            </select>
+                        </div>
+                        <div class="bug-form-group">
+                            <label>Accused Driver Name</label>
+                            <input type="text" id="protest-accused" class="btn btn-outline" style="width: 100%; text-align: left;" placeholder="Full Name" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="bug-form-group">
+                                <label>Lap Number</label>
+                                <input type="number" id="protest-lap" class="btn btn-outline" style="width: 100%; text-align: left;" placeholder="e.g. 5" required>
+                            </div>
+                            <div class="bug-form-group">
+                                <label>Turn / Corner</label>
+                                <input type="number" id="protest-turn" class="btn btn-outline" style="width: 100%; text-align: left;" placeholder="e.g. 3" required>
+                            </div>
+                        </div>
+                        <div class="bug-form-group">
+                            <label>Description of Incident</label>
+                            <textarea id="protest-desc" class="btn btn-outline" style="width: 100%; height: 100px; text-align: left; padding: 0.75rem; line-height: 1.4;" placeholder="Describe what happened..." required></textarea>
+                        </div>
+                        <div class="bug-form-group">
+                            <label>Video Evidence URL (Optional)</label>
+                            <input type="url" id="protest-video" class="btn btn-outline" style="width: 100%; text-align: left;" placeholder="YouTube clip, streamable, etc.">
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">File Protest</button>
+                    </form>
+
+                    <!-- Unauthenticated View -->
+                    <div id="protest-auth-prompt" style="text-align: center; padding: 2rem 0;">
+                        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                            Only registered and verified league drivers can submit protests. Please log in and claim your profile.
+                        </p>
+                        <a href="login.html" class="btn btn-outline">Log In &rarr;</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 8. Rules Section -->
+        <section id="sect-rules" class="tab-section">
+            <h2 style="color: var(--primary); margin-bottom: 0.5rem;">Sporting Regulations</h2>
+            <p style="color: var(--text-muted); margin-bottom: 3rem;">BMW M2 Racing Cup Rules & Policy Guidelines.</p>
+
+            <div class="glass" style="padding: 3rem; line-height: 1.8; display: flex; flex-direction: column; gap: 2.5rem;">
+                <div>
+                    <h3 style="color: var(--primary); border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem; margin-bottom: 1rem;">1. Championship Format</h3>
+                    <p>The BMW M2 CS Cup consists of 6 rounds. All drivers run the official BMW M2 CS Racing car on fixed setups to ensure the closest racing format. Up to 35 grid slots are available.</p>
+                </div>
+
+                <div>
+                    <h3 style="color: var(--primary); border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem; margin-bottom: 1rem;">2. Point System & Drop Rounds</h3>
+                    <p>Points are awarded to the top 20 finishers of each round as follows:</p>
+                    <div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px; font-family: monospace; font-size: 0.85rem; margin: 1rem 0;">
+                        1st: 25pts | 2nd: 20pts | 3rd: 16pts | 4th: 13pts | 5th: 11pts | 6th: 10pts | 7th: 9pts | 8th: 8pts... <br>
+                        Fastest Lap: +1pt | Pole Position: +1pt
+                    </div>
+                    <p><strong>Drop Round Rule:</strong> To account for real-life obligations, each driver's single worst round score (the round with the lowest points earned) is automatically subtracted from their total at the end of the season.</p>
+                </div>
+
+                <div>
+                    <h3 style="color: var(--primary); border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem; margin-bottom: 1rem;">3. Incidents & Penalties</h3>
+                    <p>Standard iRacing incident point rules apply. Incident point caps and corresponding penalties are:</p>
+                    <ul>
+                        <li><strong>12 Incident Points (12x):</strong> Drive-through penalty.</li>
+                        <li><strong>17 Incident Points (17x):</strong> Disqualification from the session.</li>
+                        <li><strong>Steward Review:</strong> Protests filed within 24 hours of race completion will be reviewed. Panel decisions are final.</li>
+                    </ul>
+                </div>
+
+                <div style="border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 2rem;">
+                    <h4 style="color: var(--text-muted); font-size: 0.85rem; font-family: var(--font-heading);">DOCUMENT VERSION HISTORY</h4>
+                    <span style="font-size: 0.75rem; color: var(--primary);">Version 1.2.0 (Last Updated: August 9, 2026)</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 9. Register Section -->
+        <section id="sect-register" class="tab-section">
+            <div class="grid" style="grid-template-columns: 3fr 2fr; gap: 3rem; align-items: start;">
+                <!-- Left: Form -->
+                <div class="glass" style="padding: 3rem;">
+                    <h2 style="color: var(--primary); margin-bottom: 1.5rem;">Join the Grid</h2>
+                    <p style="color: var(--text-muted); margin-bottom: 2.5rem;">Fill out the form below to request entry into the BMW M2 CS Cup. Entries are subject to review.</p>
+
+                    <form id="m2rc-registration-form">
+                        <div class="bug-form-group">
+                            <label>Driver Full Name</label>
+                            <input type="text" id="reg-name" class="btn btn-outline" style="width:100%; text-align:left;" placeholder="Your iRacing Name" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="bug-form-group">
+                                <label>iRacing Member ID</label>
+                                <input type="text" id="reg-iracing-id" class="btn btn-outline" style="width:100%; text-align:left;" placeholder="e.g. 123456" required>
+                            </div>
+                            <div class="bug-form-group">
+                                <label>Car Number Choice</label>
+                                <input type="number" id="reg-car-number" class="btn btn-outline" style="width:100%; text-align:left;" placeholder="e.g. 77" min="1" max="999" required oninput="checkCarNumberAvailability(this.value)">
+                                <span id="number-availability-status" style="display: block; font-size: 0.75rem; margin-top: 5px;"></span>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="bug-form-group">
+                                <label>Team Name (Optional)</label>
+                                <input type="text" id="reg-team" class="btn btn-outline" style="width:100%; text-align:left;" placeholder="e.g. Apex Racing">
+                            </div>
+                            <div class="bug-form-group">
+                                <label>Category</label>
+                                <select id="reg-rookie" class="btn btn-outline" style="width:100%; padding:0.75rem; text-align:left;">
+                                    <option value="false">Pro Class (Experienced Driver)</option>
+                                    <option value="true">Rookie Class (First/Second Season)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" id="reg-submit-btn" class="btn btn-primary" style="width:100%; margin-top: 1.5rem; font-weight:800; font-size:1rem; letter-spacing:1px;">SUBMIT LEAGUE ENTRY</button>
+                    </form>
+                </div>
+
+                <!-- Right: Active Numbers List -->
+                <div class="glass" style="padding: 2.5rem;">
+                    <h3 style="color: var(--primary); margin-bottom: 1.5rem;">Claimed Car Numbers</h3>
+                    <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 2rem;">Numbers already claimed and approved for this season.</p>
+                    <div id="m2rc-claimed-numbers-grid" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <!-- Numbers loaded dynamically -->
+                        <span style="color: var(--text-muted); font-size: 0.85rem;">Loading claimed numbers...</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Driver Detail Modal -->
+    <div id="m2rc-driver-modal-backdrop" onclick="closeDriverModal()" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 10002; backdrop-filter: blur(5px);"></div>
+    <div id="m2rc-driver-modal" class="modal-glass" style="display: none; max-width: 800px; width: 90%; padding: 2.5rem; background: #0a0a0c; z-index: 10003; border-radius: 20px; overflow-y: auto; max-height: 90vh;">
+        <button onclick="closeDriverModal()" class="btn btn-outline" style="position: absolute; top: 1rem; right: 1rem; border-radius: 50%; width: 36px; height: 36px; padding: 0; font-size: 1.25rem;">&times;</button>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
+            <div>
+                <span id="modal-driver-number" class="number-badge">#--</span>
+                <span id="modal-driver-rookie" class="rookie-badge" style="display:none;">Rookie</span>
+                <h2 id="modal-driver-name" class="glow-text" style="margin-top: 0.5rem; margin-bottom: 0.25rem;">Driver Name</h2>
+                <p id="modal-driver-team" style="color: var(--text-muted); font-size: 0.9rem;">Team Name</p>
+            </div>
+            <div style="text-align: right;">
+                <p style="font-size:0.7rem; color:var(--primary); font-weight:800; letter-spacing:1px; margin-bottom:0.25rem;">NET POINTS</p>
+                <h2 id="modal-driver-points" style="font-size:2rem; font-weight:900; line-height:1; color:#fff;">--</h2>
+            </div>
+        </div>
+
+        <div class="grid" style="grid-template-columns: 1fr 2fr; gap: 2rem; margin-top: 1rem;">
+            <!-- Key Stats -->
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div class="glass" style="padding: 1rem; text-align: center;">
+                    <span style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase;">Wins</span>
+                    <h3 id="modal-stat-wins" style="font-size: 1.8rem; color: var(--accent-gold);">0</h3>
+                </div>
+                <div class="glass" style="padding: 1rem; text-align: center;">
+                    <span style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase;">Podiums</span>
+                    <h3 id="modal-stat-podiums" style="font-size: 1.8rem; color: #fff;">0</h3>
+                </div>
+                <div class="glass" style="padding: 1rem; text-align: center;">
+                    <span style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase;">Avg Finish</span>
+                    <h3 id="modal-stat-avg" style="font-size: 1.8rem; color: var(--primary);">0</h3>
+                </div>
+            </div>
+
+            <!-- Position Progress Chart -->
+            <div class="glass" style="padding: 1.5rem; min-height: 250px;">
+                <h4 style="color: var(--primary); font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 1rem;">Finishing Position History</h4>
+                <canvas id="driverProgressChart" style="width: 100%; height: 200px;"></canvas>
+            </div>
+        </div>
+
+        <div style="margin-top: 2rem;">
+            <h4 style="color: var(--primary); font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 1rem;">Season Round History</h4>
+            <div class="standings-table-container">
+                <table class="standings-table" style="font-size:0.85rem;">
+                    <thead>
+                        <tr>
+                            <th>Round</th>
+                            <th>Track</th>
+                            <th>Start</th>
+                            <th>Finish</th>
+                            <th>Gap</th>
+                            <th>Inc (x)</th>
+                            <th>Points</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modal-history-rows">
+                        <!-- Loaded dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase compatibility scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="js/auth.js?v=4"></script>
+    <script src="script.js?v=5"></script>
+
+    <script>
+        // M2RC SPA Controller
+        const tabs = ['home', 'calendar', 'standings', 'drivers', 'teams', 'results', 'stewarding', 'rules', 'register'];
+        let activeTab = 'home';
+        let GLOBAL_ROUNDS = [];
+        let GLOBAL_RESULTS = {};
+        let GLOBAL_DRIVERS = [];
+        let GLOBAL_REGISTRATIONS = [];
+        let chartInstance = null;
+
+        function handleRouting() {
+            const hash = window.location.hash.substring(1);
+            if (tabs.includes(hash)) {
+                activeTab = hash;
+            } else {
+                activeTab = 'home';
+            }
+
+            // Update UI Active Tab State
+            tabs.forEach(t => {
+                const sect = document.getElementById(`sect-${t}`);
+                if (sect) sect.classList.toggle('active', t === activeTab);
+            });
+
+            // Update Navbar Link Active Styles
+            const links = document.querySelectorAll('.nav-links li a');
+            links.forEach(l => {
+                const href = l.getAttribute('href');
+                if (href === `#${activeTab}`) {
+                    l.classList.add('active-hash');
+                } else {
+                    l.classList.remove('active-hash');
+                }
+            });
+
+            // Trigger specific page data loads
+            if (activeTab === 'home') renderHomePage();
+            if (activeTab === 'calendar') renderCalendar();
+            if (activeTab === 'standings') loadStandingsTable('drivers');
+            if (activeTab === 'drivers') renderDriversGrid();
+            if (activeTab === 'teams') renderTeamsGrid();
+            if (activeTab === 'results') {
+                const selector = document.getElementById('m2rc-results-round-select');
+                if (selector && selector.value) {
+                    loadRoundResultsUI(selector.value);
+                } else if (GLOBAL_ROUNDS.length > 0) {
+                    // Default to latest completed round
+                    const latest = GLOBAL_ROUNDS.filter(r => r.status === 'completed').pop() || GLOBAL_ROUNDS[0];
+                    if (latest) {
+                        selector.value = latest.id;
+                        loadRoundResultsUI(latest.id);
+                    }
+                }
+            }
+            if (activeTab === 'stewarding') renderStewardingPage();
+            if (activeTab === 'register') renderRegistrationPage();
+        }
+
+        // Initialize hash routing
+        window.addEventListener('hashchange', handleRouting);
+
+        // Core Loader
+        async function initM2RC() {
+            if (!window.db) {
+                setTimeout(initM2RC, 200);
+                return;
+            }
+
+            try {
+                // Fetch schedule rounds
+                const scheduleSnap = await db.collection("m2rc_schedule").orderBy("roundNumber", "asc").get();
+                GLOBAL_ROUNDS = [];
+                scheduleSnap.forEach(doc => {
+                    GLOBAL_ROUNDS.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Fetch results
+                const resultsSnap = await db.collection("m2rc_results").get();
+                GLOBAL_RESULTS = {};
+                resultsSnap.forEach(doc => {
+                    GLOBAL_RESULTS[doc.id] = doc.data().results || [];
+                });
+
+                // Fetch registrations
+                const regSnap = await db.collection("m2rc_registrations").get();
+                GLOBAL_REGISTRATIONS = [];
+                GLOBAL_DRIVERS = [];
+                regSnap.forEach(doc => {
+                    const data = doc.data();
+                    GLOBAL_REGISTRATIONS.push({ id: doc.id, ...data });
+                    if (data.status === 'approved') {
+                        GLOBAL_DRIVERS.push({ id: doc.id, ...data });
+                    }
+                });
+
+                // Populate results & protest selectors
+                populateRoundSelectors();
+
+                // Load routing on start
+                handleRouting();
+                
+                // Initialize countdown and indicator
+                startCountdownAndStatus();
+
+            } catch (err) {
+                console.error("M2RC System Error:", err);
+            }
+        }
+
+        function populateRoundSelectors() {
+            const resultsSelector = document.getElementById('m2rc-results-round-select');
+            const protestSelector = document.getElementById('protest-round');
+            if (resultsSelector) {
+                resultsSelector.innerHTML = '<option value="">-- Select Round --</option>';
+                GLOBAL_ROUNDS.forEach(r => {
+                    const opt = document.createElement('option');
+                    opt.value = r.id;
+                    opt.textContent = `Round ${r.roundNumber} - ${r.track}`;
+                    resultsSelector.appendChild(opt);
+                });
+            }
+            if (protestSelector) {
+                protestSelector.innerHTML = '<option value="">-- Choose Round --</option>';
+                GLOBAL_ROUNDS.forEach(r => {
+                    const opt = document.createElement('option');
+                    opt.value = r.roundNumber;
+                    opt.textContent = `Round ${r.roundNumber} - ${r.track}`;
+                    protestSelector.appendChild(opt);
+                });
+            }
+        }
+
+        function startCountdownAndStatus() {
+            const liveBadge = document.getElementById('live-indicator');
+            const countdownBox = document.getElementById('m2rc-hero-countdown');
+            const timerText = document.getElementById('m2rc-timer');
+            const nextRoundInfoText = document.getElementById('m2rc-next-round-info');
+
+            // 1. Live Indicator check
+            const liveRound = GLOBAL_ROUNDS.find(r => r.status === 'live');
+            if (liveRound) {
+                liveBadge.style.display = 'inline-flex';
+                if (liveRound.broadcastUrl) {
+                    liveBadge.style.cursor = 'pointer';
+                    liveBadge.onclick = () => window.open(liveRound.broadcastUrl, '_blank');
+                }
+            } else {
+                liveBadge.style.display = 'none';
+            }
+
+            // 2. Countdown to next upcoming round
+            const nextRound = GLOBAL_ROUNDS.find(r => r.status === 'upcoming');
+            if (nextRound && nextRound.date) {
+                countdownBox.style.display = 'block';
+                nextRoundInfoText.textContent = `Round ${nextRound.roundNumber} - ${nextRound.track} (${nextRound.config})`;
+                
+                // Set simple countdown
+                const dateParts = Date.parse(nextRound.date);
+                let targetDate = isNaN(dateParts) ? new Date().getTime() + 86400000 * 3 : dateParts;
+                
+                const timer = setInterval(() => {
+                    const now = new Date().getTime();
+                    const distance = targetDate - now;
+                    if (distance < 0) {
+                        clearInterval(timer);
+                        timerText.textContent = "RACE WEEKEND STARTED";
+                        return;
+                    }
+                    const d = Math.floor(distance / (1000 * 60 * 60 * 24));
+                    const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const s = Math.floor((distance % (1000 * 60)) / 1000);
+                    timerText.textContent = `${d}d ${h}h ${m}m ${s}s`;
+                }, 1000);
+            } else {
+                countdownBox.style.display = 'none';
+            }
+        }
+
+        // ==========================================
+        // 1. HOME PAGE VIEW RENDER
+        // ==========================================
+        function renderHomePage() {
+            const previewContainer = document.getElementById('m2rc-schedule-preview');
+            if (!previewContainer) return;
+            previewContainer.innerHTML = '';
+            
+            GLOBAL_ROUNDS.slice(0, 4).forEach(r => {
+                const div = document.createElement('div');
+                div.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);";
+                
+                let statusColor = "var(--text-muted)";
+                if (r.status === 'live') statusColor = "#ff0055";
+                if (r.status === 'completed') statusColor = "#00ff88";
+
+                div.innerHTML = `
+                    <div>
+                        <strong style="color:var(--text-main); font-size:0.9rem;">Round ${r.roundNumber} - ${r.track}</strong><br>
+                        <span style="font-size:0.75rem; color:var(--text-muted);">${r.date}</span>
+                    </div>
+                    <span style="font-size:0.75rem; font-weight:bold; text-transform:uppercase; color: ${statusColor};">${r.status}</span>
+                `;
+                previewContainer.appendChild(div);
+            });
+
+            switchHomeStandings('drivers');
+        }
+
+        function switchHomeStandings(type) {
+            const container = document.getElementById('m2rc-home-standings');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const standings = calculateStandings(type);
+            standings.slice(0, 5).forEach((item, index) => {
+                const row = document.createElement('div');
+                row.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid rgba(255,255,255,0.04);";
+                row.innerHTML = `
+                    <div style="display:flex; align-items:center; gap: 8px;">
+                        <span style="font-weight:bold; color:var(--primary); font-size:0.85rem; width: 20px;">#${index+1}</span>
+                        <strong style="font-size:0.9rem; color:#fff;">${item.name}</strong>
+                    </div>
+                    <span style="font-weight:bold; color:var(--primary); font-size:0.9rem;">${item.netPoints} pts</span>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        // ==========================================
+        // 2. CALENDAR PAGE VIEW RENDER
+        // ==========================================
+        function renderCalendar() {
+            const container = document.getElementById('m2rc-calendar-grid');
+            if (!container) return;
+            container.innerHTML = '';
+
+            GLOBAL_ROUNDS.forEach(r => {
+                const card = document.createElement('div');
+                card.className = "m2rc-card";
+                
+                let badgeStyle = "background: rgba(255,255,255,0.05); color: #aaa;";
+                if (r.status === 'live') badgeStyle = "background: rgba(255,0,85,0.15); color: #ff0055; animation: pulse-glow 1.5s infinite;";
+                if (r.status === 'completed') badgeStyle = "background: rgba(0,255,136,0.1); color: #00ff88;";
+
+                const winnerBlock = r.status === 'completed' 
+                    ? `<div style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem; margin-top: 0.5rem;">
+                         <span style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase;">Winner:</span><br>
+                         <strong style="color:var(--accent-gold); font-size:0.95rem;">&#x1F3C6; ${r.winnerName || 'Unknown'}</strong>
+                       </div>`
+                    : '';
+
+                card.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <span style="font-family:var(--font-heading); font-size: 0.75rem; color: var(--primary); font-weight:800; letter-spacing:1px;">ROUND ${r.roundNumber}</span>
+                        <span style="font-size:0.65rem; padding:3px 8px; border-radius:4px; font-weight:bold; text-transform:uppercase; ${badgeStyle}">${r.status}</span>
+                    </div>
+                    <h3 style="font-family:var(--font-heading); color:#fff; font-size:1.3rem; line-height:1.2; margin-top: 0.25rem;">${r.track}</h3>
+                    <p style="font-size:0.85rem; color:var(--text-muted); margin-top:-5px;">${r.config} // ${r.laps} Laps</p>
+                    <p style="font-size:0.8rem; color:var(--text-main); font-weight:600;"><span style="color:var(--primary);">&#x1F4C5;</span> ${r.date}</p>
+                    ${winnerBlock}
+                    <div style="margin-top:auto; display:flex; gap:10px; padding-top:1rem;">
+                        ${r.status === 'completed' ? `<a href="#results" onclick="document.getElementById('m2rc-results-round-select').value='${r.id}'; loadRoundResultsUI('${r.id}')" class="btn btn-outline" style="flex:1; text-align:center; padding: 0.5rem; font-size:0.75rem;">Results</a>` : ''}
+                        ${r.broadcastUrl ? `<a href="${r.broadcastUrl}" target="_blank" class="btn" style="flex:1; text-align:center; padding: 0.5rem; font-size:0.75rem; font-weight:bold;">Watch</a>` : ''}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // ==========================================
+        // 3. STANDINGS PAGE VIEW RENDER & CALCULATION
+        // ==========================================
+        function calculateStandings(type) {
+            // Roster structure map
+            const stats = {};
+
+            // Initialize stats with registered drivers
+            GLOBAL_DRIVERS.forEach(d => {
+                stats[d.driverName] = {
+                    name: d.driverName,
+                    team: d.teamName || 'Privateer',
+                    isRookie: d.isRookie === true || d.isRookie === 'true',
+                    rounds: [],
+                    totalPoints: 0,
+                    netPoints: 0,
+                    incidents: 0,
+                    wins: 0,
+                    podiums: 0
+                };
+            });
+
+            // Map round results
+            for (const roundId in GLOBAL_RESULTS) {
+                const results = GLOBAL_RESULTS[roundId];
+                results.forEach(res => {
+                    // Fallback create stats if not registered but has results
+                    if (!stats[res.driverName]) {
+                        stats[res.driverName] = {
+                            name: res.driverName,
+                            team: res.teamName || 'Privateer',
+                            isRookie: res.isRookie === true || res.isRookie === 'true',
+                            rounds: [],
+                            totalPoints: 0,
+                            netPoints: 0,
+                            incidents: 0,
+                            wins: 0,
+                            podiums: 0
+                        };
+                    }
+
+                    stats[res.driverName].rounds.push(res.points);
+                    stats[res.driverName].totalPoints += res.points;
+                    stats[res.driverName].incidents += res.incidents;
+                    if (res.pos === 1) stats[res.driverName].wins++;
+                    if (res.pos <= 3) stats[res.driverName].podiums++;
+                });
+            }
+
+            // Process Net Points (subtract worst round score)
+            const list = Object.values(stats);
+            list.forEach(driver => {
+                if (driver.rounds.length > 0) {
+                    const worstScore = Math.min(...driver.rounds);
+                    driver.netPoints = driver.totalPoints - worstScore;
+                } else {
+                    driver.netPoints = 0;
+                }
+            });
+
+            // If team standings, combine points
+            if (type === 'teams') {
+                const teamStats = {};
+                list.forEach(driver => {
+                    const team = driver.team;
+                    if (!teamStats[team]) {
+                        teamStats[team] = {
+                            name: team,
+                            totalPoints: 0,
+                            netPoints: 0,
+                            wins: 0,
+                            podiums: 0
+                        };
+                    }
+                    teamStats[team].totalPoints += driver.totalPoints;
+                    teamStats[team].netPoints += driver.netPoints;
+                    teamStats[team].wins += driver.wins;
+                    teamStats[team].podiums += driver.podiums;
+                });
+                
+                return Object.values(teamStats).sort((a,b) => b.netPoints - a.netPoints);
+            }
+
+            // Filter for rookies if requested
+            if (type === 'rookies') {
+                return list.filter(d => d.isRookie).sort((a,b) => b.netPoints - a.netPoints);
+            }
+
+            // Return drivers list sorted
+            return list.sort((a,b) => b.netPoints - a.netPoints);
+        }
+
+        function loadStandingsTable(type) {
+            const table = document.getElementById('m2rc-main-standings-table');
+            if (!table) return;
+
+            // Highlight active button tab
+            const tabs = ['drivers', 'teams', 'rookies'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`st-tab-${t}`);
+                if (btn) {
+                    btn.className = t === type ? "btn btn-primary" : "btn btn-outline";
+                }
+            });
+
+            const standings = calculateStandings(type);
+
+            if (type === 'teams') {
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Pos</th>
+                            <th>Team Name</th>
+                            <th>Wins</th>
+                            <th>Podiums</th>
+                            <th>Gross Pts</th>
+                            <th>Net Points</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${standings.map((item, idx) => `
+                            <tr>
+                                <td><strong>#${idx + 1}</strong></td>
+                                <td><strong>${item.name}</strong></td>
+                                <td>${item.wins}</td>
+                                <td>${item.podiums}</td>
+                                <td>${item.totalPoints}</td>
+                                <td style="color:var(--primary); font-weight:bold; font-size:1.1rem;">${item.netPoints}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+            } else {
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Pos</th>
+                            <th>Driver Name</th>
+                            <th>Team</th>
+                            <th>Wins</th>
+                            <th>Podiums</th>
+                            <th>Inc (x)</th>
+                            <th>Gross Pts</th>
+                            <th>Net Points</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${standings.map((item, idx) => `
+                            <tr style="cursor:pointer;" onclick="openDriverDetailModal('${item.name}')">
+                                <td><strong>#${idx + 1}</strong></td>
+                                <td>
+                                    <strong>${item.name}</strong>
+                                    ${item.isRookie ? '<span class="rookie-badge">Rookie</span>' : ''}
+                                </td>
+                                <td>${item.team}</td>
+                                <td>${item.wins}</td>
+                                <td>${item.podiums}</td>
+                                <td style="color:#ff3333;">${item.incidents}</td>
+                                <td>${item.totalPoints}</td>
+                                <td style="color:var(--primary); font-weight:bold; font-size:1.1rem;">${item.netPoints}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+            }
+        }
+
+        // ==========================================
+        // 4. DRIVERS PAGE VIEW RENDER
+        // ==========================================
+        function renderDriversGrid() {
+            const container = document.getElementById('m2rc-drivers-grid');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const standings = calculateStandings('drivers');
+            standings.forEach(d => {
+                // Find iRacing ID & Car Number from registrations
+                const reg = GLOBAL_REGISTRATIONS.find(r => r.driverName === d.name);
+                const carNum = reg ? reg.carNumber : '--';
+                
+                const card = document.createElement('div');
+                card.className = "m2rc-card";
+                card.style.cursor = "pointer";
+                card.onclick = () => openDriverDetailModal(d.name);
+                card.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span class="number-badge">#${carNum}</span>
+                        ${d.isRookie ? '<span class="rookie-badge">Rookie</span>' : ''}
+                    </div>
+                    <h3 style="color:#fff; font-family:var(--font-heading); font-size:1.25rem; margin-top:0.5rem;">${d.name}</h3>
+                    <p style="font-size:0.8rem; color:var(--text-muted); margin-top:-5px;">${d.team}</p>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:1rem; border-top:1px solid rgba(255,255,255,0.05); padding-top:1rem;">
+                        <div>
+                            <span style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase;">Wins</span><br>
+                            <strong style="color:var(--accent-gold);">${d.wins}</strong>
+                        </div>
+                        <div>
+                            <span style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase;">Points</span><br>
+                            <strong style="color:var(--primary);">${d.netPoints}</strong>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function filterDriversList(query) {
+            const cards = document.querySelectorAll('#m2rc-drivers-grid .m2rc-card');
+            const cleanQuery = query.toLowerCase().trim();
+            cards.forEach(card => {
+                const name = card.querySelector('h3').textContent.toLowerCase();
+                const team = card.querySelector('p').textContent.toLowerCase();
+                if (name.includes(cleanQuery) || team.includes(cleanQuery)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // ==========================================
+        // DRIVER DETAILS MODAL & CHARTING
+        // ==========================================
+        function openDriverDetailModal(driverName) {
+            const reg = GLOBAL_REGISTRATIONS.find(r => r.driverName === driverName);
+            const standings = calculateStandings('drivers');
+            const d = standings.find(x => x.name === driverName) || {
+                name: driverName,
+                team: reg ? reg.teamName : 'Privateer',
+                isRookie: reg ? reg.isRookie : false,
+                netPoints: 0,
+                wins: 0,
+                podiums: 0,
+                rounds: []
+            };
+
+            const carNum = reg ? reg.carNumber : '--';
+
+            document.getElementById('modal-driver-number').textContent = `#${carNum}`;
+            document.getElementById('modal-driver-rookie').style.display = d.isRookie ? 'inline-block' : 'none';
+            document.getElementById('modal-driver-name').textContent = d.name;
+            document.getElementById('modal-driver-team').textContent = d.team;
+            document.getElementById('modal-driver-points').textContent = d.netPoints;
+
+            document.getElementById('modal-stat-wins').textContent = d.wins;
+            document.getElementById('modal-stat-podiums').textContent = d.podiums;
+            
+            // Build average finish
+            let sumFinish = 0;
+            let totalFinished = 0;
+            const historyRows = [];
+            const labels = [];
+            const dataPoints = [];
+
+            GLOBAL_ROUNDS.forEach(r => {
+                const roundResults = GLOBAL_RESULTS[r.id] || [];
+                const res = roundResults.find(x => x.driverName === driverName);
+                
+                if (res) {
+                    sumFinish += res.pos;
+                    totalFinished++;
+                    labels.push(`R${r.roundNumber}`);
+                    dataPoints.push(res.pos);
+
+                    historyRows.push(`
+                        <tr>
+                            <td><strong>Round ${r.roundNumber}</strong></td>
+                            <td>${r.track}</td>
+                            <td>P${res.startPos}</td>
+                            <td style="color:${res.pos === 1 ? 'var(--accent-gold)' : (res.pos <= 3 ? '#fff' : 'var(--text-main)')}; font-weight:bold;">P${res.pos}</td>
+                            <td>${res.gap || '—'}</td>
+                            <td style="color:#ff3333;">${res.incidents}x</td>
+                            <td style="font-weight:bold; color:var(--primary);">${res.points}</td>
+                        </tr>
+                    `);
+                }
+            });
+
+            const avgFinish = totalFinished > 0 ? (sumFinish / totalFinished).toFixed(1) : '—';
+            document.getElementById('modal-stat-avg').textContent = avgFinish;
+            document.getElementById('modal-history-rows').innerHTML = historyRows.length > 0 
+                ? historyRows.join('') 
+                : '<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">No race history found.</td></tr>';
+
+            // Show Modal and Backdrop
+            document.getElementById('m2rc-driver-modal').style.display = 'block';
+            document.getElementById('m2rc-driver-modal-backdrop').style.display = 'block';
+
+            // Render Progress Chart
+            setTimeout(() => {
+                renderDriverChart(labels, dataPoints);
+            }, 100);
+        }
+
+        function closeDriverModal() {
+            document.getElementById('m2rc-driver-modal').style.display = 'none';
+            document.getElementById('m2rc-driver-modal-backdrop').style.display = 'none';
+            if (chartInstance) {
+                chartInstance.destroy();
+                chartInstance = null;
+            }
+        }
+
+        function renderDriverChart(labels, data) {
+            const ctx = document.getElementById('driverProgressChart');
+            if (!ctx) return;
+
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Position Finish',
+                        data: data,
+                        borderColor: '#0ea5e9',
+                        backgroundColor: 'rgba(14, 165, 233, 0.05)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#0ea5e9',
+                        pointBorderColor: '#fff',
+                        pointHoverRadius: 6,
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            reverse: true, // P1 at top
+                            min: 1,
+                            ticks: {
+                                precision: 0,
+                                color: '#94a3b8'
+                            },
+                            grid: { color: 'rgba(255,255,255,0.05)' }
+                        },
+                        x: {
+                            ticks: { color: '#94a3b8' },
+                            grid: { display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        // ==========================================
+        // 5. TEAMS PAGE VIEW RENDER
+        // ==========================================
+        function renderTeamsGrid() {
+            const container = document.getElementById('m2rc-teams-grid');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const standings = calculateStandings('teams');
+            standings.forEach(t => {
+                // Find driver roster for this team
+                const roster = GLOBAL_DRIVERS.filter(d => d.teamName === t.name).map(x => x.driverName);
+                
+                const card = document.createElement('div');
+                card.className = "m2rc-card";
+                card.innerHTML = `
+                    <h3 style="color:#fff; font-family:var(--font-heading); font-size:1.3rem; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:0.75rem;">${t.name}</h3>
+                    <div>
+                        <span style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase;">Team Roster</span><br>
+                        <strong style="color:var(--text-main); font-size:0.9rem;">${roster.length > 0 ? roster.join(', ') : 'No registered drivers'}</strong>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:auto; border-top:1px solid rgba(255,255,255,0.05); padding-top:1rem;">
+                        <div>
+                            <span style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase;">Wins</span><br>
+                            <strong style="color:var(--accent-gold);">${t.wins}</strong>
+                        </div>
+                        <div>
+                            <span style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase;">Podiums</span><br>
+                            <strong style="color:#fff;">${t.podiums}</strong>
+                        </div>
+                        <div>
+                            <span style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase;">Points</span><br>
+                            <strong style="color:var(--primary);">${t.netPoints}</strong>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // ==========================================
+        // 6. RESULTS PAGE VIEW RENDER
+        // ==========================================
+        function loadRoundResultsUI(roundId) {
+            const table = document.getElementById('m2rc-results-table');
+            if (!table) return;
+
+            if (!roundId) {
+                table.innerHTML = '<tbody><tr><td style="text-align:center; color:var(--text-muted);">Please select a round.</td></tr></tbody>';
+                return;
+            }
+
+            const results = GLOBAL_RESULTS[roundId] || [];
+            if (results.length === 0) {
+                table.innerHTML = '<tbody><tr><td style="text-align:center; color:var(--text-muted);">No results uploaded yet for this round.</td></tr></tbody>';
+                return;
+            }
+
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>Pos</th>
+                        <th>Start</th>
+                        <th>Driver Name</th>
+                        <th>Team Name</th>
+                        <th>Gap</th>
+                        <th>Incidents</th>
+                        <th>Points</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${results.map(r => `
+                        <tr>
+                            <td><strong>${r.pos}</strong></td>
+                            <td>P${r.startPos}</td>
+                            <td>
+                                <strong>${r.driverName}</strong>
+                                ${r.isRookie ? '<span class="rookie-badge">Rookie</span>' : ''}
+                                ${r.isFastestLap ? '<span style="font-size: 0.6rem; background: var(--primary); color: #000; padding: 2px 4px; border-radius: 4px; font-weight: bold; margin-left: 8px;">Fastest Lap</span>' : ''}
+                            </td>
+                            <td>${r.teamName || 'Privateer'}</td>
+                            <td>${r.gap || 'Leader'}</td>
+                            <td style="color:#ff3333;">${r.incidents}x</td>
+                            <td style="font-weight:bold; color:var(--primary); font-size:1.05rem;">${r.points}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            `;
+        }
+
+        // ==========================================
+        // 7. STEWARDING PAGE VIEW RENDER & PROTEST SUBMISSION
+        // ==========================================
+        async function renderStewardingPage() {
+            const container = document.getElementById('m2rc-stewards-decisions-container');
+            if (!container) return;
+            container.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Loading decisions...</p>';
+
+            try {
+                const snap = await db.collection("m2rc_stewarding").orderBy("timestamp", "desc").get();
+                if (snap.empty) {
+                    container.innerHTML = '<p style="text-align:center; color:var(--text-muted);">No stewards decisions issued yet.</p>';
+                    return;
+                }
+
+                container.innerHTML = '';
+                snap.forEach(doc => {
+                    const p = doc.data();
+                    let badgeColor = '#555';
+                    if (p.status === 'resolved') badgeColor = '#00ff88';
+                    if (p.status === 'under-review') badgeColor = '#eab308';
+                    
+                    const div = document.createElement('div');
+                    div.className = "glass";
+                    div.style.padding = "1.5rem";
+                    div.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                            <div>
+                                <span style="font-family:var(--font-heading); font-size:0.75rem; color:var(--primary); font-weight:bold;">ROUND ${p.roundNumber} INCIDENT</span><br>
+                                <span style="font-size:0.85rem; color:#fff; font-weight:bold;">${p.protesterName} vs ${p.accusedName}</span>
+                            </div>
+                            <span style="font-size:0.65rem; background:${badgeColor}; color:#000; font-weight:bold; padding:3px 8px; border-radius:4px; text-transform:uppercase;">${p.status}</span>
+                        </div>
+                        <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5; margin-bottom:1rem; border-left: 2px solid rgba(255,255,255,0.05); padding-left:1rem;">
+                            <strong>Protester Case:</strong> "${p.description}"
+                        </p>
+                        ${p.decision ? `
+                        <div style="background:rgba(0,207,255,0.03); border:1px solid rgba(0,207,255,0.1); border-radius:6px; padding:1rem; font-size:0.85rem; color:#fff;">
+                            <strong style="color:var(--primary); text-transform:uppercase; font-size:0.7rem; display:block; margin-bottom:4px;">Steward Ruling:</strong>
+                            ${p.decision}
+                        </div>` : '<p style="font-size:0.8rem; color:var(--text-muted); font-style:italic;">Steward review in progress...</p>'}
+                    `;
+                    container.appendChild(div);
+                });
+            } catch(e) {
+                container.innerHTML = '<p style="color:red; text-align:center;">Failed to load rulings.</p>';
+            }
+
+            // Toggle protest submission visibility based on Auth state
+            const protestForm = document.getElementById('m2rc-protest-form');
+            const authPrompt = document.getElementById('protest-auth-prompt');
+            
+            if (auth && auth.currentUser) {
+                protestForm.style.display = 'block';
+                authPrompt.style.display = 'none';
+            } else {
+                protestForm.style.display = 'none';
+                authPrompt.style.display = 'block';
+            }
+        }
+
+        // Form Submit Handler
+        const protestForm = document.getElementById('m2rc-protest-form');
+        if (protestForm) {
+            protestForm.onsubmit = async (e) => {
+                e.preventDefault();
+                const round = parseInt(document.getElementById('protest-round').value);
+                const accused = document.getElementById('protest-accused').value.trim();
+                const lap = parseInt(document.getElementById('protest-lap').value);
+                const turn = parseInt(document.getElementById('protest-turn').value);
+                const desc = document.getElementById('protest-desc').value.trim();
+                const video = document.getElementById('protest-video').value.trim();
+
+                if (!round || !accused || isNaN(lap) || isNaN(turn) || !desc) {
+                    return alert("Please fill in all required fields.");
+                }
+
+                try {
+                    const protesterName = auth.currentUser.displayName || "Anonymous Driver";
+                    await db.collection("m2rc_stewarding").add({
+                        roundNumber: round,
+                        protesterName: protesterName,
+                        protesterUid: auth.currentUser.uid,
+                        accusedName: accused,
+                        lap,
+                        corner: turn,
+                        description: desc,
+                        videoUrl: video,
+                        status: 'submitted',
+                        decision: '',
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    alert("Protest submitted successfully to the Steward Board!");
+                    protestForm.reset();
+                    renderStewardingPage();
+                } catch(e) {
+                    alert("Error filing protest: " + e.message);
+                }
+            };
+        }
+
+        // ==========================================
+        // 8. REGISTRATION & CAR NUMBER CHECKS
+        // ==========================================
+        async function renderRegistrationPage() {
+            const listGrid = document.getElementById('m2rc-claimed-numbers-grid');
+            if (!listGrid) return;
+            listGrid.innerHTML = '<span style="color:var(--text-muted); font-size:0.85rem;">Loading claimed numbers...</span>';
+
+            try {
+                const snap = await db.collection("m2rc_registrations").where("status", "==", "approved").get();
+                if (snap.empty) {
+                    listGrid.innerHTML = '<span style="color:var(--text-muted); font-size:0.85rem;">No claimed numbers yet. Feel free to choose any!</span>';
+                    return;
+                }
+
+                listGrid.innerHTML = '';
+                const sorted = [];
+                snap.forEach(doc => {
+                    const r = doc.data();
+                    sorted.push({ num: parseInt(r.carNumber), driver: r.driverName });
+                });
+
+                sorted.sort((a,b) => a.num - b.num);
+                sorted.forEach(item => {
+                    const span = document.createElement('span');
+                    span.className = "number-badge";
+                    span.style.cssText = "cursor:help; margin-bottom:5px;";
+                    span.title = `Claimed by: ${item.driver}`;
+                    span.textContent = `#${item.num}`;
+                    listGrid.appendChild(span);
+                });
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        async function checkCarNumberAvailability(number) {
+            const statusLabel = document.getElementById('number-availability-status');
+            const submitBtn = document.getElementById('reg-submit-btn');
+            if (!number) {
+                statusLabel.textContent = '';
+                return;
+            }
+
+            statusLabel.style.color = 'var(--text-muted)';
+            statusLabel.textContent = 'Checking availability...';
+
+            try {
+                const snap = await db.collection("m2rc_registrations")
+                    .where("carNumber", "==", String(number).trim())
+                    .where("status", "==", "approved")
+                    .get();
+
+                if (!snap.empty) {
+                    statusLabel.style.color = '#ff3333';
+                    statusLabel.textContent = '✗ Car Number is already taken!';
+                    submitBtn.disabled = true;
+                    submitBtn.style.opacity = '0.5';
+                } else {
+                    statusLabel.style.color = '#00ff88';
+                    statusLabel.textContent = '✓ Car Number is available!';
+                    submitBtn.disabled = false;
+                    submitBtn.style.opacity = '1';
+                }
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        // Handle Registration Submit
+        const regForm = document.getElementById('m2rc-registration-form');
+        if (regForm) {
+            regForm.onsubmit = async (e) => {
+                e.preventDefault();
+                const name = document.getElementById('reg-name').value.trim();
+                const iracingId = document.getElementById('reg-iracing-id').value.trim();
+                const carNum = document.getElementById('reg-car-number').value.trim();
+                const team = document.getElementById('reg-team').value.trim();
+                const rookie = document.getElementById('reg-rookie').value === 'true';
+
+                if (!name || !iracingId || !carNum) return alert("Fill in all fields.");
+
+                try {
+                    // Check availability one last time
+                    const checkSnap = await db.collection("m2rc_registrations")
+                        .where("carNumber", "==", carNum)
+                        .where("status", "==", "approved")
+                        .get();
+
+                    if (!checkSnap.empty) {
+                        return alert("Error: That car number choice was just taken. Choose another.");
+                    }
+
+                    await db.collection("m2rc_registrations").add({
+                        driverName: name,
+                        iracingId,
+                        carNumber: carNum,
+                        teamName: team,
+                        isRookie: rookie,
+                        status: 'pending',
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+
+                    alert("Registration request submitted! Grid approval usually takes under 24 hours.");
+                    regForm.reset();
+                    document.getElementById('number-availability-status').textContent = '';
+                    renderRegistrationPage();
+                } catch(err) {
+                    alert("Registration Error: " + err.message);
+                }
+            };
+        }
+
+        // Run M2RC loader on window ready
+        window.addEventListener('DOMContentLoaded', initM2RC);
+        initM2RC();
+    </script>
+</body>
+</html>
