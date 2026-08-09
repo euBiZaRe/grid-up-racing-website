@@ -1,4 +1,4 @@
-// GRiD UP - Authentication & Profile Claiming Engine
+﻿// GRiD UP - Authentication & Profile Claiming Engine
 // Powered by Firebase
 
 const firebaseConfig = {
@@ -337,7 +337,7 @@ async function updateAuthUI(user, isTentative = false) {
 
             const btnBase = "padding: 0.45rem 0.9rem; font-size: 0.72rem; font-family: 'Space Grotesk', sans-serif; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; text-decoration: none; border-radius: 6px; white-space: nowrap; transition: all 0.2s ease;";
             const adminLink = IS_ADMIN ? `<a href="${basePath}admin.html" id="navbar-admin-btn" style="${btnBase} background: rgba(255,59,48,0.12); border: 1px solid rgba(255,59,48,0.4); color: #FF6B6B;">Admin</a>` : '';
-            const portalLink = `<a href="${basePath}portal.html" id="navbar-portal-btn" style="position: relative; ${btnBase} background: linear-gradient(90deg, #00E5FF, #0088FF); color: #000000; border: none; box-shadow: 0 0 12px rgba(0,229,255,0.4);">Portal<span id="portal-badge" style="display: ${PORTAL_HAS_UNREAD ? 'block' : 'none'}; position: absolute; top: -4px; right: -4px; width: 8px; height: 8px; background-color: #ff3b30; border-radius: 50%; border: 1px solid #fff; box-shadow: 0 0 4px rgba(255,59,48,0.6);"></span></a>`;
+            const portalLink = `<a href="${basePath}portal.html" id="navbar-portal-btn" style="position: relative; ${btnBase} background: linear-gradient(90deg, #C084FC, #7C3AED); color: #000000; border: none; box-shadow: 0 0 12px rgba(192,132,252,0.4);">Portal<span id="portal-badge" style="display: ${PORTAL_HAS_UNREAD ? 'block' : 'none'}; position: absolute; top: -4px; right: -4px; width: 8px; height: 8px; background-color: #ff3b30; border-radius: 50%; border: 1px solid #fff; box-shadow: 0 0 4px rgba(255,59,48,0.6);"></span></a>`;
             const profileLink = `<a href="${basePath}profile.html" style="${btnBase} background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.2); color: #FFFFFF;">Profile</a>`;
             const logoutBtn = `<a href="#" onclick="if(confirm('Logout?')) firebase.auth().signOut()" style="${btnBase} background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.15); color: #E2E8F0; display: inline-flex; align-items: center; gap: 6px;"><img src="${avatar}" style="width: 18px; height: 18px; border-radius: 50%; vertical-align: middle; object-fit: cover; border: 1px solid rgba(255,255,255,0.3);"> Logout</a>`;
 
@@ -387,7 +387,7 @@ async function checkClaimStatus(driverName, user) {
         if (docSnapshot.exists) {
             const data = docSnapshot.data();
             if (data.status === "verified") {
-                claimSection.innerHTML = `<div class="badge-verified" style="background: rgba(0, 207, 255, 0.1); color: var(--primary); padding: 0.75rem 1.5rem; border: 1px solid var(--primary); border-radius: 4px; display: inline-block; font-weight: 700;">✓ VERIFIED TEAM MEMBER</div>`;
+                claimSection.innerHTML = `<div class="badge-verified" style="background: rgba(168, 85, 247, 0.1); color: var(--primary); padding: 0.75rem 1.5rem; border: 1px solid var(--primary); border-radius: 4px; display: inline-block; font-weight: 700;">✓ VERIFIED TEAM MEMBER</div>`;
             } else {
                 claimSection.innerHTML = `<div class="badge-pending" style="background: rgba(255, 255, 255, 0.05); color: var(--text-muted); padding: 0.75rem 1.5rem; border: 1px solid var(--glass-border); border-radius: 4px; display: inline-block;">CLAIM PENDING VERIFICATION</div>`;
             }
