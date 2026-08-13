@@ -1,0 +1,389 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5JMPYRH8H9"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date()); gtag('config', 'G-5JMPYRH8H9');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M2RC Admin Dashboard — GRiD UP Esports</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --bg:#060810; --card:rgba(255,255,255,0.028); --border:rgba(168,85,247,0.14);
+        --purple:#A855F7; --pd:#7C3AED; --pl:#C084FC; --gold:#FFB800; --red:#E21B23;
+        --text:#F1F5F9; --sub:#94A3B8; --muted:#475569;
+        --fh:'Space Grotesk',sans-serif; --fb:'Outfit',sans-serif;
+        --r:16px; --rs:8px; --tr:all 0.2s ease;
+      }
+      *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+      body{background:var(--bg);color:var(--text);font-family:var(--fb);font-size:1rem;line-height:1.6;-webkit-font-smoothing:antialiased;min-height:100vh;}
+      body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(168,85,247,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(168,85,247,0.025) 1px,transparent 1px);background-size:64px 64px;pointer-events:none;z-index:0;}
+      body>*{position:relative;z-index:1;}
+      a{color:inherit;text-decoration:none;}
+      input,select,textarea,button{font-family:var(--fb);}
+      .topbar{height:3px;background:linear-gradient(90deg,#1C69D4 0%,#A855F7 50%,#E21B23 100%);width:100%;}
+      .admin-nav{position:sticky;top:0;z-index:200;background:rgba(6,8,16,0.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);}
+      .nav-inner{max-width:1400px;margin:0 auto;padding:0 2rem;height:60px;display:flex;align-items:center;justify-content:space-between;}
+      .nav-logo{display:flex;align-items:center;gap:10px;}
+      .nav-badge{width:34px;height:34px;background:linear-gradient(135deg,var(--pd),var(--purple));border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-weight:900;font-size:0.75rem;color:#fff;box-shadow:0 0 16px rgba(168,85,247,0.4);}
+      .container{max-width:1400px;margin:0 auto;padding:2.5rem 2rem 5rem;}
+      .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0.5rem 1rem;border-radius:var(--rs);font-family:var(--fh);font-size:0.75rem;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;cursor:pointer;border:1px solid;transition:var(--tr);white-space:nowrap;}
+      .btn-purple{background:linear-gradient(135deg,var(--pd),var(--purple));color:#fff;border-color:transparent;box-shadow:0 0 16px rgba(168,85,247,0.3);}
+      .btn-purple:hover{transform:translateY(-1px);box-shadow:0 0 24px rgba(168,85,247,0.5);}
+      .btn-green{background:rgba(34,197,94,0.14);color:#4ade80;border-color:rgba(34,197,94,0.3);}
+      .btn-green:hover{background:rgba(34,197,94,0.25);}
+      .btn-red{background:rgba(226,27,35,0.14);color:#ff4455;border-color:rgba(226,27,35,0.3);}
+      .btn-red:hover{background:rgba(226,27,35,0.25);}
+      .btn-outline{background:rgba(255,255,255,0.04);color:var(--sub);border-color:rgba(255,255,255,0.1);}
+      .btn-outline:hover{background:rgba(255,255,255,0.08);color:#fff;}
+      .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1.75rem;backdrop-filter:blur(20px);margin-bottom:1.5rem;}
+      .tab-bar{display:flex;gap:0.5rem;margin-bottom:2rem;border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:0.75rem;overflow-x:auto;}
+      .tab-btn{padding:0.55rem 1.1rem;border-radius:8px;font-family:var(--fh);font-size:0.75rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--sub);background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);cursor:pointer;transition:var(--tr);white-space:nowrap;}
+      .tab-btn:hover{color:#fff;background:rgba(255,255,255,0.08);}
+      .tab-btn.active{color:var(--pl);background:rgba(168,85,247,0.14);border-color:rgba(168,85,247,0.32);box-shadow:0 0 16px rgba(168,85,247,0.18);}
+      .panel{display:none;}
+      .panel.active{display:block;}
+      .table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border);background:var(--card);}
+      table{width:100%;border-collapse:collapse;font-family:var(--fh);font-size:0.84rem;}
+      th{padding:1rem 1.2rem;font-size:0.6rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--muted);text-align:left;border-bottom:1px solid rgba(168,85,247,0.14);}
+      td{padding:0.85rem 1.2rem;border-bottom:1px solid rgba(255,255,255,0.03);color:var(--text);vertical-align:middle;}
+      tr:last-child td{border-bottom:none;}
+      .form-group{margin-bottom:1rem;}
+      label{display:block;font-family:var(--fh);font-size:0.62rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--sub);margin-bottom:0.4rem;}
+      input,select,textarea{width:100%;background:rgba(0,0,0,0.4);border:1px solid rgba(168,85,247,0.18);border-radius:var(--rs);color:#fff;padding:0.65rem 0.9rem;font-family:var(--fb);font-size:0.9rem;outline:none;transition:var(--tr);}
+      input:focus,select:focus,textarea:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(168,85,247,0.12);}
+      select option{background:#161926;color:#fff;}
+      .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;font-family:var(--fh);font-size:0.58rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;}
+      .badge-pending{background:rgba(255,184,0,0.12);color:var(--gold);border:1px solid rgba(255,184,0,0.25);}
+      .badge-approved{background:rgba(34,197,94,0.12);color:#4ade80;border:1px solid rgba(34,197,94,0.25);}
+      .badge-rejected{background:rgba(226,27,35,0.12);color:#ff4455;border:1px solid rgba(226,27,35,0.25);}
+      #access-denied{display:none;text-align:center;padding:8rem 2rem;}
+    </style>
+</head>
+<body>
+<div class="topbar"></div>
+<nav class="admin-nav">
+  <div class="nav-inner">
+    <div class="nav-logo">
+      <div class="nav-badge">M2</div>
+      <div>
+        <span style="font-family:var(--fh);font-weight:900;font-size:0.95rem;color:#fff;">M2RC Admin Dashboard</span>
+        <span style="display:block;font-size:0.58rem;color:var(--pl);letter-spacing:2px;font-weight:700;text-transform:uppercase;">GRiD UP Esports League Control</span>
+      </div>
+    </div>
+    <a href="m2rc.html" class="btn btn-outline">&#8592; Back to M2RC Website</a>
+  </div>
+</nav>
+
+<div id="access-denied" class="container">
+  <div class="card" style="max-width:500px;margin:0 auto;text-align:center;padding:3rem;">
+    <h2 style="font-family:var(--fh);color:#ff4455;margin-bottom:0.5rem;">Access Denied</h2>
+    <p style="color:var(--sub);margin-bottom:1.5rem;font-size:0.9rem;">You must be logged in as a GRiD UP administrator to access the M2RC League Control Panel.</p>
+    <a href="login.html" class="btn btn-purple">Login as Admin</a>
+  </div>
+</div>
+
+<div id="admin-main" class="container" style="display:none;">
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchAdminTab('regs')">&#128221; Driver Registrations</button>
+    <button class="tab-btn" onclick="switchAdminTab('schedule')">&#128197; Schedule &amp; Weather</button>
+    <button class="tab-btn" onclick="switchAdminTab('results')">&#127942; Race Results Entry</button>
+    <button class="tab-btn" onclick="switchAdminTab('stewards')">&#9878; Stewarding Panel</button>
+  </div>
+
+  <!-- REGISTRATIONS -->
+  <div id="panel-regs" class="panel active">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem;">
+      <h2 style="font-family:var(--fh);font-size:1.4rem;font-weight:900;color:#fff;">Driver Registrations &amp; Grid Slots</h2>
+      <span id="reg-count-badge" style="font-family:var(--fh);font-size:0.75rem;color:var(--pl);font-weight:700;">Loading entries...</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Car #</th>
+            <th>Driver Name</th>
+            <th>iRacing ID</th>
+            <th>Team</th>
+            <th>Class</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="admin-regs-body">
+          <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:3rem;">Loading registrations...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SCHEDULE -->
+  <div id="panel-schedule" class="panel">
+    <h2 style="font-family:var(--fh);font-size:1.4rem;font-weight:900;color:#fff;margin-bottom:1.2rem;">Season 1 Schedule &amp; Weather Editor</h2>
+    <div id="admin-schedule-list" style="display:flex;flex-direction:column;gap:1rem;"></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="panel-results" class="panel">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem;flex-wrap:wrap;gap:1rem;">
+      <div>
+        <h2 style="font-family:var(--fh);font-size:1.4rem;font-weight:900;color:#fff;">Race Results Upload &amp; Points Editor</h2>
+        <p style="color:var(--sub);font-size:0.85rem;">Enter finishing positions, incident counts, and fastest laps for each round.</p>
+      </div>
+      <select id="results-round-select" onchange="loadAdminRoundResults(this.value)" style="max-width:260px;">
+        <option value="">-- Choose Round --</option>
+      </select>
+    </div>
+    <div class="card" id="results-edit-card" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <h3 id="results-editing-title" style="font-family:var(--fh);color:var(--pl);font-size:1rem;">Editing Round Results</h3>
+        <button class="btn btn-purple" onclick="saveAdminRoundResults()">&#128190; Save &amp; Publish Results</button>
+      </div>
+      <div id="results-rows-container"></div>
+      <button class="btn btn-outline" onclick="addResultsRow()" style="margin-top:1rem;">+ Add Driver Result</button>
+    </div>
+  </div>
+
+  <!-- STEWARDS -->
+  <div id="panel-stewards" class="panel">
+    <h2 style="font-family:var(--fh);font-size:1.4rem;font-weight:900;color:#fff;margin-bottom:1.2rem;">Steward Protest Review Panel</h2>
+    <div id="admin-stewards-list" style="display:flex;flex-direction:column;gap:1rem;"></div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="/js/auth.js"></script>
+
+<script>
+  let ADMIN_ROUNDS=[],ADMIN_REGS=[],ADMIN_RESULTS={};
+
+  function switchAdminTab(t){
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    event.target.classList.add('active');
+    const p=document.getElementById('panel-'+t);if(p)p.classList.add('active');
+  }
+
+  function checkAdminAccess(){
+    const main=document.getElementById('admin-main');
+    const denied=document.getElementById('access-denied');
+    if(window.IS_ADMIN){
+      main.style.display='block';denied.style.display='none';
+      initAdminData();
+    }else{
+      main.style.display='none';denied.style.display='block';
+    }
+  }
+
+  async function initAdminData(){
+    if(!window.db)return setTimeout(initAdminData,300);
+    await loadAdminRegs();
+    await loadAdminSchedule();
+    await loadAdminStewards();
+  }
+
+  async function loadAdminRegs(){
+    const body=document.getElementById('admin-regs-body');
+    const count=document.getElementById('reg-count-badge');
+    try{
+      const snap=await db.collection('m2rc_registrations').get();
+      ADMIN_REGS=[];
+      if(snap.empty){body.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:3rem;">No driver registrations found.</td></tr>';return;}
+      snap.forEach(doc=>ADMIN_REGS.push({id:doc.id,...doc.data()}));
+      ADMIN_REGS.sort((a,b)=>parseInt(a.carNumber||0)-parseInt(b.carNumber||0));
+      count.textContent=`${ADMIN_REGS.filter(r=>r.status==='approved').length} Approved / ${ADMIN_REGS.length} Total`;
+      body.innerHTML=ADMIN_REGS.map(r=>`
+        <tr>
+          <td><strong style="font-family:var(--fh);color:var(--gold);font-size:0.95rem;">#${r.carNumber||'--'}</strong></td>
+          <td><strong style="color:#fff;">${r.driverName}</strong></td>
+          <td style="color:var(--sub);font-family:monospace;">${r.iracingId||'--'}</td>
+          <td style="color:var(--sub);">${r.teamName||'Privateer'}</td>
+          <td>${r.isRookie==='true'||r.isRookie===true?'<span style="color:#eab308;font-weight:800;font-size:0.7rem;">AM CLASS</span>':'<span style="color:var(--pl);font-weight:800;font-size:0.7rem;">PRO CLASS</span>'}</td>
+          <td>${r.status==='approved'?'<span class="badge badge-approved">✓ APPROVED</span>':r.status==='rejected'?'<span class="badge badge-rejected">❌ REJECTED</span>':'<span class="badge badge-pending">⏳ PENDING</span>'}</td>
+          <td>
+            <div style="display:flex;gap:4px;">
+              ${r.status!=='approved'?`<button class="btn btn-green" onclick="updateRegStatus('${r.id}','approved')" style="padding:0.25rem 0.5rem;font-size:0.65rem;">Approve</button>`:''}
+              ${r.status!=='rejected'?`<button class="btn btn-red" onclick="updateRegStatus('${r.id}','rejected')" style="padding:0.25rem 0.5rem;font-size:0.65rem;">Reject</button>`:''}
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }catch(e){console.error(e);body.innerHTML='<tr><td colspan="7" style="text-align:center;color:#ff4455;">Error loading registrations.</td></tr>';}
+  }
+
+  async function updateRegStatus(id,status){
+    try{
+      await db.collection('m2rc_registrations').doc(id).update({status});
+      loadAdminRegs();
+    }catch(e){alert('Error: '+e.message);}
+  }
+
+  async function loadAdminSchedule(){
+    const container=document.getElementById('admin-schedule-list');
+    const select=document.getElementById('results-round-select');
+    try{
+      const snap=await db.collection('m2rc_schedule').orderBy('roundNumber','asc').get();
+      ADMIN_ROUNDS=[];
+      if(!snap.empty){snap.forEach(doc=>ADMIN_ROUNDS.push({id:doc.id,...doc.data()}));}
+      select.innerHTML='<option value="">-- Choose Round --</option>';
+      ADMIN_ROUNDS.forEach(r=>{
+        const o=document.createElement('option');o.value=r.id;o.textContent=`Round ${r.roundNumber} — ${r.track}`;
+        select.appendChild(o);
+      });
+      container.innerHTML=ADMIN_ROUNDS.map(r=>`
+        <div class="card" style="margin-bottom:0;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+            <div>
+              <span style="font-family:var(--fh);font-size:0.68rem;font-weight:800;color:var(--pl);letter-spacing:1px;text-transform:uppercase;">ROUND ${r.roundNumber}</span>
+              <h3 style="font-family:var(--fh);font-size:1.15rem;font-weight:900;color:#fff;">${r.track} (${r.config||'GP'})</h3>
+            </div>
+            <button class="btn btn-purple" onclick="saveRoundConfig('${r.id}')">Save Round ${r.roundNumber}</button>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:0.75rem;">
+            <div class="form-group"><label>Date</label><input type="text" id="sch-date-${r.id}" value="${r.date||''}"></div>
+            <div class="form-group"><label>Track Config</label><input type="text" id="sch-config-${r.id}" value="${r.config||''}"></div>
+            <div class="form-group"><label>Sim Start Time</label><input type="text" id="sch-sim-${r.id}" value="${r.simStartTime||'14:00'}"></div>
+            <div class="form-group"><label>Status</label>
+              <select id="sch-status-${r.id}">
+                <option value="upcoming" ${r.status==='upcoming'?'selected':''}>Upcoming</option>
+                <option value="live" ${r.status==='live'?'selected':''}>🔴 LIVE</option>
+                <option value="completed" ${r.status==='completed'?'selected':''}>✓ Completed</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Race Winner</label><input type="text" id="sch-winner-${r.id}" value="${r.winnerName||''}"></div>
+            <div class="form-group"><label>Broadcast URL</label><input type="url" id="sch-bcast-${r.id}" value="${r.broadcastUrl||''}"></div>
+          </div>
+        </div>
+      `).join('');
+    }catch(e){console.error(e);}
+  }
+
+  async function saveRoundConfig(id){
+    try{
+      await db.collection('m2rc_schedule').doc(id).set({
+        date:document.getElementById('sch-date-'+id).value,
+        config:document.getElementById('sch-config-'+id).value,
+        simStartTime:document.getElementById('sch-sim-'+id).value,
+        status:document.getElementById('sch-status-'+id).value,
+        winnerName:document.getElementById('sch-winner-'+id).value,
+        broadcastUrl:document.getElementById('sch-bcast-'+id).value
+      },{merge:true});
+      alert('Round updated successfully!');
+      loadAdminSchedule();
+    }catch(e){alert('Error: '+e.message);}
+  }
+
+  async function loadAdminRoundResults(roundId){
+    const card=document.getElementById('results-edit-card');
+    const container=document.getElementById('results-rows-container');
+    if(!roundId){card.style.display='none';return;}
+    card.style.display='block';
+    container.innerHTML='<p style="color:var(--muted);">Loading results...</p>';
+    try{
+      const doc=await db.collection('m2rc_results').doc(roundId).get();
+      const rows=doc.exists?doc.data().results||[]:[];
+      container.innerHTML='';
+      if(rows.length===0){addResultsRow();return;}
+      rows.forEach(r=>addResultsRow(r));
+    }catch(e){console.error(e);}
+  }
+
+  function addResultsRow(data={}){
+    const container=document.getElementById('results-rows-container');
+    const div=document.createElement('div');
+    div.className='results-row-item';
+    div.style.cssText='display:grid;grid-template-columns:60px 60px 1.5fr 1fr 80px 80px 80px 40px;gap:0.5rem;align-items:center;margin-bottom:0.5rem;';
+    div.innerHTML=`
+      <input type="number" class="res-pos" placeholder="Pos" value="${data.pos||''}" min="1">
+      <input type="number" class="res-start" placeholder="Start" value="${data.startPos||''}" min="1">
+      <input type="text" class="res-driver" placeholder="Driver Name" value="${data.driverName||''}">
+      <input type="text" class="res-team" placeholder="Team Name" value="${data.teamName||''}">
+      <input type="text" class="res-gap" placeholder="Gap" value="${data.gap||''}">
+      <input type="number" class="res-inc" placeholder="Inc (x)" value="${data.incidents||0}" min="0">
+      <input type="number" class="res-pts" placeholder="Pts" value="${data.points||0}">
+      <button class="btn btn-red" onclick="this.parentElement.remove()" style="padding:0.4rem;font-size:0.7rem;">✕</button>
+    `;
+    container.appendChild(div);
+  }
+
+  async function saveAdminRoundResults(){
+    const roundId=document.getElementById('results-round-select').value;
+    if(!roundId)return alert('Select a round first.');
+    const rows=document.querySelectorAll('.results-row-item');
+    const results=[];
+    rows.forEach(r=>{
+      const pos=parseInt(r.querySelector('.res-pos').value)||0;
+      const startPos=parseInt(r.querySelector('.res-start').value)||0;
+      const driverName=r.querySelector('.res-driver').value.trim();
+      const teamName=r.querySelector('.res-team').value.trim();
+      const gap=r.querySelector('.res-gap').value.trim();
+      const incidents=parseInt(r.querySelector('.res-inc').value)||0;
+      const points=parseInt(r.querySelector('.res-pts').value)||0;
+      if(driverName)results.push({pos,startPos,driverName,teamName,gap,incidents,points});
+    });
+    results.sort((a,b)=>a.pos-b.pos);
+    try{
+      await db.collection('m2rc_results').doc(roundId).set({results},{merge:true});
+      alert(`Saved ${results.length} result entries for ${roundId}!`);
+    }catch(e){alert('Error saving results: '+e.message);}
+  }
+
+  async function loadAdminStewards(){
+    const container=document.getElementById('admin-stewards-list');
+    try{
+      const snap=await db.collection('m2rc_stewarding').orderBy('timestamp','desc').get();
+      if(snap.empty){container.innerHTML='<div class="card" style="text-align:center;color:var(--muted);padding:3rem;">No driver protests filed.</div>';return;}
+      container.innerHTML='';
+      snap.forEach(doc=>{
+        const p=doc.data();
+        const div=document.createElement('div');div.className='card';
+        div.innerHTML=`
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.75rem;">
+            <div>
+              <span style="font-family:var(--fh);font-size:0.65rem;color:var(--pl);font-weight:800;letter-spacing:1.5px;text-transform:uppercase;">Round ${p.roundNumber} &middot; Lap ${p.lap} &middot; Corner ${p.corner}</span>
+              <h3 style="font-family:var(--fh);color:#fff;font-size:1rem;margin-top:2px;">${p.protesterName} vs ${p.accusedName}</h3>
+            </div>
+            <select id="st-status-${doc.id}" style="width:auto;font-size:0.72rem;padding:0.3rem 0.6rem;" onchange="updateStewardStatus('${doc.id}',this.value)">
+              <option value="submitted" ${p.status==='submitted'?'selected':''}>Submitted</option>
+              <option value="under-review" ${p.status==='under-review'?'selected':''}>⚖️ Under Review</option>
+              <option value="resolved" ${p.status==='resolved'?'selected':''}>✓ Resolved</option>
+            </select>
+          </div>
+          <p style="color:var(--sub);font-size:0.88rem;margin-bottom:1rem;background:rgba(0,0,0,0.3);padding:0.75rem;border-radius:8px;border-left:2px solid var(--purple);">"${p.description}"</p>
+          ${p.videoUrl?`<p style="margin-bottom:1rem;"><a href="${p.videoUrl}" target="_blank" style="color:var(--pl);font-size:0.75rem;">▶ View Video Evidence</a></p>`:''}
+          <div class="form-group" style="margin-bottom:0.5rem;">
+            <label>Official Steward Decision / Ruling</label>
+            <textarea id="st-decision-${doc.id}" placeholder="Enter official penalty or ruling text...">${p.decision||''}</textarea>
+          </div>
+          <button class="btn btn-purple" onclick="saveStewardRuling('${doc.id}')" style="margin-top:0.5rem;">Publish Ruling</button>
+        `;
+        container.appendChild(div);
+      });
+    }catch(e){console.error(e);}
+  }
+
+  async function updateStewardStatus(id,status){
+    try{await db.collection('m2rc_stewarding').doc(id).update({status});}catch(e){alert(e.message);}
+  }
+
+  async function saveStewardRuling(id){
+    const decision=document.getElementById('st-decision-'+id).value.trim();
+    try{
+      await db.collection('m2rc_stewarding').doc(id).update({decision,status:'resolved'});
+      alert('Steward ruling published!');
+      loadAdminStewards();
+    }catch(e){alert(e.message);}
+  }
+
+  window.addEventListener('DOMContentLoaded',()=>setTimeout(checkAdminAccess,600));
+</script>
+</body>
+</html>
