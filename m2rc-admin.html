@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-5JMPYRH8H9"></script>
@@ -175,13 +175,44 @@
   function checkAdminAccess(){
     const main=document.getElementById('admin-main');
     const denied=document.getElementById('access-denied');
-    if(window.IS_ADMIN){
+    let cachedIsAdmin=false;
+    try{
+      const cached=JSON.parse(localStorage.getItem('gridup_auth_cache')||'{}');
+      if(cached&&cached.isAdmin)cachedIsAdmin=true;
+    }catch(e){}
+    if(window.IS_ADMIN||cachedIsAdmin){
+      main.style.display='block';denied.style.display='none';
+      initAdminData();
+    }
+  }
+
+  window.onAuthEnriched=function(user,data){
+    const main=document.getElementById('admin-main');
+    const denied=document.getElementById('access-denied');
+    if(data&&data.isAdmin){
+      window.IS_ADMIN=true;
       main.style.display='block';denied.style.display='none';
       initAdminData();
     }else{
       main.style.display='none';denied.style.display='block';
     }
-  }
+  };
+
+  firebase.auth().onAuthStateChanged(async(user)=>{
+    if(user){
+      const MASTER_ADMIN='B0t4f4nqqpZIQKpT8Ed97xka5gM2';
+      if(user.uid===MASTER_ADMIN){
+        window.IS_ADMIN=true;
+        const main=document.getElementById('admin-main');
+        const denied=document.getElementById('access-denied');
+        if(main&&denied){main.style.display='block';denied.style.display='none';initAdminData();}
+      }
+    }else{
+      const main=document.getElementById('admin-main');
+      const denied=document.getElementById('access-denied');
+      if(main&&denied){main.style.display='none';denied.style.display='block';}
+    }
+  });
 
   async function initAdminData(){
     if(!window.db)return setTimeout(initAdminData,300);

@@ -185,6 +185,13 @@ async function enrichAuthData(user) {
                 const admins = adminDoc.data().uids || [];
                 IS_ADMIN = admins.includes(user.uid);
             }
+            if (!IS_ADMIN) {
+                const uDoc = await db.collection("users").doc(user.uid).get();
+                if (uDoc.exists) {
+                    const ud = uDoc.data();
+                    if (ud.isAdmin === true || ud.role === 'admin') IS_ADMIN = true;
+                }
+            }
         } catch (e) { console.warn("Admin Check Error:", e); }
     }
 
