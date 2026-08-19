@@ -299,9 +299,43 @@ def main():
                 firestore_docs_map[doc.id] = data
                 data["_docId"] = doc.id
                 drivers_list.append(data)
-            print(f"Loaded {len(drivers_list)} drivers from Firestore.")
+            print(f"Loaded {len(drivers_list)} drivers from Firestore via Admin SDK.")
         except Exception as e:
-            print(f"Firestore load error: {e}")
+            print(f"Firestore Admin SDK error: {e}")
+
+    # Fallback: Query Firestore REST API if no service account credential in GitHub Actions
+    if not drivers_list:
+        try:
+            print("Fetching driver list from Firestore via REST API...")
+            url = "https://firestore.googleapis.com/v1/projects/grid-up/databases/(default)/documents/drivers?pageSize=100"
+            r = requests.get(url, timeout=15)
+            if r.status_code == 200:
+                docs = r.json().get("documents", [])
+                for doc in docs:
+                    doc_path = doc.get("name", "")
+                    doc_id = doc_path.split("/")[-1]
+                    fields = doc.get("fields", {})
+                    
+                    def parse_val(v):
+                        if not isinstance(v, dict): return v
+                        if "stringValue" in v: return v["stringValue"]
+                        if "integerValue" in v: return int(v["integerValue"])
+                        if "doubleValue" in v: return float(v["doubleValue"])
+                        if "booleanValue" in v: return v["booleanValue"]
+                        if "mapValue" in v:
+                            sub_fields = v.get("mapValue", {}).get("fields", {})
+                            return {k: parse_val(val) for k, val in sub_fields.items()}
+                        if "arrayValue" in v:
+                            sub_vals = v.get("arrayValue", {}).get("values", [])
+                            return [parse_val(val) for val in sub_vals]
+                        return None
+
+                    driver_dict = {k: parse_val(v) for k, v in fields.items()}
+                    driver_dict["_docId"] = doc_id
+                    drivers_list.append(driver_dict)
+                print(f"Loaded {len(drivers_list)} drivers from Firestore via REST API.")
+        except Exception as e:
+            print(f"Firestore REST API fetch failed: {e}")
 
     # Fallback to local files if Firestore is not available
     if not drivers_list and os.path.exists(DRIVERS_JSON):
