@@ -251,7 +251,7 @@ def generate_driver_html(driver, template):
         when_str = r_info.get("updated") if isinstance(r_info, dict) else None
         when_formatted = f"({format_date_str(when_str)})" if when_str else ""
 
-        html = html.replace(f"{{{{IRATING_{int_key}}}}}", f"{ir_val:,}" if ir_val > 0 else "---")
+        html = html.replace(f"{{{{IRATING_{int_key}}}}}", str(ir_val) if ir_val > 0 else "---")
         html = html.replace(f"{{{{IRATING_{int_key}_PC}}}}", str(pc))
         html = html.replace(f"{{{{LICENSE_{int_key}}}}}", lic)
         html = html.replace(f"{{{{LICENSE_CLASS_{int_key}}}}}", lic_class)

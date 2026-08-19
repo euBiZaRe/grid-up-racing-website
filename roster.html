@@ -295,7 +295,7 @@
                 const formatRating = (val) => {
                     if (!val || val === 0 || val === '0' || val === '---') return 'N/A';
                     const num = parseInt(val);
-                    return isNaN(num) || num <= 0 ? 'N/A' : num.toLocaleString();
+                    return isNaN(num) || num <= 0 ? 'N/A' : String(num);
                 };
 
                 const getRatingsHTML = (d) => {
