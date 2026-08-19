@@ -117,6 +117,40 @@ body {
     display: none;
 }
 
+/* Driver Card Compact Ratings */
+.driver-ratings-compact {
+    margin-top: 1.25rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.35rem 1rem;
+}
+
+.d-rating-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.72rem;
+}
+
+.d-rating-lbl {
+    color: var(--text-muted);
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.d-rating-val {
+    font-family: monospace;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.d-rating-val.highlight {
+    color: var(--primary);
+    font-weight: 800;
+}
+
 /* Medal Colors */
 .metallic-text {
   position: relative;

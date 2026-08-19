@@ -181,11 +181,30 @@
             gap: 8px;
         }
 
+        .ratings-last-checked {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .rating-score-box {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+        }
+
         .rating-score {
             font-family: monospace;
             font-size: 0.95rem;
             color: var(--primary);
             font-weight: 800;
+        }
+
+        .rating-when {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            font-weight: 500;
         }
 
         .rating-bar-bg {
@@ -353,50 +372,49 @@
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
                             iRacing Ratings
                         </h3>
+                        <span class="ratings-last-checked">Checked: 19 Aug 2026</span>
                     </div>
 
                     <div class="rating-group">
                         <div class="rating-label">
                             <div class="rating-label-left">
                                 <span>Sports Car</span>
-                                <span class="license-badge license-a">A 4.99</span>
+                                <span class="license-badge license-a">A 4.47</span>
                             </div>
-                            <span class="rating-score">2683</span>
+                            <div class="rating-score-box">
+                                <span class="rating-score">2,727</span>
+                                <span class="rating-when">(16 Aug 2026)</span>
+                            </div>
                         </div>
-                        <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 44.72%;"></div></div>
+                        <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 45.45%;"></div></div>
                     </div>
 
                     <div class="rating-group">
                         <div class="rating-label">
                             <div class="rating-label-left">
-                                <span>Formula</span>
-                                <span class="license-badge license-a">A 3.55</span>
+                                <span>Formula Car</span>
+                                <span class="license-badge license-a">A 3.36</span>
                             </div>
-                            <span class="rating-score">2126</span>
+                            <div class="rating-score-box">
+                                <span class="rating-score">2,156</span>
+                                <span class="rating-when">(20 Jul 2026)</span>
+                            </div>
                         </div>
-                        <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 35.43%;"></div></div>
+                        <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 35.93%;"></div></div>
                     </div>
 
                     <div class="rating-group">
                         <div class="rating-label">
                             <div class="rating-label-left">
                                 <span>Oval</span>
-                                <span class="license-badge license-a">A 2.78</span>
+                                <span class="license-badge license-a">A 2.67</span>
                             </div>
-                            <span class="rating-score">2586</span>
-                        </div>
-                        <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 43.1%;"></div></div>
-                    </div>
-
-                    <div class="rating-group">
-                        <div class="rating-label">
-                            <div class="rating-label-left">
-                                <span>Dirt Oval</span>
-                                <span class="license-badge license-b">B 2.67</span>
+                            <div class="rating-score-box">
+                                <span class="rating-score">2,598</span>
+                                <span class="rating-when">(06 Aug 2026)</span>
                             </div>
-                            <span class="rating-score">1212</span>
                         </div>
-                        <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 20.2%;"></div></div>
+                        <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 43.3%;"></div></div>
                     </div>
 
                     <div class="rating-group">
@@ -405,9 +423,40 @@
                                 <span>Dirt Road</span>
                                 <span class="license-badge license-b">B 2.68</span>
                             </div>
-                            <span class="rating-score">1536</span>
+                            <div class="rating-score-box">
+                                <span class="rating-score">1,536</span>
+                                <span class="rating-when">(16 Sep 2025)</span>
+                            </div>
                         </div>
                         <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 25.6%;"></div></div>
+                    </div>
+
+                    <div class="rating-group">
+                        <div class="rating-label">
+                            <div class="rating-label-left">
+                                <span>Dirt Oval</span>
+                                <span class="license-badge license-b">B 2.67</span>
+                            </div>
+                            <div class="rating-score-box">
+                                <span class="rating-score">1,212</span>
+                                <span class="rating-when">(09 Sep 2025)</span>
+                            </div>
+                        </div>
+                        <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 20.2%;"></div></div>
+                    </div>
+
+                    <div class="rating-group">
+                        <div class="rating-label">
+                            <div class="rating-label-left">
+                                <span>Road</span>
+                                <span class="license-badge license-r">R 2.50</span>
+                            </div>
+                            <div class="rating-score-box">
+                                <span class="rating-score">1,615</span>
+                                <span class="rating-when">(26 Feb 2024)</span>
+                            </div>
+                        </div>
+                        <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: 26.92%;"></div></div>
                     </div>
                 </div>
 

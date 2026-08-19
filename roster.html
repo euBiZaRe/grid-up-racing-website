@@ -44,8 +44,34 @@
             background-color: var(--primary) !important;
             border-color: var(--primary) !important;
         }
-        .switch input:checked + .slider:before {
-            transform: translateX(24px);
+        /* Driver Card Ratings Compact */
+        .driver-ratings-compact {
+            margin-top: 1.25rem;
+            padding-top: 0.9rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.35rem 1rem;
+        }
+        .d-rating-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.72rem;
+        }
+        .d-rating-lbl {
+            color: var(--text-muted);
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .d-rating-val {
+            font-family: monospace;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.35);
+        }
+        .d-rating-val.highlight {
+            color: var(--primary);
+            font-weight: 800;
         }
     </style>
 </head>
@@ -265,6 +291,44 @@
                     return isVerified ? `<span class="verified-check" style="display: ${displayStyle}; color: #10B981; margin-left: 0.5rem; font-size: 1.1rem; font-weight: 700;" title="Verified Driver">✓</span>` : '';
                 };
 
+                // Helper to format ratings for driver cards
+                const formatRating = (val) => {
+                    if (!val || val === 0 || val === '0' || val === '---') return 'N/A';
+                    const num = parseInt(val);
+                    return isNaN(num) || num <= 0 ? 'N/A' : num.toLocaleString();
+                };
+
+                const getRatingsHTML = (d) => {
+                    const stats = d.stats || {};
+                    const iratings = stats.iRatings || {};
+                    const iracingObj = d.iracing || {};
+                    const detailedRatings = iracingObj.ratings || {};
+
+                    const getVal = (intKey, irKey) => {
+                        if (iratings[intKey] && iratings[intKey] > 0) return formatRating(iratings[intKey]);
+                        if (detailedRatings[irKey] && detailedRatings[irKey].value > 0) return formatRating(detailedRatings[irKey].value);
+                        return 'N/A';
+                    };
+
+                    const sports = getVal('SPORTS', 'sportsCar');
+                    const formula = getVal('FORMULA', 'formulaCar');
+                    const oval = getVal('OVAL', 'oval');
+                    const dirtRoad = getVal('DIRT_ROAD', 'dirtRoad');
+                    const dirtOval = getVal('DIRT_OVAL', 'dirtOval');
+                    const road = getVal('ROAD', 'road');
+
+                    return `
+                        <div class="driver-ratings-compact">
+                            <div class="d-rating-row"><span class="d-rating-lbl">Sports Car</span><span class="d-rating-val ${sports !== 'N/A' ? 'highlight' : ''}">${sports}</span></div>
+                            <div class="d-rating-row"><span class="d-rating-lbl">Formula</span><span class="d-rating-val ${formula !== 'N/A' ? 'highlight' : ''}">${formula}</span></div>
+                            <div class="d-rating-row"><span class="d-rating-lbl">Oval</span><span class="d-rating-val ${oval !== 'N/A' ? 'highlight' : ''}">${oval}</span></div>
+                            <div class="d-rating-row"><span class="d-rating-lbl">Dirt Road</span><span class="d-rating-val ${dirtRoad !== 'N/A' ? 'highlight' : ''}">${dirtRoad}</span></div>
+                            <div class="d-rating-row"><span class="d-rating-lbl">Dirt Oval</span><span class="d-rating-val ${dirtOval !== 'N/A' ? 'highlight' : ''}">${dirtOval}</span></div>
+                            <div class="d-rating-row"><span class="d-rating-lbl">Road</span><span class="d-rating-val ${road !== 'N/A' ? 'highlight' : ''}">${road}</span></div>
+                        </div>
+                    `;
+                };
+
                 activeDrivers.forEach(d => {
                     let cat = d.category;
                     
@@ -284,6 +348,7 @@
                     card.className = isLeadership ? 'glass-premium driver-card' : 'glass driver-card';
                     
                     const checkmark = getCheckmarkHTML(d.name);
+                    const ratingsHTML = getRatingsHTML(d);
 
                     if (isLeadership) {
                         hasLeadership = true;
@@ -291,6 +356,7 @@
                             <div class="driver-info">
                                 <h3>${d.name}${checkmark}</h3>
                                 <p class="role">${d.role || 'Team Leadership'}</p>
+                                ${ratingsHTML}
                             </div>
                         `;
                         leadershipGrid.appendChild(card);
@@ -300,6 +366,7 @@
                             <div class="driver-info">
                                 <h3>${d.name}${checkmark}</h3>
                                 <p class="role">${d.role || 'Endurance Driver'}</p>
+                                ${ratingsHTML}
                             </div>
                         `;
                         enduranceGrid.appendChild(card);
@@ -308,6 +375,7 @@
                             <div class="driver-info">
                                 <h3>${d.name}${checkmark}</h3>
                                 <p class="role">Driver</p>
+                                ${ratingsHTML}
                             </div>
                         `;
                         rosterGrid.appendChild(card);

@@ -962,6 +962,27 @@ async function loadDriverCustomInfo(driverName) {
                         }
                     }
                 }
+
+                // Also check and sync live ratings from drivers collection
+                const dSnap = await window.db.collection("drivers").where("name", "==", driverName).limit(1).get();
+                if (!dSnap.empty) {
+                    const driverData = dSnap.docs[0].data();
+                    const iracingObj = driverData.iracing || {};
+                    const statsObj = driverData.stats || {};
+                    const iRatings = statsObj.iRatings || {};
+                    const licLevels = statsObj.licenseLevels || {};
+                    const detailedRatings = iracingObj.ratings || {};
+
+                    if (iracingObj.lastChecked) {
+                        const lcEl = document.querySelector(".ratings-last-checked");
+                        if (lcEl) {
+                            try {
+                                const d = new Date(iracingObj.lastChecked);
+                                lcEl.textContent = `Checked: ${d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}`;
+                            } catch(err){}
+                        }
+                    }
+                }
             } catch (e) {
                 console.error("Error loading driver custom info:", e);
             }

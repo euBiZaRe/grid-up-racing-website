@@ -181,11 +181,30 @@
             gap: 8px;
         }
 
+        .ratings-last-checked {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .rating-score-box {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+        }
+
         .rating-score {
             font-family: monospace;
             font-size: 0.95rem;
             color: var(--primary);
             font-weight: 800;
+        }
+
+        .rating-when {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            font-weight: 500;
         }
 
         .rating-bar-bg {
@@ -353,6 +372,7 @@
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
                             iRacing Ratings
                         </h3>
+                        <span class="ratings-last-checked">Checked: {{LAST_CHECKED}}</span>
                     </div>
 
                     <div class="rating-group">
@@ -361,7 +381,10 @@
                                 <span>Sports Car</span>
                                 <span class="license-badge {{LICENSE_CLASS_SPORTS}}">{{LICENSE_SPORTS}}</span>
                             </div>
-                            <span class="rating-score">{{IRATING_SPORTS}}</span>
+                            <div class="rating-score-box">
+                                <span class="rating-score">{{IRATING_SPORTS}}</span>
+                                <span class="rating-when">{{RATING_DATE_SPORTS}}</span>
+                            </div>
                         </div>
                         <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: {{IRATING_SPORTS_PC}}%;"></div></div>
                     </div>
@@ -369,10 +392,13 @@
                     <div class="rating-group">
                         <div class="rating-label">
                             <div class="rating-label-left">
-                                <span>Formula</span>
+                                <span>Formula Car</span>
                                 <span class="license-badge {{LICENSE_CLASS_FORMULA}}">{{LICENSE_FORMULA}}</span>
                             </div>
-                            <span class="rating-score">{{IRATING_FORMULA}}</span>
+                            <div class="rating-score-box">
+                                <span class="rating-score">{{IRATING_FORMULA}}</span>
+                                <span class="rating-when">{{RATING_DATE_FORMULA}}</span>
+                            </div>
                         </div>
                         <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: {{IRATING_FORMULA_PC}}%;"></div></div>
                     </div>
@@ -383,20 +409,12 @@
                                 <span>Oval</span>
                                 <span class="license-badge {{LICENSE_CLASS_OVAL}}">{{LICENSE_OVAL}}</span>
                             </div>
-                            <span class="rating-score">{{IRATING_OVAL}}</span>
+                            <div class="rating-score-box">
+                                <span class="rating-score">{{IRATING_OVAL}}</span>
+                                <span class="rating-when">{{RATING_DATE_OVAL}}</span>
+                            </div>
                         </div>
                         <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: {{IRATING_OVAL_PC}}%;"></div></div>
-                    </div>
-
-                    <div class="rating-group">
-                        <div class="rating-label">
-                            <div class="rating-label-left">
-                                <span>Dirt Oval</span>
-                                <span class="license-badge {{LICENSE_CLASS_DIRT_OVAL}}">{{LICENSE_DIRT_OVAL}}</span>
-                            </div>
-                            <span class="rating-score">{{IRATING_DIRT_OVAL}}</span>
-                        </div>
-                        <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: {{IRATING_DIRT_OVAL_PC}}%;"></div></div>
                     </div>
 
                     <div class="rating-group">
@@ -405,9 +423,40 @@
                                 <span>Dirt Road</span>
                                 <span class="license-badge {{LICENSE_CLASS_DIRT_ROAD}}">{{LICENSE_DIRT_ROAD}}</span>
                             </div>
-                            <span class="rating-score">{{IRATING_DIRT_ROAD}}</span>
+                            <div class="rating-score-box">
+                                <span class="rating-score">{{IRATING_DIRT_ROAD}}</span>
+                                <span class="rating-when">{{RATING_DATE_DIRT_ROAD}}</span>
+                            </div>
                         </div>
                         <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: {{IRATING_DIRT_ROAD_PC}}%;"></div></div>
+                    </div>
+
+                    <div class="rating-group">
+                        <div class="rating-label">
+                            <div class="rating-label-left">
+                                <span>Dirt Oval</span>
+                                <span class="license-badge {{LICENSE_CLASS_DIRT_OVAL}}">{{LICENSE_DIRT_OVAL}}</span>
+                            </div>
+                            <div class="rating-score-box">
+                                <span class="rating-score">{{IRATING_DIRT_OVAL}}</span>
+                                <span class="rating-when">{{RATING_DATE_DIRT_OVAL}}</span>
+                            </div>
+                        </div>
+                        <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: {{IRATING_DIRT_OVAL_PC}}%;"></div></div>
+                    </div>
+
+                    <div class="rating-group">
+                        <div class="rating-label">
+                            <div class="rating-label-left">
+                                <span>Road</span>
+                                <span class="license-badge {{LICENSE_CLASS_ROAD}}">{{LICENSE_ROAD}}</span>
+                            </div>
+                            <div class="rating-score-box">
+                                <span class="rating-score">{{IRATING_ROAD}}</span>
+                                <span class="rating-when">{{RATING_DATE_ROAD}}</span>
+                            </div>
+                        </div>
+                        <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: {{IRATING_ROAD_PC}}%;"></div></div>
                     </div>
                 </div>
 

@@ -1,0 +1,36 @@
+name: Update iRacing Ratings
+
+on:
+  schedule:
+    - cron: '0 */3 * * *' # Every 3 hours
+  workflow_dispatch: # Allow manual execution from GitHub UI
+
+jobs:
+  update-ratings:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: |
+          pip install requests firebase-admin
+
+      - name: Run Rating Updater
+        run: python scripts/update_iracing_ratings.py
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add drivers/*.html driver_stats_2.json scripts/drivers.json
+          git diff --quiet && git diff --staged --quiet || (git commit -m "auto: update iRacing ratings for team drivers [skip ci]" && git push)
