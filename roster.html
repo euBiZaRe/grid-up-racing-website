@@ -304,18 +304,20 @@
                     const iracingObj = d.iracing || {};
                     const detailedRatings = iracingObj.ratings || {};
 
-                    const getVal = (intKey, irKey) => {
-                        if (iratings[intKey] && iratings[intKey] > 0) return formatRating(iratings[intKey]);
+                    const getVal = (irKey, intKey) => {
+                        // Prefer iracing.ratings (newest accurate data from API)
                         if (detailedRatings[irKey] && detailedRatings[irKey].value > 0) return formatRating(detailedRatings[irKey].value);
+                        // Fallback to legacy stats.iRatings
+                        if (iratings[intKey] && iratings[intKey] > 0) return formatRating(iratings[intKey]);
                         return 'N/A';
                     };
 
-                    const sports = getVal('SPORTS', 'sportsCar');
-                    const formula = getVal('FORMULA', 'formulaCar');
-                    const oval = getVal('OVAL', 'oval');
-                    const dirtRoad = getVal('DIRT_ROAD', 'dirtRoad');
-                    const dirtOval = getVal('DIRT_OVAL', 'dirtOval');
-                    const road = getVal('ROAD', 'road');
+                    const sports = getVal('sportsCar', 'SPORTS');
+                    const formula = getVal('formulaCar', 'FORMULA');
+                    const oval = getVal('oval', 'OVAL');
+                    const dirtRoad = getVal('dirtRoad', 'DIRT_ROAD');
+                    const dirtOval = getVal('dirtOval', 'DIRT_OVAL');
+                    const road = getVal('road', 'ROAD');
 
                     return `
                         <div class="driver-ratings-compact">
