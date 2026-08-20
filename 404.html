@@ -138,34 +138,56 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-    <script src="/script.js?v=6"></script>
-    <script src="/js/auth.js?v=7"></script>
+    <script src="/script.js?v=7"></script>
+    <script src="/js/auth.js?v=12"></script>
     <script>
         // Check if the current URL points to a driver profile
         const path = window.location.pathname;
         const match = path.match(/\/drivers\/([^/]+)\.html$/i);
 
         if (match) {
-            const slug = match[1].toLowerCase();
+            const rawSlug = match[1].toLowerCase();
             
             // Wait for DB to load
+            let attempts = 0;
             const dbInterval = setInterval(async () => {
+                attempts++;
                 if (window.db) {
                     clearInterval(dbInterval);
                     try {
-                        const snap = await window.db.collection("drivers").where("slug", "==", slug).get();
-                        if (!snap.empty) {
-                            const driverData = snap.docs[0].data();
-                            if (driverData.active !== false) {
-                                renderDriverProfile(driverData);
-                                return;
+                        // 1. Try querying by slug
+                        let snap = await window.db.collection("drivers").where("slug", "==", rawSlug).get();
+                        
+                        // 2. If not found by slug, try matching doc ID or name normalized
+                        if (snap.empty) {
+                            const allSnap = await window.db.collection("drivers").get();
+                            for (const doc of allSnap.docs) {
+                                const data = doc.data();
+                                const docSlug = (data.slug || (data.name ? data.name.toLowerCase().replace(/['']/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') : '')).toLowerCase();
+                                if (docSlug === rawSlug || doc.id.toLowerCase() === rawSlug) {
+                                    if (data.active !== false) {
+                                        renderDriverProfile(data);
+                                        return;
+                                    }
+                                }
                             }
+                            render404();
+                            return;
+                        }
+
+                        const driverData = snap.docs[0].data();
+                        if (driverData.active !== false) {
+                            renderDriverProfile(driverData);
+                            return;
                         }
                         render404();
                     } catch (err) {
                         console.error("Error fetching driver:", err);
                         render404();
                     }
+                } else if (attempts > 60) {
+                    clearInterval(dbInterval);
+                    render404();
                 }
             }, 100);
         } else {
@@ -180,39 +202,54 @@
 
         function renderDriverProfile(driver) {
             const name = driver.name || "Unknown Driver";
-            const nickname = driver.nickname || "";
-            const memberSince = driver.memberSince || "N/A";
-            const g61Url = `https://garage61.net/app/drivers/${driver.slug}`;
+            const nickname = driver.nickname || "GRiD UP DRIVER";
+            const role = driver.role || driver.category || "Team Driver";
+            const memberSince = driver.memberSince || "2026";
+            const g61Url = `https://garage61.net/app/drivers/${driver.slug || ''}`;
             
-            // Helper for stats fallback
+            // Format rating disciplines
             const stats = driver.stats || {};
-            const irations = stats.iRatings || {};
+            const iratings = stats.iRatings || {};
             const licenses = stats.licenseLevels || {};
             const percentages = stats.iRatingPercentages || {};
+            const iracingObj = driver.iracing || {};
+            const detailedRatings = iracingObj.ratings || {};
+            const lastChecked = iracingObj.lastChecked ? iracingObj.lastChecked.substring(0, 10) : 'Recent';
 
-            const categories = ["SPORTS", "FORMULA", "OVAL", "DIRT"];
-            const statsHtml = categories.map(cat => {
-                const ir = irations[cat] || 0;
-                const lic = licenses[cat] || "R 2.50";
-                const pc = percentages[cat] || 0;
-                const licClass = getLicenseClass(lic);
-                const displayIr = ir > 0 ? ir : "---";
-                const displayCat = cat === "SPORTS" ? "Sports Car" : cat.charAt(0) + cat.slice(1).toLowerCase();
+            const disciplines = [
+                { key: 'SPORTS', irKey: 'sportsCar', name: 'Sports Car' },
+                { key: 'FORMULA', irKey: 'formulaCar', name: 'Formula Car' },
+                { key: 'OVAL', irKey: 'oval', name: 'Oval' },
+                { key: 'DIRT_ROAD', irKey: 'dirtRoad', name: 'Dirt Road' },
+                { key: 'DIRT_OVAL', irKey: 'dirtOval', name: 'Dirt Oval' },
+                { key: 'ROAD', irKey: 'road', name: 'Road' }
+            ];
+
+            const statsHtml = disciplines.map(disc => {
+                const detailed = detailedRatings[disc.irKey] || {};
+                let irVal = detailed.value || iratings[disc.key] || 0;
+                let displayIr = irVal > 0 ? String(irVal) : '---';
+                let ratingDate = detailed.updated || '';
+                let lic = licenses[disc.key] || 'R 2.50';
+                let licClass = getLicenseClass(lic);
+                let pc = percentages[disc.key] || (irVal > 0 ? Math.min(100, Math.round((irVal / 4000) * 100)) : 0);
 
                 return `
                     <div class="rating-group">
                         <div class="rating-label">
-                            <span>${displayCat} <span class="license-badge ${licClass}">${lic}</span></span>
-                            <span>${displayIr}</span>
+                            <div class="rating-label-left">
+                                <span>${disc.name}</span>
+                                <span class="license-badge ${licClass}">${lic}</span>
+                            </div>
+                            <div class="rating-score-box">
+                                <span class="rating-score">${displayIr}</span>
+                                ${ratingDate ? `<span class="rating-when">${ratingDate}</span>` : ''}
+                            </div>
                         </div>
                         <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: ${pc}%;"></div></div>
                     </div>
                 `;
             }).join('');
-
-            const totalLaps = stats.totalLaps || "0";
-            const cleanPercentage = stats.cleanPercentage || "0";
-            const timeOnTrack = stats.timeOnTrack || "N/A";
 
             const info = driver.info || {};
             const age = info.age || "N/A";
@@ -224,77 +261,121 @@
             document.title = `${name} | Driver Profile | GRiD UP Sim Racing`;
 
             document.getElementById("dynamic-content").innerHTML = `
-                <header class="profile-header">
-                    <div class="container">
-                        <span class="profile-nickname">${nickname}</span>
-                        <h1 class="glow-text" style="font-size: 3.5rem;">${name}</h1>
-                        <p style="color: var(--text-muted); margin-top: 1rem;">Official GRiD UP Driver | Member since ${memberSince}</p>
+                <main class="container section">
+                    <div class="profile-container">
                         
-                        <div id="claim-section" style="margin-top: 2rem; display: none;">
-                            <button class="btn btn-outline claim-btn" onclick="openClaimModal()" style="font-size: 0.75rem; padding: 0.6rem 1.5rem;">Claim This Driver Profile</button>
-                        </div>
-                    </div>
-                </header>
+                        <!-- Left Panel: Driver Card -->
+                        <div class="driver-hero-card">
+                            <div class="driver-avatar-container" id="driver-avatar-container">
+                                <svg class="driver-avatar-placeholder" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+                                </svg>
+                            </div>
+                            
+                            <div class="driver-name-wrap">
+                                <span class="profile-nickname" style="color: var(--primary); font-weight: 700; text-transform: uppercase; letter-spacing: 3px; font-size: 0.75rem; margin-bottom: 0.25rem; display: block;">${nickname}</span>
+                                <h1 class="driver-main-name">${name}</h1>
+                                <div id="verified-badge-container" style="display: none; justify-content: center;">
+                                    <span class="verified-badge">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                        Verified
+                                    </span>
+                                </div>
+                            </div>
 
-                <main class="container section" style="padding-top: 0;">
-                    <div class="stats-container">
-                        <div class="glass stat-card">
-                            <h3 class="section-title" style="margin-bottom: 2.5rem;">iRacing Ratings</h3>
-                            ${statsHtml}
+                            <div class="driver-meta-list">
+                                <div class="driver-meta-item">
+                                    <span class="driver-meta-label">Team Role</span>
+                                    <span class="driver-meta-val">${role}</span>
+                                </div>
+                                <div class="driver-meta-item">
+                                    <span class="driver-meta-label">Member Since</span>
+                                    <span class="driver-meta-val">${memberSince}</span>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                ${driver.slug ? `<a href="${g61Url}" target="_blank" class="btn" style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); width: 100%; font-size: 0.75rem; padding: 0.6rem; text-align: center; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Garage 61 Profile</a>` : ''}
+                                
+                                <div id="claim-section" style="display: none; width: 100%;">
+                                    <button class="btn btn-outline claim-btn" onclick="openClaimModal()" style="font-size: 0.75rem; padding: 0.6rem; width: 100%; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Claim Profile</button>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="glass stat-card" style="display: flex; flex-direction: column; justify-content: space-between;">
-                            <div>
-                                <h3 class="section-title" style="margin-bottom: 2.5rem;">Driver Information</h3>
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                                    <div>
-                                        <div id="profile-age" style="font-size: 1.5rem; font-weight: 700; color: #fff;">${age}</div>
-                                        <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-top: 0.5rem;">Age</div>
+                        <!-- Right Panel: Dashboard -->
+                        <div class="dashboard-container">
+                            
+                            <!-- iRacing Ratings Card -->
+                            <div class="dashboard-card">
+                                <div class="card-header-row">
+                                    <h3 class="card-title-text">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                                        iRacing Ratings
+                                    </h3>
+                                    <span class="ratings-last-checked">Checked: ${lastChecked}</span>
+                                </div>
+                                ${statsHtml}
+                            </div>
+
+                            <!-- Driver Bio Info Card -->
+                            <div class="dashboard-card">
+                                <div class="card-header-row">
+                                    <h3 class="card-title-text">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                                        Driver Profile Details
+                                    </h3>
+                                </div>
+
+                                <div class="bio-info-grid">
+                                    <div class="bio-item">
+                                        <span class="bio-lbl">Age</span>
+                                        <span class="bio-val" id="profile-age">${age}</span>
                                     </div>
-                                    <div>
-                                        <div id="profile-country" style="font-size: 1.5rem; font-weight: 700; color: #fff;">${country}</div>
-                                        <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-top: 0.5rem;">Country</div>
+                                    <div class="bio-item">
+                                        <span class="bio-lbl">Country</span>
+                                        <span class="bio-val" id="profile-country">${country}</span>
                                     </div>
-                                    <div style="grid-column: span 2;">
-                                        <div id="profile-fav-car" style="font-size: 1.2rem; font-weight: 500; color: #fff;">${favCar}</div>
-                                        <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-top: 0.5rem;">Favourite Car (In iRacing)</div>
+                                    <div class="bio-item span-2">
+                                        <span class="bio-lbl">Favourite Car</span>
+                                        <span class="bio-val" id="profile-fav-car">${favCar}</span>
                                     </div>
-                                    <div style="grid-column: span 2;">
-                                        <div id="profile-fav-track" style="font-size: 1.2rem; font-weight: 500; color: #fff;">${favTrack}</div>
-                                        <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-top: 0.5rem;">Favourite Track</div>
+                                    <div class="bio-item span-2">
+                                        <span class="bio-lbl">Favourite Track</span>
+                                        <span class="bio-val" id="profile-fav-track">${favTrack}</span>
                                     </div>
-                                    <div style="grid-column: span 2;">
-                                        <div id="profile-advice" style="font-size: 1rem; line-height: 1.6; color: rgba(255,255,255,0.9); font-style: italic;">"${advice}"</div>
-                                        <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-top: 0.5rem;">Advice for New Sim Racers</div>
+                                    <div class="bio-item span-2">
+                                        <span class="bio-lbl">Advice for New Sim Racers</span>
+                                        <span class="bio-val advice-text" id="profile-advice">"${advice}"</span>
                                     </div>
                                 </div>
                             </div>
-                            <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1);">
-                                <a href="${g61Url}" target="_blank" class="btn btn-outline" style="width: 100%; text-align: center;">View on Garage 61</a>
-                            </div>
+
                         </div>
                     </div>
 
-                    <div style="text-align: center; margin-top: 8rem;">
-                        <a href="/roster.html" class="btn btn-outline" style="padding: 1rem 3rem;">← Back to Roster</a>
+                    <div style="text-align: center; margin-top: 5rem;">
+                        <a href="/roster.html" class="btn btn-outline" style="padding: 0.8rem 2.5rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; font-size: 0.8rem;">← Back to Roster</a>
                     </div>
                 </main>
             `;
 
-            // Initialize claim event
+            // Initialize claim modal handler
             window.openClaimModal = function() {
                 if (confirm("Are you sure you want to claim this driver profile?")) {
-                    claimProfile(name);
+                    if (typeof claimProfile === 'function') {
+                        claimProfile(name);
+                    }
                 }
             };
-            
-            // Re-run the auth checker to show the claim button if the user is authenticated and hasn't claimed
+
+            // Hook into auth.js helpers
             if (window.checkClaimVisibility) {
                 window.checkClaimVisibility(name);
             }
-
             if (window.loadDriverCustomInfo) {
                 window.loadDriverCustomInfo(name);
+            }
         }
 
         function render404() {
