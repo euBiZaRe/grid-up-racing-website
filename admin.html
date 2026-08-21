@@ -3286,13 +3286,16 @@
                         const appData = appDoc.data();
                         const driverName = appData.iracingName || 'Unknown Driver';
                         const slug = nameToSlug(driverName);
+                        // Pull iRacing customer ID from the application document
+                        const appIracingId = appData.iracingId || appData.custId || appData.cust_id || '';
 
                         // Check if driver already exists in roster
                         const existing = await db.collection("drivers").where("slug", "==", slug).get();
+                        let driverDocRef = null;
                         if (existing.empty) {
-                            await db.collection("drivers").add({
+                            driverDocRef = await db.collection("drivers").add({
                                 name: driverName,
-                                iracingId: '',
+                                iracingId: appIracingId,
                                 role: 'Driver',
                                 category: 'Driver',
                                 slug: slug,
@@ -3306,7 +3309,52 @@
 
                             console.log("Auto-created driver roster entry and profile for:", driverName);
                         } else {
+                            driverDocRef = existing.docs[0].ref;
+                            // Update iracingId if it was previously missing
+                            const existingData = existing.docs[0].data();
+                            if (!existingData.iracingId && appIracingId) {
+                                await driverDocRef.update({ iracingId: appIracingId });
+                            }
                             console.log("Driver already exists in roster, skipping creation for:", driverName);
+                        }
+
+                        // Immediately fetch and store iRating data in Firestore so the roster shows live ratings
+                        if (appIracingId) {
+                            try {
+                                const cid = parseInt(appIracingId, 10);
+                                const apiUrl = `https://iracing6-backend.herokuapp.com/api/member-career-stats/career/${cid}`;
+                                const resp = await fetch(apiUrl);
+                                if (resp.ok) {
+                                    const stats = await resp.json();
+                                    const now = new Date().toISOString().split('T')[0];
+                                    const discipline_map = {
+                                        sportsCar:  stats.sports_car,
+                                        formulaCar: stats.formula_car,
+                                        oval:       stats.oval,
+                                        dirtRoad:   stats.dirt_road,
+                                        dirtOval:   stats.dirt_oval,
+                                        road:       stats.road
+                                    };
+                                    const ratings = {};
+                                    for (const [key, disc] of Object.entries(discipline_map)) {
+                                        if (disc && disc.iRating && disc.iRating.value > 0) {
+                                            ratings[key] = { value: disc.iRating.value, updated: disc.iRating.when || now };
+                                        }
+                                    }
+                                    if (Object.keys(ratings).length > 0 && driverDocRef) {
+                                        await driverDocRef.set({
+                                            iracing: {
+                                                customerId: cid,
+                                                lastChecked: new Date().toISOString(),
+                                                ratings: ratings
+                                            }
+                                        }, { merge: true });
+                                        console.log("Auto-fetched and stored iRatings for:", driverName, ratings);
+                                    }
+                                }
+                            } catch (ratingErr) {
+                                console.warn("Could not auto-fetch iRatings for", driverName, "- will be updated on next script run:", ratingErr);
+                            }
                         }
                     } catch (driverErr) {
                         console.error("Error auto-creating driver profile:", driverErr);
