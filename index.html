@@ -1,18 +1,16 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-5JMPYRH8H9"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-
       gtag('config', 'G-5JMPYRH8H9');
     </script>
 
-    <meta name="keywords" content="GRiD UP, grid up, grid up sim racing, grid up esports, grid up team, grid up iracing, iRacing, sim racing, endurance racing, GT3, GT4, competitive sim racing">
+    <meta name="keywords" content="GRiD UP, grid up sim racing, grid up esports, grid up team, iRacing, sim racing, endurance racing, GT3, GT4, competitive sim racing">
     <meta name="description" content="A Sim Racing community focused on a balance of tough competition and comradery. Open to everyone from seasoned veterans to beginners. We strive to be the place for those who are serious about their race craft without taking themselves too seriously.">
     <meta property="og:type" content="website">
     <meta property="og:title" content="GRiD UP Sim Racing | Home">
@@ -20,7 +18,7 @@
     <meta property="og:url" content="https://gridup.online/">
     <meta property="og:image" content="https://raw.githubusercontent.com/gridup/gridup.github.io/main/assets/bg-banner.png">
     
-    <!-- Structured Data (Schema.org JSON-LD) to help Google index team name -->
+    <!-- Structured Data (Schema.org JSON-LD) -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -40,50 +38,56 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GRiD UP Sim Racing | Home</title>
-    <link rel="stylesheet" href="style.css?v=7">
+    <link rel="stylesheet" href="style.css?v=14">
     <link rel="icon" type="image/png" href="assets/G_2.png">
 </head>
 <body>
     <nav id="navbar">
         <div class="container nav-content">
             <a href="index.html" class="logo">
-                <img src="assets/logo.png" alt="GRiD UP" style="height: 40px; vertical-align: middle;">
+                <img src="assets/logo.png" alt="GRiD UP" style="height: 38px; vertical-align: middle;">
             </a>
             
-            <div class="menu-toggle">
+            <div class="menu-toggle" aria-label="Toggle navigation">
                 <span></span>
                 <span></span>
                 <span></span>
             </div>
 
-                        <ul class="nav-links">
-                <li><a href="index.html#home">Home</a></li>
-                <li><a href="events.html">Events</a></li>
-                <li><a href="league.html">League</a></li>
-                <li><a href="reports.html">News</a></li>
-                <li><a href="roster.html">Roster</a></li>
-                <li><a href="telemetry.html">Telemetry</a></li>
-                <li><a href="team-app.html">Apply</a></li>
-                <li><a href="shop.html">Shop</a></li>
-                <li><a href="https://discord.gg/gridup" target="_blank"><img src="assets/discord_header.png" alt="Discord" style="height: 25px; vertical-align: middle;"></a></li>
-                <li><a href="login.html" id="login-link" class="btn btn-outline" style="padding: 0.5rem 1.5rem; font-size: 0.75rem; margin-left: 1rem; border-radius: 50px;">Login</a></li>
+            <!-- Header Options as requested in Image 2 -->
+            <ul class="nav-links">
+                <li><a href="index.html" class="active">HOME</a></li>
+                <li><a href="events.html">EVENTS</a></li>
+                <li><a href="league.html">LEAGUE</a></li>
+                <li><a href="reports.html">NEWS</a></li>
+                <li><a href="roster.html">ROSTER</a></li>
+                <li><a href="telemetry.html">TELEMETRY</a></li>
+                <li><a href="team-app.html">APPLY</a></li>
+                <li><a href="shop.html">SHOP</a></li>
+                <li><a href="https://discord.gg/gridup" target="_blank" rel="noopener"><img src="assets/discord_header.png" alt="Discord" style="height: 25px; vertical-align: middle;"></a></li>
+                <li><a href="login.html" id="login-link" class="btn btn-outline" style="padding: 0.45rem 1.25rem; font-size: 0.75rem; margin-left: 0.5rem; border-radius: 50px;">Login</a></li>
             </ul>
         </div>
     </nav>
 
+    <!-- Hero Section -->
     <section id="home" class="hero">
         <video autoplay muted loop playsinline preload="auto" class="hero-img" poster="assets/bg-banner.png">
             <source src="assets/hero-background.mp4" type="video/mp4">
         </video>
         <div class="hero-overlay"></div>
         <div class="hero-content container">
-            <h1 id="hero-event-name" class="glow-text" style="font-weight: 900; filter: drop-shadow(0 0 30px var(--primary-glow));">GRiD UP</h1>
-            <p style="font-family: var(--font-heading); font-size: 1rem; color: var(--text-main); margin-bottom: 2.5rem; letter-spacing: 6px; opacity: 0.8;">SIM RACING ENDURANCE</p>
+            <h1 id="hero-event-name" class="glow-text">GRiD UP</h1>
+            <p style="font-family: var(--font-heading); font-size: 1rem; color: var(--text-main); margin-bottom: 2.5rem; letter-spacing: 6px; opacity: 0.85; text-transform: uppercase;">
+                SIM RACING ENDURANCE
+            </p>
             
-            <!-- Countdown Section -->
+            <!-- Dynamic Countdown -->
             <div id="countdown" class="reveal active">
-                <p id="hero-event-subtitle" style="color: var(--primary); font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; letter-spacing: 2px;">Next Major Race: Loading...</p>
-                <div class="countdown-container" style="display: flex; gap: 1.5rem; justify-content: center; background: rgba(0,0,0,0.3); padding: 2rem; border-radius: 24px; border: 1px solid var(--glass-border); backdrop-filter: blur(5px);">
+                <p id="hero-event-subtitle" style="color: var(--primary); font-weight: 700; text-transform: uppercase; margin-bottom: 1rem; letter-spacing: 2px; font-size: 0.85rem;">
+                    Next Major Race: Loading...
+                </p>
+                <div class="countdown-container">
                     <div class="countdown-box">
                         <span id="days" class="countdown-number">00</span>
                         <span class="countdown-label">Days</span>
@@ -110,31 +114,39 @@
                     WATCH LIVE
                 </button>
                 <a href="telemetry.html" id="hero-telemetry-btn" class="btn btn-outline" style="display: none; border-color: var(--primary); color: var(--primary); letter-spacing: 2px;">
-                    &#x26A1; LIVE TELEMETRY
+                    ⚡ LIVE TELEMETRY
                 </a>
+                <a href="results.html" class="btn btn-outline">Race Results</a>
                 <a href="#contact" class="btn btn-outline">Join Us</a>
             </div>
         </div>
     </section>
 
-    <section id="about" class="section reveal">
+    <!-- Authentic Section from Image 1: Everything Is Racing, GRiD UP -->
+    <section id="about" class="section reveal" style="padding: 5rem 0;">
         <div class="container" style="text-align: center;">
-            <h2 style="margin-bottom: 3rem; color: var(--primary);">Everything Is Racing, GRiD UP</h2>
-            <div class="glass-premium" style="max-width: 800px; margin: 0 auto; padding: 4rem 2rem;">
-                <p>A Sim Racing community focused on a balance of tough competition and comradery. Open to everyone from seasoned veterans to beginners. We strive to be the place for those who are serious about their race craft without taking themselves too seriously.</p>
+            <h2 style="margin-bottom: 2.5rem; color: var(--primary); font-size: clamp(1.6rem, 3.5vw, 2.2rem); letter-spacing: 3px;">
+                EVERYTHING IS RACING, GRiD UP
+            </h2>
+            <div class="glass-premium" style="max-width: 850px; margin: 0 auto; padding: 3.5rem 3rem; text-align: center;">
+                <p style="color: var(--text-main); font-size: 1.05rem; line-height: 1.8; margin: 0; font-weight: 400;">
+                    A Sim Racing community focused on a balance of tough competition and comradery. Open to everyone from seasoned veterans to beginners. We strive to be the place for those who are serious about their race craft without taking themselves too seriously.
+                </p>
             </div>
         </div>
     </section>
 
-    <section id="upcoming" class="section reveal" style="position: relative; overflow: hidden;">
-        <div class="tread-overlay"></div>
+    <!-- Upcoming Events Section -->
+    <section id="upcoming" class="section reveal" style="position: relative; overflow: hidden; padding-top: 2rem;">
         <div class="container">
-            <h2 style="color: var(--primary); margin-bottom: 2rem; text-align: center;">Upcoming Races</h2>
+            <h2 style="color: var(--primary); margin-bottom: 2rem; text-align: center; letter-spacing: 2px;">
+                Upcoming Races
+            </h2>
             
             <div class="carousel-wrapper">
                 <div class="carousel-nav">
-                    <button class="carousel-btn prev-btn">←</button>
-                    <button class="carousel-btn next-btn">→</button>
+                    <button class="carousel-btn prev-btn" aria-label="Previous race">←</button>
+                    <button class="carousel-btn next-btn" aria-label="Next race">→</button>
                 </div>
                 <div class="upcoming-races-container">
                     <div class="carousel-track" id="dynamic-upcoming-track">
@@ -144,22 +156,25 @@
             </div>
 
             <div style="text-align: center; margin-top: 2rem;">
-                <a href="events.html" class="btn btn-outline" style="padding: 0.6rem 1.2rem; font-size: 0.9rem;">View All Events</a>
+                <a href="events.html" class="btn btn-outline" style="padding: 0.65rem 1.6rem; font-size: 0.85rem;">View All Events</a>
             </div>
         </div>
     </section>
 
     <!-- Recent Results Section -->
-    <section id="results" class="section reveal" style="position: relative; overflow: hidden; background: rgba(0,207,255,0.02); border-top: 1px solid rgba(0,207,255,0.05); border-bottom: 1px solid rgba(0,207,255,0.05);">
-        <div class="tread-overlay"></div>
+    <section id="results" class="section reveal" style="position: relative; overflow: hidden; background: rgba(0,210,255,0.015); border-top: 1px solid rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.04);">
         <div class="container">
-            <h2 style="color: var(--primary); margin-bottom: 1rem; text-align: center;">Recent Results</h2>
-            <p style="color: var(--text-muted); text-align: center; margin-bottom: 3rem; font-size: 0.9rem;">The latest triumphs from the GRiD UP squad</p>
+            <h2 style="color: var(--primary); margin-bottom: 0.5rem; text-align: center; letter-spacing: 2px;">
+                Recent Results
+            </h2>
+            <p style="color: var(--text-muted); text-align: center; margin-bottom: 2.5rem; font-size: 0.9rem; letter-spacing: 1px;">
+                The latest triumphs from the GRiD UP squad
+            </p>
             
             <div class="carousel-wrapper">
                 <div class="carousel-nav">
-                    <button class="carousel-btn prev-btn">←</button>
-                    <button class="carousel-btn next-btn">→</button>
+                    <button class="carousel-btn prev-btn" aria-label="Previous result">←</button>
+                    <button class="carousel-btn next-btn" aria-label="Next result">→</button>
                 </div>
                 <div class="upcoming-races-container">
                     <div class="carousel-track" id="results-track">
@@ -169,40 +184,40 @@
             </div>
 
             <div style="text-align: center; margin-top: 2rem;">
-                <a href="results.html" class="btn btn-outline" style="padding: 0.6rem 1.2rem; font-size: 0.9rem;">View All Results</a>
+                <a href="results.html" class="btn btn-outline" style="padding: 0.65rem 1.6rem; font-size: 0.85rem;">View All Results</a>
             </div>
         </div>
     </section>
 
-
-
-    <section id="contact" class="section reveal">
+    <!-- Contact & Discord Section -->
+    <section id="contact" class="section reveal" style="padding-bottom: 6rem;">
         <div class="container" style="text-align: center;">
-            <h2 style="margin-bottom: 1rem; color: var(--primary);">Get on the Grid</h2>
-            <p style="color: var(--text-muted); margin-bottom: 3rem;">Inquiries for recruitment and partnerships are always open.</p>
-            <a href="https://discord.gg/gridup" target="_blank"><img src="assets/discord_bottom.png" alt="Join Discord" style="height: 60px; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"></a>
+            <h2 style="margin-bottom: 1rem; color: var(--primary); letter-spacing: 2px;">Get on the Grid</h2>
+            <p style="color: var(--text-muted); margin-bottom: 2.5rem;">Inquiries for recruitment and partnerships are always open.</p>
+            <a href="https://discord.gg/gridup" target="_blank" rel="noopener">
+                <img src="assets/discord_bottom.png" alt="Join Discord" style="height: 60px; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+            </a>
         </div>
     </section>
 
     <footer>
         <div class="container">
-
             <div style="display: flex; justify-content: center; gap: 1.5rem; margin-bottom: 1.5rem;">
-                <a href="https://discord.gg/gridup" target="_blank" style="opacity: 0.6; transition: opacity 0.3s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">
+                <a href="https://discord.gg/gridup" target="_blank" rel="noopener" style="opacity: 0.6; transition: opacity 0.3s ease;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 127.14 96.36" fill="#ffffff"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a67.55,67.55,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.31,60,73.31,53s5-12.74,11.43-12.74S96.2,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
                 </a>
-                <a href="https://www.youtube.com/@griduptv" target="_blank" style="opacity: 0.6; transition: opacity 0.3s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">
+                <a href="https://www.youtube.com/@griduptv" target="_blank" rel="noopener" style="opacity: 0.6; transition: opacity 0.3s ease;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="#ffffff" style="margin-top: -1px;"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
                 </a>
             </div>
             <p style="color: var(--text-muted); font-size: 0.8rem; margin: 0; padding-bottom: 1rem;">&copy; 2026 GRiD UP SIM RACING. ALL RIGHTS RESERVED.</p>
         </div>
-    <div style="display: none;"><a href="https://www.sigmatraffic.com?ref=328509">Free website hits</a></div></footer>
+    </footer>
 
     <!-- Streams Picker Modal -->
-    <div id="streams-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 10001; align-items: center; justify-content: center; backdrop-filter: blur(15px);">
+    <div id="streams-modal" style="display: none; position: fixed; inset: 0; background: rgba(4,6,10,0.92); z-index: 10001; align-items: center; justify-content: center; backdrop-filter: blur(15px);">
         <div class="glass" style="max-width: 500px; width: 90%; padding: 2.5rem; border: 1px solid rgba(255,0,0,0.3); box-shadow: 0 0 60px rgba(255,0,0,0.15); position: relative;">
-            <button onclick="closeStreamsModal()" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; line-height: 1;">&times;</button>
+            <button onclick="closeStreamsModal()" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; line-height: 1;" aria-label="Close">&times;</button>
             <p style="color: #ff4444; font-size: 0.7rem; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 0.5rem;">
                 <span style="display: inline-block; width: 8px; height: 8px; background: #ff4444; border-radius: 50%; margin-right: 6px; animation: liveDot 1s infinite;"></span>
                 Live Now
@@ -218,21 +233,21 @@
         <div style="position: relative; max-width: 1400px; width: 95%; aspect-ratio: 16/9; background: #000; border: 1px solid rgba(255,0,0,0.3); box-shadow: 0 0 80px rgba(255,0,0,0.15);">
             <iframe id="stream-iframe" style="width: 100%; height: 100%; border: none;" allowfullscreen></iframe>
         </div>
-        <button onclick="closeStreamPlayer()" class="btn btn-outline" style="position: absolute; top: 2rem; right: 2rem; border-radius: 50%; width: 50px; height: 50px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); z-index: 10003;">&times;</button>
+        <button onclick="closeStreamPlayer()" class="btn btn-outline" style="position: absolute; top: 2rem; right: 2rem; border-radius: 50%; width: 50px; height: 50px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); z-index: 10003;" aria-label="Close player">&times;</button>
     </div>
 
     <!-- Cinematic Card Modal (Expansion Overlay) -->
     <div id="card-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 10000; padding: 2rem; align-items: center; justify-content: center; backdrop-filter: blur(15px); transition: all 0.3s ease;">
         <div style="position: relative; max-width: 1100px; width: 100%; aspect-ratio: 16/9; transform: scale(0.9); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);" id="modal-container">
-            <!-- Content will be injected by JavaScript -->
+            <!-- Content injected by JavaScript -->
         </div>
         
         <div style="position: absolute; top: 2rem; right: 2rem; display: flex; gap: 1rem;">
-            <button onclick="downloadActiveCard()" class="btn" style="background: var(--primary); color: #000; font-weight: 900; display: flex; align-items: center; gap: 10px; box-shadow: 0 0 30px rgba(0,207,255,0.3);">
+            <button onclick="downloadActiveCard()" class="btn" style="background: var(--primary); color: #000; font-weight: 900; display: flex; align-items: center; gap: 10px; box-shadow: 0 0 30px rgba(0,210,255,0.3);">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                 DOWNLOAD HD POSTER
             </button>
-            <button onclick="closeCardModal()" class="btn btn-outline" style="border-radius: 50%; width: 50px; height: 50px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2);">&times;</button>
+            <button onclick="closeCardModal()" class="btn btn-outline" style="border-radius: 50%; width: 50px; height: 50px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2);" aria-label="Close card">&times;</button>
         </div>
     </div>
 
@@ -242,8 +257,11 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-    <script src="script.js?v=6"></script>
-    <script src="js/auth.js?v=4"></script>
+    <script src="script.js?v=14"></script>
+    <script src="js/auth.js?v=10"></script>
 </body>
 </html>
+
+
+
 

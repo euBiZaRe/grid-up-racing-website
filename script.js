@@ -1,3 +1,30 @@
+// ==========================================
+// Dynamic Day-of-Week Theme System
+// Automatically sets one of 7 bespoke motorsport styles
+// ==========================================
+(function applyDailyTheme() {
+    const dayThemes = [
+        'theme-sunday',    // 0: Monaco Crimson / Apex Red
+        'theme-monday',    // 1: Cyan Precision / Velocity Blue
+        'theme-tuesday',   // 2: Nürburgring Emerald / British Racing Green
+        'theme-wednesday', // 3: Cyber Violet / Synthwave Night
+        'theme-thursday',  // 4: McLaren Amber / Turbo Orange
+        'theme-friday',    // 5: Acid Lime / Podium Neon
+        'theme-saturday'   // 6: Gold Trophy / Daytona Gold
+    ];
+    const currentDay = new Date().getDay();
+    const activeTheme = dayThemes[currentDay];
+    
+    // Apply theme attribute immediately to avoid flash of default color
+    if (document.body) {
+        document.body.setAttribute('data-theme', activeTheme);
+    } else {
+        document.addEventListener('DOMContentLoaded', () => {
+            document.body.setAttribute('data-theme', activeTheme);
+        });
+    }
+})();
+
 // Global Utilities
 // App-like URL Tooltip Suppressor (hides the native bottom-left URL preview)
 document.addEventListener('DOMContentLoaded', () => {
