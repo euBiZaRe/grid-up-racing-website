@@ -29,18 +29,34 @@
 body {
     font-family: var(--font-body);
     background-color: var(--bg-dark);
+    color: var(--text-main);
+    line-height: 1.6;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    position: relative;
+    min-height: 100vh;
+}
+
+/* High-performance GPU-accelerated background layer (eliminates scroll repaint lag) */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -2;
+    pointer-events: none;
+    background-color: var(--bg-dark);
     background-image: 
         radial-gradient(circle at 50% -15%, rgba(0, 210, 255, 0.12) 0%, transparent 60%),
         radial-gradient(circle 800px at 100% 60%, rgba(0, 102, 255, 0.04) 0%, transparent 50%),
         linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
     background-size: 100% 100%, 100% 100%, 48px 48px, 48px 48px;
-    background-attachment: fixed;
-    color: var(--text-main);
-    line-height: 1.6;
-    overflow-x: hidden;
-    scroll-behavior: smooth;
-    -webkit-font-smoothing: antialiased;
+    transform: translateZ(0);
+    will-change: transform;
 }
 
 /* Custom Scrollbar */
@@ -632,19 +648,23 @@ nav .container {
     text-align: center;
     min-height: 85vh;
     overflow: hidden;
+    contain: layout paint;
 }
 
 .hero-img {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate3d(-50%, -50%, 0);
     width: 100%;
     height: 100%;
     object-fit: cover;
     z-index: 0;
     opacity: 0.35;
-    filter: saturate(1.2) contrast(1.1);
+    will-change: transform;
+    pointer-events: none;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 .hero-overlay {
@@ -1318,6 +1338,8 @@ body[data-theme="theme-sunday"] {
     --primary-glow: rgba(255, 42, 81, 0.45);
     --primary-gradient: linear-gradient(135deg, #ff2a51 0%, #b80028 100%);
     --glass-border-bright: rgba(255, 42, 81, 0.4);
+}
+body[data-theme="theme-sunday"]::before {
     background-image: 
         radial-gradient(circle at 50% -15%, rgba(255, 42, 81, 0.14) 0%, transparent 60%),
         radial-gradient(circle 800px at 100% 60%, rgba(204, 27, 59, 0.05) 0%, transparent 50%),
@@ -1332,6 +1354,8 @@ body[data-theme="theme-monday"] {
     --primary-glow: rgba(0, 210, 255, 0.4);
     --primary-gradient: linear-gradient(135deg, #00d2ff 0%, #0066ff 100%);
     --glass-border-bright: rgba(0, 210, 255, 0.35);
+}
+body[data-theme="theme-monday"]::before {
     background-image: 
         radial-gradient(circle at 50% -15%, rgba(0, 210, 255, 0.12) 0%, transparent 60%),
         radial-gradient(circle 800px at 100% 60%, rgba(0, 102, 255, 0.04) 0%, transparent 50%),
@@ -1346,6 +1370,8 @@ body[data-theme="theme-tuesday"] {
     --primary-glow: rgba(0, 240, 118, 0.4);
     --primary-gradient: linear-gradient(135deg, #00f076 0%, #008f43 100%);
     --glass-border-bright: rgba(0, 240, 118, 0.35);
+}
+body[data-theme="theme-tuesday"]::before {
     background-image: 
         radial-gradient(circle at 50% -15%, rgba(0, 240, 118, 0.13) 0%, transparent 60%),
         radial-gradient(circle 800px at 100% 60%, rgba(0, 143, 67, 0.04) 0%, transparent 50%),
@@ -1360,6 +1386,8 @@ body[data-theme="theme-wednesday"] {
     --primary-glow: rgba(192, 64, 251, 0.45);
     --primary-gradient: linear-gradient(135deg, #c040fb 0%, #7916b3 100%);
     --glass-border-bright: rgba(192, 64, 251, 0.38);
+}
+body[data-theme="theme-wednesday"]::before {
     background-image: 
         radial-gradient(circle at 50% -15%, rgba(192, 64, 251, 0.13) 0%, transparent 60%),
         radial-gradient(circle 800px at 100% 60%, rgba(121, 22, 179, 0.05) 0%, transparent 50%),
@@ -1374,6 +1402,8 @@ body[data-theme="theme-thursday"] {
     --primary-glow: rgba(255, 136, 0, 0.45);
     --primary-gradient: linear-gradient(135deg, #ff8800 0%, #e64a00 100%);
     --glass-border-bright: rgba(255, 136, 0, 0.4);
+}
+body[data-theme="theme-thursday"]::before {
     background-image: 
         radial-gradient(circle at 50% -15%, rgba(255, 136, 0, 0.13) 0%, transparent 60%),
         radial-gradient(circle 800px at 100% 60%, rgba(230, 74, 0, 0.05) 0%, transparent 50%),
@@ -1388,6 +1418,8 @@ body[data-theme="theme-friday"] {
     --primary-glow: rgba(212, 255, 0, 0.4);
     --primary-gradient: linear-gradient(135deg, #d4ff00 0%, #88aa00 100%);
     --glass-border-bright: rgba(212, 255, 0, 0.35);
+}
+body[data-theme="theme-friday"]::before {
     background-image: 
         radial-gradient(circle at 50% -15%, rgba(212, 255, 0, 0.12) 0%, transparent 60%),
         radial-gradient(circle 800px at 100% 60%, rgba(136, 170, 0, 0.04) 0%, transparent 50%),
@@ -1402,6 +1434,8 @@ body[data-theme="theme-saturday"] {
     --primary-glow: rgba(255, 190, 11, 0.45);
     --primary-gradient: linear-gradient(135deg, #ffbe0b 0%, #fb5607 100%);
     --glass-border-bright: rgba(255, 190, 11, 0.4);
+}
+body[data-theme="theme-saturday"]::before {
     background-image: 
         radial-gradient(circle at 50% -15%, rgba(255, 190, 11, 0.13) 0%, transparent 60%),
         radial-gradient(circle 800px at 100% 60%, rgba(251, 86, 7, 0.05) 0%, transparent 50%),
