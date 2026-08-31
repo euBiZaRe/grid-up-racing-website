@@ -53,7 +53,7 @@ window.addEventListener('scroll', () => {
 }, { passive: true });
 
 // Mobile Menu Toggle
-document.addEventListener('DOMContentLoaded', () => {
+function initMobileMenu() {
     const menuToggle = document.querySelector('.menu-toggle');
     const navLinks = document.querySelector('.nav-links');
     
@@ -73,7 +73,13 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMobileMenu);
+} else {
+    initMobileMenu();
+}
 
 
 // Reveal Animations on Scroll
@@ -1649,7 +1655,7 @@ async function downloadActiveCard() {
     }
 }
 // Initialize on page load
-document.addEventListener('DOMContentLoaded', () => {
+function initializeApp() {
     loadDynamicContent(); // Load from cache immediately
     loadRecentResults(); // Load from cache immediately
     initCarousel();
@@ -1671,7 +1677,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Safety timeout to avoid infinite polling if Firestore fails
     setTimeout(() => clearInterval(dbCheckInterval), 5000);
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+    initializeApp();
+}
 
 function startRealTimeEventCheck() {
     setInterval(() => {
