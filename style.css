@@ -1507,6 +1507,12 @@ body[data-theme="theme-saturday"]::before {
         padding: 8rem 0 4rem;
         min-height: 75vh;
     }
+    .hero-img {
+        display: none; /* Mobile uses high-res poster and body background layer instead of streaming video on 4G */
+    }
+    .hero {
+        background: url('assets/bg-banner.png') center center/cover no-repeat;
+    }
     .hero-content h1 {
         font-size: clamp(2.5rem, 10vw, 3.8rem);
     }
