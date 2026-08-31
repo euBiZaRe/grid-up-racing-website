@@ -38,14 +38,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GRiD UP Sim Racing | Home</title>
-    <link rel="stylesheet" href="style.css?v=18">
+        <!-- Preconnect & Asynchronous Google Fonts for PageSpeed optimization -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=19">
     <link rel="icon" type="image/png" href="assets/G_2.png">
 </head>
 <body>
     <nav id="navbar">
         <div class="container nav-content">
             <a href="index.html" class="logo">
-                <img src="assets/logo.png" alt="GRiD UP" style="height: 38px; vertical-align: middle;">
+                <img src="assets/logo.png" decoding="async" width="160" height="38" alt="GRiD UP" style="height: 38px; vertical-align: middle;">
             </a>
             
             <div class="menu-toggle" aria-label="Toggle navigation">
@@ -195,7 +199,7 @@
             <h2 style="margin-bottom: 1rem; color: var(--primary); letter-spacing: 2px;">Get on the Grid</h2>
             <p style="color: var(--text-muted); margin-bottom: 2.5rem;">Inquiries for recruitment and partnerships are always open.</p>
             <a href="https://discord.gg/gridup" target="_blank" rel="noopener">
-                <img src="assets/discord_bottom.png" alt="Join Discord" style="height: 60px; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                <img src="assets/discord_bottom.png" loading="lazy" decoding="async" width="220" height="60" alt="Join Discord" style="height: 60px; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
             </a>
         </div>
     </section>
@@ -254,11 +258,11 @@
     <!-- Background Canvas for High-Res Exports -->
     <canvas id="export-canvas" style="display: none;"></canvas>
 
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-    <script src="script.js?v=18"></script>
-    <script src="js/auth.js?v=10"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script defer src="script.js?v=19"></script>
+    <script defer src="js/auth.js?v=11"></script>
 </body>
 </html>
 

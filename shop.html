@@ -21,13 +21,17 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,600;0,800;0,900;1,400;1,900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=18">
+        <!-- Preconnect & Asynchronous Google Fonts for PageSpeed optimization -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=19">
     <link rel="icon" type="image/png" href="assets/G_2.png">
     
     <!-- Firebase SDks -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     
     <style>
         /* Responsive iframe container to hide scrollbars and fit viewport under navbar */
@@ -71,7 +75,7 @@
     <nav id="navbar" class="scrolled">
         <div class="container nav-content">
             <a href="index.html" class="logo">
-                <img src="assets/logo.png" alt="GRiD UP" style="height: 40px; vertical-align: middle;">
+                <img src="assets/logo.png" decoding="async" width="160" height="38" alt="GRiD UP" style="height: 40px; vertical-align: middle;">
             </a>
                                     <ul class="nav-links">
                 <li><a href="index.html">HOME</a></li>
@@ -103,8 +107,8 @@
     </header>
 
     <!-- Init Firebase -->
-    <script src="js/auth.js?v=4"></script>
-<script src="script.js?v=18"></script>`n</body>
+    <script defer src="js/auth.js?v=11"></script>
+<script defer src="script.js?v=19"></script>`n</body>
 </html>
 
 
