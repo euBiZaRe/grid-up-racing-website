@@ -1535,6 +1535,8 @@
         let cachedTelemetryDb = null;
         let currentStreams = {};
         let currentDrivers = {};
+        let streamsLoaded = false;
+        let driversLoaded = false;
 
         // Start listening to Firebase database events
         function setupFirebaseListeners(teamId) {
@@ -1551,6 +1553,8 @@
             trackMapDrivers = {};
             currentStreams = {};
             currentDrivers = {};
+            streamsLoaded = false;
+            driversLoaded = false;
 
             // Immediate responsive feedback on team switch
             const teamSelectEl = document.getElementById('team-select');
@@ -1592,9 +1596,6 @@
 
             streamsRef = database.ref(`teams/${teamId}/streams`);
             driversRef = database.ref(`teams/${teamId}/drivers`);
-
-            let streamsLoaded = false;
-            let driversLoaded = false;
 
             // Render updates helper
             function renderDashboard() {
