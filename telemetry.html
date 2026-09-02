@@ -1532,6 +1532,7 @@
         let streamsRef = null;
         let driversRef = null;
         let presenceCheckInterval = null;
+        let cachedTelemetryDb = null;
         let currentStreams = {};
         let currentDrivers = {};
 
@@ -1545,32 +1546,55 @@
                 if (typeof renderDashboard === "function") renderDashboard();
             }, 5000);
 
-            let database;
-            try {
-                // Initialize a secondary, independent app named "telemetry" to avoid credential
-                // collisions with the main "grid-up" authenticated app.
-                let telemetryApp = firebase.apps.find(app => app.name === "telemetry");
-                if (!telemetryApp) {
-                    telemetryApp = firebase.initializeApp({
-                        databaseURL: "https://grid-up-racedash-default-rtdb.europe-west1.firebasedatabase.app"
-                    }, "telemetry");
-                }
-                database = telemetryApp.database();
-            } catch (err) {
-                console.error("Firebase secondary app init failed:", err);
-                database = firebase.database();
+            // Clear previous team trace and map data immediately
+            traceHistory = {};
+            trackMapDrivers = {};
+            currentStreams = {};
+            currentDrivers = {};
+
+            // Immediate responsive feedback on team switch
+            const teamSelectEl = document.getElementById('team-select');
+            const teamLabel = (teamSelectEl && teamSelectEl.options[teamSelectEl.selectedIndex]) 
+                ? teamSelectEl.options[teamSelectEl.selectedIndex].text 
+                : teamId;
+            if (telemetryContent) {
+                telemetryContent.innerHTML = `
+                    <div class="loading-wrapper">
+                        <div class="spinner"></div>
+                        <p style="color: var(--text-muted); font-size: 0.85rem;">Switching to ${teamLabel} stream...</p>
+                    </div>
+                `;
             }
 
-            // Listen to server time offset to correct local clock drift
-            database.ref(".info/serverTimeOffset").on("value", (snap) => {
-                serverTimeOffset = snap.val() || 0;
-            });
+            let database = cachedTelemetryDb;
+            if (!database) {
+                try {
+                    // Initialize a secondary, independent app named "telemetry" to avoid credential
+                    // collisions with the main "grid-up" authenticated app.
+                    let telemetryApp = firebase.apps.find(app => app.name === "telemetry");
+                    if (!telemetryApp) {
+                        telemetryApp = firebase.initializeApp({
+                            databaseURL: "https://grid-up-racedash-default-rtdb.europe-west1.firebasedatabase.app"
+                        }, "telemetry");
+                    }
+                    database = telemetryApp.database();
+                    cachedTelemetryDb = database;
+
+                    // Listen to server time offset to correct local clock drift once
+                    database.ref(".info/serverTimeOffset").on("value", (snap) => {
+                        serverTimeOffset = snap.val() || 0;
+                    });
+                } catch (err) {
+                    console.error("Firebase secondary app init failed:", err);
+                    database = firebase.database();
+                }
+            }
 
             streamsRef = database.ref(`teams/${teamId}/streams`);
             driversRef = database.ref(`teams/${teamId}/drivers`);
 
-            currentStreams = {};
-            currentDrivers = {};
+            let streamsLoaded = false;
+            let driversLoaded = false;
 
             // Render updates helper
             function renderDashboard() {
@@ -1585,6 +1609,9 @@
                 });
                 
                 if (activeMids.length === 0) {
+                    if (!streamsLoaded || !driversLoaded) {
+                        return; // Wait for initial snapshot from both refs before declaring stream empty
+                    }
                     telemetryContent.innerHTML = `
                         <div class="empty-wrapper">
                             <i data-lucide="activity" class="empty-icon" style="width: 48px; height: 48px;"></i>
@@ -2082,9 +2109,11 @@
 
             // Bind values
             streamsRef.on('value', snapshot => {
+                streamsLoaded = true;
                 currentStreams = snapshot.val() || {};
                 renderDashboard();
             }, error => {
+                streamsLoaded = true;
                 console.error("Streams subscription failed:", error);
                 telemetryContent.innerHTML = `
                     <div class="empty-wrapper">
@@ -2097,9 +2126,11 @@
             });
 
             driversRef.on('value', snapshot => {
+                driversLoaded = true;
                 currentDrivers = snapshot.val() || {};
                 renderDashboard();
             }, error => {
+                driversLoaded = true;
                 console.error("Drivers subscription failed:", error);
             });
         }
