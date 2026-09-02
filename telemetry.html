@@ -1535,8 +1535,6 @@
         let cachedTelemetryDb = null;
         let currentStreams = {};
         let currentDrivers = {};
-        let streamsLoaded = false;
-        let driversLoaded = false;
 
         // Start listening to Firebase database events
         function setupFirebaseListeners(teamId) {
@@ -1553,22 +1551,6 @@
             trackMapDrivers = {};
             currentStreams = {};
             currentDrivers = {};
-            streamsLoaded = false;
-            driversLoaded = false;
-
-            // Immediate responsive feedback on team switch
-            const teamSelectEl = document.getElementById('team-select');
-            const teamLabel = (teamSelectEl && teamSelectEl.options[teamSelectEl.selectedIndex]) 
-                ? teamSelectEl.options[teamSelectEl.selectedIndex].text 
-                : teamId;
-            if (telemetryContent) {
-                telemetryContent.innerHTML = `
-                    <div class="loading-wrapper">
-                        <div class="spinner"></div>
-                        <p style="color: var(--text-muted); font-size: 0.85rem;">Switching to ${teamLabel} stream...</p>
-                    </div>
-                `;
-            }
 
             let database = cachedTelemetryDb;
             if (!database) {
@@ -1610,9 +1592,6 @@
                 });
                 
                 if (activeMids.length === 0) {
-                    if (!streamsLoaded || !driversLoaded) {
-                        return; // Wait for initial snapshot from both refs before declaring stream empty
-                    }
                     telemetryContent.innerHTML = `
                         <div class="empty-wrapper">
                             <i data-lucide="activity" class="empty-icon" style="width: 48px; height: 48px;"></i>
@@ -2110,11 +2089,9 @@
 
             // Bind values
             streamsRef.on('value', snapshot => {
-                streamsLoaded = true;
                 currentStreams = snapshot.val() || {};
                 renderDashboard();
             }, error => {
-                streamsLoaded = true;
                 console.error("Streams subscription failed:", error);
                 telemetryContent.innerHTML = `
                     <div class="empty-wrapper">
@@ -2127,11 +2104,9 @@
             });
 
             driversRef.on('value', snapshot => {
-                driversLoaded = true;
                 currentDrivers = snapshot.val() || {};
                 renderDashboard();
             }, error => {
-                driversLoaded = true;
                 console.error("Drivers subscription failed:", error);
             });
         }
