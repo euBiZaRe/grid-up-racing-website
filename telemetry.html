@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
         <!-- Google tag (gtag.js) - Deferred initialization for Lighthouse performance -->
@@ -1532,6 +1532,8 @@
         let streamsRef = null;
         let driversRef = null;
         let presenceCheckInterval = null;
+        let currentStreams = {};
+        let currentDrivers = {};
 
         // Start listening to Firebase database events
         function setupFirebaseListeners(teamId) {
@@ -1567,8 +1569,8 @@
             streamsRef = database.ref(`teams/${teamId}/streams`);
             driversRef = database.ref(`teams/${teamId}/drivers`);
 
-            let currentStreams = {};
-            let currentDrivers = {};
+            currentStreams = {};
+            currentDrivers = {};
 
             // Render updates helper
             function renderDashboard() {
@@ -2228,7 +2230,8 @@
             initDashboard();
         }
     </script>
-<script defer src="script.js?v=24"></script>`n</body>
+<script defer src="script.js?v=24"></script>
+</body>
 </html>
 
 
