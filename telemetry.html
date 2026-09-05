@@ -999,11 +999,11 @@
     </footer>
 
     <!-- Firebase Compat SDK dependencies -->
-    <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-    <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
-    <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-    <script defer src="js/auth.js?v=11"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="js/auth.js?v=11"></script>
 
     <!-- Realtime Telemetry Sync Logic -->
     <script>
@@ -1585,10 +1585,23 @@
                     const now = Date.now() + serverTimeOffset;
                 const activeMids = Object.keys(currentStreams).filter(mid => {
                     const stream = currentStreams[mid];
+                    if (!stream) return false;
                     const presence = currentDrivers[mid] || {};
                     const isOnline = presence.status === 'online';
-                    const isRecent = presence.lastActive && (now - presence.lastActive) < 120000;
-                    return stream && isOnline && isRecent;
+                    
+                    // Presence timestamp check (lastActive is typically in ms, e.g. 1788611352515)
+                    const isPresenceRecent = presence.lastActive && (now - presence.lastActive) < 120000;
+                    
+                    // Stream timestamp check (stream.timestamp or tel.timestamp, can be seconds or ms)
+                    let streamTs = stream.timestamp || (stream.telemetry && stream.telemetry.timestamp) || 0;
+                    if (streamTs > 0 && streamTs < 10000000000) {
+                        streamTs *= 1000; // convert float seconds to ms
+                    }
+                    const isStreamRecent = streamTs > 0 && (now - streamTs) < 120000;
+                    const isLiveFlag = stream.is_live === true || (stream.session && stream.session.is_live === true);
+
+                    // Consider active if presence confirms online & recent, OR stream itself has fresh telemetry/is_live
+                    return (isOnline && isPresenceRecent) || (isLiveFlag && isStreamRecent) || (isStreamRecent && (presence.status !== 'offline'));
                 });
                 
                 if (activeMids.length === 0) {
