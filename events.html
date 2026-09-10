@@ -56,11 +56,11 @@
 
         .event-tab {
             flex: 1;
-            max-width: 340px;
+            max-width: 300px;
             background: rgba(20, 20, 22, 0.6);
             border: 2px solid var(--glass-border);
             border-radius: 16px;
-            padding: 2rem 2.5rem;
+            padding: 1.5rem 1.25rem;
             text-align: center;
             cursor: pointer;
             transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -464,6 +464,170 @@
                 font-size: 1.25rem;
             }
         }
+
+        /* ── Season Schedule Styles ── */
+        .season-card {
+            background: rgba(20, 20, 22, 0.7);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px;
+            margin-bottom: 1.25rem;
+            overflow: hidden;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        .season-card:hover {
+            border-color: rgba(0, 207, 255, 0.3);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        }
+        .season-card-header {
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .season-card-header:hover {
+            background: rgba(0, 207, 255, 0.03);
+        }
+        .season-header-left {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            flex: 1;
+            min-width: 260px;
+        }
+        .season-title-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .season-name {
+            font-family: var(--font-heading);
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: 0.5px;
+        }
+        .season-header-meta {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .season-cars-preview {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+        .season-header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .season-toggle-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .season-card.open .season-toggle-btn {
+            transform: rotate(180deg);
+            background: rgba(0, 207, 255, 0.15);
+            color: var(--primary);
+            border-color: rgba(0, 207, 255, 0.3);
+        }
+        .season-card-body {
+            display: none;
+            padding: 0 1.5rem 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(10, 10, 12, 0.4);
+        }
+        .season-card.open .season-card-body {
+            display: block;
+        }
+        .season-info-bar {
+            display: flex;
+            gap: 1.5rem;
+            padding: 0.85rem 0;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            flex-wrap: wrap;
+        }
+        .season-info-item strong {
+            color: #fff;
+        }
+        .season-weeks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 0.75rem;
+        }
+        .season-week-tile {
+            background: rgba(25, 25, 30, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            position: relative;
+            transition: border-color 0.2s ease, background 0.2s ease;
+        }
+        .season-week-tile:hover {
+            border-color: rgba(0, 207, 255, 0.25);
+            background: rgba(25, 25, 30, 0.9);
+        }
+        .season-week-tile.current-week {
+            border-color: var(--primary);
+            background: rgba(0, 207, 255, 0.06);
+        }
+        .season-week-badge-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .season-week-num {
+            font-weight: 800;
+            color: var(--primary);
+        }
+        .season-week-date {
+            color: var(--text-muted);
+        }
+        .season-week-track {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #e5e7eb;
+            line-height: 1.3;
+        }
+        .season-week-duration {
+            font-size: 0.7rem;
+            color: #9ca3af;
+            margin-top: 2px;
+        }
+        .badge-cat {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #d1d5db;
+        }
+        .badge-cat.sports-car { color: #38bdf8; border-color: rgba(56, 189, 248, 0.3); background: rgba(56, 189, 248, 0.08); }
+        .badge-cat.formula-car { color: #f43f5e; border-color: rgba(244, 63, 94, 0.3); background: rgba(244, 63, 94, 0.08); }
+        .badge-cat.oval { color: #fbbf24; border-color: rgba(251, 191, 36, 0.3); background: rgba(251, 191, 36, 0.08); }
+        .badge-cat.dirt-oval { color: #a3e635; border-color: rgba(163, 230, 53, 0.3); background: rgba(163, 230, 53, 0.08); }
+        .badge-cat.dirt-road { color: #fb923c; border-color: rgba(251, 146, 60, 0.3); background: rgba(251, 146, 60, 0.08); }
     </style>
 </head>
 <body class="events-page">
@@ -515,6 +679,12 @@
                 <span class="event-tab-icon">📅</span>
                 <div class="event-tab-title">Team Events</div>
                 <div class="event-tab-desc">Weekly Team Race Schedule</div>
+                <div class="tab-indicator"></div>
+            </div>
+            <div class="event-tab" onclick="switchTab('season')" id="tab-season">
+                <span class="event-tab-icon">🏎️</span>
+                <div class="event-tab-title">Season Schedule</div>
+                <div class="event-tab-desc">iRacing 2026 Season 4 Calendar</div>
                 <div class="tab-indicator"></div>
             </div>
         </div>
@@ -607,6 +777,96 @@
             </div>
         </div>
 
+        <!-- ═══ SEASON SCHEDULE TAB ═══ -->
+        <div class="tab-content" id="content-season">
+            <div class="schedule-controls">
+                <!-- Search & Actions -->
+                <div class="filter-row" style="justify-content: space-between; align-items: flex-end;">
+                    <div class="filter-group" style="width: 100%; max-width: 440px;">
+                        <label>Search Series, Cars or Tracks</label>
+                        <input type="text" id="season-search-input" class="schedule-search" placeholder="e.g. GT3, IMSA, Spa, Porsche, Super Formula..." oninput="filterSeasonSchedule()" style="width: 100%;">
+                    </div>
+                    <div class="filter-group" style="margin-top: 0.5rem;">
+                        <div class="filter-buttons">
+                            <button class="filter-btn" id="btn-season-expand-all" onclick="toggleAllSeasonCards(true)">Expand All</button>
+                            <button class="filter-btn" id="btn-season-collapse-all" onclick="toggleAllSeasonCards(false)">Collapse All</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category Filters -->
+                <div class="filter-row">
+                    <div class="filter-group" style="width: 100%;">
+                        <label>Category / Discipline</label>
+                        <div class="filter-buttons" id="season-category-filters">
+                            <button class="filter-btn active" data-category="all" onclick="toggleSeasonCategory('all')">All Disciplines</button>
+                            <button class="filter-btn" data-category="Sports Car" onclick="toggleSeasonCategory('Sports Car')">Sports Car</button>
+                            <button class="filter-btn" data-category="Formula Car" onclick="toggleSeasonCategory('Formula Car')">Formula Car</button>
+                            <button class="filter-btn" data-category="Oval" onclick="toggleSeasonCategory('Oval')">Oval</button>
+                            <button class="filter-btn" data-category="Dirt Oval" onclick="toggleSeasonCategory('Dirt Oval')">Dirt Oval</button>
+                            <button class="filter-btn" data-category="Dirt Road" onclick="toggleSeasonCategory('Dirt Road')">Dirt Road</button>
+                            <button class="filter-btn" data-category="Unranked" onclick="toggleSeasonCategory('Unranked')">Unranked</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- License Class Filters -->
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label>License Class</label>
+                        <div class="filter-buttons" id="season-license-filters">
+                            <button class="filter-btn active" data-license="all" onclick="toggleSeasonLicense('all')">All Classes</button>
+                            <button class="filter-btn" data-license="Rookie" onclick="toggleSeasonLicense('Rookie')">Rookie</button>
+                            <button class="filter-btn" data-license="Class D" onclick="toggleSeasonLicense('Class D')">Class D</button>
+                            <button class="filter-btn" data-license="Class C" onclick="toggleSeasonLicense('Class C')">Class C</button>
+                            <button class="filter-btn" data-license="Class B" onclick="toggleSeasonLicense('Class B')">Class B</button>
+                            <button class="filter-btn" data-license="Class A" onclick="toggleSeasonLicense('Class A')">Class A</button>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <label>Setup Type</label>
+                        <div class="filter-buttons" id="season-setup-filters">
+                            <button class="filter-btn active" data-setup="all" onclick="toggleSeasonSetup('all')">All Setups</button>
+                            <button class="filter-btn" data-setup="fixed" onclick="toggleSeasonSetup('fixed')">Fixed Setup</button>
+                            <button class="filter-btn" data-setup="open" onclick="toggleSeasonSetup('open')">Open Setup</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Schedule Week Selector -->
+                <div class="filter-row" style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.25rem;">
+                    <div class="filter-group" style="width: 100%;">
+                        <label>Filter By Specific Week (1 - 12)</label>
+                        <div class="filter-buttons" id="season-week-filters">
+                            <button class="filter-btn active" data-week="all" onclick="toggleSeasonWeek('all')">All Weeks</button>
+                            <button class="filter-btn" data-week="1" onclick="toggleSeasonWeek('1')">W1</button>
+                            <button class="filter-btn" data-week="2" onclick="toggleSeasonWeek('2')">W2</button>
+                            <button class="filter-btn" data-week="3" onclick="toggleSeasonWeek('3')">W3</button>
+                            <button class="filter-btn" data-week="4" onclick="toggleSeasonWeek('4')">W4</button>
+                            <button class="filter-btn" data-week="5" onclick="toggleSeasonWeek('5')">W5</button>
+                            <button class="filter-btn" data-week="6" onclick="toggleSeasonWeek('6')">W6</button>
+                            <button class="filter-btn" data-week="7" onclick="toggleSeasonWeek('7')">W7</button>
+                            <button class="filter-btn" data-week="8" onclick="toggleSeasonWeek('8')">W8</button>
+                            <button class="filter-btn" data-week="9" onclick="toggleSeasonWeek('9')">W9</button>
+                            <button class="filter-btn" data-week="10" onclick="toggleSeasonWeek('10')">W10</button>
+                            <button class="filter-btn" data-week="11" onclick="toggleSeasonWeek('11')">W11</button>
+                            <button class="filter-btn" data-week="12" onclick="toggleSeasonWeek('12')">W12</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Series Counter & Results container -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding: 0 0.5rem;">
+                <span id="season-series-count" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">Showing 0 series</span>
+                <span style="font-size: 0.75rem; color: var(--primary); opacity: 0.8;">Official iRacing 2026 Season 4</span>
+            </div>
+
+            <div id="season-schedule-container" class="season-schedule-list">
+                <p style="text-align: center; color: var(--text-muted); width: 100%; padding: 3rem;">Loading 2026 Season 4 official schedule...</p>
+            </div>
+        </div>
+
         <div style="text-align: center; margin-top: 4rem;">
             <a href="index.html" class="btn btn-outline">Back to Home</a>
         </div>
@@ -667,11 +927,17 @@
             if (tab === 'team' && !window.scheduleLoaded) {
                 loadScheduleData();
             }
+            // Load season schedule data on first switch to season tab
+            if (tab === 'season' && !window.seasonScheduleLoaded) {
+                loadSeasonScheduleData();
+            }
         }
 
         // Check URL hash on load
         if (window.location.hash === '#team-events') {
             document.addEventListener('DOMContentLoaded', () => switchTab('team'));
+        } else if (window.location.hash === '#season-schedule' || window.location.hash === '#season') {
+            document.addEventListener('DOMContentLoaded', () => switchTab('season'));
         }
 
         // ═══ Team Events (Schedule) Logic ═══
@@ -812,6 +1078,210 @@
                     </div>
                 `;
                 grid.appendChild(card);
+            });
+        }
+
+        // ═══ Season Schedule Logic ═══
+        let allSeasonSeries = [];
+        let activeSeasonCategory = "all";
+        let activeSeasonLicense = "all";
+        let activeSeasonSetup = "all";
+        let activeSeasonWeek = "all";
+
+        function loadSeasonScheduleData() {
+            fetch('scripts/season4_schedule.json')
+                .then(res => res.json())
+                .then(data => {
+                    allSeasonSeries = data;
+                    window.seasonScheduleLoaded = true;
+                    renderSeasonSchedule();
+                })
+                .catch(err => {
+                    console.error("Error loading season schedule:", err);
+                    document.getElementById('season-schedule-container').innerHTML = 
+                        '<div class="no-events"><p style="color: var(--secondary); font-weight: 700;">Could not load Season 4 schedule database.</p></div>';
+                });
+        }
+
+        function toggleSeasonCategory(cat) {
+            activeSeasonCategory = cat;
+            document.querySelectorAll('#season-category-filters .filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-category') === cat);
+            });
+            renderSeasonSchedule();
+        }
+
+        function toggleSeasonLicense(lic) {
+            activeSeasonLicense = lic;
+            document.querySelectorAll('#season-license-filters .filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-license') === lic);
+            });
+            renderSeasonSchedule();
+        }
+
+        function toggleSeasonSetup(setup) {
+            activeSeasonSetup = setup;
+            document.querySelectorAll('#season-setup-filters .filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-setup') === setup);
+            });
+            renderSeasonSchedule();
+        }
+
+        function toggleSeasonWeek(wk) {
+            activeSeasonWeek = wk;
+            document.querySelectorAll('#season-week-filters .filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-week') === wk);
+            });
+            renderSeasonSchedule();
+        }
+
+        function filterSeasonSchedule() {
+            renderSeasonSchedule();
+        }
+
+        function toggleSeasonCard(cardId) {
+            const card = document.getElementById(cardId);
+            if (card) {
+                card.classList.toggle('open');
+            }
+        }
+
+        function toggleAllSeasonCards(expand) {
+            document.querySelectorAll('.season-card').forEach(card => {
+                if (expand) {
+                    card.classList.add('open');
+                } else {
+                    card.classList.remove('open');
+                }
+            });
+        }
+
+        function getCategoryClass(cat) {
+            const c = String(cat).toLowerCase().replace(/\s+/g, '-');
+            return c;
+        }
+
+        function renderSeasonSchedule() {
+            const container = document.getElementById('season-schedule-container');
+            const countLabel = document.getElementById('season-series-count');
+            const searchInput = document.getElementById('season-search-input');
+            const searchTerm = (searchInput ? searchInput.value : '').toLowerCase().trim();
+
+            if (!container) return;
+            container.innerHTML = '';
+
+            const filtered = allSeasonSeries.filter(series => {
+                // Category filter
+                if (activeSeasonCategory !== 'all' && series.category !== activeSeasonCategory) {
+                    return false;
+                }
+
+                // License filter
+                if (activeSeasonLicense !== 'all') {
+                    if (series.class !== activeSeasonLicense) return false;
+                }
+
+                // Setup filter
+                if (activeSeasonSetup === 'fixed' && !series.isFixed) return false;
+                if (activeSeasonSetup === 'open' && series.isFixed) return false;
+
+                // Week filter: series must have this week number
+                if (activeSeasonWeek !== 'all') {
+                    const targetWk = parseInt(activeSeasonWeek);
+                    const hasWk = series.weeks.some(w => w.week === targetWk);
+                    if (!hasWk) return false;
+                }
+
+                // Search term (name, cars, tracks)
+                if (searchTerm) {
+                    const matchName = series.name.toLowerCase().includes(searchTerm);
+                    const matchCars = (series.cars || []).some(c => c.toLowerCase().includes(searchTerm));
+                    const matchTracks = series.weeks.some(w => (w.track || '').toLowerCase().includes(searchTerm));
+                    if (!matchName && !matchCars && !matchTracks) return false;
+                }
+
+                return true;
+            });
+
+            if (countLabel) {
+                countLabel.innerText = `Showing ${filtered.length} of ${allSeasonSeries.length} series`;
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="no-events">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 1rem; opacity: 0.5;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                        <h3 style="color: #fff; margin-bottom: 0.5rem;">No Series Found</h3>
+                        <p>No 2026 Season 4 series matched your filter criteria.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Auto-expand first 5 cards if user searched or applied specific week filter
+            const autoExpand = Boolean(searchTerm || activeSeasonWeek !== 'all');
+
+            filtered.forEach((series, idx) => {
+                const card = document.createElement('div');
+                card.className = `season-card ${autoExpand && idx < 6 ? 'open' : ''}`;
+                card.id = `season-card-${series.id}`;
+
+                const licClass = getLicenseClass(series.class);
+                const catClass = getCategoryClass(series.category);
+                const carsText = (series.cars && series.cars.length > 0) ? series.cars.join(', ') : 'Series Specific';
+
+                // Display weeks (filter by specific week if week filter is selected)
+                let displayWeeks = series.weeks;
+                if (activeSeasonWeek !== 'all') {
+                    displayWeeks = series.weeks.filter(w => w.week === parseInt(activeSeasonWeek));
+                }
+
+                const weeksHtml = displayWeeks.map(w => {
+                    return `
+                        <div class="season-week-tile">
+                            <div class="season-week-badge-row">
+                                <span class="season-week-num">Week ${w.week}</span>
+                                <span class="season-week-date">${w.date || ''}</span>
+                            </div>
+                            <div class="season-week-track">${w.track}</div>
+                            ${w.duration ? `<div class="season-week-duration">⏱️ ${w.duration}</div>` : ''}
+                        </div>
+                    `;
+                }).join('');
+
+                card.innerHTML = `
+                    <div class="season-card-header" onclick="toggleSeasonCard('season-card-${series.id}')">
+                        <div class="season-header-left">
+                            <div class="season-title-row">
+                                <span class="season-name">${series.name}</span>
+                                <div class="season-header-meta">
+                                    <span class="meta-badge badge-cat ${catClass}">${series.category}</span>
+                                    <span class="meta-badge license ${licClass}">${series.class}</span>
+                                    ${series.isFixed ? '<span class="meta-badge" style="background: rgba(0,207,255,0.1); color: var(--primary); border: 1px solid rgba(0,207,255,0.25);">Fixed</span>' : '<span class="meta-badge" style="background: rgba(255,255,255,0.05); color: #9ca3af; border: 1px solid rgba(255,255,255,0.1);">Open</span>'}
+                                    ${series.duration ? `<span class="meta-badge length">${series.duration}</span>` : ''}
+                                </div>
+                            </div>
+                            <div class="season-cars-preview"><strong>Cars:</strong> ${carsText}</div>
+                        </div>
+                        <div class="season-header-right">
+                            <div class="season-toggle-btn">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="season-card-body">
+                        <div class="season-info-bar">
+                            ${series.licenseReq ? `<div class="season-info-item"><strong>Eligibility:</strong> ${series.licenseReq}</div>` : ''}
+                            ${series.raceTimes ? `<div class="season-info-item"><strong>Race Times:</strong> ${series.raceTimes}</div>` : ''}
+                            <div class="season-info-item"><strong>Total Weeks:</strong> ${series.weeks.length}</div>
+                        </div>
+                        <div class="season-weeks-grid">
+                            ${weeksHtml}
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(card);
             });
         }
     </script>
