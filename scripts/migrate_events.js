@@ -26,7 +26,7 @@ const UPCOMING_EVENTS = [
     { id: 'spa-24hr', name: 'Spa 24hr', date: 'July 10-12', startDate: '2026-07-10T22:00:00Z', slots: IMSA_SLOTS, classes: ['GT3'] },
     { id: 'brickyard-400', name: 'Brickyard 400', date: 'July 22-27', startDate: '2026-07-22T22:00:00Z', slots: IMSA_SLOTS, classes: ['NASCAR Next Gen'] },
     { id: 'road-america-6h', name: 'Road America 6h', date: 'July 24-26', startDate: '2026-07-24T22:00:00Z', slots: IMSA_SLOTS, classes: ['GTP', 'LMP2', 'GT3'] },
-    { id: 'suzuka-1000km', name: 'Suzuka 1000km', date: 'Sept 10-15', startDate: '2026-09-10T22:00:00Z', slots: IMSA_SLOTS, classes: ['GT3'] },
+    { id: 'suzuka-1000km', name: 'Suzuka 1000km', date: 'Sept 11-13', startDate: '2026-09-11T00:00:00Z', endDate: '2026-09-13T23:59:59Z', slots: IMSA_SLOTS, classes: ['GT3'] },
     { id: 'petit-le-mans', name: 'Petit Le Mans', date: 'Sept 25-27', startDate: '2026-09-25T22:00:00Z', slots: IMSA_SLOTS, classes: ['GTP', 'LMP2', 'GT3'] },
     { id: 'bathurst-1000', name: 'Bathurst 1000', date: 'Oct 2-4', startDate: '2026-10-02T22:00:00Z', slots: IMSA_SLOTS, classes: ['V8 Supercar'] },
     { id: 'indy-8h', name: 'Indy 8h', date: 'Oct 16-18', startDate: '2026-10-16T22:00:00Z', slots: IMSA_SLOTS, classes: ['GT3'] }

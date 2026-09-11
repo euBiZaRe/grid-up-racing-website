@@ -593,7 +593,13 @@ async function loadDynamicContent() {
             if (fullEventList) fullEventList.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Stay tuned for future event dates.</p>';
         } else {
             const allEvents = [];
-            snap.forEach(doc => allEvents.push({ id: doc.id, ...doc.data() }));
+            snap.forEach(doc => {
+                const data = doc.data();
+                if (doc.id === 'suzuka-1000km') {
+                    data.date = 'Sept 11-13';
+                }
+                allEvents.push({ id: doc.id, ...data });
+            });
 
             const now = new Date();
             const lookbackDate = new Date();
@@ -619,12 +625,24 @@ async function loadDynamicContent() {
             // Filter events
             const nurburgringPast = now > new Date('2026-05-03T23:59:59');
             
-            const upcomingEvents = allEvents.filter(e => {
-                const start = parseDate(e.startDate);
-                const eventEnd = e.endDate ? parseDate(e.endDate) : (start ? new Date(start) : null);
-                if (eventEnd && !e.endDate) {
-                    eventEnd.setHours(23, 59, 59, 999);
+            // Helper to determine true event end time
+            const getEventEndDate = (e) => {
+                if (e.id === 'suzuka-1000km') {
+                    // Suzuka event stays active through end of 13th Sept
+                    return new Date('2026-09-13T23:59:59.999Z');
                 }
+                if (e.endDate) {
+                    return parseDate(e.endDate);
+                }
+                const start = parseDate(e.startDate);
+                if (!start) return null;
+                const calculatedEnd = new Date(start);
+                calculatedEnd.setHours(23, 59, 59, 999);
+                return calculatedEnd;
+            };
+
+            const upcomingEvents = allEvents.filter(e => {
+                const eventEnd = getEventEndDate(e);
                 if (!eventEnd) return false;
                 
                 if ((e.id === 'nurburgring-24h' || e.id === 'nurburgring-24') && nurburgringPast) return false;
@@ -632,11 +650,7 @@ async function loadDynamicContent() {
             });
 
             const pastEvents = allEvents.filter(e => {
-                const start = parseDate(e.startDate);
-                const eventEnd = e.endDate ? parseDate(e.endDate) : (start ? new Date(start) : null);
-                if (eventEnd && !e.endDate) {
-                    eventEnd.setHours(23, 59, 59, 999);
-                }
+                const eventEnd = getEventEndDate(e);
                 if (!eventEnd) return true;
                 
                 if ((e.id === 'nurburgring-24h' || e.id === 'nurburgring-24') && nurburgringPast) return true;
