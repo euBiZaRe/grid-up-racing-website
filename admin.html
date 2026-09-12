@@ -627,6 +627,12 @@
                                     <option value="">-- Choose Event --</option>
                                 </select>
                             </div>
+                            <div id="result-lineup-picker-container" style="display: none;">
+                                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">AUTOFILL FROM CONFIRMED LINEUP</label>
+                                <select id="result-lineup-picker" class="btn btn-outline" style="width: 100%; text-align: left; padding: 0.75rem; border-color: rgba(0, 207, 255, 0.4);" onchange="applyRaceResultLineup(this.value)">
+                                    <option value="">-- Select Confirmed Team --</option>
+                                </select>
+                            </div>
                             <div>
                                 <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">TEAM NAME</label>
                                 <input type="text" id="result-team-name" placeholder="e.g. GRiD UP #77" class="btn btn-outline" style="width: 100%; text-align: left;">
@@ -697,6 +703,20 @@
                         <h3 style="color: var(--primary); margin-bottom: 2rem; font-size: 0.9rem; letter-spacing: 2px;">CREATE / EDIT REPORT</h3>
                         <div style="display: grid; gap: 1.5rem;">
                             <input type="hidden" id="report-id">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; background: rgba(0, 207, 255, 0.03); padding: 1rem; border-radius: 8px; border: 1px dashed rgba(0, 207, 255, 0.2);">
+                                <div>
+                                    <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">AUTOFILL FROM EVENT</label>
+                                    <select id="report-event-selector" class="btn btn-outline" style="width: 100%; text-align: left; padding: 0.6rem; cursor: pointer; font-size: 0.8rem;" onchange="loadReportEventLineup()">
+                                        <option value="">-- Choose Event (Optional) --</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">CONFIRMED TEAM</label>
+                                    <select id="report-lineup-picker" class="btn btn-outline" style="width: 100%; text-align: left; padding: 0.6rem; cursor: pointer; font-size: 0.8rem;" onchange="applyReportLineup(this.value)" disabled>
+                                        <option value="">-- Select Event First --</option>
+                                    </select>
+                                </div>
+                            </div>
                             <div>
                                 <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">TITLE</label>
                                 <input type="text" id="report-title-input" class="btn btn-outline" style="width: 100%; text-align: left;" placeholder="e.g. Daytona 24h Victory">
@@ -1619,16 +1639,16 @@
         }
 
         function updateSelectors() {
-            const selectors = ['lineup-event-selector', 'availability-event-selector', 'result-event-selector', 'card-event'];
+            const selectors = ['lineup-event-selector', 'availability-event-selector', 'result-event-selector', 'card-event', 'report-event-selector'];
             selectors.forEach(id => {
                 const sel = document.getElementById(id);
                 if (!sel) return;
                 
                 const currentVal = sel.value;
-                const baseOption = id === 'availability-event-selector' ? '<option value="matrix">-- Full Matrix View --</option>' : '<option value="">-- Choose an Event --</option>';
+                const baseOption = id === 'availability-event-selector' ? '<option value="matrix">-- Full Matrix View --</option>' : (id === 'report-event-selector' ? '<option value="">-- Choose Event (Optional) --</option>' : '<option value="">-- Choose an Event --</option>');
                 
-                // Use ALL_EVENTS for results and posters, UPCOMING_EVENTS for lineups/availability
-                const sourceList = (id === 'result-event-selector' || id === 'card-event') ? ALL_EVENTS : UPCOMING_EVENTS;
+                // Use ALL_EVENTS for results, posters, and reports, UPCOMING_EVENTS for lineups/availability
+                const sourceList = (id === 'result-event-selector' || id === 'card-event' || id === 'report-event-selector') ? ALL_EVENTS : UPCOMING_EVENTS;
                 
                 sel.innerHTML = baseOption + sourceList.map(e => `<option value="${e.id}" ${e.id === currentVal ? 'selected' : ''}>${e.name}</option>`).join('');
             });
@@ -2767,14 +2787,46 @@
         // Race Results Management
         // ==========================================
         
+        let CURRENT_EVENT_RESULTS_LINEUPS = [];
+
         async function loadEventResults() {
             const eventId = document.getElementById('result-event-selector').value;
             const list = document.getElementById('admin-results-list');
+            const lineupContainer = document.getElementById('result-lineup-picker-container');
+            const lineupPicker = document.getElementById('result-lineup-picker');
+            
+            CURRENT_EVENT_RESULTS_LINEUPS = [];
+            if (lineupPicker) {
+                lineupPicker.innerHTML = '<option value="">-- Select Confirmed Team --</option>';
+            }
+            if (lineupContainer) {
+                lineupContainer.style.display = 'none';
+            }
+
             if (!list) return;
 
             if (!eventId) {
                 list.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Select an event to view/edit results.</p>';
                 return;
+            }
+
+            // Fetch confirmed lineups for this event
+            try {
+                const lineupDoc = await db.collection("race_lineups").doc(eventId).get();
+                if (lineupDoc.exists && lineupDoc.data().teams && lineupDoc.data().teams.length > 0) {
+                    CURRENT_EVENT_RESULTS_LINEUPS = lineupDoc.data().teams;
+                    if (lineupPicker && lineupContainer) {
+                        let optionsHtml = '<option value="">-- Select Confirmed Team --</option>';
+                        CURRENT_EVENT_RESULTS_LINEUPS.forEach((t, idx) => {
+                            const driverCount = (t.drivers || []).length;
+                            optionsHtml += `<option value="${idx}">${t.name} (${t.car_class || 'No Car'} - ${driverCount} drivers)</option>`;
+                        });
+                        lineupPicker.innerHTML = optionsHtml;
+                        lineupContainer.style.display = 'block';
+                    }
+                }
+            } catch (err) {
+                console.warn("Could not fetch confirmed lineups for event results:", err);
             }
 
             list.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Loading results...</p>';
@@ -2824,6 +2876,35 @@
             }
         }
 
+        function applyRaceResultLineup(indexStr) {
+            if (indexStr === "" || indexStr === undefined) return;
+            const index = parseInt(indexStr);
+            const team = CURRENT_EVENT_RESULTS_LINEUPS[index];
+            if (!team) return;
+
+            // Fill Team Name
+            const teamNameInput = document.getElementById('result-team-name');
+            if (teamNameInput) teamNameInput.value = team.name || '';
+
+            // Fill Car
+            const carInput = document.getElementById('result-car');
+            if (carInput && team.car_class) carInput.value = team.car_class;
+
+            // Fill Drivers
+            const driversInput = document.getElementById('result-drivers');
+            if (driversInput) {
+                let driverList = [];
+                if (Array.isArray(team.drivers)) {
+                    driverList = [...team.drivers];
+                }
+                // Include captain if not in driver list
+                if (team.captain && !driverList.includes(team.captain)) {
+                    driverList.unshift(team.captain);
+                }
+                driversInput.value = driverList.join(', ');
+            }
+        }
+
         async function saveRaceResult() {
             const eventId = document.getElementById('result-event-selector').value;
             const teamName = document.getElementById('result-team-name').value.trim();
@@ -2863,6 +2944,8 @@
                 await db.collection("event_results").add(data);
                 
                 // Clear form
+                const lineupPickerEl = document.getElementById('result-lineup-picker');
+                if (lineupPickerEl) lineupPickerEl.value = '';
                 document.getElementById('result-team-name').value = '';
                 document.getElementById('result-car').value = '';
                 document.getElementById('result-drivers').value = '';
@@ -3780,6 +3863,87 @@
             }
         }
 
+        let CURRENT_REPORT_EVENT_LINEUPS = [];
+
+        async function loadReportEventLineup() {
+            const eventId = document.getElementById('report-event-selector').value;
+            const picker = document.getElementById('report-lineup-picker');
+            if (!picker) return;
+
+            CURRENT_REPORT_EVENT_LINEUPS = [];
+            picker.innerHTML = '<option value="">-- Select Confirmed Team --</option>';
+
+            if (!eventId) {
+                picker.disabled = true;
+                picker.innerHTML = '<option value="">-- Select Event First --</option>';
+                return;
+            }
+
+            // Set report date based on event startDate if available
+            const foundEvent = (typeof ALL_EVENTS !== 'undefined' ? ALL_EVENTS : []).find(e => e.id === eventId);
+            if (foundEvent && foundEvent.startDate) {
+                try {
+                    const d = new Date(foundEvent.startDate);
+                    if (!isNaN(d.getTime())) {
+                        document.getElementById('report-date-input').value = d.toISOString().split('T')[0];
+                    }
+                } catch(e) {}
+            }
+
+            try {
+                picker.disabled = true;
+                picker.innerHTML = '<option value="">Loading lineups...</option>';
+                const doc = await db.collection("race_lineups").doc(eventId).get();
+                if (doc.exists && doc.data().teams && doc.data().teams.length > 0) {
+                    CURRENT_REPORT_EVENT_LINEUPS = doc.data().teams;
+                    let opts = '<option value="">-- Choose Team Lineup --</option>';
+                    CURRENT_REPORT_EVENT_LINEUPS.forEach((t, idx) => {
+                        opts += `<option value="${idx}">${t.name} (${t.car_class || 'No Car'})</option>`;
+                    });
+                    picker.innerHTML = opts;
+                    picker.disabled = false;
+                } else {
+                    picker.innerHTML = '<option value="">No confirmed lineups found</option>';
+                    picker.disabled = true;
+                }
+            } catch (err) {
+                console.error("Error loading report lineup:", err);
+                picker.innerHTML = '<option value="">Error loading lineup</option>';
+                picker.disabled = true;
+            }
+        }
+
+        function applyReportLineup(idxStr) {
+            if (idxStr === "" || idxStr === undefined) return;
+            const idx = parseInt(idxStr);
+            const team = CURRENT_REPORT_EVENT_LINEUPS[idx];
+            if (!team) return;
+
+            const authorInput = document.getElementById('report-author-input');
+            if (authorInput) {
+                authorInput.value = team.name || '';
+            }
+
+            // Auto-populate Title if empty
+            const titleInput = document.getElementById('report-title-input');
+            const eventId = document.getElementById('report-event-selector').value;
+            const foundEvent = (typeof ALL_EVENTS !== 'undefined' ? ALL_EVENTS : []).find(e => e.id === eventId);
+            if (titleInput && !titleInput.value.trim()) {
+                titleInput.value = (foundEvent ? foundEvent.name : 'Race') + ' - ' + team.name;
+            }
+
+            // If HTML content is empty, pre-populate with nice lineup template
+            const contentInput = document.getElementById('report-content-input');
+            if (contentInput && !contentInput.value.trim()) {
+                let driverList = Array.isArray(team.drivers) ? [...team.drivers] : [];
+                if (team.captain && !driverList.includes(team.captain)) {
+                    driverList.unshift(team.captain);
+                }
+                const driversHtml = driverList.map(d => `<li>${d}</li>`).join('');
+                contentInput.value = `<p>Race report for <strong>${team.name}</strong> competing with <strong>${team.car_class || 'TBD'}</strong>.</p>\n\n<h3>Driver Lineup</h3>\n<ul>\n${driversHtml}\n</ul>\n\n<p>Race recap details...</p>`;
+            }
+        }
+
         async function saveReport() {
             const idInput = document.getElementById('report-id');
             const titleInput = document.getElementById('report-title-input');
@@ -4454,6 +4618,14 @@
             document.getElementById('report-banner-input').value = '';
             document.getElementById('report-summary-input').value = '';
             document.getElementById('report-content-input').value = '';
+            const evSel = document.getElementById('report-event-selector');
+            if (evSel) evSel.value = '';
+            const lPicker = document.getElementById('report-lineup-picker');
+            if (lPicker) {
+                lPicker.innerHTML = '<option value="">-- Select Event First --</option>';
+                lPicker.disabled = true;
+            }
+            CURRENT_REPORT_EVENT_LINEUPS = [];
         }
 
         // ==========================================
