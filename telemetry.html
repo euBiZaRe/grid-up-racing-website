@@ -956,6 +956,7 @@
                             <option value="gridUp_blue">GRiD UP Blue</option>
                             <option value="gridUp_red">GRiD UP Red</option>
                             <option value="gridUp_white">GRiD UP White</option>
+                            <option value="gridUp_purple">GRiD UP Purple</option>
                             <option value="gridUp_practice">PRACTICE SERVER</option>
                             <option value="solo">SOLO Mode / Personal</option>
                         </select>
@@ -2124,24 +2125,67 @@
             });
         }
 
-        // Auto-rebuild team selector options based on admin permissions
+        // Auto-rebuild team selector options based on admin permissions & dynamic RTDB config
+        let cachedTeamsList = null;
+
+        function fetchRemoteTeams(callback) {
+            try {
+                let telemetryApp = firebase.apps.find(app => app.name === "telemetry");
+                if (!telemetryApp) {
+                    telemetryApp = firebase.initializeApp({
+                        databaseURL: "https://grid-up-racedash-default-rtdb.europe-west1.firebasedatabase.app"
+                    }, "telemetry");
+                }
+                const db = telemetryApp.database();
+                db.ref('teams/meta_teams').once('value', snapshot => {
+                    const data = snapshot.val();
+                    if (data && typeof data === 'object') {
+                        const items = [];
+                        Object.keys(data).forEach(key => {
+                            const val = data[key];
+                            if (val && typeof val === 'object') {
+                                items.push({
+                                    value: val.id || key,
+                                    text: val.name || key,
+                                    adminOnly: !!val.adminOnly,
+                                    enabled: val.enabled !== false,
+                                    order: val.order || 999
+                                });
+                            }
+                        });
+                        items.sort((a, b) => a.order - b.order);
+                        cachedTeamsList = items.filter(t => t.enabled);
+                    }
+                    if (callback) callback();
+                }, err => {
+                    console.warn("Could not load dynamic teams from RTDB:", err);
+                    if (callback) callback();
+                });
+            } catch (e) {
+                console.warn("fetchRemoteTeams error:", e);
+                if (callback) callback();
+            }
+        }
+
         function updateTeamDropdown(isAdmin) {
             const teamSelect = document.getElementById('team-select');
             if (!teamSelect) return;
             
             const currentValue = teamSelect.value;
             
-            const allOptions = [
-                { value: "gridUp_sim", text: "GRiD UP Sim Racing" },
-                { value: "gridUp_black", text: "GRiD UP Black" },
-                { value: "gridUp_blue", text: "GRiD UP Blue" },
-                { value: "gridUp_red", text: "GRiD UP Red" },
-                { value: "gridUp_white", text: "GRiD UP White" },
-                { value: "gridUp_practice", text: "PRACTICE SERVER", adminOnly: true },
-                { value: "solo", text: "SOLO Mode / Personal", adminOnly: true }
+            const defaultOptions = [
+                { value: "gridUp_sim", text: "GRiD UP Sim Racing", order: 1 },
+                { value: "gridUp_black", text: "GRiD UP Black", order: 2 },
+                { value: "gridUp_blue", text: "GRiD UP Blue", order: 3 },
+                { value: "gridUp_red", text: "GRiD UP Red", order: 4 },
+                { value: "gridUp_white", text: "GRiD UP White", order: 5 },
+                { value: "gridUp_purple", text: "GRiD UP Purple", order: 6 },
+                { value: "gridUp_practice", text: "PRACTICE SERVER", adminOnly: true, order: 7 },
+                { value: "solo", text: "SOLO Mode / Personal", adminOnly: true, order: 8 }
             ];
             
-            const filteredOptions = allOptions.filter(opt => !opt.adminOnly || isAdmin);
+            const sourceList = (cachedTeamsList && cachedTeamsList.length > 0) ? cachedTeamsList : defaultOptions;
+            const filteredOptions = sourceList.filter(opt => !opt.adminOnly || isAdmin);
             
             let html = '';
             filteredOptions.forEach(opt => {
@@ -2152,7 +2196,7 @@
             
             if (filteredOptions.some(opt => opt.value === currentValue)) {
                 teamSelect.value = currentValue;
-            } else {
+            } else if (filteredOptions.length > 0) {
                 teamSelect.value = filteredOptions[0].value;
                 hasAutoScrolled = false;
                 setupFirebaseListeners(teamSelect.value);
@@ -2225,7 +2269,10 @@
                 attempts++;
                 if (window.firebase) {
                     clearInterval(dbCheckInterval);
-                    setupFirebaseListeners(teamSelect.value);
+                    fetchRemoteTeams(() => {
+                        updateTeamDropdown(checkAdminStatus());
+                        setupFirebaseListeners(teamSelect.value);
+                    });
                 } else if (attempts > 30) { // 3 seconds timeout
                     clearInterval(dbCheckInterval);
                     console.error("Firebase SDK failed to load within 3 seconds.");

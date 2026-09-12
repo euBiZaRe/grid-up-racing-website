@@ -941,20 +941,30 @@ window.addEventListener('DOMContentLoaded', beautifyCurrentURL);
 
 // Helper for clean event links
 function getEventLink(id, isStatic = false) {
-    const path = window.location.pathname;
-    let prefix = '';
-    if (path.includes('/events/past/')) {
-        prefix = '../../';
-    } else if (path.includes('/events/') || path.includes('/drivers/')) {
-        prefix = '../';
-    }
+    const pastStatic = ['iracing-roar', 'daytona-24', 'daytona-500', 'bathurst-12', 'sebring-12hr'];
+    const isHttp = window.location.protocol.startsWith('http');
     
-    if (isStatic) {
-        const pastStatic = ['iracing-roar', 'daytona-24', 'daytona-500', 'bathurst-12', 'sebring-12hr'];
-        if (pastStatic.includes(id)) return `${prefix}events/past/${id}.html`;
-        return `${prefix}events/${id}.html`;
+    if (isHttp) {
+        if (isStatic) {
+            if (pastStatic.includes(id)) return `/events/past/${id}.html`;
+            return `/events/${id}.html`;
+        }
+        return `/events/details.html?id=${encodeURIComponent(id)}`;
+    } else {
+        // Local file:// fallback
+        const path = window.location.pathname.replace(/\\/g, '/');
+        let prefix = '';
+        if (path.includes('/events/past/')) {
+            prefix = '../../';
+        } else if (path.includes('/events/') || path.includes('/drivers/')) {
+            prefix = '../';
+        }
+        if (isStatic) {
+            if (pastStatic.includes(id)) return `${prefix}events/past/${id}.html`;
+            return `${prefix}events/${id}.html`;
+        }
+        return `${prefix}events/details.html?id=${encodeURIComponent(id)}`;
     }
-    return `${prefix}events/details.html#${id}`;
 }
 
 // Hidden Download Handler for Team App

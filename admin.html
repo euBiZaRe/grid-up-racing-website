@@ -179,6 +179,7 @@
                     <button onclick="switchTab('reports')" class="btn btn-outline" id="tab-reports">RACE REPORTS</button>
                     <button onclick="switchTab('streams')" class="btn btn-outline" id="tab-streams">LIVE STREAMS</button>
                     <button onclick="switchTab('admins')" class="btn btn-outline" id="tab-admins">TEAM PERMISSIONS</button>
+                    <button onclick="switchTab('telemetry-teams')" class="btn btn-outline" id="tab-telemetry-teams" style="border-color: rgba(168, 85, 247, 0.4); color: #c084fc;">TELEMETRY TEAMS</button>
                     
 
                 </aside>
@@ -1223,6 +1224,83 @@
                 </div>
             </div>
 
+            <!-- Telemetry Teams Management Tab -->
+            <div id="section-telemetry-teams" class="tab-content" style="display: none;">
+                <!-- Add New Team Form -->
+                <div class="glass" style="padding: 2rem; margin-bottom: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 1rem;">
+                        <div>
+                            <h3 style="color: #c084fc; font-size: 1.2rem; margin-bottom: 0.25rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Telemetry Teams Manager</h3>
+                            <p style="color: var(--text-muted); font-size: 0.8rem; margin: 0;">Manage the teams selectable in the Desktop Telemetry Recorder App and Live Telemetry dashboards.</p>
+                        </div>
+                        <button onclick="loadTelemetryTeamsAdmin()" class="btn btn-outline" style="display: flex; align-items: center; gap: 6px; font-size: 0.75rem; padding: 0.4rem 0.8rem;">
+                            <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i> Refresh
+                        </button>
+                    </div>
+
+                    <form id="add-team-form" onsubmit="handleSaveTelemetryTeam(event)" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; align-items: end;">
+                        <div>
+                            <label style="display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 0.5rem; font-weight: 700;">Team ID (Unique Key)</label>
+                            <input type="text" id="team-input-id" placeholder="e.g. gridUp_purple" required style="width: 100%; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); border-radius: 8px; padding: 0.6rem 0.8rem; color: #fff; font-family: monospace; font-size: 0.85rem;">
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 0.5rem; font-weight: 700;">Display Name</label>
+                            <input type="text" id="team-input-name" placeholder="e.g. GRiD UP Purple" required style="width: 100%; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); border-radius: 8px; padding: 0.6rem 0.8rem; color: #fff; font-size: 0.85rem;">
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 0.5rem; font-weight: 700;">Color</label>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <input type="color" id="team-input-color-picker" value="#a855f7" onchange="document.getElementById('team-input-color').value = this.value" style="width: 40px; height: 38px; border: none; background: transparent; cursor: pointer; border-radius: 6px;">
+                                <input type="text" id="team-input-color" value="#a855f7" onchange="document.getElementById('team-input-color-picker').value = this.value" placeholder="#a855f7" required style="flex: 1; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); border-radius: 8px; padding: 0.6rem 0.8rem; color: #fff; font-family: monospace; font-size: 0.85rem;">
+                            </div>
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 0.5rem; font-weight: 700;">Display Order</label>
+                            <input type="number" id="team-input-order" value="6" min="1" max="99" style="width: 100%; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); border-radius: 8px; padding: 0.6rem 0.8rem; color: #fff; font-size: 0.85rem;">
+                        </div>
+                        <div style="display: flex; gap: 15px; align-items: center; padding-bottom: 0.5rem;">
+                            <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--text-main); cursor: pointer;">
+                                <input type="checkbox" id="team-input-enabled" checked style="accent-color: var(--primary);"> Enabled
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--text-main); cursor: pointer;">
+                                <input type="checkbox" id="team-input-adminonly" style="accent-color: #fbbf24;"> Admin Only
+                            </label>
+                        </div>
+                        <div>
+                            <button type="submit" class="btn btn-primary" style="width: 100%; height: 42px; background: linear-gradient(135deg, #a855f7, #6366f1); border: none; font-weight: 700; letter-spacing: 0.5px;">SAVE TEAM</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Teams List Table -->
+                <div class="glass" style="padding: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h4 style="color: var(--text-main); font-size: 1rem; margin: 0; font-weight: 700;">Active & Configured Telemetry Teams</h4>
+                        <span id="telemetry-teams-count" style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700;">0 Teams</span>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table class="claims-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 60px;">Order</th>
+                                    <th>Color</th>
+                                    <th>Team ID</th>
+                                    <th>Display Name</th>
+                                    <th>Access</th>
+                                    <th>Status</th>
+                                    <th style="text-align: right;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="telemetry-teams-list">
+                                <tr>
+                                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading teams...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             </div>
         </div>
     </div>
@@ -1265,6 +1343,7 @@
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <script defer src="js/auth.js?v=11"></script>
     <script defer src="script.js?v=24"></script>
     <script>
@@ -1413,7 +1492,7 @@
             }
         }
         function switchTab(tab) {
-            const sections = ['applications', 'claims', 'races', 'admins', 'availability', 'roster', 'events', 'leagues', 'race-results', 'reports', 'posters', 'streams', 'system', 'm2rc-schedule', 'm2rc-results', 'm2rc-stewarding', 'm2rc-drivers', 'm2-cup'];
+            const sections = ['applications', 'claims', 'races', 'admins', 'availability', 'roster', 'events', 'leagues', 'race-results', 'reports', 'posters', 'streams', 'system', 'm2rc-schedule', 'm2rc-results', 'm2rc-stewarding', 'm2rc-drivers', 'm2-cup', 'telemetry-teams'];
             sections.forEach(s => {
                 const el = document.getElementById(`section-${s}`);
                 if (el) el.style.display = (tab === s) ? 'block' : 'none';
@@ -1435,11 +1514,12 @@
                 'm2rc-results': 'M2RC Results Uploader',
                 'm2rc-stewarding': 'M2RC Stewarding Decider',
                 'm2rc-drivers': 'M2RC Driver Registrations',
-                'm2-cup': 'BMW M2 Cup Admin'
+                'm2-cup': 'BMW M2 Cup Admin',
+                'telemetry-teams': 'Telemetry Teams Manager'
             };
             document.getElementById('admin-title').textContent = titleMap[tab] || tab;
             
-            const tabs = ['applications', 'claims', 'races', 'admins', 'availability', 'roster', 'events', 'leagues', 'race-results', 'reports', 'streams', 'm2rc-schedule', 'm2rc-results', 'm2rc-stewarding', 'm2rc-drivers', 'm2-cup'];
+            const tabs = ['applications', 'claims', 'races', 'admins', 'availability', 'roster', 'events', 'leagues', 'race-results', 'reports', 'streams', 'm2rc-schedule', 'm2rc-results', 'm2rc-stewarding', 'm2rc-drivers', 'm2-cup', 'telemetry-teams'];
             tabs.forEach(t => {
                 const btn = document.getElementById(`tab-${t}`);
                 if (btn) {
@@ -1467,6 +1547,7 @@
             if (tab === 'm2rc-stewarding') loadM2RCStewardingAdmin();
             if (tab === 'm2rc-drivers') loadM2RCDriversAdmin();
             if (tab === 'm2-cup') initM2CupAdmin();
+            if (tab === 'telemetry-teams') loadTelemetryTeamsAdmin();
         }
         let UPCOMING_EVENTS = [];
         let ALL_EVENTS = [];
@@ -4373,6 +4454,198 @@
             document.getElementById('report-banner-input').value = '';
             document.getElementById('report-summary-input').value = '';
             document.getElementById('report-content-input').value = '';
+        }
+
+        // ==========================================
+        // TELEMETRY TEAMS MANAGEMENT (Realtime Database)
+        // ==========================================
+        function getTelemetryRTDB() {
+            try {
+                let telApp = firebase.apps.find(app => app.name === "telemetry_admin");
+                if (!telApp) {
+                    telApp = firebase.initializeApp({
+                        databaseURL: "https://grid-up-racedash-default-rtdb.europe-west1.firebasedatabase.app"
+                    }, "telemetry_admin");
+                }
+                return telApp.database();
+            } catch(e) {
+                console.warn("Using default firebase database instance:", e);
+                return firebase.database();
+            }
+        }
+
+        async function loadTelemetryTeamsAdmin() {
+            const list = document.getElementById('telemetry-teams-list');
+            const countEl = document.getElementById('telemetry-teams-count');
+            if (!list) return;
+
+            list.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading teams...</td></tr>';
+
+            try {
+                const rtdb = getTelemetryRTDB();
+                const snap = await rtdb.ref('config/teams').once('value');
+                const data = snap.val();
+
+                if (!data || Object.keys(data).length === 0) {
+                    list.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">No teams configured in Realtime Database.</td></tr>';
+                    if (countEl) countEl.textContent = '0 Teams';
+                    return;
+                }
+
+                const teams = [];
+                Object.keys(data).forEach(key => {
+                    const item = data[key];
+                    if (item && typeof item === 'object') {
+                        teams.push({
+                            id: item.id || key,
+                            name: item.name || key,
+                            color: item.color || '#ffffff',
+                            order: typeof item.order === 'number' ? item.order : 999,
+                            enabled: item.enabled !== false,
+                            adminOnly: !!item.adminOnly
+                        });
+                    }
+                });
+
+                teams.sort((a, b) => a.order - b.order);
+
+                if (countEl) countEl.textContent = `${teams.length} Teams`;
+
+                list.innerHTML = '';
+                teams.forEach(t => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="font-family: monospace; font-weight: bold; color: var(--text-muted);">${t.order}</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 16px; height: 16px; border-radius: 4px; background-color: ${t.color}; box-shadow: 0 0 8px ${t.color}66; border: 1px solid rgba(255,255,255,0.2);"></div>
+                                <span style="font-family: monospace; font-size: 0.75rem; color: var(--text-muted);">${t.color}</span>
+                            </div>
+                        </td>
+                        <td><strong style="font-family: monospace; color: var(--primary);">${t.id}</strong></td>
+                        <td style="font-weight: 700; color: #fff;">${t.name}</td>
+                        <td>
+                            <span class="status-badge" style="background: ${t.adminOnly ? 'rgba(251, 191, 36, 0.15)' : 'rgba(59, 130, 246, 0.15)'}; color: ${t.adminOnly ? '#fbbf24' : '#60a5fa'}; border: 1px solid ${t.adminOnly ? 'rgba(251, 191, 36, 0.3)' : 'rgba(59, 130, 246, 0.3)'};">
+                                ${t.adminOnly ? 'ADMIN ONLY' : 'PUBLIC'}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-badge" style="background: ${t.enabled ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)'}; color: ${t.enabled ? '#34d399' : '#f87171'}; border: 1px solid ${t.enabled ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'};">
+                                ${t.enabled ? 'ENABLED' : 'DISABLED'}
+                            </span>
+                        </td>
+                        <td style="text-align: right;">
+                            <div style="display: flex; gap: 6px; justify-content: flex-end;">
+                                <button onclick="toggleTelemetryTeamStatus('${t.id}', ${!t.enabled})" class="btn btn-outline" style="font-size: 0.7rem; padding: 0.3rem 0.6rem; border-color: ${t.enabled ? '#ef4444' : '#10b981'}; color: ${t.enabled ? '#f87171' : '#34d399'};">
+                                    ${t.enabled ? 'Disable' : 'Enable'}
+                                </button>
+                                <button onclick="editTelemetryTeam('${t.id}', '${escapeHtml(t.name)}', '${t.color}', ${t.order}, ${t.enabled}, ${t.adminOnly})" class="btn btn-outline" style="font-size: 0.7rem; padding: 0.3rem 0.6rem;">
+                                    Edit
+                                </button>
+                                <button onclick="deleteTelemetryTeam('${t.id}')" class="btn btn-outline" style="font-size: 0.7rem; padding: 0.3rem 0.6rem; border-color: #ef4444; color: #ef4444;">
+                                    Delete
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    list.appendChild(tr);
+                });
+                lucide.createIcons();
+            } catch (err) {
+                console.error("Failed to load telemetry teams:", err);
+                list.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #ef4444; padding: 2rem;">Error: ${err.message}</td></tr>`;
+            }
+        }
+
+        async function handleSaveTelemetryTeam(event) {
+            event.preventDefault();
+            const idInput = document.getElementById('team-input-id');
+            const nameInput = document.getElementById('team-input-name');
+            const colorInput = document.getElementById('team-input-color');
+            const orderInput = document.getElementById('team-input-order');
+            const enabledInput = document.getElementById('team-input-enabled');
+            const adminOnlyInput = document.getElementById('team-input-adminonly');
+
+            const id = idInput.value.trim().replace(/[^a-zA-Z0-9_-]/g, '_');
+            const name = nameInput.value.trim();
+            const color = colorInput.value.trim() || '#ffffff';
+            const order = parseInt(orderInput.value, 10) || 99;
+            const enabled = enabledInput.checked;
+            const adminOnly = adminOnlyInput.checked;
+
+            if (!id || !name) {
+                alert("Please specify Team ID and Display Name.");
+                return;
+            }
+
+            try {
+                const rtdb = getTelemetryRTDB();
+                await rtdb.ref(`config/teams/${id}`).set({
+                    id: id,
+                    name: name,
+                    color: color,
+                    order: order,
+                    enabled: enabled,
+                    adminOnly: adminOnly
+                });
+
+                alert(`Team "${name}" saved successfully!`);
+                idInput.value = '';
+                nameInput.value = '';
+                idInput.removeAttribute('readonly');
+                loadTelemetryTeamsAdmin();
+            } catch (err) {
+                console.error("Error saving team:", err);
+                alert("Failed to save team: " + err.message);
+            }
+        }
+
+        async function toggleTelemetryTeamStatus(id, newStatus) {
+            try {
+                const rtdb = getTelemetryRTDB();
+                await rtdb.ref(`config/teams/${id}`).update({ enabled: newStatus });
+                loadTelemetryTeamsAdmin();
+            } catch (err) {
+                alert("Failed to toggle status: " + err.message);
+            }
+        }
+
+        function editTelemetryTeam(id, name, color, order, enabled, adminOnly) {
+            const idInput = document.getElementById('team-input-id');
+            const nameInput = document.getElementById('team-input-name');
+            const colorInput = document.getElementById('team-input-color');
+            const colorPicker = document.getElementById('team-input-color-picker');
+            const orderInput = document.getElementById('team-input-order');
+            const enabledInput = document.getElementById('team-input-enabled');
+            const adminOnlyInput = document.getElementById('team-input-adminonly');
+
+            idInput.value = id;
+            idInput.setAttribute('readonly', 'true');
+            nameInput.value = name;
+            colorInput.value = color;
+            colorPicker.value = color.startsWith('#') && color.length === 7 ? color : '#ffffff';
+            orderInput.value = order;
+            enabledInput.checked = enabled;
+            adminOnlyInput.checked = adminOnly;
+
+            window.scrollTo({ top: document.getElementById('section-telemetry-teams').offsetTop - 50, behavior: 'smooth' });
+        }
+
+        async function deleteTelemetryTeam(id) {
+            if (!confirm(`Are you sure you want to permanently delete team "${id}"?`)) return;
+            try {
+                const rtdb = getTelemetryRTDB();
+                await rtdb.ref(`config/teams/${id}`).remove();
+                alert(`Team "${id}" deleted!`);
+                loadTelemetryTeamsAdmin();
+            } catch (err) {
+                alert("Failed to delete team: " + err.message);
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text.replace(/'/g, "\\'").replace(/"/g, '&quot;');
         }
 </script>
 <footer style="padding: 2rem 0; border-top: 1px solid rgba(255,255,255,0.05); text-align: center; margin-top: 2rem;">

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
         <!-- Google tag (gtag.js) - Deferred initialization for Lighthouse performance -->
@@ -459,6 +459,7 @@
                             <option value="gridUp_blue">GRiD UP Blue</option>
                             <option value="gridUp_red">GRiD UP Red</option>
                             <option value="gridUp_white">GRiD UP White</option>
+                            <option value="gridUp_purple">GRiD UP Purple</option>
                             <option value="gridUp_practice">PRACTICE SERVER</option>
                             <option value="solo">SOLO Mode / Personal</option>
                         </select>
@@ -804,23 +805,67 @@
             return false;
         }
 
+        let cachedAnalysisTeams = null;
+
+        function fetchRemoteTeamsAnalysis(callback) {
+            try {
+                const dbUrl = "https://grid-up-racedash-default-rtdb.europe-west1.firebasedatabase.app";
+                let telemetryApp = firebase.apps.find(app => app.name === "telemetry_analysis");
+                if (!telemetryApp) {
+                    telemetryApp = firebase.initializeApp({ databaseURL: dbUrl }, "telemetry_analysis");
+                }
+                const db = telemetryApp.database();
+                db.ref('teams/meta_teams').once('value', snapshot => {
+                    const data = snapshot.val();
+                    if (data && typeof data === 'object') {
+                        const items = [];
+                        Object.keys(data).forEach(key => {
+                            const val = data[key];
+                            if (val && typeof val === 'object') {
+                                items.push({
+                                    value: val.id || key,
+                                    text: val.name || key,
+                                    adminOnly: !!val.adminOnly,
+                                    enabled: val.enabled !== false,
+                                    order: val.order || 999
+                                });
+                            }
+                        });
+                        items.sort((a, b) => a.order - b.order);
+                        cachedAnalysisTeams = items.filter(t => t.enabled);
+                    }
+                    if (callback) callback();
+                }, err => {
+                    console.warn("Could not load dynamic teams:", err);
+                    if (callback) callback();
+                });
+            } catch (e) {
+                if (callback) callback();
+            }
+        }
+
         // Restrict dropdown dynamically to admins
         function updateTeamDropdown(isAdmin) {
             const currentSelected = teamSelect.value;
-            let optionsHtml = `
-                <option value="any">-- All Teams --</option>
-                <option value="gridUp_sim">GRiD UP Sim Racing</option>
-                <option value="gridUp_black">GRiD UP Black</option>
-                <option value="gridUp_blue">GRiD UP Blue</option>
-                <option value="gridUp_red">GRiD UP Red</option>
-                <option value="gridUp_white">GRiD UP White</option>
-            `;
-            if (isAdmin) {
-                optionsHtml += `
-                    <option value="gridUp_practice">PRACTICE SERVER</option>
-                    <option value="solo">SOLO Mode / Personal</option>
-                `;
-            }
+            const defaultOptions = [
+                { value: "gridUp_sim", text: "GRiD UP Sim Racing", order: 1 },
+                { value: "gridUp_black", text: "GRiD UP Black", order: 2 },
+                { value: "gridUp_blue", text: "GRiD UP Blue", order: 3 },
+                { value: "gridUp_red", text: "GRiD UP Red", order: 4 },
+                { value: "gridUp_white", text: "GRiD UP White", order: 5 },
+                { value: "gridUp_purple", text: "GRiD UP Purple", order: 6 },
+                { value: "gridUp_practice", text: "PRACTICE SERVER", adminOnly: true, order: 7 },
+                { value: "solo", text: "SOLO Mode / Personal", adminOnly: true, order: 8 }
+            ];
+
+            const sourceList = (cachedAnalysisTeams && cachedAnalysisTeams.length > 0) ? cachedAnalysisTeams : defaultOptions;
+            const filteredOptions = sourceList.filter(opt => !opt.adminOnly || isAdmin);
+
+            let optionsHtml = `<option value="any">-- All Teams --</option>`;
+            filteredOptions.forEach(opt => {
+                optionsHtml += `<option value="${opt.value}">${opt.text}</option>`;
+            });
+
             teamSelect.innerHTML = optionsHtml;
             // Restore previous choice if still available
             const hasOption = Array.from(teamSelect.options).some(opt => opt.value === currentSelected);
@@ -855,8 +900,11 @@
                     database = firebase.database();
                 }
                 
-                setupSelectionListeners();
-                loadLapsAnalysisData(teamSelect.value);
+                fetchRemoteTeamsAnalysis(() => {
+                    updateTeamDropdown(checkAdminStatus());
+                    setupSelectionListeners();
+                    loadLapsAnalysisData(teamSelect.value);
+                });
             }
         }
 
