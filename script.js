@@ -363,15 +363,16 @@ function initCarousel() {
             }
         }
 
-        // Start Auto Scroll Feature
+        // Start Auto Scroll Feature (only if overflowing and user is not interacting)
         container._carouselInterval = setInterval(() => {
             const isPaused = container._getIsPaused ? container._getIsPaused() : false;
-            if (!isPaused) {
+            if (!isPaused && container.scrollWidth > container.clientWidth + 20) {
                 const firstCard = track.firstElementChild;
                 if (!firstCard) return;
                 
                 const cardWidth = firstCard.offsetWidth + 24; 
-                const isAtEnd = container.scrollLeft + container.offsetWidth >= container.scrollWidth - 20;
+                const maxScrollLeft = container.scrollWidth - container.clientWidth;
+                const isAtEnd = container.scrollLeft >= maxScrollLeft - 10;
                 
                 if (isAtEnd) {
                     container.scrollTo({ left: 0, behavior: 'smooth' });
@@ -379,7 +380,7 @@ function initCarousel() {
                     container.scrollBy({ left: cardWidth, behavior: 'smooth' });
                 }
             }
-        }, 4000); 
+        }, 5000); 
     });
 }
 
@@ -460,8 +461,8 @@ async function loadDynamicContent() {
     lookbackDate.setHours(lookbackDate.getHours() - 24);
     const filterTimestamp = lookbackDate.toISOString();
     
-    if (upcomingTrack && !cacheLoaded) upcomingTrack.innerHTML = getSkeletonHTML('card');
-    if (fullEventList && !cacheLoaded) fullEventList.innerHTML = getSkeletonHTML('list');
+    if (upcomingTrack && !cacheLoaded && !upcomingTrack.dataset.renderedIds) upcomingTrack.innerHTML = getSkeletonHTML('card');
+    if (fullEventList && !cacheLoaded && !fullEventList.dataset.renderedIds) fullEventList.innerHTML = getSkeletonHTML('list');
     
     // Global Constants for URL generation
     const path = window.location.pathname;
@@ -800,47 +801,55 @@ function renderEventsUI(upcomingEvents, pastEvents = null, featuredOverride = nu
 
 
         if (upcomingTrack) {
-            upcomingTrack.innerHTML = '';
-            const colors = ['blue', 'pink', 'green'];
-            upcomingEvents.slice(0, 10).forEach((e, i) => {
-                const tile = document.createElement('a');
-                tile.href = staticIds.includes(e.id) ? getEventLink(e.id, true) : getEventLink(e.id);
-                tile.className = `race-tile tile-${colors[i % 3]}`;
-                const bannerUrl = eventBanners[e.id];
-                tile.innerHTML = `
-                    ${bannerUrl ? `<div class="tile-banner" style="background-image: url('${bannerUrl}')"></div>` : ''}
-                    <h3>${(e.name || 'TBA').toUpperCase()}</h3>
-                    <div class="race-meta">${e.date}${eventLengths[e.id] ? ` | ${eventLengths[e.id]}` : ''}</div>
-                `;
-                upcomingTrack.appendChild(tile);
-            });
+            const newUpcomingIds = upcomingEvents.slice(0, 10).map(e => e.id).join(',');
+            if (upcomingTrack.dataset.renderedIds !== newUpcomingIds) {
+                upcomingTrack.dataset.renderedIds = newUpcomingIds;
+                upcomingTrack.innerHTML = '';
+                const colors = ['blue', 'pink', 'green'];
+                upcomingEvents.slice(0, 10).forEach((e, i) => {
+                    const tile = document.createElement('a');
+                    tile.href = staticIds.includes(e.id) ? getEventLink(e.id, true) : getEventLink(e.id);
+                    tile.className = `race-tile tile-${colors[i % 3]}`;
+                    const bannerUrl = eventBanners[e.id];
+                    tile.innerHTML = `
+                        ${bannerUrl ? `<div class="tile-banner" style="background-image: url('${bannerUrl}')"></div>` : ''}
+                        <h3>${(e.name || 'TBA').toUpperCase()}</h3>
+                        <div class="race-meta">${e.date}${eventLengths[e.id] ? ` | ${eventLengths[e.id]}` : ''}</div>
+                    `;
+                    upcomingTrack.appendChild(tile);
+                });
+            }
         }
 
         if (fullEventList) {
-            fullEventList.innerHTML = '';
-            const eventColors = ['var(--primary)', 'var(--secondary)', '#00ff88'];
-            upcomingEvents.forEach((e, i) => {
-                const card = document.createElement('div');
-                card.id = `event-${e.id}`;
-                card.className = 'glass event-horizontal-card reveal active';
-                card.style.borderLeft = `4px solid ${eventColors[i % 3]}`;
-                const bannerUrl = eventBanners[e.id];
-                const isPastOrHasResults = pastStatic.includes(e.id);
-                card.innerHTML = `
-                    ${bannerUrl ? `<div class="event-card-banner" style="background-image: url('${bannerUrl}')"></div>` : ''}
-                    <div class="event-info">
-                        <h3>${e.name || 'TBA'}</h3>
-                        ${eventSeriesNames[e.id] ? `<p style="color: var(--primary); font-size: 0.8rem; font-weight: 700; margin-top: -0.25rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">Series: ${eventSeriesNames[e.id]}</p>` : ''}
-                        <p class="event-meta">${e.date}${eventLengths[e.id] ? ` &bull; ${eventLengths[e.id]}` : ''}</p>
-                        <p class="event-desc">${Array.isArray(e.classes) ? 'Classes: ' + e.classes.join(', ') : (e.classes ? 'Classes: ' + e.classes : 'Details coming soon.')}</p>
-                    </div>
-                    <div class="event-action">
-                        <button onclick="openEventResultsModal('${e.id}', '${(e.name || 'Event').replace(/'/g, "\\'")}')" class="btn btn-outline" style="border-color: rgba(255, 190, 11, 0.4); color: #ffbe0b;">Results</button>
-                        <a href="${staticIds.includes(e.id) ? getEventLink(e.id, true) : getEventLink(e.id)}" class="btn btn-outline">Details</a>
-                    </div>
-                `;
-                fullEventList.appendChild(card);
-            });
+            const newFullIds = upcomingEvents.map(e => e.id).join(',');
+            if (fullEventList.dataset.renderedIds !== newFullIds) {
+                fullEventList.dataset.renderedIds = newFullIds;
+                fullEventList.innerHTML = '';
+                const eventColors = ['var(--primary)', 'var(--secondary)', '#00ff88'];
+                upcomingEvents.forEach((e, i) => {
+                    const card = document.createElement('div');
+                    card.id = `event-${e.id}`;
+                    card.className = 'glass event-horizontal-card reveal active';
+                    card.style.borderLeft = `4px solid ${eventColors[i % 3]}`;
+                    const bannerUrl = eventBanners[e.id];
+                    const isPastOrHasResults = pastStatic.includes(e.id);
+                    card.innerHTML = `
+                        ${bannerUrl ? `<div class="event-card-banner" style="background-image: url('${bannerUrl}')"></div>` : ''}
+                        <div class="event-info">
+                            <h3>${e.name || 'TBA'}</h3>
+                            ${eventSeriesNames[e.id] ? `<p style="color: var(--primary); font-size: 0.8rem; font-weight: 700; margin-top: -0.25rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">Series: ${eventSeriesNames[e.id]}</p>` : ''}
+                            <p class="event-meta">${e.date}${eventLengths[e.id] ? ` &bull; ${eventLengths[e.id]}` : ''}</p>
+                            <p class="event-desc">${Array.isArray(e.classes) ? 'Classes: ' + e.classes.join(', ') : (e.classes ? 'Classes: ' + e.classes : 'Details coming soon.')}</p>
+                        </div>
+                        <div class="event-action">
+                            <button onclick="openEventResultsModal('${e.id}', '${(e.name || 'Event').replace(/'/g, "\\'")}')" class="btn btn-outline" style="border-color: rgba(255, 190, 11, 0.4); color: #ffbe0b;">Results</button>
+                            <a href="${staticIds.includes(e.id) ? getEventLink(e.id, true) : getEventLink(e.id)}" class="btn btn-outline">Details</a>
+                        </div>
+                    `;
+                    fullEventList.appendChild(card);
+                });
+            }
         }
     }
 
@@ -1232,7 +1241,7 @@ async function loadRecentResults() {
         }
     }
 
-    if (!cacheLoaded) resultsTrack.innerHTML = getSkeletonHTML('card');
+    if (!cacheLoaded && !resultsTrack.dataset.renderedFingerprint) resultsTrack.innerHTML = getSkeletonHTML('card');
 
     if (typeof db === 'undefined') return;
 
@@ -1260,6 +1269,12 @@ async function loadRecentResults() {
 function renderRecentResultsUI(results) {
     const resultsTrack = document.getElementById('results-track');
     if (!resultsTrack) return;
+    
+    const resultsFingerprint = results.map(d => `${d.trackName || d.eventName || ''}-${d.position || ''}-${d.raceDate || ''}`).join('|');
+    if (resultsTrack.dataset.renderedFingerprint === resultsFingerprint) {
+        return;
+    }
+    resultsTrack.dataset.renderedFingerprint = resultsFingerprint;
     resultsTrack.innerHTML = '';
     
     results.forEach(d => {
