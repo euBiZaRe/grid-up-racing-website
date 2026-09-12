@@ -36,7 +36,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" media="print" onload="this.media='all'"><noscript><link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet"></noscript>
-    <link rel="stylesheet" href="style.css?v=24">
+    <link rel="stylesheet" href="style.css?v=26">
     <link rel="icon" type="image/png" href="assets/G_2.png">
     <meta name="description" content="Full event schedule for GRiD UP Sim Racing. See all iRacing special events and team race schedule.">
     <meta name="keywords" content="GRiD UP events, grid up schedule, iRacing special events, sim racing calendar, grid up races 2026">
@@ -691,7 +691,7 @@
 
         <!-- ═══ SPECIAL EVENTS TAB ═══ -->
         <div class="tab-content active" id="content-special">
-            <div id="pastEventsSection" class="event-list custom-scrollbar" style="display: none; max-height: 500px; overflow-y: auto; margin-bottom: 3rem; opacity: 0.7; padding-right: 1.5rem; transition: all 0.3s ease;">
+            <div id="pastEventsSection" class="event-list custom-scrollbar" style="display: none; margin-bottom: 3rem; padding-right: 0.5rem; transition: all 0.3s ease;">
                 <h2 style="text-align: center; color: var(--text-muted); margin-bottom: 2rem; font-size: 1.5rem;">2026 Completed Events</h2>
                 
                 <div id="dynamic-past-list"></div>
@@ -872,27 +872,15 @@
         </div>
     </main>
 
-    <section id="upcoming" class="section reveal">
-        <div class="container">
-            <h2 style="color: var(--primary); margin-bottom: 2rem; text-align: center;">Upcoming Races</h2>
-            
-            <div class="carousel-wrapper">
-                <div class="carousel-nav">
-                    <button class="carousel-btn prev-btn">?</button>
-                    <button class="carousel-btn next-btn">?</button>
-                </div>
-                <div class="upcoming-races-container">
-                    <div class="carousel-track" id="dynamic-upcoming-track">
-                        <p style="text-align: center; color: var(--text-muted); width: 100%;">Loading upcoming events...</p>
-                    </div>
-                </div>
-            </div>
-
-            <div style="text-align: center; margin-top: 2rem;">
-                <a href="index.html" class="btn btn-outline" style="padding: 0.6rem 1.2rem; font-size: 0.9rem;">Back to Home</a>
+    <!-- Event Results Modal -->
+    <div id="event-results-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 10000; padding: 2rem 1rem; align-items: center; justify-content: center; backdrop-filter: blur(15px); transition: all 0.3s ease;">
+        <div style="position: relative; max-width: 800px; width: 100%; background: #0c1017; border: 1px solid var(--glass-border); border-radius: 16px; box-shadow: 0 25px 60px rgba(0,0,0,0.9); padding: 2rem; transform: scale(0.95); transition: transform 0.3s ease; max-height: 90vh; overflow-y: auto;" id="event-results-modal-container">
+            <button onclick="closeEventResultsModal()" class="btn btn-outline" style="position: absolute; top: 1.25rem; right: 1.25rem; border-radius: 50%; width: 40px; height: 40px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15);" aria-label="Close modal">&times;</button>
+            <div id="event-results-modal-content">
+                <!-- Injected by script.js -->
             </div>
         </div>
-    </section>
+    </div>
 
     <footer>
         <div class="container">
@@ -912,7 +900,7 @@
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-    <script defer src="script.js?v=25"></script>
+    <script defer src="script.js?v=26"></script>
     <script defer src="js/auth.js?v=11"></script>
     <script>
         // ═══ Tab Switching Logic ═══

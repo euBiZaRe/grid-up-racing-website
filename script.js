@@ -27,7 +27,7 @@
 
 // Global Utilities
 function getSkeletonHTML(type = 'card') {
-    const shimmer = `<div class="glass loading-shimmer" style="min-height: 200px; border-radius: 20px;"></div>`;
+    const shimmer = `<div class="glass loading-shimmer race-tile" style="min-width: 290px; max-width: 320px; width: 290px; height: 220px; flex: 0 0 290px; border-radius: 10px; border: 1px solid var(--glass-border);"></div>`;
     const listShimmer = `<div class="glass loading-shimmer" style="height: 120px; width: 100%; border-radius: 12px; margin-bottom: 1.5rem;"></div>`;
     if (type === 'list') return listShimmer.repeat(3);
     return shimmer.repeat(4);
@@ -114,77 +114,6 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         }
     });
 });
-
-// Carousel Logic
-const carousel = document.getElementById('carousel');
-const prevBtn = document.getElementById('prevBtn');
-const nextBtn = document.getElementById('nextBtn');
-
-if (carousel && prevBtn && nextBtn) {
-    let isPaused = false;
-    let scrollInterval;
-    let isDown = false;
-    let startX;
-    let scrollLeft;
-
-    const startAutoScroll = () => {
-        scrollInterval = setInterval(() => {
-            if (!isPaused) {
-                const card = carousel.querySelector('.card');
-                if (!card) return;
-                const cardWidth = card.offsetWidth + 32; // width + gap
-                if (carousel.scrollLeft + carousel.offsetWidth >= carousel.scrollWidth - 10) {
-                    carousel.scrollTo({ left: 0, behavior: 'smooth' });
-                } else {
-                    carousel.scrollBy({ left: cardWidth, behavior: 'smooth' });
-                }
-            }
-        }, 3000);
-    };
-
-    carousel.addEventListener('mouseenter', () => isPaused = true);
-    carousel.addEventListener('mouseleave', () => {
-        isPaused = false;
-        isDown = false;
-    });
-
-    carousel.addEventListener('mousedown', (e) => {
-        isDown = true;
-        isPaused = true;
-        carousel.classList.add('active');
-        startX = e.pageX - carousel.offsetLeft;
-        scrollLeft = carousel.scrollLeft;
-    });
-
-    window.addEventListener('mouseup', () => {
-        isDown = false;
-        if (carousel) carousel.classList.remove('active');
-    });
-
-    carousel.addEventListener('mousemove', (e) => {
-        if (!isDown) return;
-        e.preventDefault();
-        const x = e.pageX - carousel.offsetLeft;
-        const walk = (x - startX) * 2; // scroll-fast factor
-        carousel.scrollLeft = scrollLeft - walk;
-    });
-
-    prevBtn.addEventListener('click', () => {
-        const card = carousel.querySelector('.card');
-        if (!card) return;
-        const cardWidth = card.offsetWidth + 32;
-        carousel.scrollBy({ left: -cardWidth, behavior: 'smooth' });
-    });
-
-    nextBtn.addEventListener('click', () => {
-        const card = carousel.querySelector('.card');
-        if (!card) return;
-        const cardWidth = card.offsetWidth + 32;
-        carousel.scrollBy({ left: cardWidth, behavior: 'smooth' });
-    });
-
-    startAutoScroll();
-}
 
 // Past Events Toggle
 const toggleBtn = document.getElementById('togglePastEvents');
@@ -340,89 +269,104 @@ function initCarousel() {
     
     containers.forEach(container => {
         const track = container.querySelector('.carousel-track');
-        const prevBtn = container.parentElement.querySelector('.prev-btn');
-        const nextBtn = container.parentElement.querySelector('.next-btn');
+        const prevBtn = container.parentElement ? container.parentElement.querySelector('.prev-btn') : null;
+        const nextBtn = container.parentElement ? container.parentElement.querySelector('.next-btn') : null;
         
         if (!track) return;
 
-        let isDown = false;
-        let startX;
-        let scrollLeft;
-        let isPaused = false;
-        let pauseTimer = null;
-
-        const requestPause = (duration = 8000) => {
-            isPaused = true;
-            if (pauseTimer) clearTimeout(pauseTimer);
-            pauseTimer = setTimeout(() => {
-                if (!track.matches(':hover') && !isDown) {
-                    isPaused = false;
-                }
-            }, duration);
-        };
-
-        // Mouse Drag Support
-        track.addEventListener('mousedown', (e) => {
-            isDown = true;
-            isPaused = true;
-            track.style.cursor = 'grabbing';
-            startX = e.pageX - container.offsetLeft;
-            scrollLeft = container.scrollLeft;
-        });
-
-        track.addEventListener('mouseleave', () => {
-            isDown = false;
-            track.style.cursor = 'grab';
-            if (!isPaused) isPaused = false; 
-        });
-
-        track.addEventListener('mouseenter', () => {
-            isPaused = true;
-        });
-
-        track.addEventListener('mouseup', () => {
-            isDown = false;
-            track.style.cursor = 'grab';
-            requestPause(5000); // Keep paused for a bit after drag
-        });
-
-        track.addEventListener('mousemove', (e) => {
-            if (!isDown) return;
-            e.preventDefault();
-            const x = e.pageX - container.offsetLeft;
-            const walk = (x - startX) * 2;
-            container.scrollLeft = scrollLeft - walk;
-        });
-
-        // Trackpad / Mouse Wheel Scroll Detection
-        container.addEventListener('scroll', () => {
-            if (!isDown) {
-                requestPause(10000); // Pause for 10s if user scrolls manually
-            }
-        }, { passive: true });
-
-        // Touch Support
-        track.addEventListener('touchstart', () => { isPaused = true; }, { passive: true });
-        track.addEventListener('touchend', () => { requestPause(8000); }, { passive: true });
-
-        // Button Navigation
-        if (prevBtn && nextBtn) {
-            const scrollAmount = 350;
-            
-            prevBtn.addEventListener('click', () => {
-                container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
-                requestPause(10000);
-            });
-            
-            nextBtn.addEventListener('click', () => {
-                container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-                requestPause(10000);
-            });
+        // Clear any previous auto-scroll interval on this container
+        if (container._carouselInterval) {
+            clearInterval(container._carouselInterval);
+            container._carouselInterval = null;
         }
 
-        // Auto Scroll Feature
-        setInterval(() => {
-            if (!isPaused && !isDown) {
+        // Avoid attaching duplicate event listeners if already initialized
+        if (!container.dataset.carouselEventsAttached) {
+            container.dataset.carouselEventsAttached = 'true';
+
+            let isDown = false;
+            let startX;
+            let scrollLeft;
+            let isPaused = false;
+            let pauseTimer = null;
+
+            const requestPause = (duration = 8000) => {
+                isPaused = true;
+                if (pauseTimer) clearTimeout(pauseTimer);
+                pauseTimer = setTimeout(() => {
+                    if (!track.matches(':hover') && !isDown) {
+                        isPaused = false;
+                    }
+                }, duration);
+            };
+
+            // Store state on container for interval access
+            container._getIsPaused = () => isPaused || isDown;
+
+            // Mouse Drag Support
+            track.addEventListener('mousedown', (e) => {
+                isDown = true;
+                isPaused = true;
+                track.style.cursor = 'grabbing';
+                startX = e.pageX - container.offsetLeft;
+                scrollLeft = container.scrollLeft;
+            });
+
+            track.addEventListener('mouseleave', () => {
+                isDown = false;
+                track.style.cursor = 'grab';
+                if (!isPaused) isPaused = false; 
+            });
+
+            track.addEventListener('mouseenter', () => {
+                isPaused = true;
+            });
+
+            track.addEventListener('mouseup', () => {
+                isDown = false;
+                track.style.cursor = 'grab';
+                requestPause(5000);
+            });
+
+            track.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                e.preventDefault();
+                const x = e.pageX - container.offsetLeft;
+                const walk = (x - startX) * 2;
+                container.scrollLeft = scrollLeft - walk;
+            });
+
+            // Trackpad / Mouse Wheel Scroll Detection
+            container.addEventListener('scroll', () => {
+                if (!isDown) {
+                    requestPause(10000);
+                }
+            }, { passive: true });
+
+            // Touch Support
+            track.addEventListener('touchstart', () => { isPaused = true; }, { passive: true });
+            track.addEventListener('touchend', () => { requestPause(8000); }, { passive: true });
+
+            // Button Navigation
+            if (prevBtn && nextBtn) {
+                const scrollAmount = 350;
+                
+                prevBtn.addEventListener('click', () => {
+                    container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+                    requestPause(10000);
+                });
+                
+                nextBtn.addEventListener('click', () => {
+                    container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+                    requestPause(10000);
+                });
+            }
+        }
+
+        // Start Auto Scroll Feature
+        container._carouselInterval = setInterval(() => {
+            const isPaused = container._getIsPaused ? container._getIsPaused() : false;
+            if (!isPaused) {
                 const firstCard = track.firstElementChild;
                 if (!firstCard) return;
                 
@@ -438,6 +382,7 @@ function initCarousel() {
         }, 4000); 
     });
 }
+
 
 
 // Firestore Data Integration
@@ -880,6 +825,7 @@ function renderEventsUI(upcomingEvents, pastEvents = null, featuredOverride = nu
                 card.className = 'glass event-horizontal-card reveal active';
                 card.style.borderLeft = `4px solid ${eventColors[i % 3]}`;
                 const bannerUrl = eventBanners[e.id];
+                const isPastOrHasResults = pastStatic.includes(e.id);
                 card.innerHTML = `
                     ${bannerUrl ? `<div class="event-card-banner" style="background-image: url('${bannerUrl}')"></div>` : ''}
                     <div class="event-info">
@@ -889,6 +835,7 @@ function renderEventsUI(upcomingEvents, pastEvents = null, featuredOverride = nu
                         <p class="event-desc">${Array.isArray(e.classes) ? 'Classes: ' + e.classes.join(', ') : (e.classes ? 'Classes: ' + e.classes : 'Details coming soon.')}</p>
                     </div>
                     <div class="event-action">
+                        <button onclick="openEventResultsModal('${e.id}', '${(e.name || 'Event').replace(/'/g, "\\'")}')" class="btn btn-outline" style="border-color: rgba(255, 190, 11, 0.4); color: #ffbe0b;">Results</button>
                         <a href="${staticIds.includes(e.id) ? getEventLink(e.id, true) : getEventLink(e.id)}" class="btn btn-outline">Details</a>
                     </div>
                 `;
@@ -919,6 +866,7 @@ function renderEventsUI(upcomingEvents, pastEvents = null, featuredOverride = nu
                     <p class="event-desc">${Array.isArray(e.classes) ? 'Classes: ' + e.classes.join(', ') : (e.classes ? 'Classes: ' + e.classes : 'Race event completed.')}</p>
                 </div>
                 <div class="event-action">
+                    <button onclick="openEventResultsModal('${e.id}', '${(e.name || 'Event').replace(/'/g, "\\'")}')" class="btn btn-outline" style="border-color: rgba(255, 190, 11, 0.4); color: #ffbe0b;">Results</button>
                     <a href="${staticIds.includes(e.id) ? getEventLink(e.id, true) : getEventLink(e.id)}" class="btn btn-outline">Details</a>
                 </div>
             `;
@@ -1140,7 +1088,133 @@ async function renderEventResults(eventId, targetElement) {
     }
 }
 
+// Global Event Results Modal (Matching user Image 1)
+async function openEventResultsModal(eventId, eventName = '') {
+    const modal = document.getElementById('event-results-modal');
+    const container = document.getElementById('event-results-modal-container');
+    const content = document.getElementById('event-results-modal-content');
+    
+    if (!modal || !content) {
+        // Fallback: If modal container isn't present on page, navigate to details page
+        window.location.href = getEventLink(eventId, true);
+        return;
+    }
+
+    modal.style.display = 'flex';
+    setTimeout(() => { if (container) container.style.transform = 'scale(1)'; }, 10);
+    document.body.style.overflow = 'hidden';
+
+    content.innerHTML = `
+        <div style="padding: 2rem; text-align: center;">
+            <div class="loading-shimmer" style="height: 200px; border-radius: 12px; width: 100%;"></div>
+            <p style="color: var(--text-muted); margin-top: 1rem; font-size: 0.9rem;">Fetching team classification...</p>
+        </div>
+    `;
+
+    try {
+        let snap = await db.collection("event_results")
+            .where("eventId", "in", [eventId, eventId.toLowerCase(), eventId.toUpperCase(), eventId.replace(/-/g, ' ')])
+            .get();
+
+        if (snap.empty) {
+            // Try name match search
+            const cleanName = eventName || eventId.replace(/-/g, ' ');
+            const eventSearch = await db.collection("events").where("name", ">=", cleanName).where("name", "<=", cleanName + '\uf8ff').get();
+            if (!eventSearch.empty) {
+                const actualId = eventSearch.docs[0].id;
+                snap = await db.collection("event_results").where("eventId", "==", actualId).get();
+            }
+        }
+
+        if (snap.empty) {
+            content.innerHTML = `
+                <div style="text-align: center; padding: 2.5rem 1rem;">
+                    <h3 style="color: var(--primary); margin-bottom: 0.75rem; font-family: var(--font-heading); letter-spacing: 1px;">RESULTS PENDING</h3>
+                    <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem;">Official team results for ${eventName || eventId} have not been published yet.</p>
+                    <a href="${getEventLink(eventId, true)}" class="btn btn-outline" style="font-size: 0.85rem;">View Event Details</a>
+                </div>
+            `;
+            return;
+        }
+
+        const docs = [];
+        snap.forEach(doc => docs.push(doc.data()));
+        
+        const teamOrder = ["GRiD UP Sim Racing", "GRiD UP White", "GRiD UP Black", "GRiD UP Blue", "GRiD UP Red", "GRiD UP Purple"];
+        docs.sort((a, b) => {
+            const orderA = teamOrder.indexOf(a.teamName);
+            const orderB = teamOrder.indexOf(b.teamName);
+            const valA = orderA === -1 ? 99 : orderA;
+            const valB = orderB === -1 ? 99 : orderB;
+            return valA - valB;
+        });
+
+        let rowsHtml = '';
+        docs.forEach(d => {
+            const drivers = Array.isArray(d.drivers) ? d.drivers.join(', ') : (d.drivers || '');
+            rowsHtml += `
+                <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.06);">
+                    <td style="padding: 1.1rem 1rem; text-align: left;">
+                        <strong style="color: #ffffff; font-size: 0.95rem; letter-spacing: 0.5px;">${d.teamName || 'GRiD UP'}</strong><br>
+                        <span style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.15rem; display: inline-block;">${d.car || ''}</span><br>
+                        ${drivers ? `<span style="font-size: 0.75rem; color: #64748b; margin-top: 0.15rem; display: inline-block;">${drivers}</span>` : ''}
+                    </td>
+                    <td style="padding: 1.1rem 1rem; text-align: left; font-family: var(--font-heading); color: #94a3b8; font-size: 0.9rem;">
+                        ${d.qualy || '-'}
+                    </td>
+                    <td style="padding: 1.1rem 1rem; text-align: right;">
+                        <strong style="font-family: var(--font-heading); color: #ffbe0b; font-weight: 900; font-size: 1.25rem; letter-spacing: 0.5px;">${d.finish || '-'}</strong>
+                    </td>
+                </tr>
+            `;
+        });
+
+        content.innerHTML = `
+            <div style="margin-bottom: 1.5rem; padding-right: 2rem;">
+                <h2 style="font-family: var(--font-heading); font-size: 1.35rem; font-weight: 900; letter-spacing: 2px; color: #ff334b; text-transform: uppercase; margin: 0;">TEAM RESULTS</h2>
+                ${eventName ? `<p style="font-size: 0.85rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin-top: 0.25rem;">${eventName}</p>` : ''}
+            </div>
+            <div class="results-table-container" style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.12); text-align: left;">
+                            <th style="padding: 0.75rem 1rem; font-family: var(--font-heading); font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Team / Car</th>
+                            <th style="padding: 0.75rem 1rem; font-family: var(--font-heading); font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Qualy</th>
+                            <th style="padding: 0.75rem 1rem; font-family: var(--font-heading); font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; text-align: right;">Finish</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rowsHtml}
+                    </tbody>
+                </table>
+            </div>
+            <div style="margin-top: 1.5rem; text-align: center;">
+                <a href="${getEventLink(eventId, true)}" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.4rem 1.2rem;">View Full Event Details</a>
+            </div>
+        `;
+
+    } catch (err) {
+        console.error("Error in openEventResultsModal:", err);
+        content.innerHTML = `
+            <div style="text-align: center; padding: 2rem;">
+                <p style="color: #ff334b;">Failed to load results. Please try again.</p>
+            </div>
+        `;
+    }
+}
+
+function closeEventResultsModal() {
+    const container = document.getElementById('event-results-modal-container');
+    if (container) container.style.transform = 'scale(0.95)';
+    setTimeout(() => {
+        const modal = document.getElementById('event-results-modal');
+        if (modal) modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }, 250);
+}
+
 // 2. Load Recent Results (Race Cards)
+
 async function loadRecentResults() {
     const resultsTrack = document.getElementById('results-track');
     if (!resultsTrack) return;
