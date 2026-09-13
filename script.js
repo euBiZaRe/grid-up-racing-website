@@ -116,15 +116,25 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 });
 
 // Past Events Toggle
-const toggleBtn = document.getElementById('togglePastEvents');
-const pastSection = document.getElementById('pastEventsSection');
+function initPastEventsToggle() {
+    const toggleBtn = document.getElementById('togglePastEvents');
+    const pastSection = document.getElementById('pastEventsSection');
 
-if (toggleBtn && pastSection) {
-    toggleBtn.addEventListener('click', () => {
-        const isHidden = pastSection.style.display === 'none';
-        pastSection.style.display = isHidden ? 'block' : 'none';
-        toggleBtn.textContent = isHidden ? 'Hide Past Events' : 'Show Past Events';
-    });
+    if (toggleBtn && pastSection) {
+        // Remove existing listener if any to avoid duplicates
+        toggleBtn.onclick = () => {
+            const isHidden = window.getComputedStyle(pastSection).display === 'none';
+            pastSection.style.display = isHidden ? 'block' : 'none';
+            toggleBtn.textContent = isHidden ? 'Hide Past Events' : 'Show Past Events';
+            toggleBtn.classList.toggle('active', isHidden);
+        };
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPastEventsToggle);
+} else {
+    initPastEventsToggle();
 }
 
 // Countdown Timer Logic

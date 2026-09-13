@@ -691,13 +691,16 @@
 
         <!-- ═══ SPECIAL EVENTS TAB ═══ -->
         <div class="tab-content active" id="content-special">
-            <div id="pastEventsSection" class="event-list custom-scrollbar" style="margin-bottom: 3rem; padding-right: 0.5rem;">
+            <div id="pastEventsSection" class="event-list custom-scrollbar" style="display: none; margin-bottom: 3rem; padding-right: 0.5rem;">
                 <h2 style="text-align: center; color: var(--text-muted); margin-bottom: 2rem; font-size: 1.5rem; text-transform: uppercase; letter-spacing: 2px;">2026 Completed Events</h2>
                 <div id="dynamic-past-list"></div>
                 <hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 3rem 0;">
             </div>
 
-            <h2 style="text-align: center; color: var(--text-muted); margin-bottom: 2rem; font-size: 1.5rem; text-transform: uppercase; letter-spacing: 2px;">Upcoming Special Events</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                <h2 style="color: var(--text-muted); margin: 0; font-size: 1.5rem; text-transform: uppercase; letter-spacing: 2px;">Upcoming Special Events</h2>
+                <button id="togglePastEvents" class="filter-btn" style="min-width: 170px;">Show Past Events</button>
+            </div>
             <div id="full-event-list" class="event-list" style="margin-bottom: 3rem;">
                 <p style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading season schedule...</p>
             </div>
@@ -895,7 +898,7 @@
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-    <script defer src="script.js?v=28"></script>
+    <script defer src="script.js?v=29"></script>
     <script defer src="js/auth.js?v=11"></script>
     <script>
         // ═══ Tab Switching Logic ═══
