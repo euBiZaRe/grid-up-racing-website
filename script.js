@@ -392,17 +392,20 @@ async function loadDynamicContent() {
     const fullEventList = document.getElementById('full-event-list');
     
     // Attempt to load from cache first for instant UI
-    const SCRIPT_VER = '6';
+    const SCRIPT_VER = '7';
     if (localStorage.getItem('gridup_script_ver') !== SCRIPT_VER) {
         localStorage.removeItem('gridup_upcoming_events');
+        localStorage.removeItem('gridup_past_events');
         localStorage.setItem('gridup_script_ver', SCRIPT_VER);
     }
     const cachedEvents = localStorage.getItem('gridup_upcoming_events');
+    const cachedPastEvents = localStorage.getItem('gridup_past_events');
     let cacheLoaded = false;
     if (cachedEvents && !window.dynamicContentLoaded) {
         try {
             console.log("Loading events from cache...");
             const data = JSON.parse(cachedEvents);
+            const pastData = cachedPastEvents ? JSON.parse(cachedPastEvents) : null;
             const now = new Date();
             // Only use cache if the first event isn't ancient (allow 24h lookback)
             const firstEventEnd = data[0].endDate ? new Date(data[0].endDate) : new Date(data[0].startDate);
@@ -411,7 +414,7 @@ async function loadDynamicContent() {
             }
             
             if (firstEventEnd >= now) {
-                renderEventsUI(data);
+                renderEventsUI(data, pastData);
                 cacheLoaded = true;
             }
         } catch (e) {
@@ -603,9 +606,12 @@ async function loadDynamicContent() {
                 return eventEnd < now;
             });
 
-            // Cache upcoming events for next load
+            // Cache upcoming and past events for next load
             if (upcomingEvents.length > 0) {
                 localStorage.setItem('gridup_upcoming_events', JSON.stringify(upcomingEvents));
+            }
+            if (pastEvents.length > 0) {
+                localStorage.setItem('gridup_past_events', JSON.stringify(pastEvents));
             }
 
             renderEventsUI(upcomingEvents, pastEvents, featuredOverride);
@@ -842,7 +848,6 @@ function renderEventsUI(upcomingEvents, pastEvents = null, featuredOverride = nu
                             <p class="event-desc">${Array.isArray(e.classes) ? 'Classes: ' + e.classes.join(', ') : (e.classes ? 'Classes: ' + e.classes : 'Details coming soon.')}</p>
                         </div>
                         <div class="event-action">
-                            <button onclick="openEventResultsModal('${e.id}', '${(e.name || 'Event').replace(/'/g, "\\'")}')" class="btn btn-outline" style="border-color: rgba(255, 190, 11, 0.4); color: #ffbe0b;">Results</button>
                             <a href="${staticIds.includes(e.id) ? getEventLink(e.id, true) : getEventLink(e.id)}" class="btn btn-outline">Details</a>
                         </div>
                     `;
