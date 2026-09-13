@@ -833,7 +833,6 @@ function renderEventsUI(upcomingEvents, pastEvents = null, featuredOverride = nu
                     card.className = 'glass event-horizontal-card reveal active';
                     card.style.borderLeft = `4px solid ${eventColors[i % 3]}`;
                     const bannerUrl = eventBanners[e.id];
-                    const isPastOrHasResults = pastStatic.includes(e.id);
                     card.innerHTML = `
                         ${bannerUrl ? `<div class="event-card-banner" style="background-image: url('${bannerUrl}')"></div>` : ''}
                         <div class="event-info">
