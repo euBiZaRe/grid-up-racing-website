@@ -1015,15 +1015,16 @@ async function renderEventResults(eventId, targetElement) {
             const existing = targetElement.parentNode.querySelectorAll('.event-results-container, .results-pending-placeholder');
             existing.forEach(el => el.remove());
 
-            // NEW: Feedback for empty results
+            // Feedback for empty results
             const noResults = document.createElement('section');
-            noResults.className = 'glass card reveal active results-pending-placeholder';
-            noResults.style.marginTop = '2rem';
-            noResults.style.padding = '2rem';
+            noResults.className = 'event-section reveal active results-pending-placeholder';
             noResults.style.textAlign = 'center';
             noResults.innerHTML = `
-                <h3 style="color: var(--primary); margin-bottom: 0.5rem;">Race Results Pending</h3>
-                <p style="color: var(--text-muted); font-size: 0.9rem;">Official team results for this event haven't been recorded yet. Check back soon!</p>
+                <h2>TEAM RESULTS</h2>
+                <div class="glass sidebar-card" style="padding: 1.5rem; margin-top: 1rem;">
+                    <p style="color: var(--primary); font-family: var(--font-heading); font-size: 0.95rem; letter-spacing: 1px; margin-bottom: 0.5rem; text-transform: uppercase;">Race Results Pending</p>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0;">Official team results for this event haven't been recorded yet. Check back soon!</p>
+                </div>
             `;
             targetElement.after(noResults);
             return;
@@ -1044,8 +1045,7 @@ async function renderEventResults(eventId, targetElement) {
 
         console.log(`Rendering ${docs.length} results for ${eventId}`);
         const resultsContainer = document.createElement('section');
-        resultsContainer.className = 'glass card reveal active event-results-container';
-        resultsContainer.style.marginTop = '2rem';
+        resultsContainer.className = 'event-section reveal active event-results-container';
         
         // Remove any existing "Pending" messages or previous results
         const existing = targetElement.parentNode.querySelectorAll('.event-results-container, .results-pending-placeholder');
@@ -1053,34 +1053,49 @@ async function renderEventResults(eventId, targetElement) {
         
         let rowsHtml = '';
         docs.forEach(d => {
-            const drivers = Array.isArray(d.drivers) ? d.drivers.join(', ') : d.drivers;
+            const drivers = Array.isArray(d.drivers) ? d.drivers.join(', ') : (d.drivers || '');
+            const finishPos = (d.finish || '-').trim();
+            
+            // Finish color styling matching event podiums and results modal
+            let finishStyle = 'color: #ffbe0b;';
+            if (finishPos.toUpperCase() === 'P1') {
+                finishStyle = 'color: #ffd700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.4);';
+            } else if (finishPos.toUpperCase() === 'P2') {
+                finishStyle = 'color: #e2e8f0; text-shadow: 0 0 10px rgba(226, 232, 240, 0.3);';
+            } else if (finishPos.toUpperCase() === 'P3') {
+                finishStyle = 'color: #f59e0b; text-shadow: 0 0 10px rgba(245, 158, 11, 0.3);';
+            } else if (/^P([4-5])$/i.test(finishPos)) {
+                finishStyle = 'color: #00ff88;';
+            } else if (/^P([6-9]|10)$/i.test(finishPos)) {
+                finishStyle = 'color: #00cfff;';
+            }
             
             rowsHtml += `
-                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                    <td style="padding: 1rem;">
-                        <strong style="color: var(--text);">${d.teamName}</strong><br>
-                        <span style="font-size: 0.8rem; color: var(--text-muted);">${d.car}</span><br>
-                        <span style="font-size: 0.75rem; color: var(--text-muted); opacity: 0.6;">${drivers}</span>
+                <tr>
+                    <td>
+                        <div class="team-results-team-name">${d.teamName || 'GRiD UP'}</div>
+                        <div class="team-results-car-name">${d.car || ''}</div>
+                        ${drivers ? `<div class="team-results-drivers">${drivers}</div>` : ''}
                     </td>
-                    <td style="padding: 1rem;">
-                        <span style="color: var(--text-muted);">${d.qualy || '-'}</span>
+                    <td class="team-results-qualy">
+                        ${d.qualy || '-'}
                     </td>
-                    <td style="padding: 1rem;">
-                        <strong style="color: var(--primary); font-weight: 900; font-size: 1.1rem;">${d.finish || '-'}</strong>
+                    <td>
+                        <span class="team-results-finish" style="${finishStyle}">${finishPos}</span>
                     </td>
                 </tr>
             `;
         });
 
         resultsContainer.innerHTML = `
-            <h2 style="color: var(--secondary); margin-bottom: 1.5rem;">Team Results</h2>
+            <h2>TEAM RESULTS</h2>
             <div class="results-table-container" style="overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse; color: var(--text-muted); font-size: 0.9rem;">
+                <table class="team-results-table">
                     <thead>
-                        <tr style="border-bottom: 1px solid var(--glass-border); text-align: left;">
-                            <th style="padding: 1rem;">Team / Car</th>
-                            <th style="padding: 1rem;">Qualy</th>
-                            <th style="padding: 1rem;">Finish</th>
+                        <tr>
+                            <th>Team / Car</th>
+                            <th>Qualy</th>
+                            <th>Finish</th>
                         </tr>
                     </thead>
                     <tbody>

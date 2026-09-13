@@ -1589,16 +1589,33 @@ body[data-theme="theme-saturday"]::before {
     font-size: 0.75rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
     color: var(--text-muted);
-    padding: 0.75rem 1rem;
+    padding: 0.85rem 1rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: left;
+}
+
+.team-results-table th:last-child {
+    text-align: right;
 }
 
 .team-results-table td {
-    padding: 1rem;
+    padding: 1.1rem 1rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     vertical-align: middle;
+}
+
+.team-results-table td:last-child {
+    text-align: right;
+}
+
+.team-results-table tr {
+    transition: background 0.2s ease;
+}
+
+.team-results-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.02);
 }
 
 .team-results-table tr:last-child td {
@@ -1610,6 +1627,7 @@ body[data-theme="theme-saturday"]::before {
     font-weight: 700;
     font-size: 0.95rem;
     color: #ffffff;
+    letter-spacing: 0.3px;
 }
 
 .team-results-car-name {
@@ -1622,7 +1640,8 @@ body[data-theme="theme-saturday"]::before {
     font-size: 0.75rem;
     color: var(--text-muted);
     opacity: 0.7;
-    margin-top: 0.2rem;
+    margin-top: 0.25rem;
+    line-height: 1.4;
 }
 
 .team-results-qualy {
@@ -1633,10 +1652,11 @@ body[data-theme="theme-saturday"]::before {
 
 .team-results-finish {
     font-family: var(--font-heading);
-    font-size: 1.2rem;
+    font-size: 1.25rem;
     font-weight: 900;
     color: #ffbe0b;
     letter-spacing: 0.5px;
+    display: inline-block;
 }
 
 
