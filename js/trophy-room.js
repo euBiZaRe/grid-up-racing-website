@@ -2,13 +2,10 @@
  * Trophy Room Rendering & Live Database Engine
  * GRiD UP Sim Racing
  * 
- * Fetches and displays all P1, P2, and P3 podium finishes from the live
- * "event_results" and "events" Firestore collections used by results.html.
+ * Sourced directly from the official team results database (event_results & events collections)
+ * used by https://gridup.online/results.
+ * STRICT FILTER: ONLY displays P1, P2, and P3 podium finishes. All non-podium finishes are discarded.
  */
-
-document.addEventListener('DOMContentLoaded', () => {
-    initTrophyRoom();
-});
 
 let ALL_PODIUMS = [];
 let CURRENT_SERIES_FILTER = 'ALL';
@@ -17,6 +14,10 @@ let CURRENT_CAR_FILTER = 'ALL';
 let CURRENT_DRIVER_FILTER = 'ALL';
 let CURRENT_VIEW_MODE = 'grid'; // 'grid' or 'list'
 let CURRENT_FEATURED_INDEX = 0;
+
+document.addEventListener('DOMContentLoaded', () => {
+    initTrophyRoom();
+});
 
 async function initTrophyRoom() {
     setupEventListeners();
@@ -27,8 +28,8 @@ async function initTrophyRoom() {
  * Infer series category (GT3, GT4, LMP2, GTE, etc.) from car or event name
  */
 function inferCategory(car = '', eventName = '') {
-    const c = car.toUpperCase();
-    const e = eventName.toUpperCase();
+    const c = (car || '').toUpperCase();
+    const e = (eventName || '').toUpperCase();
 
     if (c.includes('GT3') || e.includes('GT3')) return 'GT3';
     if (c.includes('GT4') || e.includes('GT4')) return 'GT4';
@@ -36,18 +37,18 @@ function inferCategory(car = '', eventName = '') {
     if (c.includes('GTE') || c.includes('RSR') || c.includes('GT1') || c.includes('C6.R')) return 'GTE';
     if (c.includes('IR18') || c.includes('INDY') || e.includes('INDY')) return 'FORMULA';
     if (c.includes('TCR') || c.includes('CIVIC') || c.includes('CUP') || c.includes('MX-5')) return 'TOURING';
-    return 'GT3'; // Default motorsport fallback
+    return 'GT3';
 }
 
 /**
  * Infer manufacturer key from car string
  */
 function inferManufacturer(car = '') {
-    const c = car.toLowerCase();
+    const c = (car || '').toLowerCase();
     if (c.includes('porsche')) return 'porsche';
     if (c.includes('amg') || c.includes('mercedes')) return 'amg';
     if (c.includes('bmw')) return 'bmw';
-    if (c.includes('ferrari')) return 'ferrari';
+    if (c.includes('ferrari') || c.includes('ferarri')) return 'ferrari';
     if (c.includes('aston')) return 'aston';
     if (c.includes('audi')) return 'audi';
     if (c.includes('lamborghini')) return 'lamborghini';
@@ -71,16 +72,34 @@ function inferTrackKey(eventId = '', eventName = '') {
     if (s.includes('road-america') || s.includes('america')) return 'road-america';
     if (s.includes('suzuka')) return 'suzuka';
     if (s.includes('le-mans') || s.includes('lemans') || s.includes('sarthe')) return 'lemans';
+    if (s.includes('indy')) return 'indy';
     if (s.includes('bathurst') || s.includes('panorama')) return 'bathurst';
     if (s.includes('portimao') || s.includes('algarve')) return 'portimao';
-    return 'generic';
+    return 'daytona';
+}
+
+/**
+ * Clean display name for events
+ */
+function formatEventTitle(eId, evName) {
+    if (evName && evName !== eId && !evName.includes('-')) return evName;
+    const s = (eId || '').toLowerCase();
+    if (s.includes('daytona-24h')) return '24 Hours of Daytona';
+    if (s.includes('nurburgring-24h')) return '24 Hours of Nürburgring';
+    if (s.includes('spa-24h')) return '24 Hours of Spa';
+    if (s.includes('sebring-12h')) return '12 Hours of Sebring';
+    if (s.includes('bathurst-12h')) return 'Bathurst 12 Hour';
+    if (s.includes('road-america-6h') || s.includes('road-america')) return 'Road America 6 Hour';
+    if (s.includes('suzuka-1000')) return 'Suzuka 1000km';
+    if (s.includes('indy-500')) return 'Indianapolis 500';
+    return eId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }
 
 /**
  * Pick or map event photo
  */
 function inferEventImage(eventId = '', index = 0) {
-    const s = eventId.toLowerCase();
+    const s = (eventId || '').toLowerCase();
     if (s.includes('road-america')) return '/assets/results/July2526(3).png';
     if (s.includes('nurburgring')) return '/assets/results/May226(2).png';
     if (s.includes('daytona')) return '/assets/results/Jan1726(3).png';
@@ -88,15 +107,13 @@ function inferEventImage(eventId = '', index = 0) {
     if (s.includes('indy')) return '/assets/results/Jan1026.png';
     if (s.includes('spa')) return '/assets/results/July1126.png';
     if (s.includes('sebring')) return '/assets/results/Mar2826.png';
-    if (s.includes('thruxton')) return '/assets/results/May3026.png';
     if (s.includes('portimao')) return '/assets/results/July2526(1).png';
     if (s.includes('bathurst')) return '/assets/results/Feb2126.png';
     
-    // Default fallback cycle
     const fallbacks = [
         '/assets/results/July2526(3).png',
         '/assets/results/May226(2).png',
-        '/assets/results/Jan1726(1).png',
+        '/assets/results/Jan1726(3).png',
         '/assets/results/Nov1525.png',
         '/assets/results/Jan1026.png'
     ];
@@ -104,122 +121,136 @@ function inferEventImage(eventId = '', index = 0) {
 }
 
 /**
- * 1. Fetch live results from Firestore (same as /results.html)
+ * 1. Fetch live results from database (same collections as /results.html)
  */
 async function loadPodiumResultsFromDatabase() {
     const featuredGrid = document.getElementById('featured-podiums-grid');
     const pastContainer = document.getElementById('past-podiums-container');
 
-    if (featuredGrid) featuredGrid.innerHTML = '<div class="trophy-empty-state"><p>Loading live podium finishes...</p></div>';
-    if (pastContainer) pastContainer.innerHTML = '<div class="trophy-empty-state"><p>Loading race results archive...</p></div>';
+    if (featuredGrid) featuredGrid.innerHTML = '<div class="trophy-empty-state"><p>Loading team podium finishes...</p></div>';
+    if (pastContainer) pastContainer.innerHTML = '<div class="trophy-empty-state"><p>Loading podium archives...</p></div>';
 
     try {
-        let resultsSnap;
-        let eventsSnap;
+        let resultsDocs = [];
+        let eventsMap = {};
 
-        if (window.db) {
-            resultsSnap = await window.db.collection("event_results").orderBy("timestamp", "desc").get();
-            eventsSnap = await window.db.collection("events").get();
+        // Check if window.db or global db is ready
+        const activeDb = window.db || (typeof db !== 'undefined' ? db : null);
+
+        if (activeDb) {
+            const resultsSnap = await activeDb.collection("event_results").orderBy("timestamp", "desc").get();
+            const eventsSnap = await activeDb.collection("events").get();
+            
+            resultsDocs = resultsSnap.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+
+            eventsSnap.docs.forEach(doc => {
+                eventsMap[doc.id] = doc.data();
+            });
         } else {
-            // REST API Fallback
-            const resR = await fetch('https://firestore.googleapis.com/v1/projects/grid-up/databases/(default)/documents/event_results?pageSize=100');
+            // REST API with large page size to ensure ALL entries are fetched
+            const resR = await fetch('https://firestore.googleapis.com/v1/projects/grid-up/databases/(default)/documents/event_results?pageSize=300');
             const dataR = await resR.json();
-            const resE = await fetch('https://firestore.googleapis.com/v1/projects/grid-up/databases/(default)/documents/events?pageSize=100');
+            const resE = await fetch('https://firestore.googleapis.com/v1/projects/grid-up/databases/(default)/documents/events?pageSize=300');
             const dataE = await resE.json();
 
-            resultsSnap = {
-                docs: (dataR.documents || []).map(doc => {
-                    const f = doc.fields || {};
-                    return {
-                        id: doc.name.split('/').pop(),
-                        data: () => ({
-                            eventId: f.eventId?.stringValue,
-                            teamName: f.teamName?.stringValue,
-                            car: f.car?.stringValue,
-                            finish: f.finish?.stringValue,
-                            qualy: f.qualy?.stringValue,
-                            drivers: f.drivers?.arrayValue?.values?.map(v => v.stringValue) || [],
-                            timestamp: f.timestamp?.timestampValue
-                        })
-                    };
-                })
-            };
+            resultsDocs = (dataR.documents || []).map(doc => {
+                const f = doc.fields || {};
+                return {
+                    id: doc.name.split('/').pop(),
+                    eventId: f.eventId?.stringValue || '',
+                    teamName: f.teamName?.stringValue || '',
+                    car: f.car?.stringValue || '',
+                    finish: f.finish?.stringValue || '',
+                    qualy: f.qualy?.stringValue || '-',
+                    drivers: f.drivers?.arrayValue?.values?.map(v => v.stringValue) || [],
+                    timestamp: f.timestamp?.timestampValue || ''
+                };
+            });
 
-            eventsSnap = {
-                docs: (dataE.documents || []).map(doc => {
-                    const f = doc.fields || {};
-                    return {
-                        id: doc.name.split('/').pop(),
-                        data: () => ({
-                            name: f.name?.stringValue,
-                            date: f.date?.stringValue
-                        })
-                    };
-                })
-            };
+            (dataE.documents || []).forEach(doc => {
+                const id = doc.name.split('/').pop();
+                const f = doc.fields || {};
+                eventsMap[id] = {
+                    name: f.name?.stringValue,
+                    date: f.date?.stringValue
+                };
+            });
         }
-
-        const eventsMap = {};
-        eventsSnap.docs.forEach(doc => {
-            eventsMap[doc.id] = doc.data();
-        });
 
         const extracted = [];
 
-        resultsSnap.docs.forEach((doc, idx) => {
-            const d = doc.data();
+        resultsDocs.forEach((d, idx) => {
             const eId = d.eventId || '';
 
-            // Skip league race results as on results.html
+            // Skip league races (gtc-) as on /results.html
             if (eId.startsWith('gtc-')) return;
 
-            const fin = (d.finish || '').trim().toUpperCase();
+            // ==========================================
+            // STRICT PODIUM FILTER: P1, P2, or P3 ONLY
+            // ==========================================
+            const rawFinish = String(d.finish || '').trim().toUpperCase();
+            let pos = null;
 
-            // ONLY DISPLAY P1, P2, OR P3 FINISHES
-            if (['P1', 'P2', 'P3', '1', '2', '3'].includes(fin)) {
-                const pos = fin.startsWith('P') ? parseInt(fin.substring(1)) : parseInt(fin);
-                const ev = eventsMap[eId] || { name: eId.replace(/-/g, ' ').toUpperCase(), date: '' };
-                const year = d.timestamp ? new Date(d.timestamp).getFullYear() : (eId.includes('-25') ? 2025 : 2026);
-                const eventName = ev.name || eId.replace(/-/g, ' ').toUpperCase();
-                const trackKey = inferTrackKey(eId, eventName);
-                const trackInfo = (window.TRACK_OUTLINES && window.TRACK_OUTLINES[trackKey]) || { name: eventName, length: 'Circuit' };
-                const category = inferCategory(d.car, eventName);
-
-                extracted.push({
-                    id: doc.id || `podium-${idx}`,
-                    position: pos,
-                    finish: fin,
-                    positionLabel: pos === 1 ? '1ST PLACE' : (pos === 2 ? '2ND PLACE' : '3RD PLACE'),
-                    accent: pos === 1 ? 'gold' : (pos === 2 ? 'silver' : 'bronze'),
-                    eventId: eId,
-                    event: eventName,
-                    series: eventName.includes('iRacing') ? 'iRacing Championship' : 'Endurance Special Event',
-                    round: 'Official Classification',
-                    category: category,
-                    date: ev.date || (d.timestamp ? new Date(d.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''),
-                    season: year,
-                    car: d.car || 'Official Entry',
-                    drivers: Array.isArray(d.drivers) ? d.drivers : (d.drivers ? [d.drivers] : ['Team Drivers']),
-                    teamName: d.teamName || 'GRiD UP Sim Racing',
-                    qualy: d.qualy || '-',
-                    trackKey: trackKey,
-                    trackName: trackInfo.name,
-                    trackLength: trackInfo.length,
-                    image: inferEventImage(eId, idx),
-                    manufacturer: inferManufacturer(d.car),
-                    timestamp: d.timestamp || ''
-                });
+            if (rawFinish === 'P1' || rawFinish === '1' || rawFinish === '1ST' || rawFinish === 'FIRST') {
+                pos = 1;
+            } else if (rawFinish === 'P2' || rawFinish === '2' || rawFinish === '2ND' || rawFinish === 'SECOND') {
+                pos = 2;
+            } else if (rawFinish === 'P3' || rawFinish === '3' || rawFinish === '3RD' || rawFinish === 'THIRD') {
+                pos = 3;
             }
+
+            // Reject all non-podiums immediately (e.g. P4, P6, P11, P21, DNF, -, charity raised, etc.)
+            if (pos !== 1 && pos !== 2 && pos !== 3) {
+                return;
+            }
+
+            const ev = eventsMap[eId] || { name: eId, date: '' };
+            const eventName = formatEventTitle(eId, ev.name);
+            const year = d.timestamp ? new Date(d.timestamp).getFullYear() : (eId.includes('-25') ? 2025 : 2026);
+            const trackKey = inferTrackKey(eId, eventName);
+            const trackInfo = (window.TRACK_OUTLINES && window.TRACK_OUTLINES[trackKey]) || { name: eventName, length: 'Grand Prix Circuit' };
+            const category = inferCategory(d.car, eventName);
+            const displayDate = ev.date || (d.timestamp ? new Date(d.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : (year + ' Official'));
+
+            extracted.push({
+                id: d.id || ('podium-' + idx),
+                position: pos,
+                finish: 'P' + pos,
+                positionLabel: pos === 1 ? '1ST PLACE' : (pos === 2 ? '2ND PLACE' : '3RD PLACE'),
+                accent: pos === 1 ? 'gold' : (pos === 2 ? 'silver' : 'bronze'),
+                eventId: eId,
+                event: eventName,
+                series: eventName.includes('iRacing') ? 'iRacing Championship' : 'Endurance Special Event',
+                round: 'Official Classification',
+                category: category,
+                date: displayDate,
+                season: year,
+                car: d.car || 'Official Entry',
+                drivers: Array.isArray(d.drivers) ? d.drivers : (d.drivers ? [d.drivers] : ['Team Drivers']),
+                teamName: d.teamName || 'GRiD UP Sim Racing',
+                qualy: d.qualy || '-',
+                trackKey: trackKey,
+                trackName: trackInfo.name,
+                trackLength: trackInfo.length,
+                image: inferEventImage(eId, idx),
+                manufacturer: inferManufacturer(d.car),
+                timestamp: d.timestamp || ''
+            });
         });
 
-        // Sort chronologically by timestamp (newest first)
+        // Sort chronologically (newest first)
         extracted.sort((a, b) => {
             const ta = a.timestamp || '';
             const tb = b.timestamp || '';
-            return tb.localeCompare(ta);
+            if (ta && tb) return tb.localeCompare(ta);
+            return (b.season || 0) - (a.season || 0);
         });
 
         ALL_PODIUMS = extracted;
+        window.ALL_PODIUMS = extracted;
 
         renderTrophyStats();
         renderSeriesButtons();
@@ -230,13 +261,13 @@ async function loadPodiumResultsFromDatabase() {
     } catch (err) {
         console.error("Error loading podium results:", err);
         if (featuredGrid) {
-            featuredGrid.innerHTML = '<div class="trophy-empty-state"><p>Could not load live podium results. Please try again later.</p></div>';
+            featuredGrid.innerHTML = '<div class="trophy-empty-state"><p>Could not load live podium results. Please try refreshing.</p></div>';
         }
     }
 }
 
 /**
- * 2. Render Header Statistics based strictly on the live P1, P2, P3 finishes
+ * 2. Render Header Statistics based strictly on validated P1, P2, P3 finishes
  */
 function renderTrophyStats() {
     let wins = 0;
@@ -269,13 +300,12 @@ function renderSeriesButtons() {
     const container = document.getElementById('featured-series-filters');
     if (!container) return;
 
-    // Extract categories present in podiums
     const availableCategories = new Set(['ALL']);
     ALL_PODIUMS.forEach(p => {
         if (p.category) availableCategories.add(p.category);
     });
 
-    const categoriesList = ['ALL', 'GT3', 'GT4', 'LMP2', 'GTE', 'FORMULA', 'TOURING']
+    const categoriesList = ['ALL', 'GT3', 'LMP2', 'FORMULA', 'GT4', 'GTE', 'TOURING']
         .filter(cat => availableCategories.has(cat));
 
     container.innerHTML = categoriesList.map(cat => `
@@ -326,7 +356,7 @@ function getManufacturerLogo(key) {
 }
 
 /**
- * 4. Render Featured Podiums (Desktop side-by-side & mobile carousel)
+ * 4. Render Featured Podiums (Spotlights top/highest achievements)
  */
 function renderFeaturedPodiums() {
     const container = document.getElementById('featured-podiums-grid');
@@ -337,8 +367,15 @@ function renderFeaturedPodiums() {
         items = items.filter(item => item.category === CURRENT_SERIES_FILTER);
     }
 
-    // Showcase the top 3 (or available) podium finishes
-    const featuredItems = items.slice(0, 3);
+    // Sort featured by best result first (P1 wins first, then P2, then P3), then newest
+    const sortedForFeatured = items.slice().sort((a, b) => {
+        if (a.position !== b.position) return a.position - b.position;
+        const ta = a.timestamp || '';
+        const tb = b.timestamp || '';
+        return tb.localeCompare(ta);
+    });
+
+    const featuredItems = sortedForFeatured.slice(0, 3);
 
     if (featuredItems.length === 0) {
         container.innerHTML = `
@@ -404,7 +441,7 @@ function renderFeaturedPodiums() {
 }
 
 /**
- * 5. Populate Filter Dropdowns dynamically from live results
+ * 5. Populate Filter Dropdowns dynamically from podium results
  */
 function populateFilterDropdowns() {
     // Series
@@ -449,7 +486,7 @@ function populateFilterDropdowns() {
 }
 
 /**
- * 6. Render Past Podiums Archive Grid / List
+ * 6. Render Past Podiums Archive Grid / List (STRICTLY P1, P2, P3 ONLY)
  */
 function renderPastPodiums() {
     const container = document.getElementById('past-podiums-container');
@@ -531,7 +568,7 @@ function renderPastPodiums() {
         return;
     }
 
-    // Default: Responsive Dense Grid
+    // Grid View
     container.innerHTML = items.map(item => {
         const posClass = item.position === 1 ? 'pos-1 gold' : (item.position === 2 ? 'pos-2 silver' : 'pos-3 bronze');
         const driversStr = Array.isArray(item.drivers) ? item.drivers.join(' / ') : item.drivers;
@@ -578,7 +615,6 @@ function renderPastPodiums() {
  * 7. Controls & Event Listeners
  */
 function setupEventListeners() {
-    // Dropdown filters
     const filterSeries = document.getElementById('filter-series');
     if (filterSeries) {
         filterSeries.addEventListener('change', (e) => {
@@ -611,7 +647,6 @@ function setupEventListeners() {
         });
     }
 
-    // Grid / List Toggle
     const btnGrid = document.getElementById('view-grid-btn');
     const btnList = document.getElementById('view-list-btn');
 
@@ -631,7 +666,6 @@ function setupEventListeners() {
         });
     }
 
-    // Carousel arrows
     const prevBtn = document.getElementById('carousel-prev');
     const nextBtn = document.getElementById('carousel-next');
 
