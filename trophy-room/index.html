@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) - Deferred initialization for Lighthouse performance -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      function initAnalytics(){
+        if(window.analyticsLoaded) return;
+        window.analyticsLoaded = true;
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = 'https://www.googletagmanager.com/gtag/js?id=G-5JMPYRH8H9';
+        document.head.appendChild(s);
+        gtag('js', new Date());
+        gtag('config', 'G-5JMPYRH8H9');
+      }
+      if (document.readyState === 'complete') {
+        setTimeout(initAnalytics, 2500);
+      } else {
+        window.addEventListener('load', function() { setTimeout(initAnalytics, 2500); });
+      }
+      ['click', 'scroll', 'keydown', 'touchstart'].forEach(function(e) {
+        window.addEventListener(e, initAnalytics, { once: true, passive: true });
+      });
+    </script>
+
+    <!-- Hidden Page / Noindex -->
+    <meta name="robots" content="noindex, nofollow">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trophy Room | GRiD UP Sim Racing</title>
+
+    <!-- Preconnect & Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+    
+    <!-- Base Global Stylesheets -->
+    <link rel="stylesheet" href="/style.css?v=24">
+    <link rel="stylesheet" href="/trophy-room.css?v=1">
+    <link rel="icon" type="image/png" href="/assets/G_2.png">
+</head>
+<body class="trophy-room-page">
+    <!-- Main Navigation Bar (Maintains standard site header without Trophy Room link) -->
+    <nav id="navbar" class="scrolled">
+        <div class="container nav-content">
+            <a href="/index.html" class="logo">
+                <img src="/assets/logo.png" decoding="async" width="160" height="38" alt="GRiD UP" style="height: 38px; vertical-align: middle;">
+            </a>
+            <div class="menu-toggle" aria-label="Toggle navigation">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/index.html">HOME</a></li>
+                <li><a href="/events.html">EVENTS</a></li>
+                <li><a href="/league.html">LEAGUE</a></li>
+                <li><a href="/reports.html">NEWS</a></li>
+                <li><a href="/roster.html">ROSTER</a></li>
+                <li><a href="/telemetry.html">TELEMETRY</a></li>
+                <li><a href="/team-app.html">APPLY</a></li>
+                <li><a href="/shop.html">SHOP</a></li>
+                <li><a href="https://discord.gg/gridup" target="_blank" rel="noopener"><img src="/assets/discord_header.png" alt="Discord" style="height: 25px; vertical-align: middle;"></a></li>
+                <li><a href="/login.html" id="login-link" class="btn btn-outline" style="padding: 0.45rem 1.25rem; font-size: 0.75rem; margin-left: 0.5rem; border-radius: 50px;">Login</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- 1. HERO / HEADER SECTION -->
+    <header class="trophy-hero">
+        <div class="trophy-hero-bg"></div>
+        <div class="trophy-hero-overlay"></div>
+        <div class="container trophy-hero-content">
+            <div class="trophy-hero-left">
+                <div class="trophy-eyebrow">OUR ACHIEVEMENTS</div>
+                <h1 class="trophy-main-title">TROPHY ROOM</h1>
+                <p class="trophy-hero-desc">
+                    A celebration of our podium finishes, championship battles and the moments that define our journey in sim racing.
+                </p>
+            </div>
+
+            <!-- Statistics Panel (Right aligned data ribbon) -->
+            <div class="trophy-stats-panel">
+                <div class="trophy-stat-item wins">
+                    <div class="stat-icon-wrap">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0011 15.9V19H8v2h8v-2h-3v-3.1c1.8-.41 3.2-1.85 3.61-3.96C19.08 11.63 21 9.55 21 7V5c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/>
+                        </svg>
+                    </div>
+                    <div class="stat-data">
+                        <span class="stat-num" id="stat-wins">18</span>
+                        <span class="stat-lbl">WINS</span>
+                    </div>
+                </div>
+
+                <div class="trophy-stat-item p2">
+                    <div class="stat-icon-wrap">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0011 15.9V19H8v2h8v-2h-3v-3.1c1.8-.41 3.2-1.85 3.61-3.96C19.08 11.63 21 9.55 21 7V5c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/>
+                        </svg>
+                    </div>
+                    <div class="stat-data">
+                        <span class="stat-num" id="stat-p2">27</span>
+                        <span class="stat-lbl">2ND PLACES</span>
+                    </div>
+                </div>
+
+                <div class="trophy-stat-item p3">
+                    <div class="stat-icon-wrap">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0011 15.9V19H8v2h8v-2h-3v-3.1c1.8-.41 3.2-1.85 3.61-3.96C19.08 11.63 21 9.55 21 7V5c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/>
+                        </svg>
+                    </div>
+                    <div class="stat-data">
+                        <span class="stat-num" id="stat-p3">19</span>
+                        <span class="stat-lbl">3RD PLACES</span>
+                    </div>
+                </div>
+
+                <div class="trophy-stat-item total">
+                    <div class="stat-icon-wrap">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M4 19h16v2H4zm1-4h3v2H5zm5-4h3v6h-3zm5-6h3v12h-3z"/>
+                        </svg>
+                    </div>
+                    <div class="stat-data">
+                        <span class="stat-num" id="stat-total">64</span>
+                        <span class="stat-lbl">TOTAL PODIUMS</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container section" style="padding-top: 3.5rem; padding-bottom: 5rem;">
+        <!-- 2. FEATURED PODIUMS SECTION -->
+        <section class="trophy-featured-section" style="margin-bottom: 4.5rem;">
+            <div class="trophy-section-header">
+                <div class="trophy-section-title-wrap">
+                    <span class="title-slash">//</span>
+                    <h2 class="trophy-section-title">FEATURED PODIUMS</h2>
+                </div>
+
+                <!-- 3. SERIES FILTER BUTTONS -->
+                <div class="trophy-filter-group" id="featured-series-filters">
+                    <!-- Populated via trophy-room.js -->
+                </div>
+            </div>
+
+            <!-- Featured Cards Grid / Mobile Carousel -->
+            <div class="featured-carousel-wrapper">
+                <button class="featured-carousel-nav prev" id="carousel-prev" aria-label="Previous">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
+
+                <div class="featured-podiums-grid" id="featured-podiums-grid">
+                    <!-- Populated dynamically via trophy-room.js -->
+                </div>
+
+                <button class="featured-carousel-nav next" id="carousel-next" aria-label="Next">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+            </div>
+
+            <div class="carousel-dots" id="carousel-dots">
+                <!-- Dots populated dynamically -->
+            </div>
+        </section>
+
+        <!-- 4. PAST PODIUMS ARCHIVE SECTION -->
+        <section class="trophy-past-section">
+            <div class="trophy-section-header" style="margin-bottom: 1.5rem;">
+                <div class="trophy-section-title-wrap">
+                    <span class="title-slash">//</span>
+                    <h2 class="trophy-section-title">PAST PODIUMS</h2>
+                </div>
+            </div>
+
+            <!-- 5. ARCHIVE FILTERS & VIEW TOGGLE -->
+            <div class="past-filters-bar">
+                <div class="filter-selects-wrap">
+                    <select class="trophy-select" id="filter-series">
+                        <option value="ALL">ALL SERIES</option>
+                    </select>
+
+                    <select class="trophy-select" id="filter-season">
+                        <option value="ALL">ALL SEASONS</option>
+                    </select>
+
+                    <select class="trophy-select" id="filter-car">
+                        <option value="ALL">ALL CARS</option>
+                    </select>
+
+                    <select class="trophy-select" id="filter-driver">
+                        <option value="ALL">ALL DRIVERS</option>
+                    </select>
+                </div>
+
+                <div class="view-mode-toggle">
+                    <button class="view-mode-btn active" id="view-grid-btn" title="Grid View" aria-label="Grid View">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4zM4 10h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4zM4 16h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4z"/></svg>
+                    </button>
+                    <button class="view-mode-btn" id="view-list-btn" title="List View" aria-label="List View">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 5h16v2H4zm0 6h16v2H4zm0 6h16v2H4z"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Past Podiums Grid/List Target Container -->
+            <div id="past-podiums-container" class="past-podiums-grid">
+                <!-- Populated dynamically via trophy-room.js -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Site Footer -->
+    <footer>
+        <div class="container">
+            <div style="display: flex; justify-content: center; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <a href="https://discord.gg/gridup" target="_blank" rel="noopener" style="opacity: 0.6; transition: opacity 0.3s ease;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 127.14 96.36" fill="#ffffff"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a67.55,67.55,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.31,60,73.31,53s5-12.74,11.43-12.74S96.2,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
+                </a>
+                <a href="https://www.youtube.com/@griduptv" target="_blank" rel="noopener" style="opacity: 0.6; transition: opacity 0.3s ease;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="#ffffff" style="margin-top: -1px;"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+                </a>
+            </div>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin: 0; padding-bottom: 1rem;">&copy; 2026 GRiD UP SIM RACING. ALL RIGHTS RESERVED.</p>
+        </div>
+    </footer>
+
+    <!-- Core Scripts -->
+    <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script defer src="/script.js?v=24"></script>
+    <script defer src="/js/auth.js?v=11"></script>
+    <script src="/js/trophy-data.js?v=1"></script>
+    <script src="/js/trophy-room.js?v=1"></script>
+</body>
+</html>

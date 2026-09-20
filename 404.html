@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -147,6 +147,12 @@
     <script>
         // Check if the current URL points to a driver profile
         const path = window.location.pathname;
+
+        // Route fallback for /trophy-room
+        if (path.replace(/\/+$/, '').endsWith('/trophy-room') || path.endsWith('/trophy-room.html')) {
+            window.location.replace('/trophy-room/index.html');
+        }
+
         const match = path.match(/\/drivers\/([^/]+)\.html$/i);
 
         if (match) {
