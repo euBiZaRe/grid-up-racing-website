@@ -25,6 +25,21 @@ async function initTrophyRoom() {
 }
 
 /**
+ * Safely parse any timestamp representation (Firestore Timestamp, ISO string, milliseconds)
+ */
+function getTimestampMs(ts) {
+    if (!ts) return 0;
+    if (typeof ts === 'number') return ts;
+    if (typeof ts.toMillis === 'function') return ts.toMillis();
+    if (ts.seconds) return ts.seconds * 1000;
+    if (typeof ts === 'string') {
+        const parsed = Date.parse(ts);
+        return isNaN(parsed) ? 0 : parsed;
+    }
+    return 0;
+}
+
+/**
  * Infer series category (GT3, GT4, LMP2, GTE, etc.) from car or event name
  */
 function inferCategory(car = '', eventName = '') {
@@ -209,11 +224,12 @@ async function loadPodiumResultsFromDatabase() {
 
             const ev = eventsMap[eId] || { name: eId, date: '' };
             const eventName = formatEventTitle(eId, ev.name);
-            const year = d.timestamp ? new Date(d.timestamp).getFullYear() : (eId.includes('-25') ? 2025 : 2026);
+            const tsMs = getTimestampMs(d.timestamp);
+            const year = tsMs ? new Date(tsMs).getFullYear() : (eId.includes('-25') ? 2025 : 2026);
             const trackKey = inferTrackKey(eId, eventName);
             const trackInfo = (window.TRACK_OUTLINES && window.TRACK_OUTLINES[trackKey]) || { name: eventName, length: 'Grand Prix Circuit' };
             const category = inferCategory(d.car, eventName);
-            const displayDate = ev.date || (d.timestamp ? new Date(d.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : (year + ' Official'));
+            const displayDate = ev.date || (tsMs ? new Date(tsMs).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : (year + ' Official'));
 
             extracted.push({
                 id: d.id || ('podium-' + idx),
@@ -243,9 +259,9 @@ async function loadPodiumResultsFromDatabase() {
 
         // Sort chronologically (newest first)
         extracted.sort((a, b) => {
-            const ta = a.timestamp || '';
-            const tb = b.timestamp || '';
-            if (ta && tb) return tb.localeCompare(ta);
+            const ta = getTimestampMs(a.timestamp);
+            const tb = getTimestampMs(b.timestamp);
+            if (ta && tb && ta !== tb) return tb - ta;
             return (b.season || 0) - (a.season || 0);
         });
 
@@ -370,9 +386,10 @@ function renderFeaturedPodiums() {
     // Sort featured by best result first (P1 wins first, then P2, then P3), then newest
     const sortedForFeatured = items.slice().sort((a, b) => {
         if (a.position !== b.position) return a.position - b.position;
-        const ta = a.timestamp || '';
-        const tb = b.timestamp || '';
-        return tb.localeCompare(ta);
+        const ta = getTimestampMs(a.timestamp);
+        const tb = getTimestampMs(b.timestamp);
+        if (ta && tb && ta !== tb) return tb - ta;
+        return (b.season || 0) - (a.season || 0);
     });
 
     const featuredItems = sortedForFeatured.slice(0, 3);
