@@ -494,6 +494,9 @@
                             <button onclick="publishBuilderLineups()" class="btn btn-primary" style="font-size: 0.85rem; padding: 0.65rem 1.4rem; border-radius: 10px; font-weight: 800; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 0 25px rgba(0,207,255,0.35);">
                                 <i class="fas fa-cloud-upload-alt"></i> Publish Official Lineups
                             </button>
+                            <button type="button" onclick="viewLiveStintsFromAdmin()" class="btn btn-outline" style="font-size: 0.85rem; padding: 0.65rem 1.1rem; border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px;">
+                                <i class="fas fa-external-link-alt" style="color: var(--primary);"></i> View Live Stints
+                            </button>
                         </div>
                     </div>
 
@@ -2805,6 +2808,20 @@
                     `;
                 }
 
+                // Captain Options
+                const carDrivers = (car.drivers && car.drivers.length > 0) ? car.drivers : [...new Set((car.stints || []).map(s => s.driverName).filter(n => n && n !== 'Unassigned' && n !== 'Driver 1'))];
+                const activeDriversForCaptain = responses.filter(r => r.status === 'signed_up' || r.status === 'interested' || r.status === 'tentative');
+                const captainCandidates = new Set([...carDrivers, ...activeDriversForCaptain.map(d => d.driverName || 'Driver')]);
+                let captainOptionsHtml = `<option value="">-- No Captain --</option>`;
+                if (car.captain && !captainCandidates.has(car.captain)) {
+                    captainOptionsHtml += `<option value="${car.captain}" selected>👑 ${car.captain}</option>`;
+                }
+                captainCandidates.forEach(name => {
+                    if (name) {
+                        captainOptionsHtml += `<option value="${name}" ${car.captain === name ? 'selected' : ''}>👑 ${name}</option>`;
+                    }
+                });
+
                 carsHtml += `
                     <div class="builder-car-card">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 1.25rem; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
@@ -2828,6 +2845,12 @@
                                             <span style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Chassis:</span>
                                             <select onchange="updateAdminCarField(${cIdx}, 'carModel', this.value)" class="studio-mini-select">
                                                 ${modelOptionsHtml}
+                                            </select>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 6px;">
+                                            <span style="font-size: 0.7rem; font-weight: 800; color: #fbbf24; text-transform: uppercase;">Captain:</span>
+                                            <select onchange="updateAdminCarField(${cIdx}, 'captain', this.value)" class="studio-mini-select" style="color: #fbbf24; font-weight: 800;">
+                                                ${captainOptionsHtml}
                                             </select>
                                         </div>
                                     </div>
@@ -3029,6 +3052,12 @@
                 console.error("Error publishing lineups:", err);
                 alert("Failed to publish: " + err.message);
             }
+        };
+
+        window.viewLiveStintsFromAdmin = function() {
+            const selector = document.getElementById('lineup-event-selector');
+            const activeId = selector ? selector.value : '';
+            window.open(`stints.html${activeId ? `?event=${activeId}` : ''}`, '_blank');
         };
 
         function toggleLapSync() {

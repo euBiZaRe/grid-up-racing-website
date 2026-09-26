@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -276,8 +276,11 @@
                 });
 
                 html += `
-                    <div style="text-align: center; margin-top: 0.5rem;">
-                        <a href="../portal.html" style="font-size: 0.75rem; color: var(--primary); text-decoration: none;">Are you a GRiD UP driver? Manage stints in Portal &rarr;</a>
+                    <div style="display: flex; flex-direction: column; gap: 8px; align-items: center; margin-top: 1.25rem;">
+                        <a href="../stints.html?event=${eventId}" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.45rem 1.15rem; border-radius: 8px; color: var(--primary); border-color: rgba(0,207,255,0.4); display: inline-flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-stopwatch"></i> Open Dedicated Live Stint Schedules &rarr;
+                        </a>
+                        <a href="../portal.html" style="font-size: 0.72rem; color: var(--text-muted); text-decoration: none;">Are you a GRiD UP driver? Manage stints in Portal &rarr;</a>
                     </div>
                 `;
 

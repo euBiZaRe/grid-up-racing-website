@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) - Deferred initialization -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      function initAnalytics(){
+        if(window.analyticsLoaded) return;
+        window.analyticsLoaded = true;
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = 'https://www.googletagmanager.com/gtag/js?id=G-5JMPYRH8H9';
+        document.head.appendChild(s);
+        gtag('js', new Date());
+        gtag('config', 'G-5JMPYRH8H9');
+      }
+      if (document.readyState === 'complete') {
+        setTimeout(initAnalytics, 2500);
+      } else {
+        window.addEventListener('load', function() { setTimeout(initAnalytics, 2500); });
+      }
+      ['click', 'scroll', 'keydown', 'touchstart'].forEach(function(e) {
+        window.addEventListener(e, initAnalytics, { once: true, passive: true });
+      });
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Stint Schedules | GRiD UP Sim Racing</title>
+    <meta name="description" content="Official Live Stint Schedules, driver rotations, and run-sheets for GRiD UP endurance races.">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Live Stint Schedules | GRiD UP Sim Racing">
+    <meta property="og:description" content="View live stint allocations, driver schedules, and real-time team run-sheets.">
+    <meta property="og:image" content="https://raw.githubusercontent.com/gridup/gridup.github.io/main/assets/bg-banner.png">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=26">
+    <link rel="icon" type="image/png" href="assets/G_2.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js"></script>
+
+    <style>
+        :root {
+            --bg-darker: #07090e;
+            --bg-card: rgba(13, 17, 26, 0.75);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --accent-glow: rgba(0, 207, 255, 0.3);
+        }
+
+        body {
+            background-color: var(--bg-main, #0b0f19);
+            background-image: 
+                radial-gradient(circle at 15% 20%, rgba(0, 207, 255, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 85% 75%, rgba(255, 0, 85, 0.04) 0%, transparent 40%);
+            min-height: 100vh;
+            color: #e2e8f0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Top Bar Navigation (Hidden from main screens, compact dedicated bar) */
+        .stints-top-bar {
+            background: rgba(11, 15, 25, 0.85);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 0.85rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .stints-top-left {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+        }
+
+        .stints-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+        }
+
+        .stints-brand img {
+            height: 34px;
+            width: auto;
+        }
+
+        .stints-page-title-badge {
+            background: rgba(0, 207, 255, 0.12);
+            border: 1px solid rgba(0, 207, 255, 0.35);
+            color: var(--primary, #00cfff);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .stints-top-right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .hero-stints-header {
+            padding: 2.5rem 1.5rem 1.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .hero-banner-glass {
+            background: linear-gradient(135deg, rgba(17, 24, 39, 0.8) 0%, rgba(10, 14, 23, 0.9) 100%);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 2rem 2.25rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-banner-glass::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary, #00cfff), #3b82f6, #ec4899);
+        }
+
+        .event-select-box {
+            background: #090d16;
+            border: 1px solid rgba(0, 207, 255, 0.3);
+            color: #ffffff;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            padding: 0.65rem 1.25rem;
+            border-radius: 10px;
+            outline: none;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(0, 207, 255, 0.15);
+            transition: all 0.2s ease;
+        }
+
+        .event-select-box:focus, .event-select-box:hover {
+            border-color: var(--primary, #00cfff);
+            box-shadow: 0 0 20px rgba(0, 207, 255, 0.3);
+        }
+
+        .event-select-box option {
+            background: #090d16;
+            color: #fff;
+            padding: 8px;
+        }
+
+        /* Captain Info Notice */
+        .captain-status-pill {
+            background: rgba(251, 191, 36, 0.12);
+            border: 1px solid rgba(251, 191, 36, 0.35);
+            color: #fbbf24;
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Car Schedule Card */
+        .car-stint-card {
+            background: var(--bg-card);
+            border: 1px solid var(--card-border);
+            border-radius: 18px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .car-stint-card:hover {
+            border-color: rgba(0, 207, 255, 0.25);
+        }
+
+        .car-card-header {
+            padding: 1.5rem 1.75rem;
+            background: rgba(0, 0, 0, 0.35);
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.25rem;
+        }
+
+        .car-identity-block {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            flex-wrap: wrap;
+        }
+
+        .racing-plate {
+            background: linear-gradient(135deg, #0f172a 0%, #000 100%);
+            border: 2px solid var(--primary, #00cfff);
+            border-radius: 10px;
+            padding: 0.4rem 0.85rem;
+            text-align: center;
+            min-width: 60px;
+            box-shadow: 0 0 15px rgba(0, 207, 255, 0.2);
+        }
+
+        .racing-plate-label {
+            font-size: 0.55rem;
+            font-weight: 900;
+            color: var(--primary, #00cfff);
+            letter-spacing: 1px;
+            display: block;
+            line-height: 1;
+        }
+
+        .racing-plate-num {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: #ffffff;
+            line-height: 1.1;
+        }
+
+        .schedule-title-area {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .schedule-name-heading {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin: 0;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .captain-badge {
+            background: rgba(251, 191, 36, 0.15);
+            border: 1px solid rgba(251, 191, 36, 0.35);
+            color: #fbbf24;
+            font-size: 0.72rem;
+            font-weight: 800;
+            padding: 3px 10px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .edit-schedule-btn {
+            background: rgba(0, 207, 255, 0.12);
+            border: 1px solid rgba(0, 207, 255, 0.35);
+            color: var(--primary, #00cfff);
+            font-size: 0.75rem;
+            font-weight: 800;
+            padding: 5px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .edit-schedule-btn:hover {
+            background: var(--primary, #00cfff);
+            color: #0b0f19;
+            box-shadow: 0 0 15px rgba(0, 207, 255, 0.4);
+            transform: translateY(-1px);
+        }
+
+        /* Stint Run-Sheet Table */
+        .stint-table-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .stint-run-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .stint-run-table th {
+            background: rgba(0, 0, 0, 0.45);
+            color: var(--primary, #00cfff);
+            text-align: left;
+            padding: 0.85rem 1.25rem;
+            font-size: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--card-border);
+            white-space: nowrap;
+        }
+
+        .stint-run-table td {
+            padding: 0.85rem 1.25rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        .stint-run-table tbody tr:hover {
+            background: rgba(0, 207, 255, 0.025);
+        }
+
+        .stint-status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.68rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-scheduled { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .badge-ondeck { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
+        .badge-active { background: rgba(16, 185, 129, 0.25); color: #34d399; border: 1px solid #10b981; box-shadow: 0 0 10px rgba(16,185,129,0.3); }
+        .badge-completed { background: rgba(255, 255, 255, 0.04); color: #6b7280; text-decoration: line-through; }
+        .badge-uncovered { background: rgba(239, 68, 68, 0.18); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35); }
+
+        /* Modal for Renaming Schedule */
+        .custom-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 1.5rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+
+        .custom-modal-backdrop.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .custom-modal-dialog {
+            background: #0d121c;
+            border: 1px solid rgba(0, 207, 255, 0.35);
+            border-radius: 18px;
+            max-width: 520px;
+            width: 100%;
+            padding: 2rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 207, 255, 0.15);
+            transform: scale(0.95);
+            transition: transform 0.25s ease;
+        }
+
+        .custom-modal-backdrop.active .custom-modal-dialog {
+            transform: scale(1);
+        }
+
+        .rename-input-field {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 0.85rem 1.15rem;
+            color: #ffffff;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            box-sizing: border-box;
+            margin-top: 0.5rem;
+        }
+
+        .rename-input-field:focus {
+            border-color: var(--primary, #00cfff);
+            box-shadow: 0 0 15px rgba(0, 207, 255, 0.3);
+        }
+
+        .preset-badge-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #cbd5e1;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .preset-badge-btn:hover {
+            background: rgba(0, 207, 255, 0.15);
+            border-color: var(--primary, #00cfff);
+            color: #fff;
+        }
+
+        /* Toast notification */
+        .toast-notification {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: rgba(13, 18, 28, 0.95);
+            border: 1px solid #10b981;
+            color: #34d399;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(16, 185, 129, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 10000;
+        }
+
+        .toast-notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Roster pills */
+        .driver-stint-pill {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #e2e8f0;
+        }
+
+        .driver-stint-pill strong {
+            color: var(--primary, #00cfff);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sticky Navigation (Direct and clean, no clutter on public menus) -->
+    <header class="stints-top-bar">
+        <div class="stints-top-left">
+            <a href="index.html" class="stints-brand">
+                <img src="assets/logo.png" alt="GRiD UP Sim Racing">
+            </a>
+            <span class="stints-page-title-badge">
+                <i class="fas fa-stopwatch"></i> Live Stint Schedules
+            </span>
+        </div>
+        <div class="stints-top-right">
+            <a href="portal.html" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.45rem 1rem; border-radius: 50px; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fas fa-users-cog"></i> Driver Portal
+            </a>
+            <a href="events.html" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.45rem 1rem; border-radius: 50px; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fas fa-calendar-alt"></i> Events
+            </a>
+            <a href="login.html" id="login-link" class="btn btn-outline" style="padding: 0.45rem 1.25rem; font-size: 0.75rem; border-radius: 50px;">Login</a>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="hero-stints-header">
+        <!-- Event Header Card -->
+        <div class="hero-banner-glass">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <div>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem; flex-wrap: wrap;">
+                        <span style="background: rgba(16, 185, 129, 0.18); border: 1px solid #10b981; color: #34d399; font-size: 0.68rem; font-weight: 900; letter-spacing: 1px; padding: 3px 10px; border-radius: 50px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 6px;">
+                            <span style="width: 7px; height: 7px; border-radius: 50%; background: #34d399; display: inline-block; box-shadow: 0 0 8px #34d399;"></span>
+                            OFFICIAL RACE STINTS
+                        </span>
+                        <div id="captain-active-indicator" style="display: none;"></div>
+                    </div>
+                    <h1 id="event-display-title" style="font-family: 'Orbitron', sans-serif; font-size: clamp(1.4rem, 3.5vw, 2.2rem); font-weight: 900; color: #ffffff; margin: 0 0 0.5rem 0; letter-spacing: 1px;">
+                        Loading Race Schedules...
+                    </h1>
+                    <div id="event-meta-bar" style="display: flex; gap: 18px; font-size: 0.85rem; color: var(--text-muted); flex-wrap: wrap; align-items: center;">
+                        <span id="event-meta-date"><i class="fas fa-calendar-alt" style="color: var(--primary); margin-right: 6px;"></i> Date: --</span>
+                        <span id="event-meta-track"><i class="fas fa-map-marker-alt" style="color: var(--primary); margin-right: 6px;"></i> Track: --</span>
+                        <span id="event-meta-duration"><i class="fas fa-clock" style="color: var(--primary); margin-right: 6px;"></i> Duration: --</span>
+                    </div>
+                </div>
+
+                <!-- Race Selector -->
+                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;">
+                    <label for="event-selector" style="font-size: 0.7rem; color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">
+                        <i class="fas fa-flag-checkered"></i> Select Event:
+                    </label>
+                    <select id="event-selector" class="event-select-box" onchange="onSelectEvent(this.value)">
+                        <option value="">Searching for published lineups...</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Captain Instructions & Info Bar -->
+            <div id="captain-callout-banner" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 0.85rem 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div style="font-size: 0.8rem; color: #94a3b8; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-info-circle" style="color: var(--primary);"></i>
+                    <span>Team captains can edit their team's schedule name directly to make it easily identifiable.</span>
+                </div>
+                <div id="captain-auth-action">
+                    <a href="login.html" style="font-size: 0.75rem; color: var(--primary); text-decoration: none; font-weight: 700;">
+                        Captain Login &rarr;
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stints Canvas / Car Cards Area -->
+        <section id="stints-canvas" style="margin-top: 2rem;">
+            <div style="text-align: center; padding: 4rem 1rem; color: var(--text-muted);">
+                <i class="fas fa-circle-notch fa-spin" style="font-size: 2rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                <p style="font-size: 0.95rem;">Loading live stint schedules...</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Custom Modal for Editing Team Schedule Name -->
+    <div id="rename-modal" class="custom-modal-backdrop">
+        <div class="custom-modal-dialog">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.85rem;">
+                <h3 style="font-family: 'Orbitron', sans-serif; font-size: 1.15rem; color: #ffffff; margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-edit" style="color: var(--primary);"></i> Edit Team Schedule Name
+                </h3>
+                <button type="button" onclick="closeRenameModal()" style="background: none; border: none; color: #94a3b8; font-size: 1.2rem; cursor: pointer;">&times;</button>
+            </div>
+            
+            <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.5;">
+                As the team captain, you can rename this schedule (e.g. <em>"GRiD UP Blue - Bathurst Squad"</em> or <em>"GRiD UP Sim Racing - Pro"</em>) so your drivers and viewers can easily identify your car.
+            </p>
+
+            <label style="font-size: 0.72rem; color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; display: block;">
+                Custom Schedule Name
+            </label>
+            <input type="text" id="rename-input" class="rename-input-field" placeholder="Enter custom team schedule name..." maxlength="50">
+
+            <div style="margin-top: 1rem;">
+                <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; display: block; margin-bottom: 0.5rem;">
+                    Quick Presets:
+                </span>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                    <button type="button" class="preset-badge-btn" onclick="applyRenamePreset('GRiD UP Sim Racing')">GRiD UP Sim Racing</button>
+                    <button type="button" class="preset-badge-btn" onclick="applyRenamePreset('GRiD UP Blue')">GRiD UP Blue</button>
+                    <button type="button" class="preset-badge-btn" onclick="applyRenamePreset('GRiD UP Black')">GRiD UP Black</button>
+                    <button type="button" class="preset-badge-btn" onclick="applyRenamePreset('GRiD UP Red')">GRiD UP Red</button>
+                    <button type="button" class="preset-badge-btn" onclick="applyRenamePreset('GRiD UP White')">GRiD UP White</button>
+                    <button type="button" class="preset-badge-btn" onclick="applyRenamePreset('GRiD UP Purple')">GRiD UP Purple</button>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 1.25rem;">
+                <button type="button" onclick="closeRenameModal()" class="btn btn-outline" style="padding: 0.55rem 1.25rem; font-size: 0.82rem; border-radius: 8px;">Cancel</button>
+                <button type="button" id="save-rename-btn" onclick="submitScheduleRename()" class="btn btn-primary" style="padding: 0.55rem 1.5rem; font-size: 0.82rem; border-radius: 8px; font-weight: 800;">
+                    <i class="fas fa-save" style="margin-right: 5px;"></i> Save Name
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="stint-toast" class="toast-notification">
+        <i class="fas fa-check-circle" style="font-size: 1.2rem;"></i>
+        <span id="toast-message">Schedule updated successfully</span>
+    </div>
+
+    <!-- Shared Scripts -->
+    <script defer src="script.js?v=26"></script>
+    <script defer src="js/auth.js?v=12"></script>
+
+    <script>
+        // State
+        let currentEventId = '';
+        let currentLineupData = null;
+        let lineupUnsubscribe = null;
+        let loggedInUser = null;
+        let userDriverName = '';
+        let isUserAdmin = false;
+        let editingCarIndex = -1;
+        let availableEvents = [];
+
+        // Toast Helper
+        function showToast(msg) {
+            const toast = document.getElementById('stint-toast');
+            const msgEl = document.getElementById('toast-message');
+            if (!toast || !msgEl) return;
+            msgEl.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3500);
+        }
+
+        // Auth Hook triggered from auth.js
+        window.onAuthReady = async function(user) {
+            loggedInUser = user;
+            if (user) {
+                try {
+                    const uDoc = await db.collection("users").doc(user.uid).get();
+                    if (uDoc.exists) {
+                        const data = uDoc.data();
+                        userDriverName = data.driverName || user.displayName || 'Driver';
+                    } else {
+                        userDriverName = user.displayName || 'Driver';
+                    }
+                } catch (e) {
+                    userDriverName = user.displayName || 'Driver';
+                }
+
+                isUserAdmin = (typeof IS_ADMIN !== 'undefined' && IS_ADMIN) || (user.uid === 'B0t4f4nqqpZIQKpT8Ed97xka5gM2');
+
+                // Update Captain banner
+                const callout = document.getElementById('captain-auth-action');
+                if (callout) {
+                    callout.innerHTML = `
+                        <div class="captain-status-pill">
+                            <i class="fas fa-user-check"></i> Logged in as <strong>${userDriverName}</strong>
+                            ${isUserAdmin ? '<span style="background:#ef4444; color:#fff; font-size:0.6rem; padding:1px 5px; border-radius:3px; margin-left:4px;">ADMIN</span>' : ''}
+                        </div>
+                    `;
+                }
+            } else {
+                userDriverName = '';
+                isUserAdmin = false;
+                const callout = document.getElementById('captain-auth-action');
+                if (callout) {
+                    callout.innerHTML = `<a href="login.html" style="font-size: 0.75rem; color: var(--primary); text-decoration: none; font-weight: 700;">Captain Login &rarr;</a>`;
+                }
+            }
+
+            // Re-render cars to display/hide edit buttons based on newly confirmed user
+            if (currentLineupData) {
+                renderStintSchedules(currentLineupData);
+            }
+        };
+
+        // Initialize Page
+        async function initStintsPage() {
+            // Wait for db
+            if (typeof db === 'undefined') {
+                setTimeout(initStintsPage, 150);
+                return;
+            }
+
+            // Read target event from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const targetFromUrl = urlParams.get('event') || window.location.hash.replace('#', '').trim();
+
+            await loadAvailableEvents(targetFromUrl);
+        }
+
+        // Fetch events with lineups or upcoming
+        async function loadAvailableEvents(preferredEventId) {
+            const selector = document.getElementById('event-selector');
+            try {
+                // 1. Fetch published race_lineups
+                const lineupsSnap = await db.collection("race_lineups").get();
+                const lineupEventIds = new Set();
+                const lineupMap = {};
+
+                lineupsSnap.forEach(doc => {
+                    lineupEventIds.add(doc.id);
+                    lineupMap[doc.id] = doc.data();
+                });
+
+                // 2. Fetch events metadata
+                const eventsSnap = await db.collection("events").orderBy("startDate", "asc").get();
+                availableEvents = [];
+
+                eventsSnap.forEach(doc => {
+                    const data = doc.data();
+                    const hasLineup = lineupEventIds.has(doc.id);
+                    availableEvents.push({
+                        id: doc.id,
+                        name: data.name || doc.id,
+                        date: data.date || '',
+                        track: data.track || 'Track TBA',
+                        distance: data.distance || 'Endurance',
+                        duration: data.duration || 6,
+                        hasLineup: hasLineup
+                    });
+                });
+
+                // Include any lineups that might not have a formal event document
+                lineupEventIds.forEach(id => {
+                    if (!availableEvents.some(e => e.id === id)) {
+                        const lData = lineupMap[id] || {};
+                        availableEvents.push({
+                            id: id,
+                            name: lData.eventName || id.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' '),
+                            date: 'Scheduled',
+                            track: 'Circuit',
+                            distance: 'Endurance',
+                            duration: 6,
+                            hasLineup: true
+                        });
+                    }
+                });
+
+                // Sort: Events with lineups first, then upcoming
+                availableEvents.sort((a, b) => {
+                    if (a.hasLineup && !b.hasLineup) return -1;
+                    if (!a.hasLineup && b.hasLineup) return 1;
+                    return 0;
+                });
+
+                // Build selector
+                if (selector) {
+                    if (availableEvents.length === 0) {
+                        selector.innerHTML = `<option value="">No events found</option>`;
+                        return;
+                    }
+
+                    selector.innerHTML = availableEvents.map(e => `
+                        <option value="${e.id}" ${e.hasLineup ? '' : 'style="opacity:0.6;"'}>
+                            ${e.hasLineup ? '⚡ ' : '📅 '}${e.name} ${e.hasLineup ? '(Live Lineup)' : ''}
+                        </option>
+                    `).join('');
+                }
+
+                // Determine active event
+                let chosenId = '';
+                if (preferredEventId && availableEvents.some(e => e.id === preferredEventId)) {
+                    chosenId = preferredEventId;
+                } else {
+                    const firstWithLineup = availableEvents.find(e => e.hasLineup);
+                    chosenId = firstWithLineup ? firstWithLineup.id : (availableEvents[0] ? availableEvents[0].id : '');
+                }
+
+                if (chosenId) {
+                    if (selector) selector.value = chosenId;
+                    switchEvent(chosenId);
+                }
+
+            } catch (err) {
+                console.error("Error loading events:", err);
+                if (selector) selector.innerHTML = `<option value="">Error loading events</option>`;
+            }
+        }
+
+        // Switch active event
+        function onSelectEvent(eventId) {
+            if (!eventId || eventId === currentEventId) return;
+            // Update URL hash smoothly
+            window.history.replaceState(null, '', `?event=${eventId}`);
+            switchEvent(eventId);
+        }
+
+        function switchEvent(eventId) {
+            currentEventId = eventId;
+
+            // Unsubscribe existing listener
+            if (lineupUnsubscribe) {
+                lineupUnsubscribe();
+                lineupUnsubscribe = null;
+            }
+
+            // Update Header Meta
+            const ev = availableEvents.find(e => e.id === eventId) || { name: eventId, date: 'TBA', track: 'Track TBA', distance: 'Endurance' };
+            document.title = `${ev.name} | Live Stints | GRiD UP Sim Racing`;
+            document.getElementById('event-display-title').textContent = ev.name;
+            document.getElementById('event-meta-date').innerHTML = `<i class="fas fa-calendar-alt" style="color: var(--primary); margin-right: 6px;"></i> ${ev.date || 'TBA'}`;
+            document.getElementById('event-meta-track').innerHTML = `<i class="fas fa-map-marker-alt" style="color: var(--primary); margin-right: 6px;"></i> ${ev.track || 'Track TBA'}`;
+            document.getElementById('event-meta-duration').innerHTML = `<i class="fas fa-clock" style="color: var(--primary); margin-right: 6px;"></i> ${ev.distance || 'Endurance'}`;
+
+            // Attach real-time listener for this event's lineup
+            const canvas = document.getElementById('stints-canvas');
+            canvas.innerHTML = `
+                <div style="text-align: center; padding: 4rem 1rem; color: var(--text-muted);">
+                    <i class="fas fa-circle-notch fa-spin" style="font-size: 2rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                    <p style="font-size: 0.95rem;">Syncing live stint schedules for ${ev.name}...</p>
+                </div>
+            `;
+
+            lineupUnsubscribe = db.collection("race_lineups").doc(eventId).onSnapshot(doc => {
+                if (doc.exists && doc.data().teams && doc.data().teams.length > 0) {
+                    currentLineupData = doc.data();
+                    renderStintSchedules(currentLineupData);
+                } else {
+                    currentLineupData = null;
+                    renderEmptyLineupState(ev);
+                }
+            }, err => {
+                console.error("Error listening to lineup:", err);
+                canvas.innerHTML = `
+                    <div style="text-align:center; padding: 3rem 1rem; color: #ef4444;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <p>Error syncing stint schedule: ${err.message}</p>
+                    </div>
+                `;
+            });
+        }
+
+        // Render Stint Schedules for each car
+        function renderStintSchedules(data) {
+            const canvas = document.getElementById('stints-canvas');
+            if (!canvas) return;
+
+            const teams = data.teams || [];
+            if (teams.length === 0) {
+                renderEmptyLineupState({ name: data.eventName || currentEventId });
+                return;
+            }
+
+            let html = '';
+            let userIsCaptainOfAny = false;
+
+            teams.forEach((car, cIdx) => {
+                const teamName = car.name || car.teamName || 'GRiD UP Sim Racing';
+                const carClass = car.car_class || car.carClass || 'GT3';
+                const carModel = car.carModel || `${carClass} Chassis`;
+                const carNumber = car.carNumber || '144';
+                const stintMinutes = car.stintMinutes || 60;
+                const captainName = car.captain || (car.drivers && car.drivers[0]) || '';
+                const stints = car.stints || [];
+
+                // Permissions check: Is current user the captain of this specific team or an Admin?
+                const isCaptain = (userDriverName && captainName && userDriverName.trim().toLowerCase() === captainName.trim().toLowerCase()) || isUserAdmin;
+                if (isCaptain) userIsCaptainOfAny = true;
+
+                // Calculate Driver Stint Counts & Durations
+                const driverStats = {};
+                let uncoveredStints = 0;
+                stints.forEach(s => {
+                    const d = s.driverName || 'Unassigned';
+                    const isUncovered = !s.driverName || s.driverName === 'Unassigned' || s.driverName === 'Driver 1';
+                    if (isUncovered) {
+                        uncoveredStints++;
+                    } else {
+                        driverStats[d] = (driverStats[d] || 0) + (s.plannedDurationMinutes || stintMinutes);
+                    }
+                });
+
+                // Stint Rows
+                let stintRowsHtml = '';
+                if (stints.length === 0) {
+                    stintRowsHtml = `<tr><td colspan="5" style="text-align:center; padding: 2rem; color: var(--text-muted);">No stints scheduled yet for this car entry.</td></tr>`;
+                } else {
+                    stints.forEach(s => {
+                        const isUncovered = !s.driverName || s.driverName === 'Unassigned' || s.driverName === 'Driver 1';
+                        
+                        let badgeClass = 'badge-scheduled';
+                        let statusText = 'SCHEDULED';
+                        if (isUncovered) {
+                            badgeClass = 'badge-uncovered';
+                            statusText = 'UNASSIGNED';
+                        } else if (s.status === 'active') {
+                            badgeClass = 'badge-active';
+                            statusText = 'ON TRACK';
+                        } else if (s.status === 'on_deck') {
+                            badgeClass = 'badge-ondeck';
+                            statusText = 'ON DECK';
+                        } else if (s.status === 'completed') {
+                            badgeClass = 'badge-completed';
+                            statusText = 'COMPLETED';
+                        }
+
+                        stintRowsHtml += `
+                            <tr>
+                                <td style="font-weight: 800; color: var(--primary);">#${s.stintIndex}</td>
+                                <td>
+                                    <strong style="color: ${isUncovered ? '#f87171' : '#ffffff'}; font-size: 0.9rem;">
+                                        ${isUncovered ? '<i class="fas fa-exclamation-triangle" style="margin-right: 4px;"></i> Open Slot' : s.driverName}
+                                    </strong>
+                                </td>
+                                <td style="font-family: monospace; color: rgba(255,255,255,0.75); font-size: 0.8rem;">
+                                    ${s.plannedStartTimeStr || '00:00'} &rarr; ${s.plannedEndTimeStr || '01:00'}
+                                </td>
+                                <td style="font-family: monospace; color: #fff; font-size: 0.8rem;">
+                                    ${s.plannedDurationMinutes || stintMinutes} mins
+                                </td>
+                                <td>
+                                    <span class="stint-status-badge ${badgeClass}">${statusText}</span>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+
+                // Driver Roster Pills
+                const rosterPills = Object.keys(driverStats).map(d => {
+                    const hours = (driverStats[d] / 60).toFixed(1);
+                    return `
+                        <span class="driver-stint-pill">
+                            <i class="fas fa-helmet-safety" style="color: var(--primary); font-size: 0.7rem;"></i>
+                            ${d} <strong>(${hours}h)</strong>
+                        </span>
+                    `;
+                }).join('');
+
+                html += `
+                    <div class="car-stint-card" id="car-card-${cIdx}">
+                        <div class="car-card-header">
+                            <div class="car-identity-block">
+                                <div class="racing-plate">
+                                    <span class="racing-plate-label">CAR</span>
+                                    <span class="racing-plate-num">#${carNumber}</span>
+                                </div>
+                                <div class="schedule-title-area">
+                                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                        <h3 class="schedule-name-heading" id="team-name-display-${cIdx}">
+                                            ${teamName}
+                                        </h3>
+                                        ${isCaptain ? `
+                                            <button type="button" onclick="openRenameModal(${cIdx})" class="edit-schedule-btn" title="Edit this team's schedule name">
+                                                <i class="fas fa-pencil-alt"></i> Edit Name
+                                            </button>
+                                        ` : ''}
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 0.75rem; color: var(--text-muted);">
+                                        <span style="background: rgba(0,207,255,0.12); color: var(--primary); border: 1px solid rgba(0,207,255,0.3); padding: 2px 8px; border-radius: 4px; font-weight: 800;">${carClass}</span>
+                                        <span style="color: #cbd5e1;"><i class="fas fa-car-side" style="margin-right: 4px;"></i> ${carModel}</span>
+                                        <span>&bull;</span>
+                                        <span><i class="fas fa-stopwatch" style="margin-right: 4px;"></i> ${stintMinutes}m Stints</span>
+                                        ${captainName ? `
+                                            <span class="captain-badge">
+                                                <i class="fas fa-crown"></i> Captain: ${captainName}
+                                            </span>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right Stats -->
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                ${uncoveredStints > 0 ? `
+                                    <span style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.35); color: #f87171; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; display: inline-flex; align-items: center; gap: 6px;">
+                                        <i class="fas fa-exclamation-triangle"></i> ${uncoveredStints} Unassigned
+                                    </span>
+                                ` : `
+                                    <span style="background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.35); color: #34d399; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; display: inline-flex; align-items: center; gap: 6px;">
+                                        <i class="fas fa-check-circle"></i> 100% Covered
+                                    </span>
+                                `}
+                            </div>
+                        </div>
+
+                        <!-- Driver Roster Summary -->
+                        <div style="background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--card-border); padding: 0.75rem 1.75rem; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase;">Roster & Drive Time:</span>
+                            ${rosterPills || '<span style="font-size: 0.75rem; color: var(--text-muted);">No drivers assigned yet</span>'}
+                        </div>
+
+                        <!-- Stint Table -->
+                        <div class="stint-table-wrapper">
+                            <table class="stint-run-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 70px;">Stint</th>
+                                        <th>Assigned Driver</th>
+                                        <th>Scheduled Clock Window</th>
+                                        <th>Duration</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${stintRowsHtml}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            });
+
+            canvas.innerHTML = html;
+
+            // Highlight if user is recognized as captain
+            const indicator = document.getElementById('captain-active-indicator');
+            if (indicator) {
+                if (userIsCaptainOfAny) {
+                    indicator.style.display = 'inline-block';
+                    indicator.innerHTML = `<span class="captain-status-pill"><i class="fas fa-crown"></i> Team Captain Access</span>`;
+                } else {
+                    indicator.style.display = 'none';
+                }
+            }
+        }
+
+        // Empty State when event has no published lineups
+        function renderEmptyLineupState(ev) {
+            const canvas = document.getElementById('stints-canvas');
+            canvas.innerHTML = `
+                <div style="background: var(--bg-card); border: 1px dashed var(--card-border); border-radius: 18px; padding: 4rem 2rem; text-align: center; max-width: 750px; margin: 0 auto;">
+                    <i class="fas fa-clipboard-list" style="font-size: 3rem; color: var(--primary); opacity: 0.5; margin-bottom: 1rem; display: block;"></i>
+                    <h3 style="font-family: 'Orbitron', sans-serif; font-size: 1.25rem; color: #fff; margin: 0 0 0.5rem 0;">Stint Schedules in Preparation</h3>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 500px; margin: 0 auto 1.5rem auto; line-height: 1.5;">
+                        Official lineups and stint schedules for <strong>${ev.name || 'this race'}</strong> are currently being drafted in the Team Builder.
+                    </p>
+                    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                        <a href="portal.html" class="btn btn-primary" style="font-size: 0.8rem; padding: 0.6rem 1.25rem; border-radius: 8px;">
+                            Confirm Availability in Portal &rarr;
+                        </a>
+                        <a href="events.html" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.6rem 1.25rem; border-radius: 8px;">
+                            View Event Details
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- Captain Rename Schedule Modal Logic ---
+        function openRenameModal(carIdx) {
+            if (!currentLineupData || !currentLineupData.teams || !currentLineupData.teams[carIdx]) return;
+            editingCarIndex = carIdx;
+            const currentName = currentLineupData.teams[carIdx].name || currentLineupData.teams[carIdx].teamName || '';
+            const input = document.getElementById('rename-input');
+            input.value = currentName;
+            
+            const modal = document.getElementById('rename-modal');
+            modal.classList.add('active');
+            input.focus();
+        }
+
+        function closeRenameModal() {
+            editingCarIndex = -1;
+            const modal = document.getElementById('rename-modal');
+            modal.classList.remove('active');
+        }
+
+        function applyRenamePreset(preset) {
+            const input = document.getElementById('rename-input');
+            if (input) input.value = preset;
+        }
+
+        async function submitScheduleRename() {
+            if (editingCarIndex < 0 || !currentLineupData || !currentLineupData.teams) return;
+            
+            const input = document.getElementById('rename-input');
+            const newName = (input.value || '').trim();
+            if (!newName) {
+                alert("Please enter a valid schedule name.");
+                return;
+            }
+
+            const saveBtn = document.getElementById('save-rename-btn');
+            const origText = saveBtn.innerHTML;
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Saving...`;
+
+            try {
+                // Update local teams array
+                const updatedTeams = [...currentLineupData.teams];
+                updatedTeams[editingCarIndex].name = newName;
+                updatedTeams[editingCarIndex].teamName = newName;
+
+                // Save to Firestore
+                await db.collection("race_lineups").doc(currentEventId).set({
+                    teams: updatedTeams,
+                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+
+                closeRenameModal();
+                showToast(`Schedule name updated to "${newName}"!`);
+            } catch (err) {
+                console.error("Error saving team name:", err);
+                alert("Failed to save schedule name: " + err.message);
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = origText;
+            }
+        }
+
+        // Close modal on Escape or backdrop click
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeRenameModal();
+        });
+        document.getElementById('rename-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'rename-modal') closeRenameModal();
+        });
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', initStintsPage);
+    </script>
+</body>
+</html>
