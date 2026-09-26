@@ -2490,6 +2490,7 @@
         }
 
         const DEFAULT_GRIDUP_TEAMS = [
+            "GRiD UP Sim Racing",
             "GRiD UP Blue",
             "GRiD UP Black",
             "GRiD UP Red",
@@ -2670,8 +2671,8 @@
 
                 window._adminBuilderCars = [{
                     carNumber: "144",
-                    name: "GRiD UP Blue",
-                    teamName: "GRiD UP Blue",
+                    name: "GRiD UP Sim Racing",
+                    teamName: "GRiD UP Sim Racing",
                     car_class: primaryClass,
                     carModel: defaultModel,
                     stintMinutes: defaultStint,
@@ -2762,8 +2763,8 @@
 
                 const isStintsOpen = !!window._adminOpenStints[cIdx];
 
-                // Team Options Dropdown: Strictly GRiD UP Blue, Black, Red, White, Purple
-                let currentTeamName = (car.name || car.teamName || 'GRiD UP Blue').replace(/Esports\s*/gi, '').replace(/\s+/g, ' ').trim();
+                // Team Options Dropdown: GRiD UP Sim Racing, Blue, Black, Red, White, Purple
+                let currentTeamName = (car.name || car.teamName || 'GRiD UP Sim Racing').replace(/Esports\s*/gi, '').replace(/\s+/g, ' ').trim();
                 car.name = currentTeamName;
                 car.teamName = currentTeamName;
 
