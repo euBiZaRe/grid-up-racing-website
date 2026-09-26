@@ -136,6 +136,7 @@
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script defer src="../js/stint-planner.js?v=1"></script>
     <script defer src="../script.js?v=24"></script>
     <script defer src="../js/auth.js?v=11"></script>
     <script>
@@ -205,6 +206,92 @@
                 setTimeout(() => loading.style.display = 'none', 500);
             }
         }
+
+        
+        async function loadRaceLineup(eventId) {
+            const container = document.getElementById('confirmed-lineup');
+            if (!container) return;
+            
+            try {
+                const doc = await db.collection("race_lineups").doc(eventId).get();
+                if (!doc.exists || !doc.data().teams || doc.data().teams.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 1.5rem; color: var(--text-muted);">
+                            <p style="font-size: 0.85rem; margin-bottom: 1rem;">Lineup is currently being finalized.</p>
+                            <a href="../portal.html" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.4rem 0.8rem; border-radius: 6px;">Sign Up in Portal &rarr;</a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const teams = doc.data().teams;
+                let html = '';
+
+                teams.forEach((team, tIdx) => {
+                    const driversList = Array.isArray(team.drivers) ? team.drivers : [];
+                    const stintsList = Array.isArray(team.stints) ? team.stints : [];
+                    const carClass = team.car_class || team.carClass || 'GT3';
+                    const stintMins = team.stintMinutes || 60;
+
+                    html += `
+                        <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.25rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                                <span style="background: rgba(0,207,255,0.15); border: 1px solid var(--primary); color: var(--primary); padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 800;">
+                                    #${team.carNumber || '144'} &bull; ${carClass}
+                                </span>
+                                <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">${stintMins}m Stints</span>
+                            </div>
+                            <h4 style="margin: 0 0 0.5rem 0; font-size: 1rem; color: #fff;">${team.name || team.teamName || 'GRiD UP Team'}</h4>
+                            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+                                <strong>Roster:</strong> ${driversList.length > 0 ? driversList.map(d => `<span style="display:inline-block; background:rgba(255,255,255,0.04); padding:2px 6px; border-radius:4px; margin:2px; color:#e5e7eb;">${d}</span>`).join(' ') : 'TBD'}
+                            </div>
+
+                            ${stintsList.length > 0 ? `
+                                <button onclick="toggleStintRunSheet('stint-modal-${tIdx}')" class="btn btn-outline" style="width: 100%; font-size: 0.7rem; padding: 0.4rem; border-radius: 6px; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                                    View Stint Run-Sheet (${stintsList.length} Stints)
+                                </button>
+                                <div id="stint-modal-${tIdx}" style="display: none; margin-top: 0.75rem; background: rgba(0,0,0,0.4); border-radius: 8px; padding: 0.5rem; max-height: 220px; overflow-y: auto;">
+                                    <table style="width: 100%; border-collapse: collapse; font-size: 0.7rem;">
+                                        <thead>
+                                            <tr style="color: var(--text-muted); border-bottom: 1px solid rgba(255,255,255,0.06);">
+                                                <th style="padding: 4px; text-align: left;">Stint</th>
+                                                <th style="padding: 4px; text-align: left;">Driver</th>
+                                                <th style="padding: 4px; text-align: right;">Clock</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${stintsList.map(s => `
+                                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.02);">
+                                                    <td style="padding: 4px; font-weight: bold; color: var(--primary);">#${s.stintIndex}</td>
+                                                    <td style="padding: 4px; color: #fff;">${s.driverName || 'TBD'}</td>
+                                                    <td style="padding: 4px; text-align: right; font-family: monospace; color: var(--text-muted);">${s.plannedStartTimeStr} - ${s.plannedEndTimeStr}</td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                });
+
+                html += `
+                    <div style="text-align: center; margin-top: 0.5rem;">
+                        <a href="../portal.html" style="font-size: 0.75rem; color: var(--primary); text-decoration: none;">Are you a GRiD UP driver? Manage stints in Portal &rarr;</a>
+                    </div>
+                `;
+
+                container.innerHTML = html;
+            } catch (e) {
+                console.error("Error loading race lineup:", e);
+                container.innerHTML = '<div style="color: var(--text-muted); font-size: 0.8rem; text-align: center;">Could not load lineup.</div>';
+            }
+        }
+
+        window.toggleStintRunSheet = function(id) {
+            const el = document.getElementById(id);
+            if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+        };
 
         window.addEventListener('load', loadDynamicEvent);
     </script>

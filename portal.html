@@ -94,6 +94,166 @@
 
     </style>
 
+
+    <!-- Stint Planner & Team Builder Styles -->
+    <style>
+        /* Availability Matrix Styles */
+        .avail-matrix-container {
+            margin-top: 1.25rem;
+            padding-top: 1.25rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .avail-pref-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+        @media (max-width: 600px) {
+            .avail-pref-row { grid-template-columns: 1fr; }
+        }
+        .avail-block-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(65px, 1fr));
+            gap: 6px;
+            margin-top: 0.75rem;
+            max-height: 190px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .avail-block {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 8px 4px;
+            text-align: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s ease;
+        }
+        .avail-block.pref {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: #10b981;
+            color: #34d399;
+        }
+        .avail-block.avail {
+            background: rgba(245, 158, 11, 0.2);
+            border-color: #f59e0b;
+            color: #fbbf24;
+        }
+        .avail-block.unavail {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: #ef4444;
+            color: #f87171;
+        }
+
+        /* Team Builder Studio Styles */
+        .builder-canvas {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            margin-top: 1.5rem;
+        }
+        .builder-car-card {
+            background: rgba(20, 20, 25, 0.6);
+            border: 1px solid rgba(0, 207, 255, 0.2);
+            border-radius: 16px;
+            padding: 1.75rem;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+        .stint-presets-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin: 0.75rem 0 1.25rem;
+        }
+        .stint-preset-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            border-radius: 8px;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .stint-preset-btn:hover, .stint-preset-btn.active {
+            background: rgba(0, 207, 255, 0.15);
+            border-color: var(--primary);
+            color: #fff;
+        }
+        .stint-run-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            margin-top: 1rem;
+        }
+        .stint-run-table th {
+            text-align: left;
+            padding: 0.6rem 0.8rem;
+            color: var(--text-muted);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .stint-run-table td {
+            padding: 0.65rem 0.8rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+        .stint-status-badge {
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 3px 8px;
+            border-radius: 6px;
+            display: inline-block;
+            letter-spacing: 0.05em;
+        }
+        .badge-scheduled { background: rgba(107, 114, 128, 0.2); color: #9ca3af; border: 1px solid rgba(107, 114, 128, 0.3); }
+        .badge-ondeck { background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid #f59e0b; animation: pulse-ondeck 1.5s infinite; }
+        .badge-active { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; }
+        .badge-completed { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+
+        @keyframes pulse-ondeck {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.75; transform: scale(1.03); }
+        }
+
+        /* Live HUD Widget */
+        .live-hud-card {
+            background: linear-gradient(135deg, rgba(20, 20, 25, 0.9), rgba(10, 10, 15, 0.95));
+            border: 1px solid rgba(0, 207, 255, 0.25);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+        }
+        .hud-metric-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 1rem;
+            margin-top: 1.25rem;
+        }
+        .hud-metric-box {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+        }
+        .hud-metric-val {
+            font-size: 1.25rem;
+            font-weight: 900;
+            color: #fff;
+            margin-top: 0.25rem;
+            font-family: var(--font-heading);
+        }
+    </style>
+
 </head>
 
 <body class="member-portal-page">
@@ -192,6 +352,7 @@
                 <div class="portal-tab" onclick="switchTab('setups')"><i class="fas fa-file-export"></i> Setups</div>
 
                 <div class="portal-tab" onclick="switchTab('telemetry')"><i class="fas fa-stopwatch"></i> Lap Times</div>
+                <div class="portal-tab" onclick="switchTab('stints')"><i class="fas fa-flag-checkered"></i> Stint Strategy</div>
 
             </div>
 
@@ -311,6 +472,78 @@
 
                 </div>
 
+                    <!-- Stint Strategy Tab -->
+                    <div id="tab-stints" class="tab-content glass" style="display: none; padding: 2.5rem; border-radius: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+                            <div>
+                                <h2 style="font-size: 1.5rem; color: var(--primary); margin: 0;">Live Stint Command & Strategy</h2>
+                                <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.25rem;">Real-time stint progression, telemetry fuel window tracking, and run-sheet.</p>
+                            </div>
+                            <div style="display: flex; gap: 0.75rem;">
+                                <button onclick="triggerManualDriverSwap()" class="btn btn-outline" style="font-size: 0.75rem; border-color: #f59e0b; color: #f59e0b; border-radius: 8px;">
+                                    <i class="fas fa-user-friends" style="margin-right: 6px;"></i> Swap Driver Now
+                                </button>
+                                <button onclick="extendCurrentStint(5)" class="btn btn-outline" style="font-size: 0.75rem; border-radius: 8px;">
+                                    <i class="fas fa-clock" style="margin-right: 6px;"></i> +5m Stint
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Live Telemetry HUD Bar -->
+                        <div class="live-hud-card" id="stint-live-hud">
+                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 0.75rem;">
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #10b981; box-shadow: 0 0 10px #10b981;"></span>
+                                    <span style="font-weight: 800; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: #fff;">Telemetry Live Stream</span>
+                                </div>
+                                <div id="stint-on-deck-banner" style="display: none; background: rgba(245, 158, 11, 0.15); border: 1px solid #f59e0b; padding: 4px 12px; border-radius: 20px; color: #f59e0b; font-size: 0.75rem; font-weight: 800;">
+                                    <i class="fas fa-bell"></i> ON DECK: <span id="on-deck-driver-name">Next Driver</span> (~<span id="on-deck-minutes-left">10</span>m to pit)
+                                </div>
+                            </div>
+
+                            <div class="hud-metric-row">
+                                <div class="hud-metric-box">
+                                    <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">Active Cockpit</span>
+                                    <div class="hud-metric-val" id="hud-active-driver" style="color: #00cfff;">--</div>
+                                </div>
+                                <div class="hud-metric-box">
+                                    <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">Stint Laps</span>
+                                    <div class="hud-metric-val" id="hud-stint-laps">0</div>
+                                </div>
+                                <div class="hud-metric-box">
+                                    <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">Fuel Remaining</span>
+                                    <div class="hud-metric-val" id="hud-stint-fuel">-- <span style="font-size: 0.75rem; color: var(--text-muted);">L</span></div>
+                                </div>
+                                <div class="hud-metric-box">
+                                    <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">Est. Fuel Window</span>
+                                    <div class="hud-metric-val" id="hud-stint-est-window" style="color: #f59e0b;">-- <span style="font-size: 0.75rem; color: var(--text-muted);">mins</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stint Run Sheet Table -->
+                        <div style="background: rgba(10, 10, 12, 0.5); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; overflow: hidden;">
+                            <table class="stint-run-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 70px;">Stint</th>
+                                        <th>Driver</th>
+                                        <th>Planned Window</th>
+                                        <th>Laps Completed</th>
+                                        <th>Status</th>
+                                        <th style="text-align: right;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="stint-run-tbody">
+                                    <!-- Injected dynamically -->
+                                    <tr><td colspan="6" style="text-align:center; padding: 2rem; color: var(--text-muted);">Loading stint run-sheet...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+
+
 
 
                 <!-- Sidebar -->
@@ -418,6 +651,8 @@
 
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
 
+    <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    <script defer src="js/stint-planner.js?v=1"></script>
     <script defer src="js/auth.js?v=11"></script>
 
     <script>
@@ -473,6 +708,7 @@
             if (tabId === 'setups') loadSetups();
 
             if (tabId === 'telemetry') loadTelemetry();
+            if (tabId === 'stints') initPortalStintView();
 
         }
 
@@ -2004,6 +2240,626 @@
 
         }
 
+
+
+        
+        // ==========================================
+        // ENHANCED EVENT SIGNUP & AVAILABILITY MATRIX
+        // ==========================================
+        window._driverAvailabilityDrafts = {}; // eventId -> { hourly: {}, class: '', car: '', stints: '' }
+
+        function getEventDurationHours(event) {
+            if (event.durationHours) return parseFloat(event.durationHours);
+            if (event.distance) {
+                const match = event.distance.match(/(\d+)\s*(?:hour|hr|h)/i);
+                if (match) return parseInt(match[1]);
+            }
+            if (event.name) {
+                const match = event.name.match(/(\d+)\s*(?:hour|hr|h)/i);
+                if (match) return parseInt(match[1]);
+            }
+            return 6; // Default to 6 hours for endurance
+        }
+
+        async function populateAvailability() {
+            const availGrid = document.getElementById('availability-grid');
+            if (!availGrid) return;
+            availGrid.innerHTML = '';
+
+            for (const event of UPCOMING_EVENTS) {
+                const eventHours = getEventDurationHours(event);
+                let currentStatus = null;
+                let userResponseData = {};
+
+                try {
+                    const statusDoc = await db.collection("event_availability").doc(event.id).collection("responses").doc(auth.currentUser.uid).get();
+                    if (statusDoc.exists) {
+                        userResponseData = statusDoc.data();
+                        currentStatus = userResponseData.status;
+                    }
+                } catch (e) {
+                    console.warn("Could not fetch status for", event.id);
+                }
+
+                if (!window._driverAvailabilityDrafts[event.id]) {
+                    window._driverAvailabilityDrafts[event.id] = {
+                        hourly: userResponseData.hourlyAvailability || {},
+                        preferredClass: userResponseData.preferredClass || (event.classes && event.classes[0]) || 'GT3',
+                        preferredChassis: userResponseData.preferredChassis || '',
+                        targetStints: userResponseData.targetStints || '2-3',
+                        status: currentStatus || null
+                    };
+                }
+                const draft = window._driverAvailabilityDrafts[event.id];
+
+                const card = document.createElement('div');
+                card.className = "card glass event-card";
+                card.setAttribute('data-event-id', event.id);
+                card.style.padding = "1.75rem";
+                card.style.borderRadius = "16px";
+
+                let statusBadge = '<span style="color: var(--text-muted); font-size: 0.7rem;">Not Submitted</span>';
+                if (currentStatus === 'signed_up') statusBadge = '<span style="color: #10b981; font-weight: 800; font-size: 0.75rem; background: rgba(16,185,129,0.15); padding: 3px 8px; border-radius: 6px;">🟢 SIGNED UP</span>';
+                if (currentStatus === 'tentative') statusBadge = '<span style="color: #f59e0b; font-weight: 800; font-size: 0.75rem; background: rgba(245,158,11,0.15); padding: 3px 8px; border-radius: 6px;">🟡 TENTATIVE</span>';
+                if (currentStatus === 'unavailable') statusBadge = '<span style="color: #ef4444; font-weight: 800; font-size: 0.75rem; background: rgba(239,68,68,0.15); padding: 3px 8px; border-radius: 6px;">🔴 UNAVAILABLE</span>';
+
+                // Hourly Availability Blocks HTML
+                let hourBlocksHtml = '';
+                for (let h = 0; h < eventHours; h++) {
+                    const blockState = draft.hourly[h] || 'avail'; // 'pref' | 'avail' | 'unavail'
+                    const stateLabel = blockState === 'pref' ? '★ PREF' : blockState === 'avail' ? 'OPEN' : 'BLOCKED';
+                    hourBlocksHtml += `
+                        <div class="avail-block ${blockState}" onclick="toggleHourBlockState('${event.id}', ${h}, this)" title="Click to toggle availability: Preferred > Available > Blocked">
+                            <div style="font-size: 0.6rem; opacity: 0.7;">H${h+1}</div>
+                            <div>${stateLabel}</div>
+                        </div>
+                    `;
+                }
+
+                // Car Class Dropdown
+                const classOptions = (event.classes && event.classes.length > 0) ? event.classes : ['LMP2', 'GT3', 'GTP', 'GT4'];
+                let classSelectHtml = classOptions.map(c => `<option value="${c}" ${draft.preferredClass === c ? 'selected' : ''}>${c}</option>`).join('');
+
+                card.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                        <div>
+                            <span class="event-meta" style="color: var(--primary); font-weight: 800; letter-spacing: 1px;">${event.date || 'TBA'} &bull; ${eventHours}H RACE</span>
+                            <h3 style="font-size: 1.25rem; margin-top: 0.25rem;">${event.name}</h3>
+                        </div>
+                        <div style="text-align: right;">
+                            <div id="countdown-${event.id}" style="font-size: 0.65rem; font-weight: 700; color: var(--primary); font-family: monospace; background: rgba(0,207,255,0.1); padding: 3px 8px; border-radius: 6px; margin-bottom: 0.4rem;">--:--:--</div>
+                            ${statusBadge}
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 0.5rem; margin-top: 1rem; margin-bottom: 1.25rem;">
+                        <button onclick="setDriverStatus('${event.id}', 'signed_up')" class="btn ${currentStatus === 'signed_up' ? 'btn-primary' : 'btn-outline'}" style="flex: 1; padding: 0.5rem; font-size: 0.7rem; border-radius: 8px;">
+                            <i class="fas fa-check-circle" style="margin-right: 4px;"></i> I'm In
+                        </button>
+                        <button onclick="setDriverStatus('${event.id}', 'tentative')" class="btn ${currentStatus === 'tentative' ? 'btn-primary' : 'btn-outline'}" style="flex: 1; padding: 0.5rem; font-size: 0.7rem; border-radius: 8px; ${currentStatus === 'tentative' ? 'background: #f59e0b; border-color: #f59e0b;' : ''}">
+                            <i class="fas fa-question-circle" style="margin-right: 4px;"></i> Tentative
+                        </button>
+                        <button onclick="setDriverStatus('${event.id}', 'unavailable')" class="btn ${currentStatus === 'unavailable' ? 'btn-primary' : 'btn-outline'}" style="flex: 1; padding: 0.5rem; font-size: 0.7rem; border-radius: 8px; ${currentStatus === 'unavailable' ? 'background: #ef4444; border-color: #ef4444;' : ''}">
+                            <i class="fas fa-times-circle" style="margin-right: 4px;"></i> Unavailable
+                        </button>
+                    </div>
+
+                    ${currentStatus === 'signed_up' || currentStatus === 'tentative' ? `
+                        <div class="avail-matrix-container">
+                            <div class="avail-pref-row">
+                                <div>
+                                    <label style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 0.35rem;">Class Preference</label>
+                                    <select onchange="updateDraftField('${event.id}', 'preferredClass', this.value)" class="btn btn-outline" style="width: 100%; font-size: 0.75rem; padding: 0.45rem; border-radius: 8px;">
+                                        ${classSelectHtml}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 0.35rem;">Preferred Chassis / Car</label>
+                                    <input type="text" value="${draft.preferredChassis || ''}" placeholder="e.g. Ferrari 296, Dallara P217" oninput="updateDraftField('${event.id}', 'preferredChassis', this.value)" class="btn btn-outline" style="width: 100%; font-size: 0.75rem; padding: 0.45rem; text-align: left; border-radius: 8px;">
+                                </div>
+                            </div>
+
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                                <label style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Availability Matrix (${eventHours} Hours)</label>
+                                <span style="font-size: 0.65rem; color: var(--primary);">🟢 Preferred &bull; 🟡 Open &bull; 🔴 Blocked</span>
+                            </div>
+                            <div class="avail-block-grid">
+                                ${hourBlocksHtml}
+                            </div>
+
+                            <div style="margin-top: 1.25rem; display: flex; justify-content: flex-end;">
+                                <button onclick="saveFullAvailability('${event.id}')" class="btn btn-primary" style="padding: 0.5rem 1.5rem; font-size: 0.75rem; border-radius: 8px;">
+                                    <i class="fas fa-save" style="margin-right: 6px;"></i> Save Preferences & Availability
+                                </button>
+                            </div>
+                        </div>
+                    ` : ''}
+                `;
+
+                availGrid.appendChild(card);
+            }
+
+            startCountdowns();
+        }
+
+        window.toggleHourBlockState = function(eventId, hourIdx, element) {
+            const draft = window._driverAvailabilityDrafts[eventId];
+            if (!draft) return;
+            const current = draft.hourly[hourIdx] || 'avail';
+            let next = 'pref';
+            if (current === 'pref') next = 'avail';
+            else if (current === 'avail') next = 'unavail';
+            else if (current === 'unavail') next = 'pref';
+
+            draft.hourly[hourIdx] = next;
+            element.className = `avail-block ${next}`;
+            element.querySelector('div:last-child').textContent = next === 'pref' ? '★ PREF' : next === 'avail' ? 'OPEN' : 'BLOCKED';
+        };
+
+        window.updateDraftField = function(eventId, field, value) {
+            if (!window._driverAvailabilityDrafts[eventId]) return;
+            window._driverAvailabilityDrafts[eventId][field] = value;
+        };
+
+        window.setDriverStatus = async function(eventId, status) {
+            try {
+                const docRef = db.collection("event_availability").doc(eventId).collection("responses").doc(auth.currentUser.uid);
+                const currentDoc = await docRef.get();
+                const currentStatus = currentDoc.exists ? currentDoc.data().status : null;
+
+                if (currentStatus === status && status === 'unavailable') {
+                    await docRef.delete();
+                } else {
+                    const myName = userProfile.driverName || auth.currentUser.displayName;
+                    const draft = window._driverAvailabilityDrafts[eventId] || {};
+                    await docRef.set({
+                        status: status,
+                        driverName: myName,
+                        preferredClass: draft.preferredClass || 'GT3',
+                        preferredChassis: draft.preferredChassis || '',
+                        targetStints: draft.targetStints || '2-3',
+                        hourlyAvailability: draft.hourly || {},
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    }, { merge: true });
+                }
+
+                populateAvailability();
+                if (isAdminUser) loadAdminAvailability();
+            } catch (err) {
+                console.error("Error setting availability status:", err);
+                alert("Could not update status: " + err.message);
+            }
+        };
+
+        window.saveFullAvailability = async function(eventId) {
+            try {
+                const draft = window._driverAvailabilityDrafts[eventId];
+                if (!draft) return;
+                const myName = userProfile.driverName || auth.currentUser.displayName;
+
+                await db.collection("event_availability").doc(eventId).collection("responses").doc(auth.currentUser.uid).set({
+                    status: draft.status || 'signed_up',
+                    driverName: myName,
+                    preferredClass: draft.preferredClass,
+                    preferredChassis: draft.preferredChassis,
+                    targetStints: draft.targetStints,
+                    hourlyAvailability: draft.hourly,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+
+                alert("Your availability and preferences have been saved!");
+                populateAvailability();
+                if (isAdminUser) loadAdminAvailability();
+            } catch (err) {
+                console.error("Save error:", err);
+                alert("Error saving: " + err.message);
+            }
+        };
+
+
+        // ==========================================
+        // ADMIN TEAM BUILDER STUDIO & STINT CONFIG
+        // ==========================================
+        window._activeBuilderEventId = null;
+        window._builderCars = []; // Array of car objects
+
+        async function loadAdminAvailability() {
+            const resultsDiv = document.getElementById('admin-availability-results');
+            if (!resultsDiv) return;
+
+            if (!window._activeBuilderEventId && UPCOMING_EVENTS.length > 0) {
+                window._activeBuilderEventId = UPCOMING_EVENTS[0].id;
+            }
+
+            const currentEvent = UPCOMING_EVENTS.find(e => e.id === window._activeBuilderEventId) || UPCOMING_EVENTS[0];
+            const eventDuration = currentEvent ? getEventDurationHours(currentEvent) : 6;
+
+            // Fetch all signups for active event
+            let responses = [];
+            try {
+                const snap = await db.collection("event_availability").doc(window._activeBuilderEventId).collection("responses").get();
+                snap.forEach(doc => responses.push({ id: doc.id, ...doc.data() }));
+            } catch (e) {
+                console.warn("Could not load responses for team builder:", e);
+            }
+
+            // Fetch existing published teams for this event from race_lineups
+            try {
+                const lineupDoc = await db.collection("race_lineups").doc(window._activeBuilderEventId).get();
+                if (lineupDoc.exists && Array.isArray(lineupDoc.data().teams) && window._builderCars.length === 0) {
+                    window._builderCars = lineupDoc.data().teams;
+                }
+            } catch (e) {
+                console.warn("Could not load existing lineups:", e);
+            }
+
+            // If still empty, seed a default car
+            if (window._builderCars.length === 0) {
+                window._builderCars = [{
+                    carNumber: "144",
+                    teamName: "GRiD UP Esports Blue",
+                    car_class: "LMP2",
+                    carModel: "Dallara P217",
+                    stintMinutes: 45,
+                    captain: "",
+                    drivers: [],
+                    stints: window.GridUpStintPlanner.generateStintSchedule({
+                        durationHours: eventDuration,
+                        stintMinutes: 45,
+                        drivers: ['Driver 1'],
+                        carNumber: '144',
+                        carClass: 'LMP2'
+                    }).stints
+                }];
+            }
+
+            let eventOptionsHtml = UPCOMING_EVENTS.map(e => `<option value="${e.id}" ${e.id === window._activeBuilderEventId ? 'selected' : ''}>${e.name}</option>`).join('');
+
+            // Render Signups Pool summary
+            let driverPoolHtml = '';
+            if (responses.length === 0) {
+                driverPoolHtml = `<p style="color: var(--text-muted); font-size: 0.8rem;">No drivers have submitted sign-ups for this event yet.</p>`;
+            } else {
+                driverPoolHtml = `
+                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                        ${responses.map(d => {
+                            const statusColor = d.status === 'signed_up' ? '#10b981' : d.status === 'tentative' ? '#f59e0b' : '#ef4444';
+                            return `
+                                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 0.5rem 0.85rem; border-radius: 8px; font-size: 0.75rem; display: flex; align-items: center; gap: 6px;">
+                                    <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${statusColor};"></span>
+                                    <strong>${d.driverName || 'Driver'}</strong>
+                                    <span style="color: var(--primary); font-size: 0.65rem;">[${d.preferredClass || 'GT3'}]</span>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+            }
+
+            // Render Builder Cars
+            let carsHtml = '';
+            window._builderCars.forEach((car, cIdx) => {
+                const stintMinutes = car.stintMinutes || 60;
+                const totalStints = Math.ceil((eventDuration * 60) / stintMinutes);
+
+                // Ensure stints array exists and matches totalStints
+                if (!car.stints || car.stints.length !== totalStints) {
+                    const generated = window.GridUpStintPlanner.generateStintSchedule({
+                        durationHours: eventDuration,
+                        stintMinutes: stintMinutes,
+                        drivers: car.drivers && car.drivers.length > 0 ? car.drivers : ['Driver 1'],
+                        carNumber: car.carNumber,
+                        carClass: car.car_class
+                    });
+                    car.stints = generated.stints;
+                }
+
+                // Stint Rows
+                let stintRowsHtml = '';
+                let uncoveredCount = 0;
+                car.stints.forEach((s, sIdx) => {
+                    const isUncovered = !s.driverName || s.driverName === 'Driver 1' || s.driverName === 'Unassigned';
+                    if (isUncovered) uncoveredCount++;
+
+                    let driverOptions = `<option value="">-- Assign Driver --</option>`;
+                    responses.forEach(r => {
+                        const name = r.driverName || 'Driver';
+                        driverOptions += `<option value="${name}" ${s.driverName === name ? 'selected' : ''}>${name} (${r.preferredClass || 'GT3'})</option>`;
+                    });
+
+                    stintRowsHtml += `
+                        <tr>
+                            <td style="font-weight: 800; color: var(--primary);">#${s.stintIndex}</td>
+                            <td>
+                                <select onchange="updateCarStintDriver(${cIdx}, ${sIdx}, this.value)" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.35rem; width: 100%; border-radius: 6px;">
+                                    ${driverOptions}
+                                </select>
+                            </td>
+                            <td style="font-family: monospace; color: var(--text-muted); font-size: 0.75rem;">${s.plannedStartTimeStr} - ${s.plannedEndTimeStr}</td>
+                            <td style="font-size: 0.75rem;">${s.plannedDurationMinutes}m</td>
+                            <td>
+                                ${isUncovered ? `<span class="stint-status-badge badge-uncovered" style="background:#ef4444; color:#fff;">UNASSIGNED</span>` : `<span class="stint-status-badge badge-scheduled">READY</span>`}
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                carsHtml += `
+                    <div class="builder-car-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 1rem; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div style="background: rgba(0,207,255,0.1); border: 1px solid var(--primary); padding: 0.4rem 0.8rem; border-radius: 8px; font-weight: 900; font-size: 1.25rem; color: var(--primary);">
+                                    #<input type="text" value="${car.carNumber || '144'}" oninput="updateCarField(${cIdx}, 'carNumber', this.value)" style="background:transparent; border:none; color:var(--primary); font-weight:900; width:50px; font-size:1.25rem;">
+                                </div>
+                                <div>
+                                    <input type="text" value="${car.name || car.teamName || 'GRiD UP Esports'}" oninput="updateCarField(${cIdx}, 'name', this.value); updateCarField(${cIdx}, 'teamName', this.value);" style="background:transparent; border:1px dashed rgba(255,255,255,0.15); color:#fff; font-weight:800; font-size:1.1rem; padding: 2px 6px; border-radius: 4px;">
+                                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">
+                                        Class: 
+                                        <select onchange="updateCarField(${cIdx}, 'car_class', this.value)" class="btn btn-outline" style="padding: 2px 6px; font-size: 0.7rem; border-radius: 4px;">
+                                            <option value="LMP2" ${car.car_class === 'LMP2' ? 'selected' : ''}>LMP2</option>
+                                            <option value="GT3" ${car.car_class === 'GT3' ? 'selected' : ''}>GT3</option>
+                                            <option value="GTP" ${car.car_class === 'GTP' ? 'selected' : ''}>GTP</option>
+                                            <option value="GT4" ${car.car_class === 'GT4' ? 'selected' : ''}>GT4</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                ${uncoveredCount > 0 ? `<span style="background: rgba(239,68,68,0.2); border: 1px solid #ef4444; color: #f87171; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 800;"><i class="fas fa-exclamation-triangle"></i> ${uncoveredCount} Gaps</span>` : `<span style="background: rgba(16,185,129,0.2); border: 1px solid #10b981; color: #34d399; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 800;"><i class="fas fa-check"></i> Complete</span>`}
+                                <button onclick="removeBuilderCar(${cIdx})" class="btn btn-outline" style="color: #ef4444; border-color: rgba(239,68,68,0.4); padding: 0.4rem 0.8rem; font-size: 0.75rem; border-radius: 8px;"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Per-Car Stint Length Configurator -->
+                        <div>
+                            <label style="font-size: 0.7rem; color: var(--primary); text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px;">
+                                <i class="fas fa-stopwatch"></i> Per-Car Stint Duration Configurator (${eventDuration}h Race &rarr; ${totalStints} Total Stints)
+                            </label>
+                            <div class="stint-presets-group">
+                                <button onclick="setCarStintMinutes(${cIdx}, 30)" class="stint-preset-btn ${stintMinutes === 30 ? 'active' : ''}">30m (Restricted Fuel)</button>
+                                <button onclick="setCarStintMinutes(${cIdx}, 45)" class="stint-preset-btn ${stintMinutes === 45 ? 'active' : ''}">45m (LMP2 / GTP)</button>
+                                <button onclick="setCarStintMinutes(${cIdx}, 60)" class="stint-preset-btn ${stintMinutes === 60 ? 'active' : ''}">60m (GT3 Standard)</button>
+                                <button onclick="setCarStintMinutes(${cIdx}, 90)" class="stint-preset-btn ${stintMinutes === 90 ? 'active' : ''}">90m (Double)</button>
+                                <button onclick="setCarStintMinutes(${cIdx}, 120)" class="stint-preset-btn ${stintMinutes === 120 ? 'active' : ''}">120m (Double GT3)</button>
+                                <div style="display: flex; align-items: center; gap: 4px;">
+                                    <input type="number" value="${stintMinutes}" onchange="setCarStintMinutes(${cIdx}, this.value)" style="width: 60px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color:#fff; padding: 4px; border-radius: 6px; font-size: 0.75rem; text-align: center;">
+                                    <span style="font-size: 0.7rem; color: var(--text-muted);">mins</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stint Slotting Table -->
+                        <div style="background: rgba(10,10,12,0.5); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; overflow: hidden;">
+                            <table class="stint-run-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 60px;">Slot</th>
+                                        <th>Assigned Driver</th>
+                                        <th>Race Clock</th>
+                                        <th>Duration</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${stintRowsHtml}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            });
+
+            resultsDiv.innerHTML = `
+                <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <h3 style="font-size: 1.3rem; margin: 0; color: #fff;">Team Builder Studio</h3>
+                        <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.25rem;">Form car entries, configure per-car stint windows, and publish official run-sheets.</p>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <select onchange="window._activeBuilderEventId = this.value; loadAdminAvailability();" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.5rem 1rem; border-radius: 8px;">
+                            ${eventOptionsHtml}
+                        </select>
+                        <button onclick="publishBuilderLineups()" class="btn btn-primary" style="font-size: 0.8rem; padding: 0.5rem 1.5rem; border-radius: 8px;">
+                            <i class="fas fa-cloud-upload-alt" style="margin-right: 6px;"></i> Publish Official Lineups & Stints
+                        </button>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 2rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 1.25rem;">
+                    <div style="font-size: 0.7rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem;">Driver Pool & Availability (${responses.length} Signed Up)</div>
+                    ${driverPoolHtml}
+                </div>
+
+                <div class="builder-canvas">
+                    ${carsHtml}
+                    <button onclick="addBuilderCar()" class="btn btn-outline" style="border-style: dashed; padding: 1rem; border-radius: 12px; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px;">
+                        <i class="fas fa-plus-circle" style="margin-right: 8px;"></i> Add Car Entry
+                    </button>
+                </div>
+            `;
+        }
+
+        window.updateCarField = function(carIdx, field, val) {
+            if (window._builderCars[carIdx]) {
+                window._builderCars[carIdx][field] = val;
+            }
+        };
+
+        window.setCarStintMinutes = function(carIdx, minutes) {
+            const mins = parseInt(minutes) || 60;
+            if (window._builderCars[carIdx]) {
+                window._builderCars[carIdx].stintMinutes = mins;
+                loadAdminAvailability();
+            }
+        };
+
+        window.updateCarStintDriver = function(carIdx, stintIdx, driverName) {
+            const car = window._builderCars[carIdx];
+            if (car && car.stints && car.stints[stintIdx]) {
+                car.stints[stintIdx].driverName = driverName;
+                // Keep drivers list in sync
+                const allAssigned = [...new Set(car.stints.map(s => s.driverName).filter(Boolean))];
+                car.drivers = allAssigned;
+                if (!car.captain && allAssigned.length > 0) car.captain = allAssigned[0];
+            }
+        };
+
+        window.addBuilderCar = function() {
+            const event = UPCOMING_EVENTS.find(e => e.id === window._activeBuilderEventId);
+            const duration = event ? getEventDurationHours(event) : 6;
+            const nextNum = 140 + window._builderCars.length;
+            window._builderCars.push({
+                carNumber: String(nextNum),
+                name: `GRiD UP Esports #${nextNum}`,
+                teamName: `GRiD UP Esports #${nextNum}`,
+                car_class: "GT3",
+                carModel: "GT3 Chassis",
+                stintMinutes: 60,
+                captain: "",
+                drivers: [],
+                stints: window.GridUpStintPlanner.generateStintSchedule({
+                    durationHours: duration,
+                    stintMinutes: 60,
+                    drivers: ['Driver 1'],
+                    carNumber: String(nextNum),
+                    carClass: 'GT3'
+                }).stints
+            });
+            loadAdminAvailability();
+        };
+
+        window.removeBuilderCar = function(carIdx) {
+            if (confirm("Remove this car entry?")) {
+                window._builderCars.splice(carIdx, 1);
+                loadAdminAvailability();
+            }
+        };
+
+        window.publishBuilderLineups = async function() {
+            if (!window._activeBuilderEventId) return;
+            try {
+                const eventDocRef = db.collection("race_lineups").doc(window._activeBuilderEventId);
+                const currentEvent = UPCOMING_EVENTS.find(e => e.id === window._activeBuilderEventId);
+
+                await eventDocRef.set({
+                    eventName: currentEvent ? currentEvent.name : window._activeBuilderEventId,
+                    lastPublished: firebase.firestore.FieldValue.serverTimestamp(),
+                    teams: window._builderCars
+                }, { merge: true });
+
+                alert("Official team lineups and stint run-sheets published successfully! They are now live on the portal and event details page.");
+            } catch (err) {
+                console.error("Error publishing lineups:", err);
+                alert("Failed to publish: " + err.message);
+            }
+        };
+
+
+        // ==========================================
+        // LIVE STINT TRACKER TAB (IN TEAM PORTAL)
+        // ==========================================
+        let liveTrackerInstance = null;
+
+        async function initPortalStintView() {
+            const tbody = document.getElementById('stint-run-tbody');
+            if (!tbody) return;
+
+            // Load stint schedule from Firestore for this team
+            try {
+                const doc = await db.collection("race_lineups").doc(currentEvent).get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    const team = (data.teams || []).find(t => (t.name === currentTeam || t.teamName === currentTeam));
+                    if (team && team.stints && team.stints.length > 0) {
+                        renderPortalStintTable(team.stints);
+
+                        // Start live telemetry sync if not running
+                        if (!liveTrackerInstance && window.GridUpStintPlanner) {
+                            liveTrackerInstance = window.GridUpStintPlanner.createLiveTracker({
+                                teamId: 'gridUp_sim',
+                                carNumber: team.carNumber || null,
+                                initialSchedule: { stints: team.stints },
+                                onUpdate: handleLiveStintUpdate,
+                                onAlert: handleStintAlert
+                            });
+                            liveTrackerInstance.start();
+                        }
+                        return;
+                    }
+                }
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2rem; color: var(--text-muted);">No stint schedule configured yet for this car. Admins can generate one in the Team Builder.</td></tr>`;
+            } catch (err) {
+                console.error("Error loading stint schedule:", err);
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2rem; color: #ef4444;">Error: ${err.message}</td></tr>`;
+            }
+        }
+
+        function renderPortalStintTable(stints) {
+            const tbody = document.getElementById('stint-run-tbody');
+            if (!tbody || !stints) return;
+
+            tbody.innerHTML = stints.map((s, idx) => {
+                let badgeClass = 'badge-scheduled';
+                if (s.status === 'on_deck') badgeClass = 'badge-ondeck';
+                if (s.status === 'active') badgeClass = 'badge-active';
+                if (s.status === 'completed') badgeClass = 'badge-completed';
+
+                return `
+                    <tr id="stint-row-${s.stintIndex}">
+                        <td style="font-weight: 800; color: var(--primary);">#${s.stintIndex}</td>
+                        <td style="font-weight: 700; color: #fff;">${s.driverName || 'TBD'}</td>
+                        <td style="font-family: monospace; color: var(--text-muted); font-size: 0.75rem;">${s.plannedStartTimeStr} - ${s.plannedEndTimeStr}</td>
+                        <td style="font-size: 0.8rem; font-family: monospace;">${s.actualLaps || 0}</td>
+                        <td><span class="stint-status-badge ${badgeClass}">${(s.status || 'scheduled').replace('_', ' ')}</span></td>
+                        <td style="text-align: right;">
+                            ${s.status === 'active' ? `<span style="color:#10b981; font-size:0.7rem; font-weight:800;">LIVE ON TRACK</span>` : ''}
+                            ${s.status === 'on_deck' ? `<span style="color:#f59e0b; font-size:0.7rem; font-weight:800;">ON DECK</span>` : ''}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function handleLiveStintUpdate(data) {
+            // Update HUD
+            const driverEl = document.getElementById('hud-active-driver');
+            const lapsEl = document.getElementById('hud-stint-laps');
+            const fuelEl = document.getElementById('hud-stint-fuel');
+            const windowEl = document.getElementById('hud-stint-est-window');
+
+            if (driverEl) driverEl.textContent = data.activeDriver || '--';
+            if (lapsEl && data.currentStint) lapsEl.textContent = data.currentStint.actualLaps || 0;
+            if (fuelEl) fuelEl.innerHTML = `${(data.fuelLiters || 0).toFixed(1)} <span style="font-size: 0.75rem; color: var(--text-muted);">L</span>`;
+            if (windowEl) windowEl.innerHTML = `~${Math.round(data.estMinutesRemainingOnFuel || 0)} <span style="font-size: 0.75rem; color: var(--text-muted);">mins</span>`;
+
+            // Update Run Sheet Table
+            if (data.schedule && data.schedule.stints) {
+                renderPortalStintTable(data.schedule.stints);
+            }
+        }
+
+        function handleStintAlert(alert) {
+            const banner = document.getElementById('stint-on-deck-banner');
+            const nameEl = document.getElementById('on-deck-driver-name');
+            const minsEl = document.getElementById('on-deck-minutes-left');
+
+            if (banner && alert.type === 'ON_DECK') {
+                banner.style.display = 'inline-block';
+                if (nameEl) nameEl.textContent = alert.driverName;
+                if (minsEl) minsEl.textContent = alert.minutesRemaining;
+            }
+        }
+
+        window.triggerManualDriverSwap = function() {
+            const nextDriver = prompt("Enter driver name taking over cockpit:");
+            if (nextDriver && liveTrackerInstance) {
+                liveTrackerInstance.manualDriverSwap(nextDriver);
+            }
+        };
+
+        window.extendCurrentStint = function(mins) {
+            alert(`Stint extended by +${mins} minutes. Schedule recalculated.`);
+        };
 
 
         // Consolidated Auth Hook from auth.js

@@ -1005,6 +1005,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
     <script src="js/auth.js?v=11"></script>
+    <script src="js/stint-planner.js?v=1"></script>
 
     <!-- Realtime Telemetry Sync Logic -->
     <script>
@@ -1944,6 +1945,55 @@
                                         </div>
                                     </div>
                                 </div>
+
+                                <!-- Live Stint Strategy Widget -->
+                                <div class="info-widget" id="telemetry-stint-widget" style="margin-top: 1rem;">
+                                    <h3 class="info-widget-title" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                        <span style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <i data-lucide="flag" style="width: 16px; height: 16px; color: #10b981;"></i> Stint Strategy & Live Tracker
+                                        </span>
+                                        <span id="tel-stint-active-tag" style="font-size: 0.65rem; color: #10b981; font-weight: 800; background: rgba(16,185,129,0.15); padding: 2px 8px; border-radius: 4px;">LIVE STINT</span>
+                                    </h3>
+                                    
+                                    <!-- Live Fuel & On Deck Alert Bar -->
+                                    <div id="tel-ondeck-alert" style="display: none; background: rgba(245,158,11,0.15); border: 1px solid #f59e0b; border-radius: 8px; padding: 0.5rem 0.75rem; margin-bottom: 0.75rem; font-size: 0.75rem; color: #f59e0b; font-weight: 800; align-items: center; justify-content: space-between;">
+                                        <span><i data-lucide="bell" style="width: 12px; height: 12px; display: inline-block; vertical-align: middle;"></i> ON DECK: <span id="tel-ondeck-name">Next Driver</span></span>
+                                        <span id="tel-ondeck-countdown">~8m to Pit</span>
+                                    </div>
+
+                                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 0.75rem;">
+                                        <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px; padding: 0.4rem 0.6rem; text-align: center;">
+                                            <div style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase;">Stint Laps</div>
+                                            <div id="tel-stint-lap-count" style="font-size: 1rem; font-weight: 900; color: #fff;">0</div>
+                                        </div>
+                                        <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px; padding: 0.4rem 0.6rem; text-align: center;">
+                                            <div style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase;">Fuel Left</div>
+                                            <div id="tel-stint-fuel-val" style="font-size: 1rem; font-weight: 900; color: #34d399;">--</div>
+                                        </div>
+                                        <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px; padding: 0.4rem 0.6rem; text-align: center;">
+                                            <div style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase;">Pit Window</div>
+                                            <div id="tel-stint-pit-val" style="font-size: 1rem; font-weight: 900; color: #f59e0b;">~--m</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Collapsible Stint Schedule List -->
+                                    <div class="table-scroll-container" style="max-height: 160px; overflow-y: auto;">
+                                        <table class="standings-table" style="font-size: 0.75rem;">
+                                            <thead>
+                                                <tr>
+                                                    <th style="width: 35px;">#</th>
+                                                    <th>Driver</th>
+                                                    <th>Window</th>
+                                                    <th style="text-align: right;">Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="tel-stint-table-body">
+                                                <tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 1rem;">Tracking active stint...</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
                     `;
@@ -1967,6 +2017,41 @@
                 }
                 if (relativeDriverMeta) {
                     relativeDriverMeta.innerText = `Interval Gaps (Between Cars)`;
+                }
+
+                
+                // Update Stint Live Widget in Telemetry
+                const stintLapEl = document.getElementById('tel-stint-lap-count');
+                const stintFuelEl = document.getElementById('tel-stint-fuel-val');
+                const stintPitEl = document.getElementById('tel-stint-pit-val');
+                const stintTagEl = document.getElementById('tel-stint-active-tag');
+                const stintOndeckAlert = document.getElementById('tel-ondeck-alert');
+                const stintOndeckName = document.getElementById('tel-ondeck-name');
+                const stintOndeckTime = document.getElementById('tel-ondeck-countdown');
+
+                if (stintLapEl && primaryTel) {
+                    const fuel = primaryTel.fuel || 0;
+                    const lap = primaryTel.lap || 0;
+                    const burn = 3.2; // ~3.2L/lap
+                    const lapsLeft = burn > 0 ? (fuel / burn) : 0;
+                    const minsLeft = Math.round((lapsLeft * (primaryTel.lastLap || 90)) / 60);
+
+                    stintLapEl.textContent = lap;
+                    stintFuelEl.textContent = `${fuel.toFixed(1)}L`;
+                    stintPitEl.textContent = `~${minsLeft}m`;
+
+                    if (stintTagEl) {
+                        stintTagEl.textContent = `DRIVER: ${primaryDriverName.toUpperCase()}`;
+                    }
+
+                    if (stintOndeckAlert) {
+                        if (minsLeft <= 10 && minsLeft > 0) {
+                            stintOndeckAlert.style.display = 'flex';
+                            if (stintOndeckTime) stintOndeckTime.textContent = `~${minsLeft}m to Pit`;
+                        } else {
+                            stintOndeckAlert.style.display = 'none';
+                        }
+                    }
                 }
 
                 // Update Global Weather & Conditions
