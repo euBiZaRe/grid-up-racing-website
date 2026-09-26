@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 
 <html lang="en">
 
@@ -1824,7 +1824,7 @@
 
                     <div style="margin-bottom: 4rem;">
 
-                        <h2 class="section-title">Admin Dashboard: Driver Accessibility</h2>
+                        <h2 class="section-title">Admin Management: Team Builder & Lineups</h2>
 
                         <div id="admin-availability-results" class="glass" style="padding: 2rem; overflow-x: auto;">
 
@@ -1862,391 +1862,45 @@
 
 
 
-        async function populateAvailability() {
-
-            const availGrid = document.getElementById('availability-grid');
-
-            if (!availGrid) return;
-
-            
-
-            // Initial load or rebuild? Check if cards exist
-
-            const hasCards = availGrid.querySelectorAll('.event-card').length === UPCOMING_EVENTS.length;
-
-            
-
-            for (const event of UPCOMING_EVENTS) {
-
-                let card = availGrid.querySelector(`[data-event-id="${event.id}"]`);
-
-                
-
-                // Fetch current status
-
-                let currentStatus = null;
-
-                let preferredSlot = null;
-
-                try {
-
-                    const statusDoc = await db.collection("event_availability").doc(event.id).collection("responses").doc(auth.currentUser.uid).get();
-
-                    if (statusDoc.exists) {
-
-                        currentStatus = statusDoc.data().status;
-
-                        preferredSlot = statusDoc.data().preferredSlot;
-
-                    }
-
-                } catch (e) { console.warn("Could not fetch status for", event.id); }
-
-
-
-                if (!card) {
-
-                    card = document.createElement('div');
-
-                    card.className = "card glass event-card";
-
-                    card.setAttribute('data-event-id', event.id);
-
-                    card.style.padding = "1.5rem";
-
-                    availGrid.appendChild(card);
-
-                }
-
-
-
-                // Update content only if needed (or always if we want precise states)
-
-                let slotsHtml = '';
-
-                if (event.slots && currentStatus === 'signed_up') {
-
-                    slotsHtml = `
-
-                        <div style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
-
-                            <label style="font-size: 0.6rem; color: var(--primary); display:block; margin-bottom: 0.5rem; text-transform: uppercase;">Timeslot Preference</label>
-
-                            <select onchange="updatePreference('${event.id}', this.value)" class="btn btn-outline" style="width: 100%; font-size: 0.7rem; padding: 0.4rem;">
-
-                                <option value="">-- Select Preference --</option>
-
-                                ${event.slots.map(s => `<option value="${s}" ${preferredSlot === s ? 'selected' : ''}>${s}</option>`).join('')}
-
-                            </select>
-
-                        </div>
-
-                    `;
-
-                }
-
-
-
-                card.innerHTML = `
-
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
-
-                        <div class="event-meta">${event.date}</div>
-
-                        <div id="countdown-${event.id}" style="font-size: 0.6rem; font-weight: 700; color: var(--primary); font-family: monospace; background: rgba(0,207,255,0.1); padding: 2px 6px; border-radius: 4px;">--:--:--:--</div>
-
-                    </div>
-
-                    <h3 style="font-size: 1rem;">${event.name}</h3>
-
-                    <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1.5rem;">
-
-                        <button onclick="setAvailability('${event.id}', 'signed_up')" class="btn ${currentStatus === 'signed_up' ? 'btn-primary' : 'btn-outline'}" style="padding: 0.5rem; font-size: 0.7rem;">Sign Up</button>
-
-                        <button onclick="setAvailability('${event.id}', 'not_interested')" class="btn ${currentStatus === 'not_interested' ? 'btn-primary' : 'btn-outline'}" style="padding: 0.5rem; font-size: 0.7rem; background: ${currentStatus === 'not_interested' ? '#444' : ''};">Not Interested</button>
-
-                        <button onclick="setAvailability('${event.id}', 'unavailable')" class="btn ${currentStatus === 'unavailable' ? 'btn-primary' : 'btn-outline'}" style="padding: 0.5rem; font-size: 0.7rem; background: ${currentStatus === 'unavailable' ? '#600' : ''};">Not Available</button>
-
-                    </div>
-
-                    ${slotsHtml}
-
-                `;
-
-            }
-
-            startCountdowns();
-
-        }
-
-
-
+        // ==========================================
+        // COUNTDOWN TIMERS
+        // ==========================================
         let countdownInterval = null;
-
         function startCountdowns() {
-
             if (countdownInterval) clearInterval(countdownInterval);
-
             
-
             const update = () => {
-
                 const now = new Date().getTime();
-
                 UPCOMING_EVENTS.forEach(event => {
-
                     const el = document.getElementById(`countdown-${event.id}`);
-
                     if (!el || !event.startDate) return;
 
-
-
                     const target = new Date(event.startDate).getTime();
-
                     const diff = target - now;
 
-
-
                     if (diff <= 0) {
-
                         el.textContent = "LIVE";
-
                         el.style.color = "#00ff88";
-
                         return;
-
                     }
 
-
-
                     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
                     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-
                     const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
                     const secs = Math.floor((diff % (1000 * 60)) / 1000);
 
-
-
                     el.textContent = `${days}d ${hours}h ${mins}m ${secs}s`;
-
                 });
-
             };
 
-
-
             update();
-
             countdownInterval = setInterval(update, 1000);
-
         }
 
-
-
-        async function updatePreference(eventId, slot) {
-
-            try {
-
-                await db.collection("event_availability").doc(eventId).collection("responses").doc(auth.currentUser.uid).update({
-
-                    preferredSlot: slot
-
-                });
-
-                if (isAdminUser) loadAdminAvailability();
-
-            } catch (error) {
-
-                console.error("Error updating preference:", error);
-
-            }
-
-        }
-
-
-
-        async function setAvailability(eventId, status) {
-
-            try {
-
-                const docRef = db.collection("event_availability").doc(eventId).collection("responses").doc(auth.currentUser.uid);
-
-                const currentDoc = await docRef.get();
-
-                const currentStatus = currentDoc.exists ? currentDoc.data().status : null;
-
-
-
-                if (currentStatus === status) {
-
-                    await docRef.delete();
-
-                } else {
-
-                    const myName = userProfile.driverName || auth.currentUser.displayName;
-
-                    await docRef.set({
-
-                        status: status,
-
-                        driverName: myName,
-
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-
-                    });
-
-                }
-
-
-
-                // Refresh only the logic states, but keep DOM stable
-
-                populateAvailability();
-
-                if (isAdminUser) loadAdminAvailability();
-
-            } catch (error) {
-
-                console.error("Error updating availability:", error);
-
-                alert("Error: " + error.message);
-
-            }
-
-        }
-
-
-
-        async function loadAdminAvailability() {
-
-            const resultsDiv = document.getElementById('admin-availability-results');
-
-            if (!resultsDiv) return;
-
-
-
-            try {
-
-                let html = `
-
-                    <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem; text-align: left;">
-
-                        <thead>
-
-                            <tr style="border-bottom: 1px solid var(--glass-border);">
-
-                                <th style="padding: 1rem;">Driver</th>
-
-                                ${UPCOMING_EVENTS.map(e => `<th style="padding: 1rem; white-space: nowrap;">${e.name.split(' ').slice(0,2).join(' ')}</th>`).join('')}
-
-                            </tr>
-
-                        </thead>
-
-                        <tbody>
-
-                `;
-
-
-
-                // Fetch all unique drivers who have responded
-
-                const allDrivers = {}; // uid -> name
-
-                const allResponses = {}; // eventId -> { uid -> status }
-
-
-
-                for (const event of UPCOMING_EVENTS) {
-
-                    const snap = await db.collection("event_availability").doc(event.id).collection("responses").get();
-
-                    allResponses[event.id] = {};
-
-                    snap.forEach(doc => {
-
-                        const data = doc.data();
-
-                        // Fix: Use multiple fallbacks for driver name
-
-                        allDrivers[doc.id] = data.driverName || data.name || data.discordName || "Unknown Driver";
-
-                        allResponses[event.id][doc.id] = data.status;
-
-                    });
-
-                }
-
-
-
-                const driverUids = Object.keys(allDrivers).sort((a,b) => (allDrivers[a] || "").localeCompare(allDrivers[b] || ""));
-
-
-
-                if (driverUids.length === 0) {
-
-                    html += `<tr><td colspan="${UPCOMING_EVENTS.length + 1}" style="padding: 2rem; text-align: center; color: var(--text-muted);">No responses received yet.</td></tr>`;
-
-                } else {
-
-                    driverUids.forEach(uid => {
-
-                        html += `<tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
-
-                            <td style="padding: 0.8rem; font-weight: 700; color: var(--primary);">${allDrivers[uid]}</td>
-
-                        `;
-
-                        UPCOMING_EVENTS.forEach(event => {
-
-                            const status = allResponses[event.id][uid];
-
-                            let statusHtml = "";
-
-                            if (status === 'signed_up') statusHtml = `<span style="color: #00ff88;">YES</span>`;
-
-                            if (status === 'not_interested') statusHtml = `<span style="color: #888;">N/I</span>`;
-
-                            if (status === 'unavailable') statusHtml = `<span style="color: #ff0055;">N/A</span>`;
-
-                            html += `<td style="padding: 0.8rem; text-align: center;">${statusHtml}</td>`;
-
-                        });
-
-                        html += `</tr>`;
-
-                    });
-
-                }
-
-
-
-                html += `</tbody></table>`;
-
-                resultsDiv.innerHTML = html;
-
-
-
-            } catch (error) {
-
-                console.error("Error loading admin availability:", error);
-
-                resultsDiv.innerHTML = `<p style="color: #ff0055;">Error loading results.</p>`;
-
-            }
-
-        }
-
-
-
-        
         // ==========================================
-        // ENHANCED EVENT SIGNUP & AVAILABILITY MATRIX
+        // ENHANCED EVENT SIGNUP & DRIVER AVAILABILITY
         // ==========================================
-        window._driverAvailabilityDrafts = {}; // eventId -> { hourly: {}, class: '', car: '', stints: '' }
+        window._driverAvailabilityDrafts = {}; // eventId -> { hourly: {}, preferredClass: '', preferredChassis: '', targetStints: '', status: '' }
 
         function getEventDurationHours(event) {
             if (event.durationHours) return parseFloat(event.durationHours);
@@ -2259,6 +1913,19 @@
                 if (match) return parseInt(match[1]);
             }
             return 6; // Default to 6 hours for endurance
+        }
+
+        function getStatusBadgeHtml(status) {
+            if (status === 'signed_up') {
+                return '<span style="color: #10b981; font-weight: 800; font-size: 0.75rem; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); padding: 4px 10px; border-radius: 8px; display: inline-flex; align-items: center; gap: 5px;"><i class="fas fa-check-circle"></i> I\'M IN</span>';
+            }
+            if (status === 'interested' || status === 'tentative') {
+                return '<span style="color: #f59e0b; font-weight: 800; font-size: 0.75rem; background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); padding: 4px 10px; border-radius: 8px; display: inline-flex; align-items: center; gap: 5px;"><i class="fas fa-star"></i> INTERESTED</span>';
+            }
+            if (status === 'unavailable') {
+                return '<span style="color: #ef4444; font-weight: 800; font-size: 0.75rem; background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); padding: 4px 10px; border-radius: 8px; display: inline-flex; align-items: center; gap: 5px;"><i class="fas fa-times-circle"></i> UNAVAILABLE</span>';
+            }
+            return '<span style="color: var(--text-muted); font-size: 0.75rem; background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 8px;">Not Submitted</span>';
         }
 
         async function populateAvailability() {
@@ -2276,6 +1943,8 @@
                     if (statusDoc.exists) {
                         userResponseData = statusDoc.data();
                         currentStatus = userResponseData.status;
+                        // Normalize legacy 'tentative' to 'interested'
+                        if (currentStatus === 'tentative') currentStatus = 'interested';
                     }
                 } catch (e) {
                     console.warn("Could not fetch status for", event.id);
@@ -2294,14 +1963,12 @@
 
                 const card = document.createElement('div');
                 card.className = "card glass event-card";
+                card.id = `event-card-${event.id}`;
                 card.setAttribute('data-event-id', event.id);
                 card.style.padding = "1.75rem";
                 card.style.borderRadius = "16px";
-
-                let statusBadge = '<span style="color: var(--text-muted); font-size: 0.7rem;">Not Submitted</span>';
-                if (currentStatus === 'signed_up') statusBadge = '<span style="color: #10b981; font-weight: 800; font-size: 0.75rem; background: rgba(16,185,129,0.15); padding: 3px 8px; border-radius: 6px;">🟢 SIGNED UP</span>';
-                if (currentStatus === 'tentative') statusBadge = '<span style="color: #f59e0b; font-weight: 800; font-size: 0.75rem; background: rgba(245,158,11,0.15); padding: 3px 8px; border-radius: 6px;">🟡 TENTATIVE</span>';
-                if (currentStatus === 'unavailable') statusBadge = '<span style="color: #ef4444; font-weight: 800; font-size: 0.75rem; background: rgba(239,68,68,0.15); padding: 3px 8px; border-radius: 6px;">🔴 UNAVAILABLE</span>';
+                card.style.position = "relative";
+                card.style.transition = "all 0.3s ease";
 
                 // Hourly Availability Blocks HTML
                 let hourBlocksHtml = '';
@@ -2320,6 +1987,8 @@
                 const classOptions = (event.classes && event.classes.length > 0) ? event.classes : ['LMP2', 'GT3', 'GTP', 'GT4'];
                 let classSelectHtml = classOptions.map(c => `<option value="${c}" ${draft.preferredClass === c ? 'selected' : ''}>${c}</option>`).join('');
 
+                const hasPositiveStatus = currentStatus === 'signed_up' || currentStatus === 'interested';
+
                 card.innerHTML = `
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
                         <div>
@@ -2328,52 +1997,71 @@
                         </div>
                         <div style="text-align: right;">
                             <div id="countdown-${event.id}" style="font-size: 0.65rem; font-weight: 700; color: var(--primary); font-family: monospace; background: rgba(0,207,255,0.1); padding: 3px 8px; border-radius: 6px; margin-bottom: 0.4rem;">--:--:--</div>
-                            ${statusBadge}
+                            <div id="badge-${event.id}">
+                                ${getStatusBadgeHtml(currentStatus)}
+                            </div>
                         </div>
                     </div>
 
-                    <div style="display: flex; gap: 0.5rem; margin-top: 1rem; margin-bottom: 1.25rem;">
-                        <button onclick="setDriverStatus('${event.id}', 'signed_up')" class="btn ${currentStatus === 'signed_up' ? 'btn-primary' : 'btn-outline'}" style="flex: 1; padding: 0.5rem; font-size: 0.7rem; border-radius: 8px;">
+                    <!-- 3 Professional Status Options -->
+                    <div style="display: flex; gap: 0.5rem; margin-top: 1.25rem; margin-bottom: 0.75rem;">
+                        <button type="button" id="btn-in-${event.id}" onclick="setDriverStatus('${event.id}', 'signed_up')" class="btn ${currentStatus === 'signed_up' ? 'btn-primary' : 'btn-outline'}" style="flex: 1; padding: 0.6rem 0.5rem; font-size: 0.75rem; border-radius: 8px; font-weight: 700; transition: all 0.2s ease; ${currentStatus === 'signed_up' ? 'background: #10b981; border-color: #10b981; color: #fff;' : ''}">
                             <i class="fas fa-check-circle" style="margin-right: 4px;"></i> I'm In
                         </button>
-                        <button onclick="setDriverStatus('${event.id}', 'tentative')" class="btn ${currentStatus === 'tentative' ? 'btn-primary' : 'btn-outline'}" style="flex: 1; padding: 0.5rem; font-size: 0.7rem; border-radius: 8px; ${currentStatus === 'tentative' ? 'background: #f59e0b; border-color: #f59e0b;' : ''}">
-                            <i class="fas fa-question-circle" style="margin-right: 4px;"></i> Tentative
+                        <button type="button" id="btn-interested-${event.id}" onclick="setDriverStatus('${event.id}', 'interested')" class="btn ${currentStatus === 'interested' ? 'btn-primary' : 'btn-outline'}" style="flex: 1; padding: 0.6rem 0.5rem; font-size: 0.75rem; border-radius: 8px; font-weight: 700; transition: all 0.2s ease; ${currentStatus === 'interested' ? 'background: #f59e0b; border-color: #f59e0b; color: #fff;' : ''}">
+                            <i class="fas fa-star" style="margin-right: 4px;"></i> Interested
                         </button>
-                        <button onclick="setDriverStatus('${event.id}', 'unavailable')" class="btn ${currentStatus === 'unavailable' ? 'btn-primary' : 'btn-outline'}" style="flex: 1; padding: 0.5rem; font-size: 0.7rem; border-radius: 8px; ${currentStatus === 'unavailable' ? 'background: #ef4444; border-color: #ef4444;' : ''}">
+                        <button type="button" id="btn-unavail-${event.id}" onclick="setDriverStatus('${event.id}', 'unavailable')" class="btn ${currentStatus === 'unavailable' ? 'btn-primary' : 'btn-outline'}" style="flex: 1; padding: 0.6rem 0.5rem; font-size: 0.75rem; border-radius: 8px; font-weight: 700; transition: all 0.2s ease; ${currentStatus === 'unavailable' ? 'background: #ef4444; border-color: #ef4444; color: #fff;' : ''}">
                             <i class="fas fa-times-circle" style="margin-right: 4px;"></i> Unavailable
                         </button>
                     </div>
 
-                    ${currentStatus === 'signed_up' || currentStatus === 'tentative' ? `
-                        <div class="avail-matrix-container">
-                            <div class="avail-pref-row">
-                                <div>
-                                    <label style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 0.35rem;">Class Preference</label>
-                                    <select onchange="updateDraftField('${event.id}', 'preferredClass', this.value)" class="btn btn-outline" style="width: 100%; font-size: 0.75rem; padding: 0.45rem; border-radius: 8px;">
-                                        ${classSelectHtml}
-                                    </select>
-                                </div>
-                                <div>
-                                    <label style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 0.35rem;">Preferred Chassis / Car</label>
-                                    <input type="text" value="${draft.preferredChassis || ''}" placeholder="e.g. Ferrari 296, Dallara P217" oninput="updateDraftField('${event.id}', 'preferredChassis', this.value)" class="btn btn-outline" style="width: 100%; font-size: 0.75rem; padding: 0.45rem; text-align: left; border-radius: 8px;">
-                                </div>
-                            </div>
+                    <!-- Subtle Status Toast Feedback -->
+                    <div id="status-feedback-${event.id}" style="min-height: 20px; font-size: 0.75rem; text-align: center; color: var(--primary); transition: opacity 0.3s ease; opacity: 0;"></div>
 
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-                                <label style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Availability Matrix (${eventHours} Hours)</label>
-                                <span style="font-size: 0.65rem; color: var(--primary);">🟢 Preferred &bull; 🟡 Open &bull; 🔴 Blocked</span>
-                            </div>
-                            <div class="avail-block-grid">
-                                ${hourBlocksHtml}
-                            </div>
+                    <!-- Clean Collapsible Preferences Toggle Button -->
+                    <div id="pref-btn-wrap-${event.id}" style="${hasPositiveStatus ? 'display: block;' : 'display: none;'} margin-top: 0.5rem;">
+                        <button type="button" onclick="toggleCardPreferences('${event.id}')" class="btn btn-outline" style="width: 100%; font-size: 0.75rem; padding: 0.5rem 0.75rem; border-radius: 8px; border: 1px dashed rgba(255,255,255,0.18); display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.02); transition: all 0.2s ease;">
+                            <span style="display: flex; align-items: center; gap: 6px;">
+                                <i class="fas fa-sliders-h" style="color: var(--primary);"></i>
+                                <span>Stint Hours & Car Preferences</span>
+                            </span>
+                            <span style="display: flex; align-items: center; gap: 4px; font-size: 0.7rem; color: var(--text-muted);">
+                                <span id="pref-label-${event.id}">Customize</span>
+                                <i class="fas fa-chevron-down" id="pref-chevron-${event.id}"></i>
+                            </span>
+                        </button>
+                    </div>
 
-                            <div style="margin-top: 1.25rem; display: flex; justify-content: flex-end;">
-                                <button onclick="saveFullAvailability('${event.id}')" class="btn btn-primary" style="padding: 0.5rem 1.5rem; font-size: 0.75rem; border-radius: 8px;">
-                                    <i class="fas fa-save" style="margin-right: 6px;"></i> Save Preferences & Availability
-                                </button>
+                    <!-- Collapsible Preferences Drawer (Hidden by default, zero sudden jumps) -->
+                    <div id="pref-drawer-${event.id}" class="avail-matrix-container" style="display: none; transition: all 0.3s ease;">
+                        <div class="avail-pref-row">
+                            <div>
+                                <label style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 0.35rem;">Class Preference</label>
+                                <select onchange="updateDraftField('${event.id}', 'preferredClass', this.value)" class="btn btn-outline" style="width: 100%; font-size: 0.75rem; padding: 0.45rem; border-radius: 8px;">
+                                    ${classSelectHtml}
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 0.35rem;">Preferred Chassis / Car</label>
+                                <input type="text" value="${draft.preferredChassis || ''}" placeholder="e.g. Ferrari 296, Dallara P217" oninput="updateDraftField('${event.id}', 'preferredChassis', this.value)" class="btn btn-outline" style="width: 100%; font-size: 0.75rem; padding: 0.45rem; text-align: left; border-radius: 8px;">
                             </div>
                         </div>
-                    ` : ''}
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                            <label style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Availability Matrix (${eventHours} Hours)</label>
+                            <span style="font-size: 0.65rem; color: var(--primary);">🟢 Preferred &bull; 🟡 Open &bull; 🔴 Blocked</span>
+                        </div>
+                        <div class="avail-block-grid">
+                            ${hourBlocksHtml}
+                        </div>
+
+                        <div style="margin-top: 1.25rem; display: flex; justify-content: flex-end;">
+                            <button onclick="saveFullAvailability('${event.id}')" class="btn btn-primary" style="padding: 0.5rem 1.5rem; font-size: 0.75rem; border-radius: 8px;">
+                                <i class="fas fa-save" style="margin-right: 6px;"></i> Save Preferences & Availability
+                            </button>
+                        </div>
+                    </div>
                 `;
 
                 availGrid.appendChild(card);
@@ -2381,6 +2069,21 @@
 
             startCountdowns();
         }
+
+        window.toggleCardPreferences = function(eventId) {
+            const drawer = document.getElementById(`pref-drawer-${eventId}`);
+            const chevron = document.getElementById(`pref-chevron-${eventId}`);
+            const label = document.getElementById(`pref-label-${eventId}`);
+            if (!drawer) return;
+            const isHidden = drawer.style.display === 'none' || !drawer.style.display;
+            drawer.style.display = isHidden ? 'block' : 'none';
+            if (chevron) {
+                chevron.className = isHidden ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
+            }
+            if (label) {
+                label.textContent = isHidden ? 'Close' : 'Customize';
+            }
+        };
 
         window.toggleHourBlockState = function(eventId, hourIdx, element) {
             const draft = window._driverAvailabilityDrafts[eventId];
@@ -2401,19 +2104,88 @@
             window._driverAvailabilityDrafts[eventId][field] = value;
         };
 
+        function showCardToast(eventId, message, color = '#10b981') {
+            const feedbackEl = document.getElementById(`status-feedback-${eventId}`);
+            if (!feedbackEl) return;
+            feedbackEl.innerHTML = `<span style="color: ${color};"><i class="fas fa-check-circle" style="margin-right: 4px;"></i>${message}</span>`;
+            feedbackEl.style.opacity = '1';
+            clearTimeout(feedbackEl._toastTimer);
+            feedbackEl._toastTimer = setTimeout(() => {
+                feedbackEl.style.opacity = '0';
+            }, 3000);
+        }
+
+        function updateCardUIStatus(eventId, status) {
+            const btnIn = document.getElementById(`btn-in-${eventId}`);
+            const btnInterested = document.getElementById(`btn-interested-${eventId}`);
+            const btnUnavail = document.getElementById(`btn-unavail-${eventId}`);
+            const badgeEl = document.getElementById(`badge-${eventId}`);
+            const prefWrap = document.getElementById(`pref-btn-wrap-${eventId}`);
+
+            if (badgeEl) badgeEl.innerHTML = getStatusBadgeHtml(status);
+
+            // Reset buttons
+            [btnIn, btnInterested, btnUnavail].forEach(btn => {
+                if (btn) {
+                    btn.className = 'btn btn-outline';
+                    btn.style.background = '';
+                    btn.style.borderColor = '';
+                    btn.style.color = '';
+                }
+            });
+
+            if (status === 'signed_up' && btnIn) {
+                btnIn.className = 'btn btn-primary';
+                btnIn.style.background = '#10b981';
+                btnIn.style.borderColor = '#10b981';
+                btnIn.style.color = '#fff';
+                showCardToast(eventId, "You're signed up!", '#10b981');
+            } else if (status === 'interested' && btnInterested) {
+                btnInterested.className = 'btn btn-primary';
+                btnInterested.style.background = '#f59e0b';
+                btnInterested.style.borderColor = '#f59e0b';
+                btnInterested.style.color = '#fff';
+                showCardToast(eventId, "Marked as Interested!", '#f59e0b');
+            } else if (status === 'unavailable' && btnUnavail) {
+                btnUnavail.className = 'btn btn-primary';
+                btnUnavail.style.background = '#ef4444';
+                btnUnavail.style.borderColor = '#ef4444';
+                btnUnavail.style.color = '#fff';
+                showCardToast(eventId, "Marked as Unavailable", '#ef4444');
+            }
+
+            if (prefWrap) {
+                prefWrap.style.display = (status === 'signed_up' || status === 'interested') ? 'block' : 'none';
+            }
+        }
+
         window.setDriverStatus = async function(eventId, status) {
             try {
                 const docRef = db.collection("event_availability").doc(eventId).collection("responses").doc(auth.currentUser.uid);
                 const currentDoc = await docRef.get();
-                const currentStatus = currentDoc.exists ? currentDoc.data().status : null;
+                let currentStatus = currentDoc.exists ? currentDoc.data().status : null;
+                if (currentStatus === 'tentative') currentStatus = 'interested';
 
+                let nextStatus = status;
                 if (currentStatus === status && status === 'unavailable') {
                     await docRef.delete();
+                    nextStatus = null;
                 } else {
-                    const myName = userProfile.driverName || auth.currentUser.displayName;
-                    const draft = window._driverAvailabilityDrafts[eventId] || {};
+                    const myName = userProfile.driverName || auth.currentUser.displayName || "Driver";
+                    if (!window._driverAvailabilityDrafts[eventId]) {
+                        window._driverAvailabilityDrafts[eventId] = {
+                            hourly: {},
+                            preferredClass: 'GT3',
+                            preferredChassis: '',
+                            targetStints: '2-3',
+                            status: null
+                        };
+                    }
+                    const draft = window._driverAvailabilityDrafts[eventId];
+                    draft.status = nextStatus;
+
                     await docRef.set({
-                        status: status,
+                        status: nextStatus,
                         driverName: myName,
                         preferredClass: draft.preferredClass || 'GT3',
                         preferredChassis: draft.preferredChassis || '',
@@ -2423,8 +2195,13 @@
                     }, { merge: true });
                 }
 
-                populateAvailability();
-                if (isAdminUser) loadAdminAvailability();
+                // Update UI smoothly in-place without reloading whole view
+                updateCardUIStatus(eventId, nextStatus);
+
+                // If admin, update driver pool in background without refreshing whole canvas
+                if (isAdminUser && window._activeBuilderEventId === eventId) {
+                    refreshAdminDriverPoolQuietly(eventId);
+                }
             } catch (err) {
                 console.error("Error setting availability status:", err);
                 alert("Could not update status: " + err.message);
@@ -2435,7 +2212,7 @@
             try {
                 const draft = window._driverAvailabilityDrafts[eventId];
                 if (!draft) return;
-                const myName = userProfile.driverName || auth.currentUser.displayName;
+                const myName = userProfile.driverName || auth.currentUser.displayName || "Driver";
 
                 await db.collection("event_availability").doc(eventId).collection("responses").doc(auth.currentUser.uid).set({
                     status: draft.status || 'signed_up',
@@ -2447,14 +2224,57 @@
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });
 
-                alert("Your availability and preferences have been saved!");
-                populateAvailability();
-                if (isAdminUser) loadAdminAvailability();
+                showCardToast(eventId, "Preferences and stint availability saved successfully!", '#10b981');
+                
+                // Close the drawer smoothly after confirmation
+                setTimeout(() => {
+                    const drawer = document.getElementById(`pref-drawer-${eventId}`);
+                    if (drawer) drawer.style.display = 'none';
+                    const chevron = document.getElementById(`pref-chevron-${eventId}`);
+                    if (chevron) chevron.className = 'fas fa-chevron-down';
+                    const label = document.getElementById(`pref-label-${eventId}`);
+                    if (label) label.textContent = 'Customize';
+                }, 1000);
+
+                if (isAdminUser && window._activeBuilderEventId === eventId) {
+                    refreshAdminDriverPoolQuietly(eventId);
+                }
             } catch (err) {
                 console.error("Save error:", err);
                 alert("Error saving: " + err.message);
             }
         };
+
+        // Quietly refresh the admin driver pool chip list without re-rendering the whole studio
+        async function refreshAdminDriverPoolQuietly(eventId) {
+            const poolContainer = document.getElementById('admin-builder-driver-pool');
+            if (!poolContainer) return;
+            try {
+                const snap = await db.collection("event_availability").doc(eventId).collection("responses").get();
+                let responses = [];
+                snap.forEach(doc => responses.push({ id: doc.id, ...doc.data() }));
+
+                if (responses.length === 0) {
+                    poolContainer.innerHTML = `<p style="color: var(--text-muted); font-size: 0.8rem; margin: 0;">No drivers have submitted sign-ups for this event yet.</p>`;
+                } else {
+                    poolContainer.innerHTML = responses.map(d => {
+                        const isInterested = d.status === 'interested' || d.status === 'tentative';
+                        const statusColor = d.status === 'signed_up' ? '#10b981' : isInterested ? '#f59e0b' : '#ef4444';
+                        const statusLabel = d.status === 'signed_up' ? "I'm In" : isInterested ? 'Interested' : 'Unavailable';
+                        return `
+                            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 0.5rem 0.85rem; border-radius: 8px; font-size: 0.75rem; display: flex; align-items: center; gap: 6px;">
+                                <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${statusColor};"></span>
+                                <strong>${d.driverName || 'Driver'}</strong>
+                                <span style="color: ${statusColor}; font-size: 0.65rem; font-weight: 700;">(${statusLabel})</span>
+                                <span style="color: var(--primary); font-size: 0.65rem;">[${d.preferredClass || 'GT3'}]</span>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            } catch (e) {
+                console.warn("Could not refresh driver pool:", e);
+            }
+        }
 
 
         // ==========================================
@@ -2462,6 +2282,23 @@
         // ==========================================
         window._activeBuilderEventId = null;
         window._builderCars = []; // Array of car objects
+        window._openCarStints = {}; // carIdx -> boolean
+
+        window.toggleCarStintSlots = function(carIdx) {
+            window._openCarStints[carIdx] = !window._openCarStints[carIdx];
+            const tableDiv = document.getElementById(`car-stint-table-${carIdx}`);
+            const icon = document.getElementById(`stint-table-icon-${carIdx}`);
+            const text = document.getElementById(`stint-table-text-${carIdx}`);
+            if (tableDiv) {
+                tableDiv.style.display = window._openCarStints[carIdx] ? 'block' : 'none';
+            }
+            if (icon) {
+                icon.className = window._openCarStints[carIdx] ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
+            }
+            if (text) {
+                text.textContent = window._openCarStints[carIdx] ? 'Hide Stint Schedule' : 'Assign Drivers & View Stints';
+            }
+        };
 
         async function loadAdminAvailability() {
             const resultsDiv = document.getElementById('admin-availability-results');
@@ -2516,24 +2353,23 @@
             let eventOptionsHtml = UPCOMING_EVENTS.map(e => `<option value="${e.id}" ${e.id === window._activeBuilderEventId ? 'selected' : ''}>${e.name}</option>`).join('');
 
             // Render Signups Pool summary
-            let driverPoolHtml = '';
+            let driverPoolChips = '';
             if (responses.length === 0) {
-                driverPoolHtml = `<p style="color: var(--text-muted); font-size: 0.8rem;">No drivers have submitted sign-ups for this event yet.</p>`;
+                driverPoolChips = `<p style="color: var(--text-muted); font-size: 0.8rem; margin: 0;">No drivers have submitted sign-ups for this event yet.</p>`;
             } else {
-                driverPoolHtml = `
-                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-                        ${responses.map(d => {
-                            const statusColor = d.status === 'signed_up' ? '#10b981' : d.status === 'tentative' ? '#f59e0b' : '#ef4444';
-                            return `
-                                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 0.5rem 0.85rem; border-radius: 8px; font-size: 0.75rem; display: flex; align-items: center; gap: 6px;">
-                                    <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${statusColor};"></span>
-                                    <strong>${d.driverName || 'Driver'}</strong>
-                                    <span style="color: var(--primary); font-size: 0.65rem;">[${d.preferredClass || 'GT3'}]</span>
-                                </div>
-                            `;
-                        }).join('')}
-                    </div>
-                `;
+                driverPoolChips = responses.map(d => {
+                    const isInterested = d.status === 'interested' || d.status === 'tentative';
+                    const statusColor = d.status === 'signed_up' ? '#10b981' : isInterested ? '#f59e0b' : '#ef4444';
+                    const statusLabel = d.status === 'signed_up' ? "I'm In" : isInterested ? 'Interested' : 'Unavailable';
+                    return `
+                        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 0.5rem 0.85rem; border-radius: 8px; font-size: 0.75rem; display: flex; align-items: center; gap: 6px;">
+                            <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${statusColor};"></span>
+                            <strong>${d.driverName || 'Driver'}</strong>
+                            <span style="color: ${statusColor}; font-size: 0.65rem; font-weight: 700;">(${statusLabel})</span>
+                            <span style="color: var(--primary); font-size: 0.65rem;">[${d.preferredClass || 'GT3'}]</span>
+                        </div>
+                    `;
+                }).join('');
             }
 
             // Render Builder Cars
@@ -2564,7 +2400,9 @@
                     let driverOptions = `<option value="">-- Assign Driver --</option>`;
                     responses.forEach(r => {
                         const name = r.driverName || 'Driver';
-                        driverOptions += `<option value="${name}" ${s.driverName === name ? 'selected' : ''}>${name} (${r.preferredClass || 'GT3'})</option>`;
+                        const isInterested = r.status === 'interested' || r.status === 'tentative';
+                        const statusTag = r.status === 'signed_up' ? "I'm In" : isInterested ? 'Interested' : 'Unavail';
+                        driverOptions += `<option value="${name}" ${s.driverName === name ? 'selected' : ''}>${name} [${r.preferredClass || 'GT3'}] (${statusTag})</option>`;
                     });
 
                     stintRowsHtml += `
@@ -2583,6 +2421,8 @@
                         </tr>
                     `;
                 });
+
+                const isStintsOpen = !!window._openCarStints[cIdx];
 
                 carsHtml += `
                     <div class="builder-car-card">
@@ -2628,22 +2468,35 @@
                             </div>
                         </div>
 
-                        <!-- Stint Slotting Table -->
-                        <div style="background: rgba(10,10,12,0.5); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; overflow: hidden;">
-                            <table class="stint-run-table">
-                                <thead>
-                                    <tr>
-                                        <th style="width: 60px;">Slot</th>
-                                        <th>Assigned Driver</th>
-                                        <th>Race Clock</th>
-                                        <th>Duration</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${stintRowsHtml}
-                                </tbody>
-                            </table>
+                        <!-- Collapsible Stint Run-Sheet Table (Tucked away cleanly by default) -->
+                        <div style="margin-top: 1.25rem;">
+                            <button type="button" onclick="toggleCarStintSlots(${cIdx})" class="btn btn-outline" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 1rem; border-radius: 8px; font-size: 0.8rem; background: rgba(255,255,255,0.02); transition: all 0.2s ease;">
+                                <span style="display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-list-ol" style="color: var(--primary);"></i>
+                                    <strong>Stint Driver Run-Sheet (${car.stints.length} stints)</strong>
+                                    ${uncoveredCount > 0 ? `<span style="background: rgba(239,68,68,0.2); color: #f87171; border: 1px solid rgba(239,68,68,0.4); padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: 700;">${uncoveredCount} Unassigned</span>` : `<span style="background: rgba(16,185,129,0.2); color: #34d399; border: 1px solid rgba(16,185,129,0.4); padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: 700;">All Assigned ✓</span>`}
+                                </span>
+                                <span style="display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: var(--primary);">
+                                    <span id="stint-table-text-${cIdx}">${isStintsOpen ? 'Hide Stint Schedule' : 'Assign Drivers & View Stints'}</span>
+                                    <i class="fas ${isStintsOpen ? 'fa-chevron-up' : 'fa-chevron-down'}" id="stint-table-icon-${cIdx}"></i>
+                                </span>
+                            </button>
+                            <div id="car-stint-table-${cIdx}" style="display: ${isStintsOpen ? 'block' : 'none'}; margin-top: 0.75rem; background: rgba(10,10,12,0.5); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; overflow: hidden;">
+                                <table class="stint-run-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 60px;">Slot</th>
+                                            <th>Assigned Driver</th>
+                                            <th>Race Clock</th>
+                                            <th>Duration</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${stintRowsHtml}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -2666,8 +2519,10 @@
                 </div>
 
                 <div style="margin-bottom: 2rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 1.25rem;">
-                    <div style="font-size: 0.7rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem;">Driver Pool & Availability (${responses.length} Signed Up)</div>
-                    ${driverPoolHtml}
+                    <div style="font-size: 0.7rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem;">Driver Pool & Availability (${responses.length} Responded)</div>
+                    <div id="admin-builder-driver-pool" style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                        ${driverPoolChips}
+                    </div>
                 </div>
 
                 <div class="builder-canvas">
@@ -2754,9 +2609,7 @@
             }
         };
 
-
-        // ==========================================
-        // LIVE STINT TRACKER TAB (IN TEAM PORTAL)
+// LIVE STINT TRACKER TAB (IN TEAM PORTAL)
         // ==========================================
         let liveTrackerInstance = null;
 
