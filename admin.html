@@ -2490,44 +2490,16 @@
         }
 
         const DEFAULT_GRIDUP_TEAMS = [
-            "GRiD UP Esports Blue",
-            "GRiD UP Esports Black",
-            "GRiD UP Esports Red",
-            "GRiD UP Esports White",
-            "GRiD UP Esports Purple",
-            "GRiD UP Esports Orange",
-            "GRiD UP Esports Silver",
-            "GRiD UP Sim Racing",
-            "GRiD UP Esports"
+            "GRiD UP Blue",
+            "GRiD UP Black",
+            "GRiD UP Red",
+            "GRiD UP White",
+            "GRiD UP Purple"
         ];
         let DYNAMIC_GRIDUP_TEAMS = [...DEFAULT_GRIDUP_TEAMS];
 
         async function loadDynamicTeamsList() {
-            try {
-                const rtdb = typeof getTelemetryRTDB === 'function' ? getTelemetryRTDB() : null;
-                if (rtdb) {
-                    const snap = await rtdb.ref('config/teams').once('value');
-                    const data = snap.val();
-                    if (data && typeof data === 'object') {
-                        const teamsFromDb = [];
-                        Object.keys(data).forEach(key => {
-                            const item = data[key];
-                            if (item && item.enabled !== false) {
-                                const name = item.name || key;
-                                if (!name.toLowerCase().includes('practice') && !name.toLowerCase().includes('solo')) {
-                                    teamsFromDb.push(name);
-                                }
-                            }
-                        });
-                        if (teamsFromDb.length > 0) {
-                            const combined = [...teamsFromDb, ...DEFAULT_GRIDUP_TEAMS];
-                            DYNAMIC_GRIDUP_TEAMS = Array.from(new Set(combined));
-                        }
-                    }
-                }
-            } catch (e) {
-                console.warn("Could not fetch remote teams for team builder:", e);
-            }
+            DYNAMIC_GRIDUP_TEAMS = [...DEFAULT_GRIDUP_TEAMS];
         }
 
         window._adminBuilderCars = [];
@@ -2670,6 +2642,11 @@
                 const lineupDoc = await db.collection("race_lineups").doc(activeId).get();
                 if (lineupDoc.exists && Array.isArray(lineupDoc.data().teams) && lineupDoc.data().teams.length > 0) {
                     window._adminBuilderCars = lineupDoc.data().teams;
+                    // Strip 'Esports' from team names and normalize
+                    window._adminBuilderCars.forEach(car => {
+                        if (car.name) car.name = car.name.replace(/Esports\s*/gi, '').replace(/\s+/g, ' ').trim();
+                        if (car.teamName) car.teamName = car.teamName.replace(/Esports\s*/gi, '').replace(/\s+/g, ' ').trim();
+                    });
                 } else {
                     window._adminBuilderCars = [];
                 }
@@ -2693,8 +2670,8 @@
 
                 window._adminBuilderCars = [{
                     carNumber: "144",
-                    name: "GRiD UP Esports Blue",
-                    teamName: "GRiD UP Esports Blue",
+                    name: "GRiD UP Blue",
+                    teamName: "GRiD UP Blue",
                     car_class: primaryClass,
                     carModel: defaultModel,
                     stintMinutes: defaultStint,
@@ -2785,11 +2762,14 @@
 
                 const isStintsOpen = !!window._adminOpenStints[cIdx];
 
-                // Team Options Dropdown from all GRiD UP teams
-                const currentTeamName = car.name || car.teamName || 'GRiD UP Esports Blue';
-                let teamList = [...DYNAMIC_GRIDUP_TEAMS];
+                // Team Options Dropdown: Strictly GRiD UP Blue, Black, Red, White, Purple
+                let currentTeamName = (car.name || car.teamName || 'GRiD UP Blue').replace(/Esports\s*/gi, '').replace(/\s+/g, ' ').trim();
+                car.name = currentTeamName;
+                car.teamName = currentTeamName;
+
+                let teamList = [...DEFAULT_GRIDUP_TEAMS];
                 if (!teamList.includes(currentTeamName)) {
-                    teamList.unshift(currentTeamName);
+                    teamList.push(currentTeamName);
                 }
                 const teamOptionsHtml = teamList.map(t => `
                     <option value="${t}" ${t === currentTeamName ? 'selected' : ''}>${t}</option>
@@ -2910,7 +2890,7 @@
 
         window.onAdminCarTeamSelect = function(carIdx, val) {
             if (val === '__custom__') {
-                const custom = prompt("Enter Custom Team / Entry Name:", "GRiD UP Esports ");
+                const custom = prompt("Enter Custom Team / Entry Name:", "GRiD UP ");
                 if (custom && custom.trim()) {
                     val = custom.trim();
                     if (!DYNAMIC_GRIDUP_TEAMS.includes(val)) {
@@ -2979,7 +2959,7 @@
             const defaultStint = primaryClass === 'Supercars' ? 45 : 60;
 
             const usedNames = window._adminBuilderCars.map(c => c.name || c.teamName);
-            const availableTeam = DYNAMIC_GRIDUP_TEAMS.find(t => !usedNames.includes(t)) || `GRiD UP Esports #${nextNum}`;
+            const availableTeam = DYNAMIC_GRIDUP_TEAMS.find(t => !usedNames.includes(t)) || `GRiD UP Team #${nextNum}`;
 
             window._adminBuilderCars.push({
                 carNumber: String(nextNum),
