@@ -2,8 +2,7 @@
  * Trophy Room Rendering & Live Database Engine
  * GRiD UP Sim Racing
  * 
- * Sourced directly from the official team results database (event_results & events collections)
- * used by https://gridup.online/results.
+ * Sourced directly from official past event detail pages (/events/past/*.html)
  * STRICT FILTER: ONLY displays P1, P2, and P3 podium finishes. All non-podium finishes are discarded.
  */
 
@@ -25,7 +24,7 @@ async function initTrophyRoom() {
 }
 
 /**
- * Safely parse any timestamp representation (Firestore Timestamp, ISO string, milliseconds)
+ * Safely parse any timestamp representation
  */
 function getTimestampMs(ts) {
     if (!ts) return 0;
@@ -99,11 +98,12 @@ function inferTrackKey(eventId = '', eventName = '') {
 function formatEventTitle(eId, evName) {
     if (evName && evName !== eId && !evName.includes('-')) return evName;
     const s = (eId || '').toLowerCase();
-    if (s.includes('daytona-24h')) return '24 Hours of Daytona';
+    if (s.includes('daytona-24')) return 'Daytona 24';
+    if (s.includes('iracing-roar') || s.includes('roar')) return 'iRacing ROAR';
     if (s.includes('nurburgring-24h')) return '24 Hours of Nürburgring';
-    if (s.includes('spa-24h')) return '24 Hours of Spa';
-    if (s.includes('sebring-12h')) return '12 Hours of Sebring';
-    if (s.includes('bathurst-12h')) return 'Bathurst 12 Hour';
+    if (s.includes('spa-24h') || s.includes('spa-24hr')) return '24 Hours of Spa';
+    if (s.includes('sebring-12h') || s.includes('sebring-12hr')) return '12 Hours of Sebring';
+    if (s.includes('bathurst-12')) return 'Bathurst 12';
     if (s.includes('road-america-6h') || s.includes('road-america')) return 'Road America 6 Hour';
     if (s.includes('suzuka-1000')) return 'Suzuka 1000km';
     if (s.includes('indy-500')) return 'Indianapolis 500';
@@ -115,28 +115,220 @@ function formatEventTitle(eId, evName) {
  */
 function inferEventImage(eventId = '', index = 0) {
     const s = (eventId || '').toLowerCase();
-    if (s.includes('road-america')) return '/assets/results/July2526(3).png';
+    if (s.includes('daytona-24') || s === 'daytona-24') return '/assets/results/Jan1726.png';
+    if (s.includes('roar') || s === 'iracing-roar') return '/assets/bg-banner.png';
     if (s.includes('nurburgring')) return '/assets/results/May226(2).png';
-    if (s.includes('daytona')) return '/assets/results/Jan1726(3).png';
-    if (s.includes('suzuka')) return '/assets/results/Nov1525.png';
-    if (s.includes('indy')) return '/assets/results/Jan1026.png';
     if (s.includes('spa')) return '/assets/results/July1126.png';
     if (s.includes('sebring')) return '/assets/results/Mar2826.png';
     if (s.includes('portimao')) return '/assets/results/July2526(1).png';
     if (s.includes('bathurst')) return '/assets/results/Feb2126.png';
-    
-    const fallbacks = [
-        '/assets/results/July2526(3).png',
-        '/assets/results/May226(2).png',
-        '/assets/results/Jan1726(3).png',
-        '/assets/results/Nov1525.png',
-        '/assets/results/Jan1026.png'
-    ];
-    return fallbacks[index % fallbacks.length];
+    if (s.includes('daytona')) return '/assets/results/Jan1726.png';
+    return '/assets/bg-banner.png';
+}
+
+// Registry of all past event detail pages
+const PAST_EVENT_SOURCES = [
+    {
+        id: 'daytona-24',
+        name: 'Daytona 24',
+        path: '/events/past/daytona-24.html',
+        localPath: 'events/past/daytona-24.html',
+        image: '/assets/results/Jan1726.png',
+        trackKey: 'daytona',
+        season: 2026,
+        timestamp: '2026-01-18T20:00:00Z'
+    },
+    {
+        id: 'iracing-roar',
+        name: 'iRacing ROAR',
+        path: '/events/past/iracing-roar.html',
+        localPath: 'events/past/iracing-roar.html',
+        image: '/assets/bg-banner.png',
+        trackKey: 'daytona',
+        season: 2026,
+        timestamp: '2026-01-10T20:00:00Z'
+    },
+    {
+        id: 'bathurst-12',
+        name: 'Bathurst 12',
+        path: '/events/past/bathurst-12.html',
+        localPath: 'events/past/bathurst-12.html',
+        image: '/assets/results/Feb2126.png',
+        trackKey: 'bathurst',
+        season: 2026,
+        timestamp: '2026-02-22T20:00:00Z'
+    },
+    {
+        id: 'daytona-500',
+        name: 'Daytona 500',
+        path: '/events/past/daytona-500.html',
+        localPath: 'events/past/daytona-500.html',
+        image: '/assets/results/Feb2026.png',
+        trackKey: 'daytona',
+        season: 2026,
+        timestamp: '2026-02-18T20:00:00Z'
+    },
+    {
+        id: 'sebring-12hr',
+        name: 'Sebring 12HR',
+        path: '/events/past/sebring-12hr.html',
+        localPath: 'events/past/sebring-12hr.html',
+        image: '/assets/results/Mar2826.png',
+        trackKey: 'sebring',
+        season: 2026,
+        timestamp: '2026-03-29T20:00:00Z'
+    }
+];
+
+// Offline fallback of verified podiums parsed directly from past event detail pages
+const VERIFIED_PAST_PAGE_PODIUMS = [
+    {
+        id: 'daytona-24-grid-up-sim-racing',
+        eventId: 'daytona-24',
+        event: 'Daytona 24',
+        date: 'January 16-18, 2026',
+        season: 2026,
+        teamName: 'GRiD UP Sim Racing',
+        car: 'Dallara P217 (LMP2)',
+        drivers: ['Andrew Fabian', 'Martyn Cook', 'Jacob Reid', 'Alex Cortez', 'Hector Hernandez'],
+        qualy: 'P4',
+        split: 'Split 3 / 3018',
+        finish: 'P2',
+        position: 2,
+        positionLabel: '2ND PLACE',
+        accent: 'silver',
+        category: 'LMP2',
+        manufacturer: 'dallara',
+        trackKey: 'daytona',
+        trackName: 'Daytona International Speedway',
+        trackLength: '5.730 km',
+        image: '/assets/results/Jan1726.png',
+        source: '/events/past/daytona-24.html',
+        timestamp: '2026-01-18T20:00:00Z'
+    },
+    {
+        id: 'iracing-roar-grid-up-sim-racing',
+        eventId: 'iracing-roar',
+        event: 'iRacing ROAR',
+        date: 'January 9-10, 2026',
+        season: 2026,
+        teamName: 'GRiD UP Sim Racing',
+        car: 'BMW M4 GT3',
+        drivers: ['Bill McClain', 'Alex Cortez', 'Jacob Reid'],
+        qualy: 'P5',
+        finish: 'P3',
+        position: 3,
+        positionLabel: '3RD PLACE',
+        accent: 'bronze',
+        category: 'GT3',
+        manufacturer: 'bmw',
+        trackKey: 'daytona',
+        trackName: 'Daytona International Speedway',
+        trackLength: '5.730 km',
+        image: '/assets/bg-banner.png',
+        source: '/events/past/iracing-roar.html',
+        timestamp: '2026-01-10T20:00:00Z'
+    }
+];
+
+function parseSingleEventHtml(htmlText, sourceInfo) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlText, 'text/html');
+
+    const titleEl = doc.querySelector('h1');
+    const eventName = titleEl ? titleEl.textContent.trim() : sourceInfo.name;
+
+    let dateStr = '';
+    const dateItem = Array.from(doc.querySelectorAll('.meta-item')).find(el => {
+        const lbl = el.querySelector('.label');
+        return lbl && lbl.textContent.toLowerCase().includes('date');
+    });
+    if (dateItem) {
+        const val = dateItem.querySelector('.value');
+        if (val) dateStr = val.textContent.trim();
+    }
+    if (!dateStr) {
+        const heroP = doc.querySelector('.hero-content p');
+        if (heroP) dateStr = heroP.textContent.trim();
+    }
+
+    const table = doc.querySelector('table');
+    if (!table) return [];
+
+    const extracted = [];
+    const rows = table.querySelectorAll('tbody tr, tr');
+    rows.forEach((tr, rIdx) => {
+        const tds = tr.querySelectorAll('td');
+        if (!tds || tds.length < 3) return;
+
+        const teamCol = tds[0];
+        const teamStrong = teamCol.querySelector('strong');
+        const teamName = teamStrong ? teamStrong.textContent.trim() : '';
+
+        const spans = teamCol.querySelectorAll('span');
+        const carStr = spans[0] ? spans[0].textContent.trim() : '';
+        const driversStr = spans[1] ? spans[1].textContent.trim() : '';
+        const drivers = driversStr ? driversStr.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+        // Qualy and finish
+        const finishTd = tds[tds.length - 1];
+        const qualyTd = tds[tds.length - 2];
+        const splitTd = tds.length >= 4 ? tds[1] : null;
+
+        const rawFinish = (finishTd ? finishTd.textContent : '').trim().toUpperCase();
+        const rawQualy = (qualyTd ? qualyTd.textContent : '').trim().toUpperCase();
+        const splitStr = splitTd ? splitTd.textContent.trim() : '';
+
+        let pos = null;
+        if (rawFinish === 'P1' || rawFinish === '1' || rawFinish === '1ST' || rawFinish === 'FIRST') {
+            pos = 1;
+        } else if (rawFinish === 'P2' || rawFinish === '2' || rawFinish === '2ND' || rawFinish === 'SECOND') {
+            pos = 2;
+        } else if (rawFinish === 'P3' || rawFinish === '3' || rawFinish === '3RD' || rawFinish === 'THIRD') {
+            pos = 3;
+        }
+
+        // ==========================================
+        // STRICT PODIUM FILTER: P1, P2, P3 ONLY
+        // Discard all other finishes (P4, P5, P8, P9, etc.)
+        // ==========================================
+        if (pos !== 1 && pos !== 2 && pos !== 3) return;
+
+        const trackKey = sourceInfo.trackKey || inferTrackKey(sourceInfo.id, eventName);
+        const trackInfo = (window.TRACK_OUTLINES && window.TRACK_OUTLINES[trackKey]) || { name: eventName, length: 'Grand Prix Circuit' };
+
+        extracted.push({
+            id: `${sourceInfo.id}-${teamName.toLowerCase().replace(/[^a-z0-9]/g, '-') || rIdx}`,
+            eventId: sourceInfo.id,
+            event: eventName,
+            date: dateStr || 'Official Classification',
+            season: sourceInfo.season || 2026,
+            teamName: teamName || 'GRiD UP Sim Racing',
+            car: carStr || 'Official Entry',
+            drivers: drivers.length > 0 ? drivers : ['Team Drivers'],
+            qualy: rawQualy || '-',
+            split: splitStr,
+            finish: 'P' + pos,
+            position: pos,
+            positionLabel: pos === 1 ? '1ST PLACE' : (pos === 2 ? '2ND PLACE' : '3RD PLACE'),
+            accent: pos === 1 ? 'gold' : (pos === 2 ? 'silver' : 'bronze'),
+            category: inferCategory(carStr, eventName),
+            manufacturer: inferManufacturer(carStr),
+            trackKey: trackKey,
+            trackName: trackInfo.name,
+            trackLength: trackInfo.length,
+            image: sourceInfo.image || inferEventImage(sourceInfo.id, pos),
+            source: sourceInfo.path,
+            timestamp: sourceInfo.timestamp || ''
+        });
+    });
+
+    return extracted;
 }
 
 /**
- * 1. Fetch live results from database (same collections as /results.html)
+ * 1. Fetch live podium results directly from the official past event detail pages (/events/past/*.html).
+ * STRICT FILTER: ONLY displays P1, P2, and P3 podium finishes. All non-podium finishes (P4+) are discarded.
  */
 async function loadPodiumResultsFromDatabase() {
     const featuredGrid = document.getElementById('featured-podiums-grid');
@@ -145,141 +337,55 @@ async function loadPodiumResultsFromDatabase() {
     if (featuredGrid) featuredGrid.innerHTML = '<div class="trophy-empty-state"><p>Loading team podium finishes...</p></div>';
     if (pastContainer) pastContainer.innerHTML = '<div class="trophy-empty-state"><p>Loading podium archives...</p></div>';
 
+    let extracted = [];
+
     try {
-        let resultsDocs = [];
-        let eventsMap = {};
-
-        // Check if window.db or global db is ready
-        const activeDb = window.db || (typeof db !== 'undefined' ? db : null);
-
-        if (activeDb) {
-            const resultsSnap = await activeDb.collection("event_results").orderBy("timestamp", "desc").get();
-            const eventsSnap = await activeDb.collection("events").get();
-            
-            resultsDocs = resultsSnap.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-
-            eventsSnap.docs.forEach(doc => {
-                eventsMap[doc.id] = doc.data();
-            });
-        } else {
-            // REST API with large page size to ensure ALL entries are fetched
-            const resR = await fetch('https://firestore.googleapis.com/v1/projects/grid-up/databases/(default)/documents/event_results?pageSize=300');
-            const dataR = await resR.json();
-            const resE = await fetch('https://firestore.googleapis.com/v1/projects/grid-up/databases/(default)/documents/events?pageSize=300');
-            const dataE = await resE.json();
-
-            resultsDocs = (dataR.documents || []).map(doc => {
-                const f = doc.fields || {};
-                return {
-                    id: doc.name.split('/').pop(),
-                    eventId: f.eventId?.stringValue || '',
-                    teamName: f.teamName?.stringValue || '',
-                    car: f.car?.stringValue || '',
-                    finish: f.finish?.stringValue || '',
-                    qualy: f.qualy?.stringValue || '-',
-                    drivers: f.drivers?.arrayValue?.values?.map(v => v.stringValue) || [],
-                    timestamp: f.timestamp?.timestampValue || ''
-                };
-            });
-
-            (dataE.documents || []).forEach(doc => {
-                const id = doc.name.split('/').pop();
-                const f = doc.fields || {};
-                eventsMap[id] = {
-                    name: f.name?.stringValue,
-                    date: f.date?.stringValue
-                };
-            });
-        }
-
-        const extracted = [];
-
-        resultsDocs.forEach((d, idx) => {
-            const eId = d.eventId || '';
-
-            // Skip league races (gtc-) as on /results.html
-            if (eId.startsWith('gtc-')) return;
-
-            // ==========================================
-            // STRICT PODIUM FILTER: P1, P2, or P3 ONLY
-            // ==========================================
-            const rawFinish = String(d.finish || '').trim().toUpperCase();
-            let pos = null;
-
-            if (rawFinish === 'P1' || rawFinish === '1' || rawFinish === '1ST' || rawFinish === 'FIRST') {
-                pos = 1;
-            } else if (rawFinish === 'P2' || rawFinish === '2' || rawFinish === '2ND' || rawFinish === 'SECOND') {
-                pos = 2;
-            } else if (rawFinish === 'P3' || rawFinish === '3' || rawFinish === '3RD' || rawFinish === 'THIRD') {
-                pos = 3;
+        const isHttp = window.location.protocol.startsWith('http');
+        const fetchPromises = PAST_EVENT_SOURCES.map(async (src) => {
+            try {
+                const url = isHttp ? src.path : src.localPath;
+                const resp = await fetch(url);
+                if (!resp.ok) return [];
+                const html = await resp.text();
+                return parseSingleEventHtml(html, src);
+            } catch (err) {
+                console.warn(`Could not load past event detail page for ${src.id}:`, err);
+                return [];
             }
-
-            // Reject all non-podiums immediately (e.g. P4, P6, P11, P21, DNF, -, charity raised, etc.)
-            if (pos !== 1 && pos !== 2 && pos !== 3) {
-                return;
-            }
-
-            const ev = eventsMap[eId] || { name: eId, date: '' };
-            const eventName = formatEventTitle(eId, ev.name);
-            const tsMs = getTimestampMs(d.timestamp);
-            const year = tsMs ? new Date(tsMs).getFullYear() : (eId.includes('-25') ? 2025 : 2026);
-            const trackKey = inferTrackKey(eId, eventName);
-            const trackInfo = (window.TRACK_OUTLINES && window.TRACK_OUTLINES[trackKey]) || { name: eventName, length: 'Grand Prix Circuit' };
-            const category = inferCategory(d.car, eventName);
-            const displayDate = ev.date || (tsMs ? new Date(tsMs).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : (year + ' Official'));
-
-            extracted.push({
-                id: d.id || ('podium-' + idx),
-                position: pos,
-                finish: 'P' + pos,
-                positionLabel: pos === 1 ? '1ST PLACE' : (pos === 2 ? '2ND PLACE' : '3RD PLACE'),
-                accent: pos === 1 ? 'gold' : (pos === 2 ? 'silver' : 'bronze'),
-                eventId: eId,
-                event: eventName,
-                series: eventName.includes('iRacing') ? 'iRacing Championship' : 'Endurance Special Event',
-                round: 'Official Classification',
-                category: category,
-                date: displayDate,
-                season: year,
-                car: d.car || 'Official Entry',
-                drivers: Array.isArray(d.drivers) ? d.drivers : (d.drivers ? [d.drivers] : ['Team Drivers']),
-                teamName: d.teamName || 'GRiD UP Sim Racing',
-                qualy: d.qualy || '-',
-                trackKey: trackKey,
-                trackName: trackInfo.name,
-                trackLength: trackInfo.length,
-                image: inferEventImage(eId, idx),
-                manufacturer: inferManufacturer(d.car),
-                timestamp: d.timestamp || ''
-            });
         });
 
-        // Sort chronologically (newest first)
-        extracted.sort((a, b) => {
-            const ta = getTimestampMs(a.timestamp);
-            const tb = getTimestampMs(b.timestamp);
-            if (ta && tb && ta !== tb) return tb - ta;
-            return (b.season || 0) - (a.season || 0);
+        const resultsByPage = await Promise.all(fetchPromises);
+        resultsByPage.forEach(list => {
+            if (Array.isArray(list) && list.length > 0) {
+                extracted.push(...list);
+            }
         });
-
-        ALL_PODIUMS = extracted;
-        window.ALL_PODIUMS = extracted;
-
-        renderTrophyStats();
-        renderSeriesButtons();
-        renderFeaturedPodiums();
-        populateFilterDropdowns();
-        renderPastPodiums();
-
     } catch (err) {
-        console.error("Error loading podium results:", err);
-        if (featuredGrid) {
-            featuredGrid.innerHTML = '<div class="trophy-empty-state"><p>Could not load live podium results. Please try refreshing.</p></div>';
-        }
+        console.warn("Dynamic past event page fetching error:", err);
     }
+
+    // Fallback if fetch blocked or returned empty
+    if (extracted.length === 0) {
+        extracted = [...VERIFIED_PAST_PAGE_PODIUMS];
+    }
+
+    // Sort podiums: P1 first, then P2, then P3; or newest first
+    extracted.sort((a, b) => {
+        if (a.position !== b.position) return a.position - b.position;
+        const ta = getTimestampMs(a.timestamp);
+        const tb = getTimestampMs(b.timestamp);
+        if (ta && tb && ta !== tb) return tb - ta;
+        return (b.season || 0) - (a.season || 0);
+    });
+
+    ALL_PODIUMS = extracted;
+    window.ALL_PODIUMS = extracted;
+
+    renderTrophyStats();
+    renderSeriesButtons();
+    renderFeaturedPodiums();
+    populateFilterDropdowns();
+    renderPastPodiums();
 }
 
 /**
@@ -408,9 +514,10 @@ function renderFeaturedPodiums() {
         const posClass = item.position === 1 ? 'pos-1 gold' : (item.position === 2 ? 'pos-2 silver' : 'pos-3 bronze');
         const posSup = item.position === 1 ? 'ST' : (item.position === 2 ? 'ND' : 'RD');
         const driversStr = Array.isArray(item.drivers) ? item.drivers.join(' / ') : item.drivers;
+        const targetUrl = item.source || `/events/past/${item.eventId}.html`;
 
         return `
-            <div class="featured-card ${posClass}" data-index="${idx}">
+            <div class="featured-card ${posClass}" data-index="${idx}" style="cursor: pointer;" onclick="window.location.href='${targetUrl}'" title="View official event details">
                 <div class="card-glow"></div>
                 <div class="featured-img-container">
                     <img src="${item.image}" alt="${item.event}" class="featured-img" loading="lazy">
@@ -437,7 +544,7 @@ function renderFeaturedPodiums() {
                         </div>
                         <div class="spec-row">
                             <svg class="spec-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 17h14M5 12h14M5 7h14"/></svg>
-                            <span class="spec-text">${item.car} (Qualy: ${item.qualy})</span>
+                            <span class="spec-text">${item.car} ${item.split ? `(${item.split})` : ''}</span>
                         </div>
                         <div class="spec-row">
                             <svg class="spec-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -561,8 +668,9 @@ function renderPastPodiums() {
                         ${items.map(item => {
                             const posClass = item.position === 1 ? 'gold' : (item.position === 2 ? 'silver' : 'bronze');
                             const driversStr = Array.isArray(item.drivers) ? item.drivers.join(', ') : item.drivers;
+                            const targetUrl = item.source || `/events/past/${item.eventId}.html`;
                             return `
-                                <tr class="trophy-list-row ${posClass}">
+                                <tr class="trophy-list-row ${posClass}" style="cursor: pointer;" onclick="window.location.href='${targetUrl}'" title="View official event details">
                                     <td class="col-pos">
                                         <div class="pos-badge ${posClass}">${item.finish}</div>
                                     </td>
@@ -589,9 +697,10 @@ function renderPastPodiums() {
     container.innerHTML = items.map(item => {
         const posClass = item.position === 1 ? 'pos-1 gold' : (item.position === 2 ? 'pos-2 silver' : 'pos-3 bronze');
         const driversStr = Array.isArray(item.drivers) ? item.drivers.join(' / ') : item.drivers;
+        const targetUrl = item.source || `/events/past/${item.eventId}.html`;
 
         return `
-            <div class="past-card ${posClass}">
+            <div class="past-card ${posClass}" style="cursor: pointer;" onclick="window.location.href='${targetUrl}'" title="View official event details">
                 <div class="past-card-header">
                     <div class="past-pos-badge ${posClass}">${item.finish}</div>
                     <div class="past-card-img-wrap">
