@@ -2583,32 +2583,33 @@
             const poolList = document.getElementById('builder-driver-pool-list');
             const statsEl = document.getElementById('builder-driver-stats');
             
+            // Filter Driver Pool to only drivers who are interested or signed_up (I'm In)
+            const availableResponses = responses.filter(r => r.status === 'signed_up' || r.status === 'interested' || r.status === 'tentative');
             const confirmedCount = responses.filter(r => r.status === 'signed_up').length;
             const interestedCount = responses.filter(r => r.status === 'interested' || r.status === 'tentative').length;
-            const unavailCount = responses.filter(r => r.status === 'unavailable').length;
 
             if (statsEl) {
                 statsEl.innerHTML = `
                     <span style="background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #34d399; padding: 3px 8px; border-radius: 6px; font-weight: 700;"><i class="fas fa-check-circle"></i> ${confirmedCount} I'm In</span>
                     <span style="background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); color: #fbbf24; padding: 3px 8px; border-radius: 6px; font-weight: 700;"><i class="fas fa-star"></i> ${interestedCount} Interested</span>
-                    <span style="background: rgba(255,255,255,0.06); color: var(--text-muted); padding: 3px 8px; border-radius: 6px; font-weight: 700;">${responses.length} Total</span>
+                    <span style="background: rgba(255,255,255,0.06); color: var(--text-muted); padding: 3px 8px; border-radius: 6px; font-weight: 700;">${availableResponses.length} Available</span>
                 `;
             }
 
             if (poolList) {
-                if (responses.length === 0) {
+                if (availableResponses.length === 0) {
                     poolList.innerHTML = `
                         <div style="width: 100%; text-align: center; padding: 1.5rem 1rem; background: rgba(0,0,0,0.2); border-radius: 10px; border: 1px dashed rgba(255,255,255,0.08);">
                             <i class="fas fa-user-clock" style="font-size: 1.5rem; color: var(--primary); opacity: 0.6; margin-bottom: 0.5rem; display: block;"></i>
-                            <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0 0 0.5rem 0;">No drivers have submitted availability for this race yet.</p>
+                            <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0 0 0.5rem 0;">No drivers are currently signed up or interested for this race.</p>
                             <span style="font-size: 0.75rem; color: rgba(255,255,255,0.4);">Drivers can confirm their availability in the Driver Portal.</span>
                         </div>
                     `;
                 } else {
-                    poolList.innerHTML = responses.map(d => {
+                    poolList.innerHTML = availableResponses.map(d => {
                         const isInterested = d.status === 'interested' || d.status === 'tentative';
-                        const statusColor = d.status === 'signed_up' ? '#10b981' : isInterested ? '#f59e0b' : '#ef4444';
-                        const statusLabel = d.status === 'signed_up' ? "I'm In" : isInterested ? 'Interested' : 'Unavailable';
+                        const statusColor = d.status === 'signed_up' ? '#10b981' : '#f59e0b';
+                        const statusLabel = d.status === 'signed_up' ? "I'm In" : 'Interested';
                         
                         // Check eligibility
                         const driverClass = d.preferredClass || 'Unknown';
@@ -2723,10 +2724,15 @@
                     if (isUncovered) uncoveredCount++;
 
                     let driverOptions = `<option value="">-- Assign Driver --</option>`;
-                    responses.forEach(r => {
+                    const activeDrivers = responses.filter(r => r.status === 'signed_up' || r.status === 'interested' || r.status === 'tentative');
+
+                    if (s.driverName && !isUncovered && !activeDrivers.some(r => (r.driverName || 'Driver') === s.driverName)) {
+                        driverOptions += `<option value="${s.driverName}" selected>${s.driverName} (Assigned)</option>`;
+                    }
+
+                    activeDrivers.forEach(r => {
                         const name = r.driverName || 'Driver';
-                        const isInterested = r.status === 'interested' || r.status === 'tentative';
-                        const statusTag = r.status === 'signed_up' ? "I'm In" : isInterested ? 'Interested' : 'Unavail';
+                        const statusTag = r.status === 'signed_up' ? "I'm In" : 'Interested';
                         const driverClass = r.preferredClass || 'GT3';
                         const isEligible = eligibleClasses.some(ec => ec.toLowerCase() === driverClass.toLowerCase() || (ec === 'Supercars' && driverClass.toLowerCase().includes('supercar')));
                         const tag = isEligible ? `[${driverClass} ✓]` : `[${driverClass} ⚠️]`;
