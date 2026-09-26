@@ -139,6 +139,39 @@
             border-color: var(--primary) !important;
             box-shadow: 0 0 20px rgba(0, 207, 255, 0.35) !important;
         }
+                .studio-team-select {
+            background: #0f172a !important;
+            border: 1px solid rgba(0, 207, 255, 0.45) !important;
+            border-radius: 8px !important;
+            color: #ffffff !important;
+            font-family: inherit !important;
+            font-size: 1.1rem !important;
+            font-weight: 800 !important;
+            padding: 0.45rem 2.2rem 0.45rem 0.85rem !important;
+            width: 320px !important;
+            max-width: 100% !important;
+            outline: none !important;
+            cursor: pointer !important;
+            appearance: none !important;
+            -webkit-appearance: none !important;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2300cfff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+            background-repeat: no-repeat !important;
+            background-position: right 0.75rem center !important;
+            transition: all 0.2s ease !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+        }
+        .studio-team-select:hover, .studio-team-select:focus {
+            border-color: var(--primary) !important;
+            box-shadow: 0 0 20px rgba(0, 207, 255, 0.3) !important;
+        }
+        .studio-team-select option {
+            background: #0b0f19 !important;
+            color: #ffffff !important;
+            padding: 8px 12px !important;
+            font-size: 0.9rem !important;
+            font-weight: 700 !important;
+        }
+
         .studio-event-select option {
             background: #0b0f19 !important;
             color: #ffffff !important;
@@ -2456,10 +2489,52 @@
             return 6;
         }
 
+        const DEFAULT_GRIDUP_TEAMS = [
+            "GRiD UP Esports Blue",
+            "GRiD UP Esports Black",
+            "GRiD UP Esports Red",
+            "GRiD UP Esports White",
+            "GRiD UP Esports Purple",
+            "GRiD UP Esports Orange",
+            "GRiD UP Esports Silver",
+            "GRiD UP Sim Racing",
+            "GRiD UP Esports"
+        ];
+        let DYNAMIC_GRIDUP_TEAMS = [...DEFAULT_GRIDUP_TEAMS];
+
+        async function loadDynamicTeamsList() {
+            try {
+                const rtdb = typeof getTelemetryRTDB === 'function' ? getTelemetryRTDB() : null;
+                if (rtdb) {
+                    const snap = await rtdb.ref('config/teams').once('value');
+                    const data = snap.val();
+                    if (data && typeof data === 'object') {
+                        const teamsFromDb = [];
+                        Object.keys(data).forEach(key => {
+                            const item = data[key];
+                            if (item && item.enabled !== false) {
+                                const name = item.name || key;
+                                if (!name.toLowerCase().includes('practice') && !name.toLowerCase().includes('solo')) {
+                                    teamsFromDb.push(name);
+                                }
+                            }
+                        });
+                        if (teamsFromDb.length > 0) {
+                            const combined = [...teamsFromDb, ...DEFAULT_GRIDUP_TEAMS];
+                            DYNAMIC_GRIDUP_TEAMS = Array.from(new Set(combined));
+                        }
+                    }
+                }
+            } catch (e) {
+                console.warn("Could not fetch remote teams for team builder:", e);
+            }
+        }
+
         window._adminBuilderCars = [];
         window._adminOpenStints = {};
 
         async function loadAdminBuilderData() {
+            await loadDynamicTeamsList();
             const selector = document.getElementById('lineup-event-selector');
             if (!selector) return;
 
@@ -2710,6 +2785,16 @@
 
                 const isStintsOpen = !!window._adminOpenStints[cIdx];
 
+                // Team Options Dropdown from all GRiD UP teams
+                const currentTeamName = car.name || car.teamName || 'GRiD UP Esports Blue';
+                let teamList = [...DYNAMIC_GRIDUP_TEAMS];
+                if (!teamList.includes(currentTeamName)) {
+                    teamList.unshift(currentTeamName);
+                }
+                const teamOptionsHtml = teamList.map(t => `
+                    <option value="${t}" ${t === currentTeamName ? 'selected' : ''}>${t}</option>
+                `).join('') + `<option value="__custom__">+ Custom Team Name...</option>`;
+
                 // Presets tailored to car class
                 let presetButtons = '';
                 if (car.car_class === 'Supercars') {
@@ -2742,7 +2827,9 @@
                                     <input type="text" class="number-plate-input" value="${car.carNumber || '144'}" oninput="updateAdminCarField(${cIdx}, 'carNumber', this.value)">
                                 </div>
                                 <div>
-                                    <input type="text" class="car-team-name-input" value="${car.name || car.teamName || 'GRiD UP Esports'}" oninput="updateAdminCarField(${cIdx}, 'name', this.value); updateAdminCarField(${cIdx}, 'teamName', this.value);" placeholder="Car / Team Entry Name">
+                                    <select class="studio-team-select" onchange="onAdminCarTeamSelect(${cIdx}, this.value)">
+                                        ${teamOptionsHtml}
+                                    </select>
                                     <div style="display: flex; align-items: center; gap: 12px; margin-top: 8px; flex-wrap: wrap;">
                                         <div style="display: flex; align-items: center; gap: 6px;">
                                             <span style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Class:</span>
@@ -2821,6 +2908,26 @@
             canvas.innerHTML = carsHtml;
         }
 
+        window.onAdminCarTeamSelect = function(carIdx, val) {
+            if (val === '__custom__') {
+                const custom = prompt("Enter Custom Team / Entry Name:", "GRiD UP Esports ");
+                if (custom && custom.trim()) {
+                    val = custom.trim();
+                    if (!DYNAMIC_GRIDUP_TEAMS.includes(val)) {
+                        DYNAMIC_GRIDUP_TEAMS.push(val);
+                    }
+                } else {
+                    loadAdminBuilderData();
+                    return;
+                }
+            }
+            if (window._adminBuilderCars[carIdx]) {
+                window._adminBuilderCars[carIdx].name = val;
+                window._adminBuilderCars[carIdx].teamName = val;
+                loadAdminBuilderData();
+            }
+        };
+
         window.updateAdminCarField = function(carIdx, field, val) {
             if (window._adminBuilderCars[carIdx]) {
                 window._adminBuilderCars[carIdx][field] = val;
@@ -2871,10 +2978,13 @@
             const defaultModel = (EVENT_CAR_CATALOG[primaryClass] && EVENT_CAR_CATALOG[primaryClass][0]) || `${primaryClass} Chassis`;
             const defaultStint = primaryClass === 'Supercars' ? 45 : 60;
 
+            const usedNames = window._adminBuilderCars.map(c => c.name || c.teamName);
+            const availableTeam = DYNAMIC_GRIDUP_TEAMS.find(t => !usedNames.includes(t)) || `GRiD UP Esports #${nextNum}`;
+
             window._adminBuilderCars.push({
                 carNumber: String(nextNum),
-                name: `GRiD UP Esports #${nextNum}`,
-                teamName: `GRiD UP Esports #${nextNum}`,
+                name: availableTeam,
+                teamName: availableTeam,
                 car_class: primaryClass,
                 carModel: defaultModel,
                 stintMinutes: defaultStint,
