@@ -110,5 +110,17 @@ window.MANUFACTURER_LOGOS = {
     "dallara": {
         "name": "Dallara",
         "svg": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h9a7 7 0 0 1 7 7v2a7 7 0 0 1-7 7H4V4z"/></svg>'
+    },
+    "ford": {
+        "name": "Ford Performance",
+        "svg": '<svg viewBox="0 0 100 24" fill="currentColor"><text x="50%" y="72%" text-anchor="middle" font-family="Orbitron, sans-serif" font-weight="900" font-size="13" letter-spacing="2" fill="currentColor">FORD</text></svg>'
+    },
+    "mclaren": {
+        "name": "McLaren",
+        "svg": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 16C8 12 16 8 20 8C16 12 8 16 4 16Z" fill="currentColor"/><circle cx="18" cy="8" r="2" fill="currentColor"/></svg>'
+    },
+    "chevrolet": {
+        "name": "Chevrolet Corvette",
+        "svg": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 10h18v4H3z"/><path d="M10 5h4v14h-4z"/></svg>'
     }
 };
