@@ -115,75 +115,193 @@
             color: white !important;
         }
     
-        /* Team Builder Studio Styles */
+                /* Team Builder Studio Styles */
+        .studio-event-select {
+            background: #0f172a !important;
+            border: 1px solid rgba(0, 207, 255, 0.45) !important;
+            color: #ffffff !important;
+            font-family: inherit !important;
+            font-size: 0.85rem !important;
+            font-weight: 700 !important;
+            padding: 0.6rem 2.2rem 0.6rem 1rem !important;
+            border-radius: 8px !important;
+            cursor: pointer !important;
+            outline: none !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4) !important;
+            transition: all 0.2s ease !important;
+            appearance: none !important;
+            -webkit-appearance: none !important;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2300cfff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+            background-repeat: no-repeat !important;
+            background-position: right 0.75rem center !important;
+        }
+        .studio-event-select:hover, .studio-event-select:focus {
+            border-color: var(--primary) !important;
+            box-shadow: 0 0 20px rgba(0, 207, 255, 0.35) !important;
+        }
+        .studio-event-select option {
+            background: #0b0f19 !important;
+            color: #ffffff !important;
+            padding: 10px 14px !important;
+            font-size: 0.85rem !important;
+        }
         .builder-canvas {
             display: flex;
             flex-direction: column;
-            gap: 2rem;
+            gap: 1.5rem;
             margin-top: 1.5rem;
         }
         .builder-car-card {
-            background: rgba(20, 20, 25, 0.7);
+            background: linear-gradient(180deg, rgba(20, 24, 35, 0.85) 0%, rgba(12, 15, 22, 0.95) 100%);
             border: 1px solid rgba(0, 207, 255, 0.25);
             border-radius: 16px;
             padding: 1.75rem;
             position: relative;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .builder-car-card:hover {
+            border-color: rgba(0, 207, 255, 0.45);
+            box-shadow: 0 12px 35px rgba(0, 207, 255, 0.08);
+        }
+        .racing-number-plate {
+            background: linear-gradient(135deg, rgba(0, 207, 255, 0.18) 0%, rgba(8, 12, 20, 0.95) 100%);
+            border: 2px solid var(--primary);
+            border-radius: 10px;
+            padding: 0.3rem 0.65rem;
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0, 207, 255, 0.25);
+            min-width: 62px;
+        }
+        .number-plate-label {
+            font-size: 0.5rem;
+            font-weight: 900;
+            letter-spacing: 1.5px;
+            color: var(--primary);
+            text-transform: uppercase;
+            line-height: 1;
+            margin-bottom: 2px;
+        }
+        .number-plate-input {
+            background: transparent !important;
+            border: none !important;
+            color: #ffffff !important;
+            font-size: 1.35rem !important;
+            font-weight: 900 !important;
+            width: 50px !important;
+            text-align: center !important;
+            outline: none !important;
+            font-family: monospace, sans-serif !important;
+            padding: 0 !important;
+            line-height: 1.2 !important;
+        }
+        .car-team-name-input {
+            background: rgba(255, 255, 255, 0.04) !important;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+            border-radius: 8px !important;
+            color: #ffffff !important;
+            font-size: 1.15rem !important;
+            font-weight: 800 !important;
+            padding: 0.4rem 0.8rem !important;
+            width: 300px !important;
+            outline: none !important;
+            transition: all 0.2s ease !important;
+        }
+        .car-team-name-input:focus {
+            border-color: var(--primary) !important;
+            background: rgba(0, 207, 255, 0.06) !important;
+            box-shadow: 0 0 15px rgba(0, 207, 255, 0.25) !important;
+        }
+        .studio-mini-select {
+            background: #0f172a !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            color: #ffffff !important;
+            font-size: 0.75rem !important;
+            font-weight: 700 !important;
+            padding: 0.35rem 0.75rem !important;
+            border-radius: 6px !important;
+            outline: none !important;
+            transition: all 0.2s ease !important;
+            cursor: pointer !important;
+        }
+        .studio-mini-select:focus, .studio-mini-select:hover {
+            border-color: var(--primary) !important;
+            color: var(--primary) !important;
+        }
+        .studio-mini-select option {
+            background: #0b0f19 !important;
+            color: #fff !important;
         }
         .stint-presets-group {
             display: flex;
             gap: 0.5rem;
             flex-wrap: wrap;
-            margin: 0.75rem 0 1.25rem;
+            margin: 0.65rem 0 1rem;
+            align-items: center;
         }
         .stint-preset-btn {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: var(--text-muted);
-            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: rgba(255, 255, 255, 0.75);
+            border-radius: 6px;
             padding: 0.4rem 0.8rem;
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             font-weight: 700;
             cursor: pointer;
             transition: all 0.2s ease;
         }
-        .stint-preset-btn:hover, .stint-preset-btn.active {
-            background: rgba(0, 207, 255, 0.15);
+        .stint-preset-btn:hover {
+            background: rgba(0, 207, 255, 0.1);
+            border-color: rgba(0, 207, 255, 0.4);
+            color: #ffffff;
+        }
+        .stint-preset-btn.active {
+            background: rgba(0, 207, 255, 0.18);
             border-color: var(--primary);
-            color: #fff;
+            color: #00cfff;
+            box-shadow: 0 0 12px rgba(0, 207, 255, 0.25);
         }
         .stint-run-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 0.8rem;
-            margin-top: 1rem;
         }
         .stint-run-table th {
             text-align: left;
-            padding: 0.6rem 0.8rem;
-            color: var(--text-muted);
+            padding: 0.65rem 0.9rem;
+            background: rgba(0, 0, 0, 0.4);
+            color: var(--primary);
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             font-size: 0.65rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            font-weight: 800;
         }
         .stint-run-table td {
-            padding: 0.6rem 0.8rem;
+            padding: 0.6rem 0.9rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            vertical-align: middle;
+        }
+        .stint-run-table tbody tr:hover {
+            background: rgba(0, 207, 255, 0.025);
         }
         .stint-status-badge {
             display: inline-block;
-            padding: 2px 8px;
-            border-radius: 12px;
+            padding: 3px 8px;
+            border-radius: 6px;
             font-size: 0.65rem;
             font-weight: 800;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        .badge-scheduled { background: rgba(255, 255, 255, 0.08); color: var(--text-muted); }
+        .badge-scheduled { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
         .badge-ondeck { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
         .badge-active { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
         .badge-completed { background: rgba(255, 255, 255, 0.03); color: #6b7280; text-decoration: line-through; }
-        .badge-uncovered { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
+        .badge-uncovered { background: rgba(239, 68, 68, 0.18); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35); }
+        .badge-uncovered { background: rgba(239, 68, 68, 0.18); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35); }.badge-uncovered { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
 </style>
 </head>
 <body class="admin-page">
@@ -318,43 +436,56 @@
             <!-- Race Management Section -->
             <div id="section-races" class="tab-content" style="display: none;">
                 <!-- Header Card with Event Selector -->
-                <div class="glass" style="padding: 2rem; margin-bottom: 2rem; border-radius: 16px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+                <div class="glass" style="padding: 1.75rem 2rem; margin-bottom: 2rem; border-radius: 16px; border: 1px solid rgba(0,207,255,0.25); background: linear-gradient(180deg, rgba(15,23,42,0.7) 0%, rgba(10,12,18,0.85) 100%);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.25rem; margin-bottom: 1.5rem;">
                         <div>
-                            <h2 style="font-size: 1.4rem; color: #fff; margin: 0; display: flex; align-items: center; gap: 8px;">
-                                <i class="fas fa-layer-group" style="color: var(--primary);"></i> Team Builder Studio
-                            </h2>
-                            <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.25rem;">
-                                Form car entries, enforce eligible classes/cars, adjust per-car stint windows, and publish official race lineups.
-                            </p>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(0,207,255,0.15); border: 1px solid var(--primary); display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 1.1rem;">
+                                    <i class="fas fa-layer-group"></i>
+                                </div>
+                                <div>
+                                    <h2 style="font-size: 1.35rem; color: #fff; margin: 0; font-weight: 800; letter-spacing: 0.5px;">Team Builder Studio</h2>
+                                    <span style="font-size: 0.75rem; color: var(--text-muted);">Manage multi-car team lineups, enforce vehicle eligibility, and configure stint schedules</span>
+                                </div>
+                            </div>
                         </div>
                         <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
-                            <select id="lineup-event-selector" class="btn btn-outline" style="font-size: 0.85rem; padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 700;" onchange="loadAdminBuilderData()">
-                                <option value="">-- Choose an Event --</option>
-                            </select>
-                            <button onclick="publishBuilderLineups()" class="btn btn-primary" style="font-size: 0.85rem; padding: 0.6rem 1.5rem; border-radius: 8px; box-shadow: 0 0 20px rgba(0,207,255,0.3);">
-                                <i class="fas fa-cloud-upload-alt" style="margin-right: 6px;"></i> Publish Official Lineups & Stints
+                            <div style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 4px 10px;">
+                                <label for="lineup-event-selector" style="font-size: 0.7rem; color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;">
+                                    <i class="fas fa-flag-checkered" style="margin-right: 4px;"></i> Upcoming Race:
+                                </label>
+                                <select id="lineup-event-selector" class="studio-event-select" onchange="loadAdminBuilderData()">
+                                    <option value="">Loading upcoming races...</option>
+                                </select>
+                            </div>
+                            <button onclick="publishBuilderLineups()" class="btn btn-primary" style="font-size: 0.85rem; padding: 0.65rem 1.4rem; border-radius: 10px; font-weight: 800; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 0 25px rgba(0,207,255,0.35);">
+                                <i class="fas fa-cloud-upload-alt"></i> Publish Official Lineups
                             </button>
                         </div>
                     </div>
 
-                    <!-- Event Metadata & Eligible Classes Pill Banner -->
-                    <div id="builder-event-meta-banner" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 1rem 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-                        <div id="builder-event-summary" style="font-size: 0.8rem; color: var(--text-muted);">Select an event above to start building lineups.</div>
-                        <div id="builder-event-classes-pills" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+                    <!-- Event Metadata & Eligible Classes Banner -->
+                    <div id="builder-event-meta-banner" style="background: rgba(0,0,0,0.45); border: 1px solid rgba(0,207,255,0.2); border-left: 4px solid var(--primary); border-radius: 12px; padding: 1.1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.25rem;">
+                        <div id="builder-event-summary" style="font-size: 0.85rem; color: var(--text-muted);">Select an upcoming race to start assembling car entries.</div>
+                        <div id="builder-event-classes-pills" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;"></div>
                     </div>
                 </div>
 
-                <!-- Driver Pool & Availability -->
-                <div class="glass" style="padding: 1.5rem 2rem; margin-bottom: 2rem; border-radius: 16px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
-                        <h4 style="color: var(--primary); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; margin: 0;">
-                            <i class="fas fa-users" style="margin-right: 6px;"></i> Driver Pool & Availability Responses
-                        </h4>
-                        <span id="builder-driver-count-badge" style="font-size: 0.75rem; color: var(--text-muted);">0 Responded</span>
+                <!-- Driver Pool & Availability Responses -->
+                <div class="glass" style="padding: 1.5rem 2rem; margin-bottom: 2rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08); background: rgba(13,16,24,0.6);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 28px; height: 28px; border-radius: 6px; background: rgba(0,207,255,0.12); display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 0.85rem;">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <h4 style="color: #fff; font-size: 0.95rem; font-weight: 800; margin: 0; letter-spacing: 0.5px;">Driver Availability Pool</h4>
+                        </div>
+                        <div id="builder-driver-stats" style="display: flex; gap: 10px; font-size: 0.75rem;">
+                            <span id="builder-driver-count-badge" style="background: rgba(255,255,255,0.06); padding: 4px 10px; border-radius: 6px; color: var(--text-muted); font-weight: 700;">0 Responded</span>
+                        </div>
                     </div>
                     <div id="builder-driver-pool-list" style="display: flex; flex-wrap: wrap; gap: 0.75rem;">
-                        <p style="color: var(--text-muted); font-size: 0.8rem; margin: 0;">No drivers signed up yet for this event.</p>
+                        <p style="color: var(--text-muted); font-size: 0.8rem; margin: 0;">Loading driver responses...</p>
                     </div>
                 </div>
 
@@ -363,12 +494,13 @@
                     <!-- Populated by JS -->
                 </div>
 
-                <div style="margin-top: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
-                    <button onclick="addBuilderCar()" class="btn btn-outline" style="flex: 2; border-style: dashed; padding: 1rem; border-radius: 12px; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px;">
-                        <i class="fas fa-plus-circle" style="margin-right: 8px;"></i> Add Car Entry
+                <!-- Studio Footer Actions -->
+                <div style="margin-top: 1.75rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <button onclick="addBuilderCar()" class="btn btn-outline" style="flex: 2; border-color: rgba(0,207,255,0.4); background: rgba(0,207,255,0.05); padding: 1rem 1.5rem; border-radius: 12px; font-size: 0.85rem; font-weight: 800; letter-spacing: 0.5px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease;">
+                        <i class="fas fa-plus-circle" style="color: var(--primary);"></i> + Add Another Car Entry
                     </button>
-                    <button onclick="toggleLapSync()" class="btn btn-outline" style="flex: 1; border-color: rgba(255,255,255,0.15); padding: 1rem; border-radius: 12px; font-size: 0.8rem;">
-                        <i class="fas fa-stopwatch" style="margin-right: 6px; color: var(--primary);"></i> Sync Fastest Laps (Garage 61)
+                    <button onclick="toggleLapSync()" class="btn btn-outline" style="flex: 1; border-color: rgba(255,255,255,0.15); padding: 1rem 1.25rem; border-radius: 12px; font-size: 0.8rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+                        <i class="fas fa-stopwatch" style="color: var(--primary);"></i> Sync Fastest Laps (Garage 61)
                     </button>
                 </div>
 
@@ -406,7 +538,6 @@
                 </div>
             </div>
 
-            <!-- Admins Management Section -->
             <div id="section-admins" class="tab-content" style="display: none;">
                 <div class="grid" style="grid-template-columns: 1fr 2fr; gap: 2rem; align-items: start;">
                     <!-- Add Admin Form -->
@@ -1655,6 +1786,40 @@
             if (tab === 'm2-cup') initM2CupAdmin();
             if (tab === 'telemetry-teams') loadTelemetryTeamsAdmin();
         }
+
+        function isEventUpcoming(event, now = new Date()) {
+            if (!event) return false;
+            // 1. If explicit endDate is present and valid
+            if (event.endDate) {
+                const end = new Date(event.endDate);
+                if (!isNaN(end.getTime())) {
+                    return end >= now;
+                }
+            }
+            // 2. If startDate is present
+            if (event.startDate) {
+                const start = new Date(event.startDate);
+                if (!isNaN(start.getTime())) {
+                    const dur = typeof getEventDurationHours === 'function' ? getEventDurationHours(event) : 24;
+                    const endEstimate = new Date(start.getTime() + (dur || 24) * 3600 * 1000);
+                    return endEstimate >= now;
+                }
+            }
+            // 3. Fallback: Parse human string like "Oct 2-4"
+            if (event.date) {
+                try {
+                    const currentYear = now.getFullYear();
+                    const firstPart = event.date.split('-')[0].split('–')[0].trim();
+                    const parsed = new Date(`${firstPart} ${currentYear}`);
+                    if (!isNaN(parsed.getTime())) {
+                        const dur = typeof getEventDurationHours === 'function' ? getEventDurationHours(event) : 48;
+                        const end = new Date(parsed.getTime() + (dur || 48) * 3600 * 1000);
+                        return end >= now;
+                    }
+                } catch (e) {}
+            }
+            return false;
+        }
         let UPCOMING_EVENTS = [];
         let ALL_EVENTS = [];
 
@@ -1677,9 +1842,8 @@
                     const eventObj = { id: doc.id, ...data };
                     ALL_EVENTS.push(eventObj);
 
-                    const endDate = data.endDate ? new Date(data.endDate) : null;
-                    // Filter out past events for the schedule manager view
-                    if (!endDate || endDate > now) {
+                    // Strictly filter upcoming events using robust expiration check
+                    if (isEventUpcoming(eventObj, now)) {
                         UPCOMING_EVENTS.push(eventObj);
                     }
                 });
@@ -1736,7 +1900,27 @@
                 // Use ALL_EVENTS for results, posters, and reports, UPCOMING_EVENTS for lineups/availability
                 const sourceList = (id === 'result-event-selector' || id === 'card-event' || id === 'report-event-selector') ? ALL_EVENTS : UPCOMING_EVENTS;
                 
-                sel.innerHTML = baseOption + sourceList.map(e => `<option value="${e.id}" ${e.id === currentVal ? 'selected' : ''}>${e.name}</option>`).join('');
+                if (id === 'lineup-event-selector') {
+                    if (UPCOMING_EVENTS.length === 0) {
+                        sel.innerHTML = '<option value="">No Upcoming Races Found</option>';
+                        return;
+                    }
+                    // Sort upcoming events chronologically
+                    const sortedUpcoming = [...UPCOMING_EVENTS].sort((a, b) => {
+                        const tA = a.startDate ? new Date(a.startDate).getTime() : 0;
+                        const tB = b.startDate ? new Date(b.startDate).getTime() : 0;
+                        return tA - tB;
+                    });
+                    sel.innerHTML = sortedUpcoming.map(e => `
+                        <option value="${e.id}" ${e.id === currentVal ? 'selected' : ''}>${e.name} • ${e.date || 'Upcoming'}</option>
+                    `).join('');
+                    
+                    if (!currentVal || !sortedUpcoming.some(e => e.id === currentVal)) {
+                        sel.value = sortedUpcoming[0].id;
+                    }
+                } else {
+                    sel.innerHTML = baseOption + sourceList.map(e => `<option value="${e.id}" ${e.id === currentVal ? 'selected' : ''}>${e.name}</option>`).join('');
+                }
             });
         }
 
@@ -2279,8 +2463,29 @@
             const selector = document.getElementById('lineup-event-selector');
             if (!selector) return;
 
+            // Ensure events are loaded if not loaded yet
+            if (!UPCOMING_EVENTS || UPCOMING_EVENTS.length === 0) {
+                try {
+                    const snapshot = await db.collection("events").orderBy("startDate", "asc").get();
+                    ALL_EVENTS = [];
+                    UPCOMING_EVENTS = [];
+                    const now = new Date();
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        const eventObj = { id: doc.id, ...data };
+                        ALL_EVENTS.push(eventObj);
+                        if (isEventUpcoming(eventObj, now)) {
+                            UPCOMING_EVENTS.push(eventObj);
+                        }
+                    });
+                    updateSelectors();
+                } catch (e) {
+                    console.error("Error loading events in loadAdminBuilderData:", e);
+                }
+            }
+
             let activeId = selector.value;
-            if (!activeId && UPCOMING_EVENTS.length > 0) {
+            if ((!activeId || !UPCOMING_EVENTS.some(e => e.id === activeId)) && UPCOMING_EVENTS.length > 0) {
                 activeId = UPCOMING_EVENTS[0].id;
                 selector.value = activeId;
             }
@@ -2296,18 +2501,23 @@
             const pillsEl = document.getElementById('builder-event-classes-pills');
             if (summaryEl) {
                 summaryEl.innerHTML = `
-                    <div style="font-size: 0.95rem; font-weight: 800; color: #fff;">${currentEvent.name}</div>
-                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
-                        <span><i class="fas fa-calendar-alt" style="color:var(--primary);"></i> ${currentEvent.date || 'TBA'}</span> &bull; 
-                        <span><i class="fas fa-stopwatch" style="color:var(--primary);"></i> ${durationHours}H Race Duration</span> &bull; 
-                        <span><i class="fas fa-map-marker-alt" style="color:var(--primary);"></i> ${currentEvent.track || 'Track'}</span>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                        <span style="background: rgba(0,207,255,0.15); border: 1px solid var(--primary); color: var(--primary); font-size: 0.65rem; font-weight: 900; letter-spacing: 1px; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;">ACTIVE RACE</span>
+                        <div style="font-size: 1.15rem; font-weight: 800; color: #fff;">${currentEvent.name}</div>
+                    </div>
+                    <div style="display: flex; gap: 16px; font-size: 0.78rem; color: var(--text-muted); flex-wrap: wrap;">
+                        <span><i class="fas fa-calendar-alt" style="color:var(--primary); margin-right: 5px;"></i> ${currentEvent.date || 'TBA'}</span>
+                        <span><i class="fas fa-stopwatch" style="color:var(--primary); margin-right: 5px;"></i> ${durationHours}H Race Duration</span>
+                        <span><i class="fas fa-map-marker-alt" style="color:var(--primary); margin-right: 5px;"></i> ${currentEvent.track || 'Track TBA'}</span>
                     </div>
                 `;
             }
             if (pillsEl) {
-                pillsEl.innerHTML = eligibleClasses.map(c => `
-                    <span style="background: rgba(0,207,255,0.15); border: 1px solid var(--primary); color: #fff; font-size: 0.7rem; font-weight: 800; padding: 4px 10px; border-radius: 8px;">
-                        <i class="fas fa-car" style="color:var(--primary); margin-right:4px;"></i> ${c}
+                pillsEl.innerHTML = `
+                    <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; margin-right: 4px;">Eligible Classes:</span>
+                ` + eligibleClasses.map(c => `
+                    <span style="background: rgba(0,207,255,0.12); border: 1px solid var(--primary); color: #fff; font-size: 0.72rem; font-weight: 800; padding: 4px 10px; border-radius: 8px; display: inline-flex; align-items: center; gap: 5px;">
+                        <i class="fas fa-car" style="color:var(--primary);"></i> ${c}
                     </span>
                 `).join('');
             }
@@ -2321,14 +2531,31 @@
                 console.warn("Could not load availability responses:", err);
             }
 
-            // Render Driver Pool with Ineligibility Warnings
+            // Render Driver Pool with Ineligibility Warnings & Live Counts
             const poolList = document.getElementById('builder-driver-pool-list');
-            const countBadge = document.getElementById('builder-driver-count-badge');
-            if (countBadge) countBadge.textContent = `${responses.length} Responded`;
+            const statsEl = document.getElementById('builder-driver-stats');
+            
+            const confirmedCount = responses.filter(r => r.status === 'signed_up').length;
+            const interestedCount = responses.filter(r => r.status === 'interested' || r.status === 'tentative').length;
+            const unavailCount = responses.filter(r => r.status === 'unavailable').length;
+
+            if (statsEl) {
+                statsEl.innerHTML = `
+                    <span style="background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #34d399; padding: 3px 8px; border-radius: 6px; font-weight: 700;"><i class="fas fa-check-circle"></i> ${confirmedCount} I'm In</span>
+                    <span style="background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); color: #fbbf24; padding: 3px 8px; border-radius: 6px; font-weight: 700;"><i class="fas fa-star"></i> ${interestedCount} Interested</span>
+                    <span style="background: rgba(255,255,255,0.06); color: var(--text-muted); padding: 3px 8px; border-radius: 6px; font-weight: 700;">${responses.length} Total</span>
+                `;
+            }
 
             if (poolList) {
                 if (responses.length === 0) {
-                    poolList.innerHTML = `<p style="color: var(--text-muted); font-size: 0.8rem; margin: 0;">No drivers have responded to this event yet.</p>`;
+                    poolList.innerHTML = `
+                        <div style="width: 100%; text-align: center; padding: 1.5rem 1rem; background: rgba(0,0,0,0.2); border-radius: 10px; border: 1px dashed rgba(255,255,255,0.08);">
+                            <i class="fas fa-user-clock" style="font-size: 1.5rem; color: var(--primary); opacity: 0.6; margin-bottom: 0.5rem; display: block;"></i>
+                            <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0 0 0.5rem 0;">No drivers have submitted availability for this race yet.</p>
+                            <span style="font-size: 0.75rem; color: rgba(255,255,255,0.4);">Drivers can confirm their availability in the Driver Portal.</span>
+                        </div>
+                    `;
                 } else {
                     poolList.innerHTML = responses.map(d => {
                         const isInterested = d.status === 'interested' || d.status === 'tentative';
@@ -2342,20 +2569,20 @@
                         let eligibilityBadge = '';
                         if (!isEligible) {
                             eligibilityBadge = `
-                                <span style="background: rgba(239,68,68,0.25); border: 1px solid #ef4444; color: #f87171; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">
+                                <span style="background: rgba(239,68,68,0.2); border: 1px solid #ef4444; color: #f87171; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">
                                     <i class="fas fa-exclamation-triangle"></i> Ineligible [${driverClass}]
-                                    <button type="button" onclick="adminQuickFixDriverClass('${activeId}', '${d.id}', '${eligibleClasses[0]}')" style="background: none; border: none; color: #fbbf24; cursor: pointer; text-decoration: underline; font-size: 0.65rem; padding: 0 2px;">Fix to ${eligibleClasses[0]}</button>
+                                    <button type="button" onclick="adminQuickFixDriverClass('${activeId}', '${d.id}', '${eligibleClasses[0]}')" style="background: rgba(251,191,36,0.25); border: 1px solid #fbbf24; color: #fbbf24; cursor: pointer; font-weight: 800; font-size: 0.65rem; padding: 1px 5px; border-radius: 3px;">Fix to ${eligibleClasses[0]}</button>
                                 </span>
                             `;
                         } else {
-                            eligibilityBadge = `<span style="color: var(--primary); font-size: 0.65rem; font-weight: 700;">[${driverClass}]</span>`;
+                            eligibilityBadge = `<span style="background: rgba(0,207,255,0.1); border: 1px solid rgba(0,207,255,0.25); color: var(--primary); font-size: 0.65rem; font-weight: 700; padding: 2px 6px; border-radius: 4px;">${driverClass}</span>`;
                         }
 
                         return `
-                            <div style="background: rgba(255,255,255,0.03); border: 1px solid ${isEligible ? 'rgba(255,255,255,0.08)' : 'rgba(239,68,68,0.4)'}; padding: 0.5rem 0.85rem; border-radius: 8px; font-size: 0.75rem; display: flex; align-items: center; gap: 8px;">
+                            <div style="background: rgba(255,255,255,0.03); border: 1px solid ${isEligible ? 'rgba(255,255,255,0.08)' : 'rgba(239,68,68,0.4)'}; padding: 0.5rem 0.85rem; border-radius: 8px; font-size: 0.78rem; display: flex; align-items: center; gap: 8px;">
                                 <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${statusColor};"></span>
-                                <strong>${d.driverName || 'Driver'}</strong>
-                                <span style="color: ${statusColor}; font-size: 0.65rem; font-weight: 700;">(${statusLabel})</span>
+                                <strong style="color: #fff;">${d.driverName || 'Driver'}</strong>
+                                <span style="color: ${statusColor}; font-size: 0.7rem; font-weight: 700;">(${statusLabel})</span>
                                 ${eligibilityBadge}
                             </div>
                         `;
@@ -2457,14 +2684,14 @@
                         <tr>
                             <td style="font-weight: 800; color: var(--primary);">#${s.stintIndex}</td>
                             <td>
-                                <select onchange="updateAdminCarStintDriver(${cIdx}, ${sIdx}, this.value)" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.35rem; width: 100%; border-radius: 6px;">
+                                <select onchange="updateAdminCarStintDriver(${cIdx}, ${sIdx}, this.value)" class="studio-mini-select" style="width: 100%; padding: 0.35rem 0.6rem;">
                                     ${driverOptions}
                                 </select>
                             </td>
-                            <td style="font-family: monospace; color: var(--text-muted); font-size: 0.75rem;">${s.plannedStartTimeStr} - ${s.plannedEndTimeStr}</td>
-                            <td style="font-size: 0.75rem;">${s.plannedDurationMinutes}m</td>
+                            <td style="font-family: monospace; color: rgba(255,255,255,0.7); font-size: 0.75rem;">${s.plannedStartTimeStr} - ${s.plannedEndTimeStr}</td>
+                            <td style="font-size: 0.75rem; color: #fff;">${s.plannedDurationMinutes}m</td>
                             <td>
-                                ${isUncovered ? `<span class="stint-status-badge badge-uncovered" style="background:#ef4444; color:#fff;">UNASSIGNED</span>` : `<span class="stint-status-badge badge-scheduled">READY</span>`}
+                                ${isUncovered ? `<span class="stint-status-badge badge-uncovered">UNASSIGNED</span>` : `<span class="stint-status-badge badge-scheduled">READY</span>`}
                             </td>
                         </tr>
                     `;
@@ -2488,60 +2715,69 @@
                 if (car.car_class === 'Supercars') {
                     presetButtons = `
                         <button onclick="setAdminCarStintMinutes(${cIdx}, 30)" class="stint-preset-btn ${stintMinutes === 30 ? 'active' : ''}">30m (Splash)</button>
-                        <button onclick="setAdminCarStintMinutes(${cIdx}, 40)" class="stint-preset-btn ${stintMinutes === 40 ? 'active' : ''}">40m (Standard Supercars)</button>
+                        <button onclick="setAdminCarStintMinutes(${cIdx}, 40)" class="stint-preset-btn ${stintMinutes === 40 ? 'active' : ''}">40m (Standard)</button>
                         <button onclick="setAdminCarStintMinutes(${cIdx}, 45)" class="stint-preset-btn ${stintMinutes === 45 ? 'active' : ''}">45m (Fuel Max)</button>
                     `;
                 } else if (car.car_class === 'GTP' || car.car_class === 'LMP2') {
                     presetButtons = `
                         <button onclick="setAdminCarStintMinutes(${cIdx}, 35)" class="stint-preset-btn ${stintMinutes === 35 ? 'active' : ''}">35m (Short)</button>
-                        <button onclick="setAdminCarStintMinutes(${cIdx}, 45)" class="stint-preset-btn ${stintMinutes === 45 ? 'active' : ''}">45m (Standard Prototype)</button>
+                        <button onclick="setAdminCarStintMinutes(${cIdx}, 45)" class="stint-preset-btn ${stintMinutes === 45 ? 'active' : ''}">45m (Standard)</button>
                         <button onclick="setAdminCarStintMinutes(${cIdx}, 50)" class="stint-preset-btn ${stintMinutes === 50 ? 'active' : ''}">50m (Saving)</button>
                     `;
                 } else {
                     presetButtons = `
                         <button onclick="setAdminCarStintMinutes(${cIdx}, 45)" class="stint-preset-btn ${stintMinutes === 45 ? 'active' : ''}">45m (Fuel Save)</button>
-                        <button onclick="setAdminCarStintMinutes(${cIdx}, 60)" class="stint-preset-btn ${stintMinutes === 60 ? 'active' : ''}">60m (GT3 Standard)</button>
+                        <button onclick="setAdminCarStintMinutes(${cIdx}, 60)" class="stint-preset-btn ${stintMinutes === 60 ? 'active' : ''}">60m (GT3 Std)</button>
                         <button onclick="setAdminCarStintMinutes(${cIdx}, 90)" class="stint-preset-btn ${stintMinutes === 90 ? 'active' : ''}">90m (Double)</button>
-                        <button onclick="setAdminCarStintMinutes(${cIdx}, 120)" class="stint-preset-btn ${stintMinutes === 120 ? 'active' : ''}">120m (Double GT3)</button>
+                        <button onclick="setAdminCarStintMinutes(${cIdx}, 120)" class="stint-preset-btn ${stintMinutes === 120 ? 'active' : ''}">120m (Double Max)</button>
                     `;
                 }
 
                 carsHtml += `
                     <div class="builder-car-card">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 1rem; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
-                            <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
-                                <div style="background: rgba(0,207,255,0.1); border: 1px solid var(--primary); padding: 0.4rem 0.8rem; border-radius: 8px; font-weight: 900; font-size: 1.25rem; color: var(--primary);">
-                                    #<input type="text" value="${car.carNumber || '144'}" oninput="updateAdminCarField(${cIdx}, 'carNumber', this.value)" style="background:transparent; border:none; color:var(--primary); font-weight:900; width:50px; font-size:1.25rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 1.25rem; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+                            <div style="display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap;">
+                                <div class="racing-number-plate">
+                                    <span class="number-plate-label">CAR #</span>
+                                    <input type="text" class="number-plate-input" value="${car.carNumber || '144'}" oninput="updateAdminCarField(${cIdx}, 'carNumber', this.value)">
                                 </div>
                                 <div>
-                                    <input type="text" value="${car.name || car.teamName || 'GRiD UP Esports'}" oninput="updateAdminCarField(${cIdx}, 'name', this.value); updateAdminCarField(${cIdx}, 'teamName', this.value);" style="background:transparent; border:1px dashed rgba(255,255,255,0.15); color:#fff; font-weight:800; font-size:1.1rem; padding: 2px 6px; border-radius: 4px; width: 260px;">
-                                    <div style="display: flex; align-items: center; gap: 8px; margin-top: 6px; flex-wrap: wrap;">
-                                        <span style="font-size: 0.75rem; color: var(--text-muted);">Class:</span>
-                                        <select onchange="updateAdminCarClass(${cIdx}, this.value)" class="btn btn-outline" style="padding: 2px 8px; font-size: 0.75rem; border-radius: 6px; font-weight: 700; color: var(--primary);">
-                                            ${classOptionsHtml}
-                                        </select>
-                                        <span style="font-size: 0.75rem; color: var(--text-muted); margin-left: 6px;">Chassis:</span>
-                                        <select onchange="updateAdminCarField(${cIdx}, 'carModel', this.value)" class="btn btn-outline" style="padding: 2px 8px; font-size: 0.75rem; border-radius: 6px;">
-                                            ${modelOptionsHtml}
-                                        </select>
+                                    <input type="text" class="car-team-name-input" value="${car.name || car.teamName || 'GRiD UP Esports'}" oninput="updateAdminCarField(${cIdx}, 'name', this.value); updateAdminCarField(${cIdx}, 'teamName', this.value);" placeholder="Car / Team Entry Name">
+                                    <div style="display: flex; align-items: center; gap: 12px; margin-top: 8px; flex-wrap: wrap;">
+                                        <div style="display: flex; align-items: center; gap: 6px;">
+                                            <span style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Class:</span>
+                                            <select onchange="updateAdminCarClass(${cIdx}, this.value)" class="studio-mini-select" style="color: var(--primary); font-weight: 800;">
+                                                ${classOptionsHtml}
+                                            </select>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 6px;">
+                                            <span style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Chassis:</span>
+                                            <select onchange="updateAdminCarField(${cIdx}, 'carModel', this.value)" class="studio-mini-select">
+                                                ${modelOptionsHtml}
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                             <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                ${uncoveredCount > 0 ? `<span style="background: rgba(239,68,68,0.2); border: 1px solid #ef4444; color: #f87171; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 800;"><i class="fas fa-exclamation-triangle"></i> ${uncoveredCount} Gaps</span>` : `<span style="background: rgba(16,185,129,0.2); border: 1px solid #10b981; color: #34d399; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 800;"><i class="fas fa-check"></i> Complete</span>`}
-                                <button onclick="removeAdminBuilderCar(${cIdx})" class="btn btn-outline" style="color: #ef4444; border-color: rgba(239,68,68,0.4); padding: 0.4rem 0.8rem; font-size: 0.75rem; border-radius: 8px;"><i class="fas fa-trash"></i></button>
+                                ${uncoveredCount > 0 ? `<span style="background: rgba(239,68,68,0.18); border: 1px solid rgba(239,68,68,0.35); color: #f87171; padding: 5px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; display: inline-flex; align-items: center; gap: 6px;"><i class="fas fa-exclamation-triangle"></i> ${uncoveredCount} Unassigned Stints</span>` : `<span style="background: rgba(16,185,129,0.18); border: 1px solid rgba(16,185,129,0.35); color: #34d399; padding: 5px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; display: inline-flex; align-items: center; gap: 6px;"><i class="fas fa-check-circle"></i> 100% Stints Covered</span>`}
+                                <button onclick="removeAdminBuilderCar(${cIdx})" title="Delete Car Entry" class="btn btn-outline" style="color: #ef4444; border-color: rgba(239,68,68,0.3); padding: 0.45rem 0.85rem; font-size: 0.8rem; border-radius: 8px; transition: all 0.2s ease;"><i class="fas fa-trash-alt"></i></button>
                             </div>
                         </div>
 
                         <!-- Stint Length Configurator -->
                         <div>
-                            <label style="font-size: 0.7rem; color: var(--primary); text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px;">
-                                <i class="fas fa-stopwatch"></i> Per-Car Stint Duration Configurator (${durationHours}h Race &rarr; ${totalStints} Total Stints)
-                            </label>
+                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                                <label style="font-size: 0.7rem; color: var(--primary); text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px;">
+                                    <i class="fas fa-stopwatch"></i> Stint Strategy & Duration (${durationHours}h Race &rarr; ${totalStints} Total Stints)
+                                </label>
+                                <span style="font-size: 0.72rem; color: var(--text-muted);">${stintMinutes} minutes per stint window</span>
+                            </div>
                             <div class="stint-presets-group">
                                 ${presetButtons}
-                                <div style="display: flex; align-items: center; gap: 4px;">
-                                    <input type="number" value="${stintMinutes}" onchange="setAdminCarStintMinutes(${cIdx}, this.value)" style="width: 60px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color:#fff; padding: 4px; border-radius: 6px; font-size: 0.75rem; text-align: center;">
+                                <div style="display: flex; align-items: center; gap: 6px; margin-left: 4px;">
+                                    <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">Custom:</span>
+                                    <input type="number" value="${stintMinutes}" onchange="setAdminCarStintMinutes(${cIdx}, this.value)" style="width: 55px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); color:#fff; padding: 3px 6px; border-radius: 6px; font-size: 0.75rem; text-align: center;">
                                     <span style="font-size: 0.7rem; color: var(--text-muted);">mins</span>
                                 </div>
                             </div>
@@ -2549,18 +2785,19 @@
 
                         <!-- Collapsible Stint Run-Sheet Table -->
                         <div style="margin-top: 1.25rem;">
-                            <button type="button" onclick="toggleAdminCarStints(${cIdx})" class="btn btn-outline" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 1rem; border-radius: 8px; font-size: 0.8rem; background: rgba(255,255,255,0.02); transition: all 0.2s ease;">
-                                <span style="display: flex; align-items: center; gap: 8px;">
-                                    <i class="fas fa-list-ol" style="color: var(--primary);"></i>
-                                    <strong>Stint Driver Run-Sheet (${car.stints ? car.stints.length : 0} stints)</strong>
-                                    ${uncoveredCount > 0 ? `<span style="background: rgba(239,68,68,0.2); color: #f87171; border: 1px solid rgba(239,68,68,0.4); padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: 700;">${uncoveredCount} Unassigned</span>` : `<span style="background: rgba(16,185,129,0.2); color: #34d399; border: 1px solid rgba(16,185,129,0.4); padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: 700;">All Assigned ✓</span>`}
+                            <button type="button" onclick="toggleAdminCarStints(${cIdx})" class="btn btn-outline" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1.25rem; border-radius: 10px; font-size: 0.82rem; background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.08); transition: all 0.2s ease;">
+                                <span style="display: flex; align-items: center; gap: 10px;">
+                                    <i class="fas fa-calendar-alt" style="color: var(--primary);"></i>
+                                    <strong style="color: #fff;">Stint Schedule & Driver Allocations</strong>
+                                    <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">(${car.stints ? car.stints.length : 0} Stints Scheduled)</span>
+                                    ${uncoveredCount > 0 ? `<span style="background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); padding: 2px 8px; border-radius: 12px; font-size: 0.68rem; font-weight: 800;">${uncoveredCount} Open</span>` : `<span style="background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); padding: 2px 8px; border-radius: 12px; font-size: 0.68rem; font-weight: 800;">All Covered ✓</span>`}
                                 </span>
-                                <span style="display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: var(--primary);">
-                                    <span>${isStintsOpen ? 'Hide Stint Schedule' : 'Assign Drivers & View Stints'}</span>
+                                <span style="display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: var(--primary); font-weight: 700;">
+                                    <span>${isStintsOpen ? 'Collapse Table' : 'Edit Stint Allocations'}</span>
                                     <i class="fas ${isStintsOpen ? 'fa-chevron-up' : 'fa-chevron-down'}"></i>
                                 </span>
                             </button>
-                            <div style="display: ${isStintsOpen ? 'block' : 'none'}; margin-top: 0.75rem; background: rgba(10,10,12,0.5); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; overflow: hidden;">
+                            <div style="display: ${isStintsOpen ? 'block' : 'none'}; margin-top: 0.75rem; background: rgba(10,12,18,0.85); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden; box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);">
                                 <table class="stint-run-table">
                                     <thead>
                                         <tr>
