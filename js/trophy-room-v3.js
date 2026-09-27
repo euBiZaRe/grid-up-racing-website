@@ -5,6 +5,10 @@
  * Sources directly from official team event results (/results)
  * STRICT FILTER: ONLY displays official GRiD UP team event podium finishes (P1, P2, and P3).
  * League races (gtc-*) and non-team competitors are strictly excluded.
+ * Photos display the official Championship Trophy for the position:
+ *   P1 = Gold Trophy
+ *   P2 = Silver Trophy
+ *   P3 = Bronze Trophy
  */
 
 let ALL_PODIUMS = [];
@@ -50,6 +54,19 @@ function parseFinishPosition(val) {
     if (s === 'P2' || s === '2' || s === '2ND' || s === 'SECOND') return 2;
     if (s === 'P3' || s === '3' || s === '3RD' || s === 'THIRD') return 3;
     return null;
+}
+
+/**
+ * Return official trophy photo by position:
+ * P1 = Gold Trophy
+ * P2 = Silver Trophy
+ * P3 = Bronze Trophy
+ */
+function getTrophyImageForPosition(pos = 1) {
+    if (pos === 1) return '/assets/trophies/trophy-gold.jpg';
+    if (pos === 2) return '/assets/trophies/trophy-silver.jpg';
+    if (pos === 3) return '/assets/trophies/trophy-bronze.jpg';
+    return '/assets/trophies/trophy-gold.jpg';
 }
 
 /**
@@ -127,23 +144,6 @@ function formatEventTitle(eId, evName) {
     return eId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }
 
-/**
- * Pick or map event photo
- */
-function inferEventImage(eventId = '', pos = 1) {
-    const s = (eventId || '').toLowerCase();
-    if (s.includes('daytona-24') || s === 'daytona-24') return '/assets/results/Jan1726.png';
-    if (s.includes('roar') || s === 'iracing-roar') return '/assets/bg-banner.png';
-    if (s.includes('nurburgring')) return '/assets/results/May226(2).png';
-    if (s.includes('road-america') || s === 'road-america-6h') return '/assets/results/July2526.png';
-    if (s.includes('spa')) return '/assets/results/July1126.png';
-    if (s.includes('sebring')) return '/assets/results/Mar2826.png';
-    if (s.includes('portimao')) return '/assets/results/July2526(1).png';
-    if (s.includes('bathurst')) return '/assets/results/Feb2126.png';
-    if (s.includes('daytona')) return '/assets/results/Jan1726.png';
-    return '/assets/bg-banner.png';
-}
-
 function getEventTargetUrl(eventId = '') {
     const e = (eventId || '').toLowerCase();
     if (e.includes('daytona-24')) return '/events/past/daytona-24.html';
@@ -161,7 +161,7 @@ const PAST_EVENT_SOURCES = [
         name: 'Daytona 24',
         path: '/events/past/daytona-24.html',
         localPath: 'events/past/daytona-24.html',
-        image: '/assets/results/Jan1726.png',
+        image: '/assets/trophies/trophy-silver.jpg',
         trackKey: 'daytona',
         season: 2026,
         timestamp: '2026-01-18T20:00:00Z'
@@ -171,7 +171,7 @@ const PAST_EVENT_SOURCES = [
         name: 'iRacing ROAR',
         path: '/events/past/iracing-roar.html',
         localPath: 'events/past/iracing-roar.html',
-        image: '/assets/bg-banner.png',
+        image: '/assets/trophies/trophy-bronze.jpg',
         trackKey: 'daytona',
         season: 2026,
         timestamp: '2026-01-10T20:00:00Z'
@@ -181,7 +181,7 @@ const PAST_EVENT_SOURCES = [
         name: 'Bathurst 12',
         path: '/events/past/bathurst-12.html',
         localPath: 'events/past/bathurst-12.html',
-        image: '/assets/results/Feb2126.png',
+        image: '/assets/trophies/trophy-gold.jpg',
         trackKey: 'bathurst',
         season: 2026,
         timestamp: '2026-02-22T20:00:00Z'
@@ -191,7 +191,7 @@ const PAST_EVENT_SOURCES = [
         name: 'Daytona 500',
         path: '/events/past/daytona-500.html',
         localPath: 'events/past/daytona-500.html',
-        image: '/assets/results/Feb2026.png',
+        image: '/assets/trophies/trophy-gold.jpg',
         trackKey: 'daytona',
         season: 2026,
         timestamp: '2026-02-18T20:00:00Z'
@@ -201,7 +201,7 @@ const PAST_EVENT_SOURCES = [
         name: 'Sebring 12HR',
         path: '/events/past/sebring-12hr.html',
         localPath: 'events/past/sebring-12hr.html',
-        image: '/assets/results/Mar2826.png',
+        image: '/assets/trophies/trophy-gold.jpg',
         trackKey: 'sebring',
         season: 2026,
         timestamp: '2026-03-29T20:00:00Z'
@@ -233,7 +233,7 @@ const VERIFIED_PAST_PAGE_PODIUMS = [
         "trackKey": "road-america",
         "trackName": "Road America",
         "trackLength": "6.515 km",
-        "image": "/assets/results/July2526.png",
+        "image": "/assets/trophies/trophy-gold.jpg",
         "source": "/results.html",
         "timestamp": "2026-07-26T20:00:00Z"
     },
@@ -259,7 +259,7 @@ const VERIFIED_PAST_PAGE_PODIUMS = [
         "trackKey": "indy",
         "trackName": "Indianapolis Motor Speedway",
         "trackLength": "4.023 km",
-        "image": "/assets/bg-banner.png",
+        "image": "/assets/trophies/trophy-gold.jpg",
         "source": "/results.html",
         "timestamp": "2026-05-18T20:00:00Z"
     },
@@ -289,7 +289,7 @@ const VERIFIED_PAST_PAGE_PODIUMS = [
         "trackKey": "daytona",
         "trackName": "Daytona International Speedway",
         "trackLength": "5.730 km",
-        "image": "/assets/results/Jan1726.png",
+        "image": "/assets/trophies/trophy-silver.jpg",
         "source": "/events/past/daytona-24.html",
         "timestamp": "2026-01-18T20:00:00Z"
     },
@@ -318,7 +318,7 @@ const VERIFIED_PAST_PAGE_PODIUMS = [
         "trackKey": "nurburgring",
         "trackName": "N\u00fcrburgring Nordschleife / GP",
         "trackLength": "25.378 km",
-        "image": "/assets/results/May226(2).png",
+        "image": "/assets/trophies/trophy-silver.jpg",
         "source": "/results.html",
         "timestamp": "2026-05-03T20:00:00Z"
     },
@@ -346,7 +346,7 @@ const VERIFIED_PAST_PAGE_PODIUMS = [
         "trackKey": "suzuka",
         "trackName": "Suzuka International Racing Course",
         "trackLength": "5.807 km",
-        "image": "/assets/bg-banner.png",
+        "image": "/assets/trophies/trophy-silver.jpg",
         "source": "/results.html",
         "timestamp": "2026-09-12T19:08:34.349Z"
     },
@@ -374,7 +374,7 @@ const VERIFIED_PAST_PAGE_PODIUMS = [
         "trackKey": "daytona",
         "trackName": "Daytona International Speedway",
         "trackLength": "5.730 km",
-        "image": "/assets/bg-banner.png",
+        "image": "/assets/trophies/trophy-bronze.jpg",
         "source": "/events/past/iracing-roar.html",
         "timestamp": "2026-01-10T20:00:00Z"
     }
@@ -510,7 +510,7 @@ function parseSingleEventHtml(htmlText, sourceInfo) {
             trackKey: trackKey,
             trackName: trackInfo.name,
             trackLength: trackInfo.length,
-            image: sourceInfo.image || inferEventImage(sourceInfo.id, pos),
+            image: getTrophyImageForPosition(pos),
             source: getEventTargetUrl(sourceInfo.id),
             timestamp: sourceInfo.timestamp || ''
         });
@@ -650,7 +650,7 @@ async function loadPodiumResultsFromDatabase() {
                     trackKey: trackK,
                     trackName: trackObj.name,
                     trackLength: trackObj.length,
-                    image: inferEventImage(eid, pos),
+                    image: getTrophyImageForPosition(pos),
                     source: getEventTargetUrl(eid),
                     timestamp: r.timestamp || ''
                 };
@@ -870,7 +870,7 @@ function renderFeaturedPodiums() {
             <div class="featured-card ${posClass}" data-index="${idx}" style="cursor: pointer;" onclick="window.location.href='${targetUrl}'" title="View official event details">
                 <div class="card-glow"></div>
                 <div class="featured-img-container">
-                    <img src="${item.image}" alt="${item.event}" class="featured-img" loading="lazy">
+                    <img src="${item.image}" alt="${item.positionLabel} Trophy" class="featured-img" loading="lazy">
                     <div class="featured-img-gradient"></div>
                     <div class="featured-pos-watermark">
                         <span class="pos-num">${item.position}</span>
@@ -1054,7 +1054,7 @@ function renderPastPodiums() {
                 <div class="past-card-header">
                     <div class="past-pos-badge ${posClass}">${item.finish}</div>
                     <div class="past-card-img-wrap">
-                        <img src="${item.image}" alt="${item.event}" class="past-img" loading="lazy">
+                        <img src="${item.image}" alt="${item.positionLabel} Trophy" class="past-img" loading="lazy">
                         <div class="past-img-overlay"></div>
                     </div>
                 </div>
