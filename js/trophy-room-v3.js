@@ -182,16 +182,6 @@ const PAST_EVENT_SOURCES = [
         timestamp: '2026-01-18T20:00:00Z'
     },
     {
-        id: 'iracing-roar',
-        name: 'iRacing ROAR',
-        path: '/events/past/iracing-roar.html',
-        localPath: 'events/past/iracing-roar.html',
-        image: '/assets/trophies/trophy-bronze.jpg?v=36',
-        trackKey: 'daytona',
-        season: 2026,
-        timestamp: '2026-01-10T20:00:00Z'
-    },
-    {
         id: 'bathurst-12',
         name: 'Bathurst 12',
         path: '/events/past/bathurst-12.html',
@@ -364,34 +354,6 @@ const VERIFIED_PAST_PAGE_PODIUMS = [
         "image": "/assets/trophies/trophy-silver.jpg?v=36",
         "source": "/events/suzuka-1000km.html",
         "timestamp": "2026-09-12T19:08:34.349Z"
-    },
-    {
-        "id": "iracing-roar-grid-up-sim-racing-3",
-        "eventId": "iracing-roar",
-        "event": "iRacing ROAR",
-        "date": "January 9-10, 2026",
-        "season": 2026,
-        "teamName": "GRiD UP Sim Racing",
-        "car": "BMW M4 GT3",
-        "drivers": [
-            "Bill McClain",
-            "Alex Cortez",
-            "Jacob Reid"
-        ],
-        "qualy": "P5",
-        "split": "",
-        "finish": "P3",
-        "position": 3,
-        "positionLabel": "3RD PLACE",
-        "accent": "bronze",
-        "category": "GT3",
-        "manufacturer": "bmw",
-        "trackKey": "daytona",
-        "trackName": "Daytona International Speedway",
-        "trackLength": "5.730 km",
-        "image": "/assets/trophies/trophy-bronze.jpg?v=36",
-        "source": "/events/past/iracing-roar.html",
-        "timestamp": "2026-01-10T20:00:00Z"
     }
 ];
 
@@ -657,8 +619,8 @@ async function loadPodiumResultsFromDatabase(options = {}) {
                 // STRICT FILTER: Discard any result that is not P1, P2, or P3
                 const pos = parseFinishPosition(r.finish);
                 if (pos === null) return;
+                if (cleanEid.includes('roar') || (eid && eid.toLowerCase().includes('roar'))) return;
 
-                const cleanEid = eid.toLowerCase();
                 const evInfo = eventsMeta[cleanEid] || eventsMeta[cleanEid.replace(/-26$|-25$/, '')] || {};
 
                 let evTitle = evInfo.title || formatEventTitle(eid);
@@ -818,6 +780,7 @@ async function loadPodiumResultsFromDatabase(options = {}) {
     const finalDedupMap = new Map();
     extracted.forEach(item => {
         const key = getDedupKey(item);
+        if (key.includes('roar') || (item.eventId && item.eventId.includes('roar')) || (item.event && item.event.toLowerCase().includes('roar'))) return;
         if (!finalDedupMap.has(key)) {
             finalDedupMap.set(key, item);
         } else {
