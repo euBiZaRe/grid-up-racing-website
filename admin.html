@@ -2287,6 +2287,7 @@
                                 <tr style="border-bottom: 1px solid var(--glass-border);">
                                     <th style="padding: 1.25rem;">Driver</th>
                                     <th style="padding: 1.25rem;">Status</th>
+                                    <th style="padding: 1.25rem;">Preferred Class & Car</th>
                                     <th style="padding: 1.25rem;">Preferred Timeslot</th>
                                 </tr>
                             </thead>
@@ -2295,14 +2296,24 @@
 
                     docs.forEach(data => {
                         let statusColor = "#888";
-                        let statusText = data.status.replace('_', ' ').toUpperCase();
+                        let statusText = (data.status || 'interested').replace('_', ' ').toUpperCase();
                         if (data.status === 'signed_up') statusColor = "#00ff88";
                         if (data.status === 'unavailable') statusColor = "#ff0055";
+
+                        const pClass = data.preferredClass || '';
+                        const pChassis = data.preferredChassis || data.preferredCar || data.chassis || '';
+                        let carDesc = '<span style="color:rgba(255,255,255,0.2);">No Preference</span>';
+                        if (pChassis) {
+                            carDesc = `<strong style="color:#fff;">${pChassis}</strong> ${pClass ? `<span style="color:var(--primary); font-size:0.75rem;">(${pClass})</span>` : ''}`;
+                        } else if (pClass) {
+                            carDesc = `<span style="color:var(--primary); font-size:0.8rem;">${pClass} (Any)</span>`;
+                        }
 
                         html += `
                             <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
                                 <td style="padding: 1.25rem; font-weight: 700; color: var(--primary);">${data.driverName || data.name || data.discordName || "Unknown Driver"}</td>
                                 <td style="padding: 1.25rem;"><span class="status-badge" style="background: ${statusColor}22; color: ${statusColor};">${statusText}</span></td>
+                                <td style="padding: 1.25rem;">${carDesc}</td>
                                 <td style="padding: 1.25rem; color: #fff;">${data.preferredSlot || '<span style="color:rgba(255,255,255,0.2);">No Preference Set</span>'}</td>
                             </tr>
                         `;
@@ -2712,8 +2723,9 @@
                         const statusColor = d.status === 'signed_up' ? '#10b981' : '#f59e0b';
                         const statusLabel = d.status === 'signed_up' ? "I'm In" : 'Interested';
                         
-                        // Check eligibility
+                        // Check eligibility & preferred car
                         const driverClass = d.preferredClass || 'Unknown';
+                        const driverChassis = d.preferredChassis || d.preferredCar || d.chassis || d.selectedCar || d.car || '';
                         const isEligible = eligibleClasses.some(ec => ec.toLowerCase() === driverClass.toLowerCase() || (ec === 'Supercars' && driverClass.toLowerCase().includes('supercar')));
                         
                         let eligibilityBadge = '';
@@ -2728,12 +2740,28 @@
                             eligibilityBadge = `<span style="background: rgba(0,207,255,0.1); border: 1px solid rgba(0,207,255,0.25); color: var(--primary); font-size: 0.65rem; font-weight: 700; padding: 2px 6px; border-radius: 4px;">${driverClass}</span>`;
                         }
 
+                        let carBadge = '';
+                        if (driverChassis) {
+                            carBadge = `
+                                <span style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14); color: #f1f5f9; font-size: 0.68rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 5px;">
+                                    <i class="fas fa-car-side" style="color: var(--primary); font-size: 0.65rem;"></i> ${driverChassis}
+                                </span>
+                            `;
+                        } else {
+                            carBadge = `
+                                <span style="background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); color: var(--text-muted); font-size: 0.65rem; font-style: italic; padding: 2px 6px; border-radius: 4px;">
+                                    No car selected
+                                </span>
+                            `;
+                        }
+
                         return `
-                            <div style="background: rgba(255,255,255,0.03); border: 1px solid ${isEligible ? 'rgba(255,255,255,0.08)' : 'rgba(239,68,68,0.4)'}; padding: 0.5rem 0.85rem; border-radius: 8px; font-size: 0.78rem; display: flex; align-items: center; gap: 8px;">
-                                <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${statusColor};"></span>
+                            <div style="background: rgba(255,255,255,0.03); border: 1px solid ${isEligible ? 'rgba(255,255,255,0.08)' : 'rgba(239,68,68,0.4)'}; padding: 0.5rem 0.85rem; border-radius: 8px; font-size: 0.78rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${statusColor}; flex-shrink: 0;"></span>
                                 <strong style="color: #fff;">${d.driverName || 'Driver'}</strong>
                                 <span style="color: ${statusColor}; font-size: 0.7rem; font-weight: 700;">(${statusLabel})</span>
                                 ${eligibilityBadge}
+                                ${carBadge}
                             </div>
                         `;
                     }).join('');
@@ -2831,9 +2859,11 @@
                         const name = r.driverName || 'Driver';
                         const statusTag = r.status === 'signed_up' ? "I'm In" : 'Interested';
                         const driverClass = r.preferredClass || 'GT3';
+                        const driverChassis = r.preferredChassis || r.preferredCar || r.chassis || r.selectedCar || r.car || '';
                         const isEligible = eligibleClasses.some(ec => ec.toLowerCase() === driverClass.toLowerCase() || (ec === 'Supercars' && driverClass.toLowerCase().includes('supercar')));
                         const tag = isEligible ? `[${driverClass} ✓]` : `[${driverClass} ⚠️]`;
-                        driverOptions += `<option value="${name}" ${s.driverName === name ? 'selected' : ''}>${name} ${tag} (${statusTag})</option>`;
+                        const carTag = driverChassis ? ` — ${driverChassis}` : '';
+                        driverOptions += `<option value="${name}" ${s.driverName === name ? 'selected' : ''}>${name} ${tag}${carTag} (${statusTag})</option>`;
                     });
 
                     stintRowsHtml += `
