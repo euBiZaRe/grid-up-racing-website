@@ -892,8 +892,11 @@ function getTrackSvg(trackKey) {
  * Manufacturer Logo Component
  */
 function getManufacturerLogo(key) {
-    if (!key || !window.MANUFACTURER_LOGOS || !window.MANUFACTURER_LOGOS[key]) return '';
-    return `<div class="mfg-logo mfg-${key}">${window.MANUFACTURER_LOGOS[key].svg}</div>`;
+    return `
+        <div class="card-brand-badge" title="GRiD UP Official Entry">
+            <img src="/assets/G_2.png" alt="GRiD UP" class="gridup-card-emblem" loading="lazy" />
+        </div>
+    `;
 }
 
 /**
@@ -1149,6 +1152,7 @@ function renderPastPodiums() {
 
                     <div class="past-card-footer">
                         ${getTrackSvg(item.trackKey)}
+                        ${getManufacturerLogo(item.manufacturer)}
                     </div>
                 </div>
             </div>

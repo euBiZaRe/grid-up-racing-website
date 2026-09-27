@@ -501,38 +501,46 @@ body.trophy-room-page {
 }
 
 /* Card Footer with Track Outline & MFG */
-.featured-card-footer {
+.featured-card-footer,
+.past-card-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 10px;
+    min-height: 44px;
 }
 
 .trophy-track-box {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
 }
 
 .track-svg {
-    width: 68px;
-    height: 42px;
+    width: 58px;
+    height: 36px;
+    flex-shrink: 0;
 }
 
 .track-img {
-    width: 68px;
-    height: 42px;
+    width: 58px;
+    height: 36px;
     object-fit: contain;
+    flex-shrink: 0;
     filter: drop-shadow(0 0 5px var(--neon-red-glow));
-    opacity: 0.92;
+    opacity: 0.95;
 }
 
 .track-path {
     fill: none;
     stroke: var(--neon-red);
-    stroke-width: 2.2;
+    stroke-width: 2.0;
     stroke-linecap: round;
     stroke-linejoin: round;
-    opacity: 0.85;
+    opacity: 0.9;
     filter: drop-shadow(0 0 5px var(--neon-red-glow));
     vector-effect: non-scaling-stroke;
 }
@@ -540,38 +548,59 @@ body.trophy-room-page {
 .track-info {
     display: flex;
     flex-direction: column;
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
 }
 
 .track-name {
     font-family: var(--font-heading);
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     font-weight: 800;
     color: #ffffff;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.25;
 }
 
 .track-length {
-    font-size: 0.68rem;
+    font-size: 0.65rem;
     color: var(--text-muted);
+    white-space: nowrap;
 }
 
+.card-brand-badge,
 .mfg-logo {
-    width: 36px;
-    height: 36px;
+    width: 28px;
+    height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: rgba(255, 255, 255, 0.5);
+    flex-shrink: 0;
+    opacity: 0.8;
     transition: var(--transition-fast);
 }
 
-.featured-card:hover .mfg-logo {
-    color: rgba(255, 255, 255, 0.9);
+.featured-card:hover .card-brand-badge,
+.featured-card:hover .mfg-logo,
+.past-podium-card:hover .card-brand-badge,
+.past-podium-card:hover .mfg-logo {
+    opacity: 1;
+    transform: scale(1.08);
+}
+
+.gridup-card-emblem {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 4px rgba(255, 46, 77, 0.4));
 }
 
 .mfg-logo svg {
-    width: 28px;
-    height: 28px;
+    width: 22px;
+    height: 22px;
 }
 
 /* Carousel Indicators */
