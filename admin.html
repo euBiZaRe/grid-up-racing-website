@@ -1635,7 +1635,13 @@
                 const adminDoc = await db.collection("settings").doc("admins").get();
                 const adminUids = adminDoc.exists ? (adminDoc.data().uids || []) : [];
 
-                const snapshot = await db.collection("claims").orderBy("timestamp", "desc").get();
+                let snapshot;
+                try {
+                    snapshot = await db.collection("claims").orderBy("timestamp", "desc").get();
+                } catch (err) {
+                    console.warn("Ordered claims query failed, falling back to unordered:", err);
+                    snapshot = await db.collection("claims").get();
+                }
                 console.log("Admin: Firestore snapshot received, size:", snapshot.size);
 
                 // Update count badges
@@ -1763,7 +1769,7 @@
             }
         }
         function switchTab(tab) {
-            const sections = ['applications', 'claims', 'races', 'admins', 'availability', 'roster', 'events', 'leagues', 'race-results', 'reports', 'posters', 'streams', 'system', 'm2rc-schedule', 'm2rc-results', 'm2rc-stewarding', 'm2rc-drivers', 'm2-cup', 'telemetry-teams'];
+            const sections = ['applications', 'claims', 'races', 'admins', 'availability', 'roster', 'events', 'leagues', 'race-results', 'reports', 'streams', 'm2rc-schedule', 'm2rc-results', 'm2rc-stewarding', 'm2rc-drivers', 'telemetry-teams'];
             sections.forEach(s => {
                 const el = document.getElementById(`section-${s}`);
                 if (el) el.style.display = (tab === s) ? 'block' : 'none';
@@ -1785,12 +1791,12 @@
                 'm2rc-results': 'M2RC Results Uploader',
                 'm2rc-stewarding': 'M2RC Stewarding Decider',
                 'm2rc-drivers': 'M2RC Driver Registrations',
-                'm2-cup': 'BMW M2 Cup Admin',
                 'telemetry-teams': 'Telemetry Teams Manager'
             };
-            document.getElementById('admin-title').textContent = titleMap[tab] || tab;
+            const titleEl = document.getElementById('admin-title');
+            if (titleEl) titleEl.textContent = titleMap[tab] || tab;
             
-            const tabs = ['applications', 'claims', 'races', 'admins', 'availability', 'roster', 'events', 'leagues', 'race-results', 'reports', 'streams', 'm2rc-schedule', 'm2rc-results', 'm2rc-stewarding', 'm2rc-drivers', 'm2-cup', 'telemetry-teams'];
+            const tabs = ['applications', 'claims', 'races', 'admins', 'availability', 'roster', 'events', 'leagues', 'race-results', 'reports', 'streams', 'm2rc-schedule', 'm2rc-results', 'm2rc-stewarding', 'm2rc-drivers', 'telemetry-teams'];
             tabs.forEach(t => {
                 const btn = document.getElementById(`tab-${t}`);
                 if (btn) {
@@ -1799,6 +1805,14 @@
                 }
             });
 
+            // Update URL hash for easy sharing and persistence across refreshes
+            try {
+                if (window.location.hash.replace('#', '') !== tab) {
+                    history.replaceState(null, null, '#' + tab);
+                }
+            } catch (e) {}
+
+            if (tab === 'claims') loadClaims();
             if (tab === 'races') loadAdminBuilderData();
             if (tab === 'applications') loadApplications();
             if (tab === 'roster') loadRoster();
@@ -1812,13 +1826,11 @@
             if (tab === 'leagues') loadLeaguesAdmin();
             if (tab === 'race-results') loadEventResults();
             if (tab === 'streams') loadStreams();
-            if (tab === 'posters') loadResults();
             if (tab === 'reports') loadAdminReports();
             if (tab === 'm2rc-schedule') loadM2RCSchedule();
             if (tab === 'm2rc-results') loadM2RCResultsAdmin();
             if (tab === 'm2rc-stewarding') loadM2RCStewardingAdmin();
             if (tab === 'm2rc-drivers') loadM2RCDriversAdmin();
-            if (tab === 'm2-cup') initM2CupAdmin();
             if (tab === 'telemetry-teams') loadTelemetryTeamsAdmin();
         }
 
@@ -1867,7 +1879,13 @@
             notice.style.display = 'none';
 
             try {
-                const snapshot = await db.collection("events").orderBy("startDate", "asc").get();
+                let snapshot;
+                try {
+                    snapshot = await db.collection("events").orderBy("startDate", "asc").get();
+                } catch (err) {
+                    console.warn("Ordered events query failed, falling back to unordered:", err);
+                    snapshot = await db.collection("events").get();
+                }
                 UPCOMING_EVENTS = [];
                 ALL_EVENTS = [];
                 const now = new Date();
@@ -1907,7 +1925,7 @@
                             Classes: ${event.classes ? event.classes.join(', ') : 'None'}
                         </div>
                         <div style="display: flex; gap: 10px;">
-                            <button onclick='showEventModal(${JSON.stringify(event).replace(/'/g, "&apos;")})' class="btn btn-outline" style="flex: 1; font-size: 0.7rem; padding: 0.5rem;">Edit</button>
+                            <button onclick="showEventModal('${event.id}')" class="btn btn-outline" style="flex: 1; font-size: 0.7rem; padding: 0.5rem;">Edit</button>
                             <button onclick="deleteEvent('${event.id}')" class="btn btn-outline" style="flex: 1; font-size: 0.7rem; padding: 0.5rem; border-color: #ff0055; color: #ff0055;">Delete</button>
                         </div>
                     `;
@@ -2009,6 +2027,9 @@
         }
 
         function showEventModal(event = null) {
+            if (typeof event === 'string') {
+                event = ALL_EVENTS.find(e => e.id === event) || null;
+            }
             document.getElementById('edit-event-id').value = event ? event.id : '';
             document.getElementById('edit-event-id').disabled = !!event;
             document.getElementById('edit-event-name').value = event ? event.name : '';
@@ -2137,6 +2158,11 @@
             if (!container) return;
             container.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Loading availability data...</p>';
 
+            // Ensure events are loaded
+            if (!UPCOMING_EVENTS || UPCOMING_EVENTS.length === 0) {
+                await loadEvents();
+            }
+
             // Populate selector once
             if (selector && selector.options.length <= 1) {
                 UPCOMING_EVENTS.forEach(e => {
@@ -2154,19 +2180,22 @@
                     const allDrivers = {}; // uid -> name
                     const allResponses = {}; // eventId -> { uid -> { status, slot } }
 
-                    for (const event of UPCOMING_EVENTS) {
-                        const snap = await db.collection("event_availability").doc(event.id).collection("responses").get();
-                        allResponses[event.id] = {};
-                        snap.forEach(doc => {
-                            const data = doc.data();
-                            // Fix: Use multiple fallbacks for driver name
-                            allDrivers[doc.id] = data.driverName || data.name || data.discordName || "Unknown Driver";
-                            allResponses[event.id][doc.id] = {
-                                status: data.status,
-                                slot: data.preferredSlot
-                            };
-                        });
-                    }
+                    await Promise.all(UPCOMING_EVENTS.map(async (event) => {
+                        try {
+                            const snap = await db.collection("event_availability").doc(event.id).collection("responses").get();
+                            allResponses[event.id] = {};
+                            snap.forEach(doc => {
+                                const data = doc.data();
+                                allDrivers[doc.id] = data.driverName || data.name || data.discordName || "Unknown Driver";
+                                allResponses[event.id][doc.id] = {
+                                    status: data.status,
+                                    slot: data.preferredSlot
+                                };
+                            });
+                        } catch (err) {
+                            console.warn("Could not load availability for " + event.id, err);
+                        }
+                    }));
 
                     let driverUids = Object.keys(allDrivers).sort((a,b) => (allDrivers[a] || "").localeCompare(allDrivers[b] || ""));
 
@@ -3291,14 +3320,11 @@
                 const adminName = user.displayName || user.email || user.uid;
                 userInfo.textContent = `Logged in as Admin: ${adminName}`;
                 
-                // Load events if not already done
-                if (UPCOMING_EVENTS.length === 0) {
-                    loadEvents(); 
-                }
-                
-                // If on a tab that needs loading, load it
-                const activeTab = document.querySelector('.portal-tab.active')?.id || 'tab-claims';
-                if (activeTab === 'tab-claims') loadClaims();
+                // Automatically activate tab from URL hash, or default to applications
+                const currentHash = (window.location.hash ? window.location.hash.replace('#', '').trim() : '');
+                const validTabs = ['applications', 'claims', 'races', 'admins', 'availability', 'roster', 'events', 'leagues', 'race-results', 'reports', 'streams', 'm2rc-schedule', 'm2rc-results', 'm2rc-stewarding', 'm2rc-drivers', 'telemetry-teams'];
+                const targetTab = validTabs.includes(currentHash) ? currentHash : 'applications';
+                switchTab(targetTab);
             } else {
                 adminHub.style.display = 'none';
                 accessDenied.style.display = 'block';
@@ -4572,7 +4598,6 @@
     </div>
     <div id="autocomplete-overlay"></div>
     <datalist id="signed-up-drivers-list"></datalist>
-</body>
 <script>
     // Global click listener to hide overlay
     document.addEventListener('click', (e) => {
@@ -5603,6 +5628,7 @@
     </div>
     <p style="color: var(--text-muted); font-size: 0.8rem; margin: 0;">&copy; 2026 GRiD UP Sim Racing Admin Dashboard</p>
 <div style="display: none;"><a href="https://www.sigmatraffic.com?ref=328509">Free website hits</a></div></footer>
+</body>
 </html>
 
 

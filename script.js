@@ -1867,10 +1867,17 @@ async function downloadActiveCard() {
 }
 // Initialize on page load
 function initializeApp() {
+    injectCredits();
+
+    // Prevent running public homepage queries/intervals on admin or portal dashboards
+    const path = window.location.pathname.toLowerCase();
+    if (path.includes('admin') || path.includes('portal') || path.includes('driver-stats')) {
+        return;
+    }
+
     loadDynamicContent(); // Load from cache immediately
     loadRecentResults(); // Load from cache immediately
     initCarousel();
-    injectCredits();
     startRealTimeEventCheck(); // Start real-time event conclusion monitor
     
     // Poll for Firestore 'db' initialization from auth.js
