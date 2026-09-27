@@ -486,7 +486,7 @@
                                 <label for="lineup-event-selector" style="font-size: 0.7rem; color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;">
                                     <i class="fas fa-flag-checkered" style="margin-right: 4px;"></i> Upcoming Race:
                                 </label>
-                                <select id="lineup-event-selector" class="studio-event-select" onchange="loadAdminBuilderData()">
+                                <select id="lineup-event-selector" class="studio-event-select" onchange="loadAdminBuilderData(true)">
                                     <option value="">Loading upcoming races...</option>
                                 </select>
                             </div>
@@ -1821,7 +1821,7 @@
             } catch (e) {}
 
             if (tab === 'claims') loadClaims();
-            if (tab === 'races') loadAdminBuilderData();
+            if (tab === 'races') loadAdminBuilderData(true);
             if (tab === 'applications') loadApplications();
             if (tab === 'roster') loadRoster();
 
@@ -2542,10 +2542,67 @@
             DYNAMIC_GRIDUP_TEAMS = [...DEFAULT_GRIDUP_TEAMS];
         }
 
+        window._adminBuilderCurrentEvent = null;
+        window._adminBuilderEligibleClasses = ['GT3'];
+        window._adminBuilderResponses = [];
+        window._adminBuilderDurationHours = 6;
         window._adminBuilderCars = [];
         window._adminOpenStints = {};
+        window._lastLoadedLineupEventId = null;
 
-        async function loadAdminBuilderData() {
+        function generateCarStints(durationHours, stintMinutes, existingStints, drivers, carNumber, carClass) {
+            const totalHours = parseFloat(durationHours) || 6;
+            const totalMinutes = Math.round(totalHours * 60);
+            const mins = Math.max(5, parseInt(stintMinutes) || 60);
+            const totalStints = Math.ceil(totalMinutes / mins);
+            const driverList = Array.isArray(drivers) && drivers.length > 0 ? drivers : [];
+            const result = [];
+            let currentElapsed = 0;
+
+            for (let i = 0; i < totalStints; i++) {
+                const endMinutes = Math.min(currentElapsed + mins, totalMinutes);
+                const dur = endMinutes - currentElapsed;
+                const startStr = `${String(Math.floor(currentElapsed / 60)).padStart(2, '0')}:${String(Math.floor(currentElapsed % 60)).padStart(2, '0')}`;
+                const endStr = `${String(Math.floor(endMinutes / 60)).padStart(2, '0')}:${String(Math.floor(endMinutes % 60)).padStart(2, '0')}`;
+
+                let assignedDriver = 'Unassigned';
+                let assignedUid = '';
+                if (existingStints && existingStints[i] && existingStints[i].driverName && existingStints[i].driverName !== 'Driver 1') {
+                    assignedDriver = existingStints[i].driverName;
+                    assignedUid = existingStints[i].driverUid || '';
+                } else if (driverList.length > 0) {
+                    assignedDriver = driverList[i % driverList.length];
+                }
+
+                result.push({
+                    stintIndex: i + 1,
+                    driverName: assignedDriver,
+                    driverUid: assignedUid,
+                    plannedStartMinutes: currentElapsed,
+                    plannedEndMinutes: endMinutes,
+                    plannedDurationMinutes: dur,
+                    plannedStartTimeStr: startStr,
+                    plannedEndTimeStr: endStr,
+                    status: i === 0 ? 'active' : (i === 1 ? 'on_deck' : 'scheduled'),
+                    notes: (existingStints && existingStints[i] && existingStints[i].notes) || ''
+                });
+
+                currentElapsed = endMinutes;
+            }
+            return result;
+        }
+
+        function refreshAdminBuilderUI() {
+            if (!window._adminBuilderCurrentEvent) return;
+            renderAdminBuilderCars(
+                window._adminBuilderCurrentEvent,
+                window._adminBuilderEligibleClasses || ['GT3'],
+                window._adminBuilderResponses || [],
+                window._adminBuilderDurationHours || 6
+            );
+        }
+
+        async function loadAdminBuilderData(forceReload = false) {
             await loadDynamicTeamsList();
             const selector = document.getElementById('lineup-event-selector');
             if (!selector) return;
@@ -2583,6 +2640,10 @@
             const eligibleClasses = getEventEligibleClasses(currentEvent);
             const durationHours = getEventDurationHours(currentEvent);
 
+            window._adminBuilderCurrentEvent = currentEvent;
+            window._adminBuilderEligibleClasses = eligibleClasses;
+            window._adminBuilderDurationHours = durationHours;
+
             // Update Metadata Banner
             const summaryEl = document.getElementById('builder-event-summary');
             const pillsEl = document.getElementById('builder-event-classes-pills');
@@ -2617,6 +2678,7 @@
             } catch (err) {
                 console.warn("Could not load availability responses:", err);
             }
+            window._adminBuilderResponses = responses;
 
             // Render Driver Pool with Ineligibility Warnings & Live Counts
             const poolList = document.getElementById('builder-driver-pool-list');
@@ -2678,21 +2740,24 @@
                 }
             }
 
-            // Fetch Lineups from Firestore
-            try {
-                const lineupDoc = await db.collection("race_lineups").doc(activeId).get();
-                if (lineupDoc.exists && Array.isArray(lineupDoc.data().teams) && lineupDoc.data().teams.length > 0) {
-                    window._adminBuilderCars = lineupDoc.data().teams;
-                    // Strip 'Esports' from team names and normalize
-                    window._adminBuilderCars.forEach(car => {
-                        if (car.name) car.name = car.name.replace(/Esports\s*/gi, '').replace(/\s+/g, ' ').trim();
-                        if (car.teamName) car.teamName = car.teamName.replace(/Esports\s*/gi, '').replace(/\s+/g, ' ').trim();
-                    });
-                } else {
-                    window._adminBuilderCars = [];
+            // Fetch Lineups from Firestore (only if forced or not loaded for this event yet)
+            if (forceReload || !window._adminBuilderCars || window._adminBuilderCars.length === 0 || window._lastLoadedLineupEventId !== activeId) {
+                window._lastLoadedLineupEventId = activeId;
+                try {
+                    const lineupDoc = await db.collection("race_lineups").doc(activeId).get();
+                    if (lineupDoc.exists && Array.isArray(lineupDoc.data().teams) && lineupDoc.data().teams.length > 0) {
+                        window._adminBuilderCars = lineupDoc.data().teams;
+                        // Strip 'Esports' from team names and normalize
+                        window._adminBuilderCars.forEach(car => {
+                            if (car.name) car.name = car.name.replace(/Esports\s*/gi, '').replace(/\s+/g, ' ').trim();
+                            if (car.teamName) car.teamName = car.teamName.replace(/Esports\s*/gi, '').replace(/\s+/g, ' ').trim();
+                        });
+                    } else {
+                        window._adminBuilderCars = [];
+                    }
+                } catch (err) {
+                    console.warn("Could not load existing race lineup:", err);
                 }
-            } catch (err) {
-                console.warn("Could not load existing race lineup:", err);
             }
 
             // If empty, seed default car using event's eligible class
@@ -2700,14 +2765,6 @@
                 const primaryClass = eligibleClasses[0] || 'GT3';
                 const defaultModel = (EVENT_CAR_CATALOG[primaryClass] && EVENT_CAR_CATALOG[primaryClass][0]) || `${primaryClass} Chassis`;
                 const defaultStint = primaryClass === 'Supercars' ? 45 : (primaryClass === 'GTP' || primaryClass === 'LMP2') ? 45 : 60;
-                
-                const defaultStintsGen = window.GridUpStintPlanner ? window.GridUpStintPlanner.generateStintSchedule({
-                    durationHours: durationHours,
-                    stintMinutes: defaultStint,
-                    drivers: ['Driver 1'],
-                    carNumber: '144',
-                    carClass: primaryClass
-                }).stints : [];
 
                 window._adminBuilderCars = [{
                     carNumber: "144",
@@ -2718,11 +2775,21 @@
                     stintMinutes: defaultStint,
                     captain: "",
                     drivers: [],
-                    stints: defaultStintsGen
+                    stints: generateCarStints(durationHours, defaultStint, [], [], '144', primaryClass)
                 }];
+            } else {
+                // Ensure stints array exists and matches totalStints for loaded cars
+                window._adminBuilderCars.forEach(car => {
+                    const stintMins = car.stintMinutes || (car.car_class === 'Supercars' ? 45 : 60);
+                    car.stintMinutes = stintMins;
+                    const totalStints = Math.ceil((durationHours * 60) / stintMins);
+                    if (!car.stints || car.stints.length !== totalStints) {
+                        car.stints = generateCarStints(durationHours, stintMins, car.stints, car.drivers, car.carNumber, car.car_class);
+                    }
+                });
             }
 
-            renderAdminBuilderCars(currentEvent, eligibleClasses, responses, durationHours);
+            refreshAdminBuilderUI();
         }
 
         function renderAdminBuilderCars(currentEvent, eligibleClasses, responses, durationHours) {
@@ -2743,16 +2810,7 @@
 
                 // Ensure stints array exists and matches totalStints
                 if (!car.stints || car.stints.length !== totalStints) {
-                    if (window.GridUpStintPlanner) {
-                        const generated = window.GridUpStintPlanner.generateStintSchedule({
-                            durationHours: durationHours,
-                            stintMinutes: stintMinutes,
-                            drivers: car.drivers && car.drivers.length > 0 ? car.drivers : ['Driver 1'],
-                            carNumber: car.carNumber || '144',
-                            carClass: car.car_class
-                        });
-                        car.stints = generated.stints;
-                    }
+                    car.stints = generateCarStints(durationHours, stintMinutes, car.stints, car.drivers, car.carNumber, car.car_class);
                 }
 
                 // Stint Rows
@@ -2825,22 +2883,22 @@
                 let presetButtons = '';
                 if (car.car_class === 'Supercars') {
                     presetButtons = `
-                        <button onclick="setAdminCarStintMinutes(${cIdx}, 30)" class="stint-preset-btn ${stintMinutes === 30 ? 'active' : ''}">30m (Splash)</button>
-                        <button onclick="setAdminCarStintMinutes(${cIdx}, 40)" class="stint-preset-btn ${stintMinutes === 40 ? 'active' : ''}">40m (Standard)</button>
-                        <button onclick="setAdminCarStintMinutes(${cIdx}, 45)" class="stint-preset-btn ${stintMinutes === 45 ? 'active' : ''}">45m (Fuel Max)</button>
+                        <button type="button" onclick="setAdminCarStintMinutes(${cIdx}, 30)" class="stint-preset-btn ${stintMinutes === 30 ? 'active' : ''}">30m (Splash)</button>
+                        <button type="button" onclick="setAdminCarStintMinutes(${cIdx}, 40)" class="stint-preset-btn ${stintMinutes === 40 ? 'active' : ''}">40m (Standard)</button>
+                        <button type="button" onclick="setAdminCarStintMinutes(${cIdx}, 45)" class="stint-preset-btn ${stintMinutes === 45 ? 'active' : ''}">45m (Fuel Max)</button>
                     `;
                 } else if (car.car_class === 'GTP' || car.car_class === 'LMP2') {
                     presetButtons = `
-                        <button onclick="setAdminCarStintMinutes(${cIdx}, 35)" class="stint-preset-btn ${stintMinutes === 35 ? 'active' : ''}">35m (Short)</button>
-                        <button onclick="setAdminCarStintMinutes(${cIdx}, 45)" class="stint-preset-btn ${stintMinutes === 45 ? 'active' : ''}">45m (Standard)</button>
-                        <button onclick="setAdminCarStintMinutes(${cIdx}, 50)" class="stint-preset-btn ${stintMinutes === 50 ? 'active' : ''}">50m (Saving)</button>
+                        <button type="button" onclick="setAdminCarStintMinutes(${cIdx}, 35)" class="stint-preset-btn ${stintMinutes === 35 ? 'active' : ''}">35m (Short)</button>
+                        <button type="button" onclick="setAdminCarStintMinutes(${cIdx}, 45)" class="stint-preset-btn ${stintMinutes === 45 ? 'active' : ''}">45m (Standard)</button>
+                        <button type="button" onclick="setAdminCarStintMinutes(${cIdx}, 50)" class="stint-preset-btn ${stintMinutes === 50 ? 'active' : ''}">50m (Saving)</button>
                     `;
                 } else {
                     presetButtons = `
-                        <button onclick="setAdminCarStintMinutes(${cIdx}, 45)" class="stint-preset-btn ${stintMinutes === 45 ? 'active' : ''}">45m (Fuel Save)</button>
-                        <button onclick="setAdminCarStintMinutes(${cIdx}, 60)" class="stint-preset-btn ${stintMinutes === 60 ? 'active' : ''}">60m (GT3 Std)</button>
-                        <button onclick="setAdminCarStintMinutes(${cIdx}, 90)" class="stint-preset-btn ${stintMinutes === 90 ? 'active' : ''}">90m (Double)</button>
-                        <button onclick="setAdminCarStintMinutes(${cIdx}, 120)" class="stint-preset-btn ${stintMinutes === 120 ? 'active' : ''}">120m (Double Max)</button>
+                        <button type="button" onclick="setAdminCarStintMinutes(${cIdx}, 45)" class="stint-preset-btn ${stintMinutes === 45 ? 'active' : ''}">45m (Fuel Save)</button>
+                        <button type="button" onclick="setAdminCarStintMinutes(${cIdx}, 60)" class="stint-preset-btn ${stintMinutes === 60 ? 'active' : ''}">60m (GT3 Std)</button>
+                        <button type="button" onclick="setAdminCarStintMinutes(${cIdx}, 90)" class="stint-preset-btn ${stintMinutes === 90 ? 'active' : ''}">90m (Double)</button>
+                        <button type="button" onclick="setAdminCarStintMinutes(${cIdx}, 120)" class="stint-preset-btn ${stintMinutes === 120 ? 'active' : ''}">120m (Double Max)</button>
                     `;
                 }
 
@@ -2894,7 +2952,7 @@
                             </div>
                             <div style="display: flex; align-items: center; gap: 0.75rem;">
                                 ${uncoveredCount > 0 ? `<span style="background: rgba(239,68,68,0.18); border: 1px solid rgba(239,68,68,0.35); color: #f87171; padding: 5px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; display: inline-flex; align-items: center; gap: 6px;"><i class="fas fa-exclamation-triangle"></i> ${uncoveredCount} Unassigned Stints</span>` : `<span style="background: rgba(16,185,129,0.18); border: 1px solid rgba(16,185,129,0.35); color: #34d399; padding: 5px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; display: inline-flex; align-items: center; gap: 6px;"><i class="fas fa-check-circle"></i> 100% Stints Covered</span>`}
-                                <button onclick="removeAdminBuilderCar(${cIdx})" title="Delete Car Entry" class="btn btn-outline" style="color: #ef4444; border-color: rgba(239,68,68,0.3); padding: 0.45rem 0.85rem; font-size: 0.8rem; border-radius: 8px; transition: all 0.2s ease;"><i class="fas fa-trash-alt"></i></button>
+                                <button type="button" onclick="removeAdminBuilderCar(${cIdx})" title="Delete Car Entry" class="btn btn-outline" style="color: #ef4444; border-color: rgba(239,68,68,0.3); padding: 0.45rem 0.85rem; font-size: 0.8rem; border-radius: 8px; transition: all 0.2s ease;"><i class="fas fa-trash-alt"></i></button>
                             </div>
                         </div>
 
@@ -2910,7 +2968,7 @@
                                 ${presetButtons}
                                 <div style="display: flex; align-items: center; gap: 6px; margin-left: 4px;">
                                     <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">Custom:</span>
-                                    <input type="number" value="${stintMinutes}" onchange="setAdminCarStintMinutes(${cIdx}, this.value)" style="width: 55px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); color:#fff; padding: 3px 6px; border-radius: 6px; font-size: 0.75rem; text-align: center;">
+                                    <input type="number" min="5" max="300" step="5" value="${stintMinutes}" onchange="setAdminCarStintMinutes(${cIdx}, this.value)" style="width: 55px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); color:#fff; padding: 3px 6px; border-radius: 6px; font-size: 0.75rem; text-align: center;">
                                     <span style="font-size: 0.7rem; color: var(--text-muted);">mins</span>
                                 </div>
                             </div>
@@ -2963,66 +3021,71 @@
                         DYNAMIC_GRIDUP_TEAMS.push(val);
                     }
                 } else {
-                    loadAdminBuilderData();
+                    refreshAdminBuilderUI();
                     return;
                 }
             }
-            if (window._adminBuilderCars[carIdx]) {
+            if (window._adminBuilderCars && window._adminBuilderCars[carIdx]) {
                 window._adminBuilderCars[carIdx].name = val;
                 window._adminBuilderCars[carIdx].teamName = val;
-                loadAdminBuilderData();
+                refreshAdminBuilderUI();
             }
         };
 
         window.updateAdminCarField = function(carIdx, field, val) {
-            if (window._adminBuilderCars[carIdx]) {
+            if (window._adminBuilderCars && window._adminBuilderCars[carIdx]) {
                 window._adminBuilderCars[carIdx][field] = val;
             }
         };
 
         window.updateAdminCarClass = function(carIdx, newClass) {
-            if (window._adminBuilderCars[carIdx]) {
-                window._adminBuilderCars[carIdx].car_class = newClass;
+            if (window._adminBuilderCars && window._adminBuilderCars[carIdx]) {
+                const car = window._adminBuilderCars[carIdx];
+                car.car_class = newClass;
                 const models = EVENT_CAR_CATALOG[newClass] || [];
-                window._adminBuilderCars[carIdx].carModel = models[0] || `${newClass} Chassis`;
-                loadAdminBuilderData();
+                car.carModel = models[0] || `${newClass} Chassis`;
+                const defaultStint = newClass === 'Supercars' ? 45 : (newClass === 'GTP' || newClass === 'LMP2') ? 45 : 60;
+                car.stintMinutes = defaultStint;
+                const durationHours = window._adminBuilderDurationHours || 6;
+                car.stints = generateCarStints(durationHours, defaultStint, car.stints, car.drivers, car.carNumber, newClass);
+                refreshAdminBuilderUI();
             }
         };
 
         window.setAdminCarStintMinutes = function(carIdx, minutes) {
-            const mins = parseInt(minutes) || 60;
-            if (window._adminBuilderCars[carIdx]) {
-                window._adminBuilderCars[carIdx].stintMinutes = mins;
-                loadAdminBuilderData();
+            const mins = Math.max(5, parseInt(minutes) || 60);
+            if (window._adminBuilderCars && window._adminBuilderCars[carIdx]) {
+                const car = window._adminBuilderCars[carIdx];
+                car.stintMinutes = mins;
+                const durationHours = window._adminBuilderDurationHours || 6;
+                car.stints = generateCarStints(durationHours, mins, car.stints, car.drivers, car.carNumber, car.car_class);
+                refreshAdminBuilderUI();
             }
         };
 
         window.toggleAdminCarStints = function(carIdx) {
             window._adminOpenStints[carIdx] = !window._adminOpenStints[carIdx];
-            loadAdminBuilderData();
+            refreshAdminBuilderUI();
         };
 
         window.updateAdminCarStintDriver = function(carIdx, stintIdx, driverName) {
-            const car = window._adminBuilderCars[carIdx];
+            const car = window._adminBuilderCars && window._adminBuilderCars[carIdx];
             if (car && car.stints && car.stints[stintIdx]) {
                 car.stints[stintIdx].driverName = driverName;
-                const allAssigned = [...new Set(car.stints.map(s => s.driverName).filter(Boolean))];
+                const allAssigned = [...new Set(car.stints.map(s => s.driverName).filter(n => n && n !== 'Unassigned' && n !== 'Driver 1'))];
                 car.drivers = allAssigned;
                 if (!car.captain && allAssigned.length > 0) car.captain = allAssigned[0];
+                refreshAdminBuilderUI();
             }
         };
 
         window.addBuilderCar = function() {
-            const selector = document.getElementById('lineup-event-selector');
-            const activeId = selector ? selector.value : (UPCOMING_EVENTS[0] && UPCOMING_EVENTS[0].id);
-            const allEvts = (typeof ALL_EVENTS !== 'undefined' && ALL_EVENTS.length) ? ALL_EVENTS : UPCOMING_EVENTS;
-            const currentEvent = allEvts.find(e => e.id === activeId) || { id: activeId, name: activeId };
-            const eligibleClasses = getEventEligibleClasses(currentEvent);
-            const duration = getEventDurationHours(currentEvent);
+            const eligibleClasses = window._adminBuilderEligibleClasses || ['GT3'];
+            const duration = window._adminBuilderDurationHours || 6;
             const nextNum = 140 + window._adminBuilderCars.length;
             const primaryClass = eligibleClasses[0] || 'GT3';
             const defaultModel = (EVENT_CAR_CATALOG[primaryClass] && EVENT_CAR_CATALOG[primaryClass][0]) || `${primaryClass} Chassis`;
-            const defaultStint = primaryClass === 'Supercars' ? 45 : 60;
+            const defaultStint = primaryClass === 'Supercars' ? 45 : (primaryClass === 'GTP' || primaryClass === 'LMP2') ? 45 : 60;
 
             const usedNames = window._adminBuilderCars.map(c => c.name || c.teamName);
             const availableTeam = DYNAMIC_GRIDUP_TEAMS.find(t => !usedNames.includes(t)) || `GRiD UP Team #${nextNum}`;
@@ -3036,21 +3099,15 @@
                 stintMinutes: defaultStint,
                 captain: "",
                 drivers: [],
-                stints: window.GridUpStintPlanner ? window.GridUpStintPlanner.generateStintSchedule({
-                    durationHours: duration,
-                    stintMinutes: defaultStint,
-                    drivers: ['Driver 1'],
-                    carNumber: String(nextNum),
-                    carClass: primaryClass
-                }).stints : []
+                stints: generateCarStints(duration, defaultStint, [], [], String(nextNum), primaryClass)
             });
-            loadAdminBuilderData();
+            refreshAdminBuilderUI();
         };
 
         window.removeAdminBuilderCar = function(carIdx) {
             if (confirm("Remove this car entry?")) {
                 window._adminBuilderCars.splice(carIdx, 1);
-                loadAdminBuilderData();
+                refreshAdminBuilderUI();
             }
         };
 
