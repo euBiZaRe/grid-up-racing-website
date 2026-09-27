@@ -12,33 +12,379 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" media="print" onload="this.media='all'"><noscript><link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet"></noscript>
     <link rel="stylesheet" href="style.css?v=25">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" type="image/png" href="assets/G_2.png">
     <style>
-        .admin-container {
-            margin-top: 5rem;
-            padding: 0 2rem;
-            max-width: 100%;
+        /* Scoped Admin Dashboard Theme */
+        body.admin-page {
+            --primary: #00d2ff !important;
+            --primary-dim: #0284c7 !important;
+            --primary-glow: rgba(0, 210, 255, 0.3) !important;
+            --primary-gradient: linear-gradient(135deg, #00d2ff 0%, #0077ff 100%) !important;
+            background-color: #060911;
         }
+
+        .admin-container {
+            margin-top: 5.5rem;
+            padding: 0 2rem 3rem 2rem;
+            max-width: 1680px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Hero Command Bar */
+        .admin-hero-header {
+            margin-bottom: 1.75rem;
+            padding: 1.4rem 2rem;
+            background: linear-gradient(135deg, rgba(13, 20, 36, 0.85) 0%, rgba(8, 12, 22, 0.95) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .admin-hero-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #00d2ff 0%, rgba(0, 210, 255, 0.2) 60%, transparent 100%);
+        }
+
+        .admin-hero-title-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .admin-badge-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #00d2ff;
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            padding: 3px 10px;
+            background: rgba(0, 210, 255, 0.08);
+            border: 1px solid rgba(0, 210, 255, 0.22);
+            border-radius: 999px;
+            width: fit-content;
+        }
+
+        .admin-badge-eyebrow .live-pulse-dot {
+            width: 6px;
+            height: 6px;
+            background: #00d2ff;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #00d2ff;
+            animation: admin-pulse-glow 2s infinite ease-in-out;
+        }
+
+        @keyframes admin-pulse-glow {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.35; transform: scale(0.8); }
+        }
+
+        .admin-hero-title {
+            font-family: var(--font-heading);
+            font-size: 1.85rem;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            margin: 0;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .admin-profile-pill {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            padding: 0.6rem 1.15rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 12px;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+        }
+
+        .admin-avatar-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, rgba(0, 210, 255, 0.15), rgba(0, 119, 255, 0.15));
+            border: 1px solid rgba(0, 210, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #00d2ff;
+            font-size: 0.95rem;
+        }
+
+        .admin-session-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.65rem;
+            color: #10b981;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .admin-session-status .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 8px #10b981;
+        }
+
+        /* Segmented Navigation Bar Grid */
+        .admin-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            width: 100%;
+        }
+
+        .admin-main {
+            width: 100%;
+            min-width: 0;
+        }
+
+        .admin-nav-bar {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-bottom: 1.75rem;
+        }
+
+        @media (max-width: 1100px) {
+            .admin-nav-bar {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .admin-nav-bar {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .admin-hero-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .admin-profile-pill {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .admin-nav-bar {
+                grid-template-columns: 1fr;
+            }
+            .admin-hero-title {
+                font-size: 1.45rem;
+            }
+        }
+
+        .admin-nav-bar .admin-nav-btn {
+            appearance: none;
+            -webkit-appearance: none;
+            background: rgba(14, 21, 37, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 0.85rem 1rem;
+            color: #94a3b8;
+            font-family: inherit;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.65rem;
+            cursor: pointer;
+            transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            text-decoration: none;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .admin-nav-bar .admin-nav-btn i {
+            font-size: 0.95rem;
+            transition: transform 0.2s ease, color 0.2s ease;
+            opacity: 0.8;
+            color: #94a3b8;
+        }
+
+        .admin-nav-bar .admin-nav-btn:hover {
+            color: #ffffff;
+            background: rgba(22, 33, 56, 0.9);
+            border-color: rgba(0, 210, 255, 0.45);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0, 210, 255, 0.15);
+        }
+
+        .admin-nav-bar .admin-nav-btn:hover i {
+            color: #00d2ff;
+            transform: scale(1.1);
+            opacity: 1;
+        }
+
+        .admin-nav-bar .admin-nav-btn.active,
+        .admin-nav-bar .admin-nav-btn.btn-primary {
+            color: #ffffff !important;
+            background: linear-gradient(135deg, rgba(0, 210, 255, 0.18) 0%, rgba(0, 102, 204, 0.24) 100%) !important;
+            border-color: #00d2ff !important;
+            box-shadow: 0 0 18px rgba(0, 210, 255, 0.25), inset 0 0 10px rgba(0, 210, 255, 0.12) !important;
+            font-weight: 800;
+        }
+
+        .admin-nav-bar .admin-nav-btn.active i,
+        .admin-nav-bar .admin-nav-btn.btn-primary i {
+            color: #00d2ff !important;
+            opacity: 1;
+            filter: drop-shadow(0 0 6px rgba(0, 210, 255, 0.6));
+        }
+
+        .admin-nav-bar .admin-nav-btn.active::after,
+        .admin-nav-bar .admin-nav-btn.btn-primary::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 20%;
+            right: 20%;
+            height: 2px;
+            background: #00d2ff;
+            box-shadow: 0 0 8px #00d2ff;
+            border-radius: 2px;
+        }
+
+        .admin-nav-badge {
+            background: rgba(0, 210, 255, 0.25);
+            border: 1px solid rgba(0, 210, 255, 0.45);
+            color: #00d2ff;
+            font-size: 0.6rem;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            margin-left: 2px;
+        }
+
+        /* Clean Admin Table Styling */
         .claims-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 2rem;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--glass-border);
+            margin-top: 0;
+            background: transparent;
+            border: none;
         }
+
         .claims-table th, .claims-table td {
-            padding: 1.25rem;
+            padding: 1.1rem 1.25rem;
             text-align: left;
-            border-bottom: 1px solid var(--glass-border);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
+
         .claims-table th {
             text-transform: uppercase;
-            font-size: 0.75rem;
-            letter-spacing: 2px;
-            color: var(--primary);
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            color: #94a3b8;
+            background: rgba(14, 21, 37, 0.85);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
-        .claims-table tr:hover {
-            background: rgba(255, 255, 255, 0.05);
+
+        .claims-table td {
+            color: #cbd5e1;
+            font-size: 0.88rem;
+            vertical-align: middle;
+        }
+
+        .claims-table tbody tr:hover {
+            background: rgba(0, 210, 255, 0.025);
+        }
+
+        .claims-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .admin-main .glass {
+            transform: none !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35) !important;
+            border-radius: 14px !important;
+            border: 1px solid rgba(255, 255, 255, 0.07) !important;
+            background: rgba(13, 20, 36, 0.75) !important;
+        }
+
+        .admin-main .glass:hover {
+            transform: none !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        /* Polished Empty State Component */
+        .admin-empty-state {
+            padding: 4.5rem 2rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(14, 21, 37, 0.35);
+            border-radius: 12px;
+            margin: 1rem;
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+
+        .admin-empty-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(0, 210, 255, 0.08);
+            border: 1px solid rgba(0, 210, 255, 0.22);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #00d2ff;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 0 25px rgba(0, 210, 255, 0.12);
+        }
+
+        .admin-empty-state h4 {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.5px;
+        }
+
+        .admin-empty-state p {
+            font-size: 0.88rem;
+            color: #64748b;
+            max-width: 420px;
+            line-height: 1.5;
+            margin: 0;
         }
         .status-badge {
             padding: 0.25rem 0.75rem;
@@ -373,34 +719,72 @@
         <!-- Admin Content -->
         <div id="admin-hub" class="admin-content" style="position: relative; overflow: hidden; padding-bottom: 2rem;">
             <div class="tread-overlay" style="opacity: 0.05;"></div>
-            <header style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                <div>
-                    <p style="color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 4px; font-size: 0.6rem; margin-bottom: 0.25rem; opacity: 0.8;">GRiD UP // ADMIN</p>
-                    <h1 class="glow-text" style="font-size: 2.2rem; font-weight: 800; letter-spacing: -1px; margin: 0;" id="admin-title">Dashboard</h1>
+            <header class="admin-hero-header">
+                <div class="admin-hero-title-group">
+                    <div class="admin-badge-eyebrow">
+                        <span class="live-pulse-dot"></span>
+                        <span>GRiD UP SIM RACING &bull; MISSION CONTROL</span>
+                    </div>
+                    <h1 class="admin-hero-title" id="admin-title">Team Applications</h1>
                 </div>
-                <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <span id="admin-user-info" style="color: var(--text-muted); font-size: 0.7rem; font-weight: 600;">...</span>
-                        <div style="width: 8px; height: 8px; background: #00ff88; border-radius: 50%; box-shadow: 0 0 10px #00ff88;"></div>
+                <div class="admin-profile-pill">
+                    <div class="admin-avatar-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div>
+                        <div id="admin-user-info" style="color: #ffffff; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.3px;">Checking privileges...</div>
+                        <div class="admin-session-status">
+                            <span class="status-dot"></span>
+                            <span>Active Admin Session</span>
+                        </div>
                     </div>
                 </div>
             </header>
 
             <div class="admin-layout">
-                <aside class="admin-sidebar animate-fade-in">
-                    <button onclick="switchTab('applications')" class="btn btn-outline" id="tab-applications">APPLICATIONS</button>
-                    <button onclick="switchTab('claims')" class="btn btn-outline" id="tab-claims">DRIVER CLAIMS</button>
-                    <button onclick="switchTab('races')" class="btn btn-outline" id="tab-races"><i class="fas fa-layer-group" style="margin-right: 6px;"></i> TEAM BUILDER</button>
-                    <button onclick="switchTab('availability')" class="btn btn-outline" id="tab-availability">AVAILABILITY</button>
-                    <button onclick="switchTab('roster')" class="btn btn-outline" id="tab-roster">TEAM ROSTER</button>
-                    <button onclick="switchTab('events')" class="btn btn-outline" id="tab-events">SEASON SCHEDULE</button>
-                    <button onclick="switchTab('race-results')" class="btn btn-outline" id="tab-race-results">RACE RESULTS</button>
-                    <button onclick="switchTab('streams')" class="btn btn-outline" id="tab-streams">LIVE STREAMS</button>
-                    <button onclick="switchTab('admins')" class="btn btn-outline" id="tab-admins">TEAM PERMISSIONS</button>
-                    <button onclick="switchTab('telemetry-teams')" class="btn btn-outline" id="tab-telemetry-teams" style="border-color: rgba(168, 85, 247, 0.4); color: #c084fc;">TELEMETRY TEAMS</button>
-                    
-
-                </aside>
+                <nav class="admin-nav-bar animate-fade-in" aria-label="Admin Navigation">
+                    <button onclick="switchTab('applications')" class="admin-nav-btn active" id="tab-applications">
+                        <i class="fas fa-file-signature"></i>
+                        <span>Applications</span>
+                    </button>
+                    <button onclick="switchTab('claims')" class="admin-nav-btn" id="tab-claims">
+                        <i class="fas fa-id-card"></i>
+                        <span>Driver Claims</span>
+                    </button>
+                    <button onclick="switchTab('races')" class="admin-nav-btn" id="tab-races">
+                        <i class="fas fa-layer-group"></i>
+                        <span>Team Builder</span>
+                        <span class="admin-nav-badge">LIVE</span>
+                    </button>
+                    <button onclick="switchTab('availability')" class="admin-nav-btn" id="tab-availability">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Availability</span>
+                    </button>
+                    <button onclick="switchTab('roster')" class="admin-nav-btn" id="tab-roster">
+                        <i class="fas fa-users-cog"></i>
+                        <span>Team Roster</span>
+                    </button>
+                    <button onclick="switchTab('events')" class="admin-nav-btn" id="tab-events">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Season Schedule</span>
+                    </button>
+                    <button onclick="switchTab('race-results')" class="admin-nav-btn" id="tab-race-results">
+                        <i class="fas fa-trophy"></i>
+                        <span>Race Results</span>
+                    </button>
+                    <button onclick="switchTab('streams')" class="admin-nav-btn" id="tab-streams">
+                        <i class="fas fa-broadcast-tower"></i>
+                        <span>Live Streams</span>
+                    </button>
+                    <button onclick="switchTab('admins')" class="admin-nav-btn" id="tab-admins">
+                        <i class="fas fa-user-shield"></i>
+                        <span>Permissions</span>
+                    </button>
+                    <button onclick="switchTab('telemetry-teams')" class="admin-nav-btn" id="tab-telemetry-teams">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Telemetry Teams</span>
+                    </button>
+                </nav>
 
                 <div class="admin-main">
                     <!-- Applications Section -->
@@ -1665,7 +2049,17 @@
                 if (elPending)  elPending.textContent  = countPending;
 
                 if (snapshot.empty) {
-                    list.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No claim requests found.</td></tr>';
+                    list.innerHTML = `
+                        <tr>
+                            <td colspan="4" style="padding: 0;">
+                                <div class="admin-empty-state">
+                                    <div class="admin-empty-icon"><i class="fas fa-id-card"></i></div>
+                                    <h4>No Driver Claims Found</h4>
+                                    <p>There are no pending driver verification or profile claim requests at this time.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
                     return;
                 }
 
@@ -1806,6 +2200,7 @@
             tabs.forEach(t => {
                 const btn = document.getElementById(`tab-${t}`);
                 if (btn) {
+                    btn.classList.toggle('active', tab === t);
                     btn.classList.toggle('btn-primary', tab === t);
                     btn.classList.toggle('btn-outline', tab !== t);
                 }
@@ -4220,7 +4615,17 @@
             try {
                 const snapshot = await db.collection("applications").orderBy("timestamp", "desc").get();
                 if (snapshot.empty) {
-                    list.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No applications found.</td></tr>';
+                    list.innerHTML = `
+                        <tr>
+                            <td colspan="5" style="padding: 0;">
+                                <div class="admin-empty-state">
+                                    <div class="admin-empty-icon"><i class="fas fa-file-signature"></i></div>
+                                    <h4>No Applications Found</h4>
+                                    <p>There are currently no driver or team applications waiting for review.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
                     return;
                 }
 
