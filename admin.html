@@ -394,9 +394,7 @@
                     <button onclick="switchTab('availability')" class="btn btn-outline" id="tab-availability">AVAILABILITY</button>
                     <button onclick="switchTab('roster')" class="btn btn-outline" id="tab-roster">TEAM ROSTER</button>
                     <button onclick="switchTab('events')" class="btn btn-outline" id="tab-events">SEASON SCHEDULE</button>
-                    <button onclick="switchTab('leagues')" class="btn btn-outline" id="tab-leagues">LEAGUE EVENT SCHEDULE</button>
                     <button onclick="switchTab('race-results')" class="btn btn-outline" id="tab-race-results">RACE RESULTS</button>
-                    <button onclick="switchTab('reports')" class="btn btn-outline" id="tab-reports">RACE REPORTS</button>
                     <button onclick="switchTab('streams')" class="btn btn-outline" id="tab-streams">LIVE STREAMS</button>
                     <button onclick="switchTab('admins')" class="btn btn-outline" id="tab-admins">TEAM PERMISSIONS</button>
                     <button onclick="switchTab('telemetry-teams')" class="btn btn-outline" id="tab-telemetry-teams" style="border-color: rgba(168, 85, 247, 0.4); color: #c084fc;">TELEMETRY TEAMS</button>
@@ -1804,7 +1802,7 @@
             const titleEl = document.getElementById('admin-title');
             if (titleEl) titleEl.textContent = titleMap[tab] || tab;
             
-            const tabs = ['applications', 'claims', 'races', 'admins', 'availability', 'roster', 'events', 'leagues', 'race-results', 'reports', 'streams', 'm2rc-schedule', 'm2rc-results', 'm2rc-stewarding', 'm2rc-drivers', 'telemetry-teams'];
+            const tabs = ['applications', 'claims', 'races', 'admins', 'availability', 'roster', 'events', 'race-results', 'streams', 'm2rc-schedule', 'm2rc-results', 'm2rc-stewarding', 'm2rc-drivers', 'telemetry-teams'];
             tabs.forEach(t => {
                 const btn = document.getElementById(`tab-${t}`);
                 if (btn) {
@@ -3417,7 +3415,7 @@
                 
                 // Automatically activate tab from URL hash, or default to applications
                 const currentHash = (window.location.hash ? window.location.hash.replace('#', '').trim() : '');
-                const validTabs = ['applications', 'claims', 'races', 'admins', 'availability', 'roster', 'events', 'leagues', 'race-results', 'reports', 'streams', 'm2rc-schedule', 'm2rc-results', 'm2rc-stewarding', 'm2rc-drivers', 'telemetry-teams'];
+                const validTabs = ['applications', 'claims', 'races', 'admins', 'availability', 'roster', 'events', 'race-results', 'streams', 'm2rc-schedule', 'm2rc-results', 'm2rc-stewarding', 'm2rc-drivers', 'telemetry-teams'];
                 const targetTab = validTabs.includes(currentHash) ? currentHash : 'applications';
                 switchTab(targetTab);
             } else {
