@@ -144,14 +144,24 @@ function formatEventTitle(eId, evName) {
     return eId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }
 
-function getEventTargetUrl(eventId = '') {
-    const e = (eventId || '').toLowerCase();
-    if (e.includes('daytona-24')) return '/events/past/daytona-24.html';
+function getEventTargetUrl(eventId = '', eventTitle = '') {
+    const e = (eventId + ' ' + (eventTitle || '')).toLowerCase();
+    if (e.includes('daytona-24') || (e.includes('daytona') && e.includes('24'))) return '/events/past/daytona-24.html';
     if (e.includes('roar') || e.includes('iracing-roar')) return '/events/past/iracing-roar.html';
-    if (e.includes('bathurst-12')) return '/events/past/bathurst-12.html';
+    if (e.includes('bathurst-12') || (e.includes('bathurst') && e.includes('12'))) return '/events/past/bathurst-12.html';
+    if (e.includes('bathurst-1000') || e.includes('bathurst')) return '/events/bathurst-1000.html';
     if (e.includes('daytona-500')) return '/events/past/daytona-500.html';
-    if (e.includes('sebring-12')) return '/events/past/sebring-12hr.html';
-    return '/results.html';
+    if (e.includes('sebring-12') || e.includes('sebring')) return '/events/past/sebring-12hr.html';
+    if (e.includes('road-america') || e.includes('elkhart')) return '/events/road-america-6h.html';
+    if (e.includes('indy-500') || (e.includes('indy') && !e.includes('8h'))) return '/events/indy-500.html';
+    if (e.includes('indy-8h')) return '/events/indy-8h.html';
+    if (e.includes('nurburgring') || e.includes('nürburgring')) return '/events/nurburgring-24h.html';
+    if (e.includes('suzuka')) return '/events/suzuka-1000km.html';
+    if (e.includes('spa')) return '/events/spa-24hr.html';
+    if (e.includes('watkins')) return '/events/watkins-glen-6h.html';
+    if (e.includes('petit')) return '/events/petit-le-mans.html';
+    if (e.includes('brickyard')) return '/events/brickyard-400.html';
+    return `/events/details.html?id=${encodeURIComponent(eventId)}`;
 }
 
 // Registry of official past event detail pages
@@ -234,7 +244,7 @@ const VERIFIED_PAST_PAGE_PODIUMS = [
         "trackName": "Road America",
         "trackLength": "6.515 km",
         "image": "/assets/trophies/trophy-gold.jpg?v=36",
-        "source": "/results.html",
+        "source": "/events/road-america-6h.html",
         "timestamp": "2026-07-26T20:00:00Z"
     },
     {
@@ -260,7 +270,7 @@ const VERIFIED_PAST_PAGE_PODIUMS = [
         "trackName": "Indianapolis Motor Speedway",
         "trackLength": "4.023 km",
         "image": "/assets/trophies/trophy-gold.jpg?v=36",
-        "source": "/results.html",
+        "source": "/events/indy-500.html",
         "timestamp": "2026-05-18T20:00:00Z"
     },
     {
@@ -319,7 +329,7 @@ const VERIFIED_PAST_PAGE_PODIUMS = [
         "trackName": "N\u00fcrburgring Nordschleife / GP",
         "trackLength": "25.378 km",
         "image": "/assets/trophies/trophy-silver.jpg?v=36",
-        "source": "/results.html",
+        "source": "/events/nurburgring-24h.html",
         "timestamp": "2026-05-03T20:00:00Z"
     },
     {
@@ -347,7 +357,7 @@ const VERIFIED_PAST_PAGE_PODIUMS = [
         "trackName": "Suzuka International Racing Course",
         "trackLength": "5.807 km",
         "image": "/assets/trophies/trophy-silver.jpg?v=36",
-        "source": "/results.html",
+        "source": "/events/suzuka-1000km.html",
         "timestamp": "2026-09-12T19:08:34.349Z"
     },
     {
@@ -864,7 +874,7 @@ function renderFeaturedPodiums() {
         const posClass = item.position === 1 ? 'pos-1 gold' : (item.position === 2 ? 'pos-2 silver' : 'pos-3 bronze');
         const posSup = item.position === 1 ? 'ST' : (item.position === 2 ? 'ND' : 'RD');
         const driversStr = Array.isArray(item.drivers) ? item.drivers.join(' / ') : item.drivers;
-        const targetUrl = item.source || getEventTargetUrl(item.eventId);
+        const targetUrl = item.source || getEventTargetUrl(item.eventId, item.event);
 
         return `
             <div class="featured-card ${posClass}" data-index="${idx}" style="cursor: pointer;" onclick="window.location.href='${targetUrl}'" title="View official event details">
@@ -894,7 +904,7 @@ function renderFeaturedPodiums() {
                         </div>
                         <div class="spec-row">
                             <svg class="spec-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 17h14M5 12h14M5 7h14"/></svg>
-                            <span class="spec-text">${item.car} ${item.split ? `(${item.split})` : ''}</span>
+                            <span class="spec-text">${item.car}</span>
                         </div>
                         <div class="spec-row">
                             <svg class="spec-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -1018,7 +1028,7 @@ function renderPastPodiums() {
                         ${items.map(item => {
                             const posClass = item.position === 1 ? 'gold' : (item.position === 2 ? 'silver' : 'bronze');
                             const driversStr = Array.isArray(item.drivers) ? item.drivers.join(', ') : item.drivers;
-                            const targetUrl = item.source || getEventTargetUrl(item.eventId);
+                            const targetUrl = item.source || getEventTargetUrl(item.eventId, item.event);
                             return `
                                 <tr class="trophy-list-row ${posClass}" style="cursor: pointer;" onclick="window.location.href='${targetUrl}'" title="View official event details">
                                     <td class="col-pos">
@@ -1047,7 +1057,7 @@ function renderPastPodiums() {
     container.innerHTML = items.map(item => {
         const posClass = item.position === 1 ? 'pos-1 gold' : (item.position === 2 ? 'pos-2 silver' : 'pos-3 bronze');
         const driversStr = Array.isArray(item.drivers) ? item.drivers.join(' / ') : item.drivers;
-        const targetUrl = item.source || getEventTargetUrl(item.eventId);
+        const targetUrl = item.source || getEventTargetUrl(item.eventId, item.event);
 
         return `
             <div class="past-card ${posClass}" style="cursor: pointer;" onclick="window.location.href='${targetUrl}'" title="View official event details">
