@@ -536,9 +536,24 @@ function parseSingleEventHtml(htmlText, sourceInfo) {
 
 /**
  * Deduplication key generator
+ * Normalizes event years (2024-2026 / 24-26) and endurance distance/hour suffixes (24h/24hr -> 24)
+ * to ensure database records and verified archive events merge cleanly without duplicates.
  */
 function getDedupKey(p) {
-    const eid = (p.eventId || '').toLowerCase().replace(/[^a-z0-9]/g, '').replace(/26|25/g, '');
+    let eid = (p.eventId || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    // Strip trailing years: 2024, 2025, 2026, 24, 25, 26
+    eid = eid.replace(/(2024|2025|2026|25|26)$/g, '');
+    // Strip trailing hour/distance suffixes: 24h, 24hr -> 24; 12h, 12hr -> 12; 6h, 6hr -> 6; 8h, 8hr -> 8
+    eid = eid.replace(/(\d+)(h|hr)$/g, '$1');
+    eid = eid.replace(/(\d+)km$/g, '$1');
+
+    // Fallback to event title if eventId is missing or generic
+    if ((!eid || eid === 'event' || eid === 'race') && p.event) {
+        eid = p.event.toLowerCase().replace(/[^a-z0-9]/g, '');
+        eid = eid.replace(/(2024|2025|2026|25|26)$/g, '');
+        eid = eid.replace(/(\d+)(h|hr)$/g, '$1');
+    }
+
     let team = (p.teamName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
     if (team.includes('gridup')) {
         for (const c of ['purple', 'red', 'black', 'white', 'blue', 'simracing']) {
@@ -740,13 +755,22 @@ async function loadPodiumResultsFromDatabase(options = {}) {
                     if (!dedupMap.has(key)) {
                         dedupMap.set(key, item);
                     } else {
-                        // Merge richer information
+                        // Merge richer information from verified event page
                         const existing = dedupMap.get(key);
                         if ((!existing.drivers || existing.drivers.length < item.drivers.length) && item.drivers.length > 0) {
                             existing.drivers = item.drivers;
                         }
-                        if ((!existing.car || existing.car === 'Official Entry') && item.car) {
+                        if (item.car && (!existing.car || existing.car === 'Official Entry' || !existing.car.includes('('))) {
                             existing.car = item.car;
+                        }
+                        if (item.source && (!existing.source || existing.source === '#' || existing.source === '/events.html')) {
+                            existing.source = item.source;
+                        }
+                        if (item.split && !existing.split) {
+                            existing.split = item.split;
+                        }
+                        if (item.date && (!existing.date || existing.date.length < item.date.length)) {
+                            existing.date = item.date;
                         }
                     }
                 });
@@ -769,9 +793,47 @@ async function loadPodiumResultsFromDatabase(options = {}) {
             const key = getDedupKey(v);
             if (!dedupMap.has(key)) {
                 extracted.push(v);
+                dedupMap.set(key, v);
+            } else {
+                const existing = dedupMap.get(key);
+                if (existing) {
+                    if (v.source && (!existing.source || existing.source === '#' || existing.source === '/events.html')) {
+                        existing.source = v.source;
+                    }
+                    if (v.split && !existing.split) {
+                        existing.split = v.split;
+                    }
+                    if (v.date && (!existing.date || existing.date.length < v.date.length)) {
+                        existing.date = v.date;
+                    }
+                    if (v.car && (!existing.car || existing.car === 'Official Entry' || !existing.car.includes('('))) {
+                        existing.car = v.car;
+                    }
+                }
             }
         });
     }
+
+    // STEP D: Final airtight deduplication sweep
+    const finalDedupMap = new Map();
+    extracted.forEach(item => {
+        const key = getDedupKey(item);
+        if (!finalDedupMap.has(key)) {
+            finalDedupMap.set(key, item);
+        } else {
+            const cur = finalDedupMap.get(key);
+            if ((!cur.drivers || cur.drivers.length < (item.drivers || []).length) && item.drivers) {
+                cur.drivers = item.drivers;
+            }
+            if (item.split && !cur.split) cur.split = item.split;
+            if (item.source && (!cur.source || cur.source === '#' || cur.source === '/events.html')) {
+                cur.source = item.source;
+            }
+            if (item.date && (!cur.date || cur.date.length < item.date.length)) cur.date = item.date;
+            if (item.car && (!cur.car || cur.car === 'Official Entry' || !cur.car.includes('('))) cur.car = item.car;
+        }
+    });
+    extracted = Array.from(finalDedupMap.values());
 
     // Sort podiums: P1 first, then P2, then P3; or newest first
     extracted.sort((a, b) => {
