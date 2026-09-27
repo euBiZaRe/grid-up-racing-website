@@ -776,15 +776,22 @@
                 <!-- Driver List -->
                 <div class="glass" style="padding: 1.5rem;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                        <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
                             <h3 style="color: var(--primary);">Current Team Members</h3>
                             <button onclick="showDriverModal()" class="btn btn-primary" style="padding: 0.6rem 1.2rem; font-size: 0.75rem; border-radius: 6px;">+ ADD MEMBER</button>
+                            <button onclick="batchSetDriverAccess(true)" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.75rem; border-radius: 6px; border-color: rgba(0,255,136,0.4); color: #00ff88;" title="Allow portal access for all active members">+ Allow All Active</button>
+                            <button onclick="batchSetDriverAccess(false)" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.75rem; border-radius: 6px; border-color: rgba(255,68,68,0.3); color: #ff6b6b;" title="Revoke portal access for all members">Revoke All</button>
                             <select id="roster-filter-category" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.75rem; border-radius: 6px; width: auto;" onchange="renderRosterUI()">
                                 <option value="all">All Categories</option>
                                 <option value="Driver">Driver</option>
                                 <option value="GRiD UP Endurance">GRiD UP Endurance</option>
                                 <option value="Owner">Owner</option>
                                 <option value="Custom">Custom</option>
+                            </select>
+                            <select id="roster-filter-access" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.75rem; border-radius: 6px; width: auto;" onchange="renderRosterUI()">
+                                <option value="all">All Access</option>
+                                <option value="allowed">Access Allowed Only</option>
+                                <option value="no-access">No Access Only</option>
                             </select>
                         </div>
                         <span id="roster-count" style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700;">0 Members</span>
@@ -798,6 +805,7 @@
                                     <th>Category</th>
                                     <th>ID</th>
                                     <th>Status</th>
+                                    <th>Portal Access</th>
                                     <th style="text-align: right;">Actions</th>
                                 </tr>
                             </thead>
@@ -3776,29 +3784,80 @@
 
         // --- ROSTER MANAGEMENT ---
         let ROSTER_CACHE = {};
+        let ALL_REGISTERED_USERS = [];
+        let ALL_CLAIMS_MAP = {};
 
         async function loadRoster() {
             const list = document.getElementById('admin-roster-list');
             if (!list) return;
 
-            list.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 2rem;">Loading roster...</td></tr>';
+            list.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 2rem;">Loading roster...</td></tr>';
 
             try {
-                const snap = await db.collection("drivers").orderBy("name").get();
+                const [snap, usersSnap, claimsSnap] = await Promise.all([
+                    db.collection("drivers").orderBy("name").get(),
+                    db.collection("users").get().catch(() => ({ forEach: () => {} })),
+                    db.collection("claims").get().catch(() => ({ forEach: () => {} }))
+                ]);
+
                 ROSTER_CACHE = {};
                 snap.forEach(doc => {
                     ROSTER_CACHE[doc.id] = doc.data();
                 });
+
+                ALL_REGISTERED_USERS = [];
+                const seenUids = new Set();
+                usersSnap.forEach(doc => {
+                    const u = doc.data();
+                    seenUids.add(doc.id);
+                    ALL_REGISTERED_USERS.push({
+                        uid: doc.id,
+                        discordName: u.discordName || u.displayName || ('User ' + doc.id.slice(0, 6))
+                    });
+                });
+
+                ALL_CLAIMS_MAP = {};
+                claimsSnap.forEach(doc => {
+                    const c = doc.data();
+                    ALL_CLAIMS_MAP[doc.id] = c;
+                    if (c.driverIdentity) ALL_CLAIMS_MAP[c.driverIdentity] = c;
+                    if (c.discordId && !seenUids.has(c.discordId)) {
+                        seenUids.add(c.discordId);
+                        ALL_REGISTERED_USERS.push({
+                            uid: c.discordId,
+                            discordName: c.discordName || c.driverIdentity || ('Claimed User ' + c.discordId.slice(0, 6))
+                        });
+                    }
+                });
+
+                ALL_REGISTERED_USERS.sort((a, b) => a.discordName.localeCompare(b.discordName));
+                populateUserDropdown();
                 renderRosterUI();
             } catch (e) {
-                list.innerHTML = `<tr><td colspan="5" style="text-align:center; color: #ff4444; padding: 2rem;">Error: ${e.message}</td></tr>`;
+                console.error("Error loading roster:", e);
+                list.innerHTML = `<tr><td colspan="7" style="text-align:center; color: #ff4444; padding: 2rem;">Error: ${e.message}</td></tr>`;
             }
+        }
+
+        function populateUserDropdown(selectedUid = '') {
+            const select = document.getElementById('roster-linked-user');
+            if (!select) return;
+
+            select.innerHTML = '<option value="">-- No User Linked (Auto-match by Driver Name) --</option>';
+            ALL_REGISTERED_USERS.forEach(u => {
+                const opt = document.createElement('option');
+                opt.value = u.uid;
+                opt.textContent = `${u.discordName} (UID: ${u.uid.slice(0, 8)}...)`;
+                if (u.uid === selectedUid) opt.selected = true;
+                select.appendChild(opt);
+            });
         }
 
         function renderRosterUI() {
             const list = document.getElementById('admin-roster-list');
             const countEl = document.getElementById('roster-count');
             const filterCategory = document.getElementById('roster-filter-category')?.value || 'all';
+            const filterAccess = document.getElementById('roster-filter-access')?.value || 'all';
             if (!list) return;
 
             list.innerHTML = '';
@@ -3813,13 +3872,36 @@
             sortedIds.forEach(id => {
                 const d = ROSTER_CACHE[id];
                 const driverCategory = d.category || 'Driver';
+                const hasAccess = !!d.allowAccess;
                 
                 // Apply Category Filter
                 if (filterCategory !== 'all' && driverCategory !== filterCategory) {
                     return;
                 }
+
+                // Apply Access Filter
+                if (filterAccess === 'allowed' && !hasAccess) return;
+                if (filterAccess === 'no-access' && hasAccess) return;
                 
                 count++;
+
+                // Determine linked user label
+                let linkedLabel = '';
+                if (d.linkedDiscordName) {
+                    linkedLabel = `<span style="color: var(--primary);">👤 ${escapeHtml(d.linkedDiscordName)}</span>`;
+                } else if (d.linkedUid) {
+                    const matchedUser = ALL_REGISTERED_USERS.find(u => u.uid === d.linkedUid);
+                    linkedLabel = `<span style="color: var(--primary);">👤 ${escapeHtml(matchedUser ? matchedUser.discordName : d.linkedUid.slice(0, 8) + '...')}</span>`;
+                } else if (ALL_CLAIMS_MAP[d.name]) {
+                    linkedLabel = `<span style="color: #5865F2;">🔗 Claimed: ${escapeHtml(ALL_CLAIMS_MAP[d.name].discordName || 'User')}</span>`;
+                } else {
+                    linkedLabel = `<span style="opacity: 0.4;">Auto-match name</span>`;
+                }
+
+                const accessBtn = hasAccess
+                    ? `<button onclick="toggleDriverAccess('${id}', false)" class="btn" style="padding: 0.35rem 0.7rem; font-size: 0.68rem; background: rgba(0,255,136,0.15); border: 1px solid #00ff88; color: #00ff88; font-weight: 700; border-radius: 4px; cursor: pointer; transition: all 0.2s;" title="Click to revoke sign-up & portal access">✓ ALLOWED</button>`
+                    : `<button onclick="toggleDriverAccess('${id}', true)" class="btn btn-outline" style="padding: 0.35rem 0.7rem; font-size: 0.68rem; border-color: rgba(255,255,255,0.2); color: var(--text-muted); border-radius: 4px; cursor: pointer; transition: all 0.2s;" title="Click to grant sign-up & portal access">NO ACCESS</button>`;
+
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td><strong>${d.name}</strong></td>
@@ -3827,6 +3909,12 @@
                     <td style="font-size: 0.7rem; color: var(--primary);">${driverCategory}</td>
                     <td style="font-family: monospace; font-size: 0.7rem; opacity: 0.7;">${d.iracingId || '-'}</td>
                     <td><span class="status-badge ${d.active ? 'status-verified' : 'status-denied'}">${d.active ? 'ACTIVE' : 'INACTIVE'}</span></td>
+                    <td>
+                        <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+                            ${accessBtn}
+                            <div style="font-size: 0.65rem; color: var(--text-muted);">${linkedLabel}</div>
+                        </div>
+                    </td>
                     <td style="text-align: right;">
                         <div class="action-btns" style="justify-content: flex-end;">
                             <button onclick="prepareEdit('${id}')" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem;">EDIT</button>
@@ -3838,11 +3926,54 @@
             });
 
             if (count === 0) {
-                list.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 2rem;">No drivers match the selected category.</td></tr>';
+                list.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 2rem;">No drivers match the selected filters.</td></tr>';
             }
             
             if (countEl) {
                 countEl.textContent = `${count} Members`;
+            }
+        }
+
+        async function toggleDriverAccess(id, allow) {
+            try {
+                await db.collection("drivers").doc(id).update({
+                    allowAccess: allow,
+                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                if (ROSTER_CACHE[id]) {
+                    ROSTER_CACHE[id].allowAccess = allow;
+                }
+                renderRosterUI();
+            } catch (err) {
+                console.error("Error toggling driver access:", err);
+                alert("Failed to update access: " + err.message);
+            }
+        }
+
+        async function batchSetDriverAccess(allow) {
+            const actionText = allow ? "GRANT Sign-up & Portal Access to ALL active team members" : "REVOKE access from ALL members";
+            if (!confirm(`Are you sure you want to ${actionText}?`)) return;
+
+            try {
+                const batch = db.batch();
+                let count = 0;
+                Object.keys(ROSTER_CACHE).forEach(id => {
+                    const d = ROSTER_CACHE[id];
+                    if (allow && !d.active) return; // Only grant to active members
+                    const ref = db.collection("drivers").doc(id);
+                    batch.update(ref, {
+                        allowAccess: allow,
+                        lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    d.allowAccess = allow;
+                    count++;
+                });
+                await batch.commit();
+                renderRosterUI();
+                alert(`Successfully updated access for ${count} members.`);
+            } catch (err) {
+                console.error("Batch update error:", err);
+                alert("Batch update failed: " + err.message);
             }
         }
 
@@ -3859,6 +3990,14 @@
             const category = document.getElementById('roster-category').value;
             const slug = document.getElementById('roster-slug').value.trim() || nameToSlug(name);
             const active = document.getElementById('roster-active').checked;
+            const allowAccess = document.getElementById('roster-allow-access').checked;
+            const linkedSelect = document.getElementById('roster-linked-user');
+            const linkedUid = linkedSelect ? (linkedSelect.value || '') : '';
+            let linkedDiscordName = '';
+            if (linkedUid && linkedSelect && linkedSelect.selectedIndex >= 0) {
+                const optText = linkedSelect.options[linkedSelect.selectedIndex].text;
+                linkedDiscordName = optText.split(' (UID:')[0].trim();
+            }
 
             if (!name) return alert("Driver name is required.");
 
@@ -3869,6 +4008,9 @@
                 category, 
                 slug, 
                 active, 
+                allowAccess,
+                linkedUid,
+                linkedDiscordName,
                 lastUpdated: firebase.firestore.FieldValue.serverTimestamp() 
             };
 
@@ -3933,6 +4075,8 @@
             document.getElementById('roster-category').value = d.category || 'Driver';
             document.getElementById('roster-slug').value = d.slug || '';
             document.getElementById('roster-active').checked = d.active !== false;
+            document.getElementById('roster-allow-access').checked = !!d.allowAccess;
+            populateUserDropdown(d.linkedUid || (ALL_CLAIMS_MAP[d.name] ? ALL_CLAIMS_MAP[d.name].discordId : ''));
             document.getElementById('driver-form-title').textContent = "Edit Team Member";
             
             document.getElementById('driver-modal').style.display = 'block';
@@ -3973,6 +4117,8 @@
             document.getElementById('roster-category').value = 'Driver';
             document.getElementById('roster-slug').value = '';
             document.getElementById('roster-active').checked = true;
+            document.getElementById('roster-allow-access').checked = false;
+            populateUserDropdown('');
             document.getElementById('driver-form-title').textContent = "Add Team Member";
         }
 
@@ -4404,6 +4550,20 @@
                 <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">URL SLUG (auto-generated from name)</label>
                 <input type="text" id="roster-slug" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;" placeholder="e.g. matty-roberts">
                 <p style="font-size: 0.6rem; color: var(--text-muted); margin-top: 5px;">Auto-generated from name. Override only if needed. Links the roster card to their profile page.</p>
+            </div>
+            <div>
+                <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: 1px;">LINKED DISCORD USER</label>
+                <select id="roster-linked-user" class="btn btn-outline" style="width: 100%; padding: 1rem; text-align: left;">
+                    <option value="">-- No User Linked (Auto-match by Driver Name) --</option>
+                </select>
+                <p style="font-size: 0.6rem; color: var(--text-muted); margin-top: 5px;">Select which registered Discord account belongs to this team member.</p>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; background: rgba(0, 255, 136, 0.06); border: 1px solid rgba(0, 255, 136, 0.25); padding: 0.85rem 1rem; border-radius: 8px;">
+                <input type="checkbox" id="roster-allow-access" style="width: 20px; height: 20px; accent-color: #00ff88; cursor: pointer;">
+                <div>
+                    <label for="roster-allow-access" style="font-size: 0.85rem; font-weight: 700; color: #00ff88; cursor: pointer; display: block;">Allow Sign-up & Portal Access</label>
+                    <div style="font-size: 0.65rem; color: var(--text-muted);">When enabled, this user will see the Driver Sign-up banner on the Events page and have access to the driver portal.</div>
+                </div>
             </div>
             <div style="display: flex; align-items: center; gap: 10px;">
                 <input type="checkbox" id="roster-active" checked style="width: 20px; height: 20px;">

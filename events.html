@@ -701,7 +701,7 @@
                 <button id="togglePastEvents" class="filter-btn" style="min-width: 170px;">Show Past Events</button>
             </div>
             
-            <div class="glass" style="margin-bottom: 2rem; padding: 1.25rem 2rem; border-left: 4px solid var(--primary); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div id="driver-portal-banner" class="glass" style="display: none; margin-bottom: 2rem; padding: 1.25rem 2rem; border-left: 4px solid var(--primary); justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
                 <div>
                     <h3 style="margin: 0; font-size: 1.1rem; color: #fff;">GRiD UP Driver Sign-ups Open</h3>
                     <p style="margin: 0.25rem 0 0; font-size: 0.8rem; color: var(--text-muted);">Set your availability, preferred class & chassis, and view team stint schedules.</p>
@@ -1279,6 +1279,87 @@
 
                 container.appendChild(card);
             });
+        }
+
+        // ═══ Driver Portal Banner Visibility Check ═══
+        async function checkDriverPortalBannerAccess(user, authDetails) {
+            const banner = document.getElementById('driver-portal-banner');
+            if (!banner) return;
+
+            if (!user) {
+                banner.style.display = 'none';
+                return;
+            }
+
+            // Check cached access for instant display without flicker
+            try {
+                const cachedAccess = localStorage.getItem('gridup_portal_access_' + user.uid);
+                if (cachedAccess === 'true') {
+                    banner.style.display = 'flex';
+                }
+            } catch (e) {}
+
+            // 1. Admins always see the banner
+            const MASTER_ADMIN = 'B0t4f4nqqpZIQKpT8Ed97xka5gM2';
+            const isUserAdmin = authDetails?.isAdmin || (user.uid === MASTER_ADMIN) || (typeof IS_ADMIN !== 'undefined' && IS_ADMIN);
+            if (isUserAdmin) {
+                banner.style.display = 'flex';
+                try { localStorage.setItem('gridup_portal_access_' + user.uid, 'true'); } catch (e) {}
+                return;
+            }
+
+            if (!window.db) {
+                setTimeout(() => checkDriverPortalBannerAccess(user, authDetails), 300);
+                return;
+            }
+
+            try {
+                // 2. Query team members with allowAccess == true
+                const allowedSnap = await db.collection("drivers").where("allowAccess", "==", true).get();
+                if (allowedSnap.empty) {
+                    banner.style.display = 'none';
+                    try { localStorage.removeItem('gridup_portal_access_' + user.uid); } catch (e) {}
+                    return;
+                }
+
+                // Check verified claim for this user
+                let claimedName = null;
+                try {
+                    const claimSnap = await db.collection("claims").where("discordId", "==", user.uid).get();
+                    if (!claimSnap.empty && claimSnap.docs[0].data().status === 'verified') {
+                        claimedName = claimSnap.docs[0].id;
+                    }
+                } catch (e) {}
+
+                const userNames = [];
+                if (claimedName) userNames.push(claimedName.toLowerCase().trim());
+                if (user.displayName) userNames.push(user.displayName.toLowerCase().trim());
+
+                let hasAccess = false;
+                allowedSnap.forEach(doc => {
+                    const d = doc.data();
+                    if (d.linkedUid === user.uid) hasAccess = true;
+                    if (d.name && userNames.includes(d.name.toLowerCase().trim())) hasAccess = true;
+                });
+
+                if (hasAccess) {
+                    banner.style.display = 'flex';
+                    try { localStorage.setItem('gridup_portal_access_' + user.uid, 'true'); } catch (e) {}
+                } else {
+                    banner.style.display = 'none';
+                    try { localStorage.removeItem('gridup_portal_access_' + user.uid); } catch (e) {}
+                }
+            } catch (err) {
+                console.warn("Could not check driver portal banner access:", err);
+            }
+        }
+
+        // Consolidated Auth Hooks from auth.js
+        function onAuthReady(user) {
+            checkDriverPortalBannerAccess(user, { isAdmin: (typeof IS_ADMIN !== 'undefined' && IS_ADMIN) });
+        }
+        function onAuthEnriched(user, details) {
+            checkDriverPortalBannerAccess(user, details);
         }
     </script>
 </body>

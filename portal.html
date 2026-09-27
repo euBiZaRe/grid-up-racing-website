@@ -1595,11 +1595,37 @@
 
 
 
-                                // 2. Check Verification (Skip for Admins)
+                // 2. Check Team Roster Access & Verification (Skip for Admins)
                 if (!isAdminUser) {
-                    const claimDoc = await db.collection("claims").where("discordId", "==", user.uid).get();
-                    if (claimDoc.empty || claimDoc.docs[0].data().status !== 'verified') {
-                        // Check if they have an application
+                    let hasRosterAccess = false;
+                    let claimedName = null;
+
+                    // Check if user has a verified claim
+                    try {
+                        const claimDoc = await db.collection("claims").where("discordId", "==", user.uid).get();
+                        if (!claimDoc.empty && claimDoc.docs[0].data().status === 'verified') {
+                            claimedName = claimDoc.docs[0].id;
+                        }
+                    } catch (e) {}
+
+                    // Check if user is granted access in Team Roster (drivers collection)
+                    try {
+                        const allowedSnap = await db.collection("drivers").where("allowAccess", "==", true).get();
+                        const userNames = [];
+                        if (claimedName) userNames.push(claimedName.toLowerCase().trim());
+                        if (user.displayName) userNames.push(user.displayName.toLowerCase().trim());
+
+                        allowedSnap.forEach(dDoc => {
+                            const d = dDoc.data();
+                            if (d.linkedUid === user.uid) hasRosterAccess = true;
+                            if (d.name && userNames.includes(d.name.toLowerCase().trim())) hasRosterAccess = true;
+                        });
+                    } catch (err) {
+                        console.warn("Could not check roster access in portal:", err);
+                    }
+
+                    if (!hasRosterAccess) {
+                        // User does not have Team Roster access: Check if they have an active application
                         let appSnap = await db.collection('applications').where('discordUid', '==', user.uid).get();
                         if (appSnap.empty && user.displayName) {
                             appSnap = await db.collection('applications').where('discordUsername', '==', user.displayName).get();
@@ -1619,7 +1645,7 @@
                             return;
                         }
 
-                        // Always allow access to portal frame, show clean Apply screen instead of Access Denied
+                        // Show clean Apply screen
                         loading.style.display = 'none';
                         document.getElementById('application-portal-view').style.display = 'block';
                         document.getElementById('portal-app-details-container').style.display = 'none';
