@@ -215,7 +215,6 @@
             const nickname = driver.nickname || "GRiD UP DRIVER";
             const role = driver.role || driver.category || "Team Driver";
             const memberSince = driver.memberSince || "2026";
-            const g61Url = `https://garage61.net/app/drivers/${driver.slug || ''}`;
             
             // Format rating disciplines
             const stats = driver.stats || {};
@@ -305,8 +304,6 @@
                             </div>
 
                             <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                                ${driver.slug ? `<a href="${g61Url}" target="_blank" class="btn" style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); width: 100%; font-size: 0.75rem; padding: 0.6rem; text-align: center; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Garage 61 Profile</a>` : ''}
-                                
                                 <div id="claim-section" style="display: none; width: 100%;">
                                     <button class="btn btn-outline claim-btn" onclick="openClaimModal()" style="font-size: 0.75rem; padding: 0.6rem; width: 100%; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Claim Profile</button>
                                 </div>

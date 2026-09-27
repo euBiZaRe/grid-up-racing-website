@@ -5,7 +5,7 @@ import sys
 from collections import defaultdict
 from datetime import datetime
 
-TOKEN = 'ZTLHNDQWYZATNMJHMC0ZOWQ5LTLKOTUTYTZJYZG0ZGJKOGU5'
+TOKEN = os.environ.get('GARAGE61_TOKEN') or os.environ.get('G61_PAT') or 'ZTLHNDQWYZATNMJHMC0ZOWQ5LTLKOTUTYTZJYZG0ZGJKOGU5'
 HEADERS = {'Authorization': f'Bearer {TOKEN}', 'User-Agent': 'GRiD-UP-Telemetry/1.0'}
 TEAM_ID = '01J4FHVP9N8APEV93B13HS16R8' # Grid Up Sim Racing
 
@@ -67,7 +67,6 @@ def sync():
                 'name': m_info['name'],
                 'firstName': m_info.get('firstName', ''),
                 'lastName': m_info.get('lastName', ''),
-                'profileUrl': f"https://garage61.net/app/drivers/{u}",
                 'totalLaps': 0,
                 'cleanLaps': 0,
                 'totalTimeSeconds': 0.0,
@@ -183,7 +182,6 @@ def sync():
         driver_list.append({
             'slug': u,
             'name': d['name'],
-            'profileUrl': d['profileUrl'],
             'totalLaps': total_l,
             'cleanLaps': clean_l,
             'cleanPct': clean_pct,
@@ -226,7 +224,9 @@ def sync():
     }
     
     # Write to target data file in repo
-    target_dir = '//Egg/y/Website/data'
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    repo_root = os.path.dirname(script_dir)
+    target_dir = os.path.join(repo_root, 'data')
     os.makedirs(target_dir, exist_ok=True)
     target_file = os.path.join(target_dir, 'garage61-stats.json')
     with open(target_file, 'w', encoding='utf-8') as f:
