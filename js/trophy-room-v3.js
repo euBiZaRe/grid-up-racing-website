@@ -26,6 +26,11 @@ document.addEventListener('DOMContentLoaded', () => {
 async function initTrophyRoom() {
     setupEventListeners();
     await loadPodiumResultsFromDatabase();
+    
+    // Auto-sync fallback every 30 seconds for background refresh
+    setInterval(() => {
+        loadPodiumResultsFromDatabase({ silent: true });
+    }, 30000);
 }
 
 /**
@@ -547,17 +552,55 @@ function getDedupKey(p) {
     return `${eid}_${team}_${p.position}`;
 }
 
+let REALTIME_LISTENERS_INITIALIZED = false;
+
+function setupRealtimeListeners(dbInstance) {
+    if (REALTIME_LISTENERS_INITIALIZED || !dbInstance) return;
+    REALTIME_LISTENERS_INITIALIZED = true;
+
+    try {
+        let isFirstResults = true;
+        dbInstance.collection("event_results").onSnapshot(() => {
+            if (isFirstResults) {
+                isFirstResults = false;
+                return;
+            }
+            console.log("Real-time podium update received from event_results, refreshing Trophy Room...");
+            loadPodiumResultsFromDatabase({ silent: true });
+        }, (err) => {
+            console.warn("Firestore onSnapshot error on event_results:", err);
+        });
+
+        let isFirstEvents = true;
+        dbInstance.collection("events").onSnapshot(() => {
+            if (isFirstEvents) {
+                isFirstEvents = false;
+                return;
+            }
+            console.log("Real-time event update received from events, refreshing Trophy Room...");
+            loadPodiumResultsFromDatabase({ silent: true });
+        }, (err) => {
+            console.warn("Firestore onSnapshot error on events:", err);
+        });
+    } catch (e) {
+        console.warn("Failed to set up Firestore realtime listeners:", e);
+    }
+}
+
 /**
  * 1. Fetch live podium results directly from Firestore (event_results) and official past event detail pages.
  * STRICT FILTER: ONLY displays official GRiD UP team event results from /results (P1, P2, and P3).
  * League races (gtc-*) and non-team competitors are strictly excluded.
  */
-async function loadPodiumResultsFromDatabase() {
+async function loadPodiumResultsFromDatabase(options = {}) {
+    const isSilent = !!options.silent;
     const featuredGrid = document.getElementById('featured-podiums-grid');
     const pastContainer = document.getElementById('past-podiums-container');
 
-    if (featuredGrid) featuredGrid.innerHTML = '<div class="trophy-empty-state"><p>Loading team podium finishes...</p></div>';
-    if (pastContainer) pastContainer.innerHTML = '<div class="trophy-empty-state"><p>Loading podium archives...</p></div>';
+    if (!isSilent) {
+        if (featuredGrid) featuredGrid.innerHTML = '<div class="trophy-empty-state"><p>Loading team podium finishes...</p></div>';
+        if (pastContainer) pastContainer.innerHTML = '<div class="trophy-empty-state"><p>Loading podium archives...</p></div>';
+    }
 
     let extracted = [];
     const dedupMap = new Map();
@@ -566,6 +609,7 @@ async function loadPodiumResultsFromDatabase() {
     try {
         const dbInstance = await waitForFirestore(3000);
         if (dbInstance) {
+            setupRealtimeListeners(dbInstance);
             // Fetch events metadata for title and date lookup
             const eventsMeta = {};
             try {
@@ -816,6 +860,19 @@ function getTrackSvg(trackKey) {
         viewBox: '0 0 100 60',
         svgPath: 'M 15 35 Q 12 18 30 16 L 75 16 Q 92 18 90 35 Q 88 50 72 48 L 52 44 L 32 48 Q 15 50 15 35 Z'
     };
+
+    if (track.image) {
+        return `
+            <div class="trophy-track-box">
+                <img src="${track.image}" alt="${track.name}" class="track-svg track-img" loading="lazy" />
+                <div class="track-info">
+                    <span class="track-name">${track.name}</span>
+                    <span class="track-length">${track.length}</span>
+                </div>
+            </div>
+        `;
+    }
+
     const vb = track.viewBox || '0 0 100 60';
 
     return `
