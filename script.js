@@ -1366,10 +1366,27 @@ function renderRecentResultsUI(results) {
     });
 }
 
+let ALL_RESULTS_REALTIME_INITIALIZED = false;
+
 // 3. Load ALL Results (for results.html)
 async function loadAllResults() {
     const allResultsGrid = document.getElementById('text-results-container');
     if (!allResultsGrid) return;
+    
+    // Set up real-time listener if on results page so additions/edits reflect immediately
+    if (!ALL_RESULTS_REALTIME_INITIALIZED && typeof db !== 'undefined') {
+        ALL_RESULTS_REALTIME_INITIALIZED = true;
+        try {
+            let isFirst = true;
+            db.collection("event_results").onSnapshot(() => {
+                if (isFirst) { isFirst = false; return; }
+                console.log("Real-time results update received, refreshing results...");
+                loadAllResults();
+            }, err => console.warn("Firestore onSnapshot error on event_results:", err));
+        } catch (e) {
+            console.warn("Failed to set up realtime listener on event_results:", e);
+        }
+    }
     
     try {
         allResultsGrid.innerHTML = '<p style="text-align: center; color: var(--text-muted); width: 100%;">Loading text results data...</p>';
@@ -1393,7 +1410,6 @@ async function loadAllResults() {
 
         // 3. Group results by eventId
         const groupedResults = {};
-        const orderedEventIds = []; // To keep chronological order based on timestamp of first result
         
         resultsSnap.forEach(doc => {
             const data = doc.data();
@@ -1404,9 +1420,62 @@ async function loadAllResults() {
             
             if (!groupedResults[eId]) {
                 groupedResults[eId] = [];
-                orderedEventIds.push(eId);
             }
             groupedResults[eId].push(data);
+        });
+
+        // 4. Sort event IDs strictly by event date (chronological / newest event first)
+        const MONTH_MAP = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
+        function getEventSortTimestamp(eId, evData, rList) {
+            // A. Exact eventsMap match with startDate (e.g. ISO timestamp "2026-09-25T22:00:00Z")
+            if (evData && evData.startDate) {
+                const t = new Date(evData.startDate).getTime();
+                if (!isNaN(t)) return t;
+            }
+            // B. Exact eventsMap match with date string (e.g. "Sept 25-27", "June 19-21")
+            if (evData && evData.date) {
+                const m = evData.date.match(/([a-zA-Z]+)\s*(\d+)/);
+                if (m) {
+                    const mon = m[1].slice(0, 3).toLowerCase();
+                    if (mon in MONTH_MAP) {
+                        const is25 = eId.includes('-25') || eId.includes('2025');
+                        const year = is25 ? 2025 : 2026;
+                        return new Date(year, MONTH_MAP[mon], parseInt(m[2], 10)).getTime();
+                    }
+                }
+            }
+            // C. Match clean event id (e.g. daytona-24h-26 -> daytona-24) if not 2025
+            const is25 = eId.includes('-25') || eId.includes('2025');
+            if (!is25) {
+                const cleanId = eId.replace(/(\d+)(h|hr)$/, '$1').replace(/-26$/, '');
+                if (eventsMap[cleanId] && eventsMap[cleanId].startDate) {
+                    const t = new Date(eventsMap[cleanId].startDate).getTime();
+                    if (!isNaN(t)) return t;
+                }
+            }
+            // D. Result document timestamps (excluding today's upload timestamp if older ones exist)
+            if (rList && rList.length > 0) {
+                for (const r of rList) {
+                    const ts = r.timestamp;
+                    if (ts && !String(ts).startsWith('2026-09-27')) {
+                        const t = new Date(ts).getTime();
+                        if (!isNaN(t)) return t;
+                    }
+                }
+                const firstTs = rList[0].timestamp;
+                if (firstTs) {
+                    const t = new Date(firstTs).getTime();
+                    if (!isNaN(t)) return t;
+                }
+            }
+            // E. Fallback by season year
+            return new Date(is25 ? 2025 : 2026, 0, 1).getTime();
+        }
+
+        const orderedEventIds = Object.keys(groupedResults).sort((a, b) => {
+            const timeA = getEventSortTimestamp(a, eventsMap[a], groupedResults[a]);
+            const timeB = getEventSortTimestamp(b, eventsMap[b], groupedResults[b]);
+            return timeB - timeA; // Descending: newest event first
         });
 
         allResultsGrid.innerHTML = '';

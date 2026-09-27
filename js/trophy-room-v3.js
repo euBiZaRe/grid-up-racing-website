@@ -123,6 +123,7 @@ function inferTrackKey(eventId = '', eventName = '') {
     if (s.includes('silverstone')) return 'silverstone';
     if (s.includes('sebring')) return 'sebring';
     if (s.includes('road-america') || s.includes('america') || s.includes('elkhart')) return 'road-america';
+    if (s.includes('road-atlanta') || s.includes('atlanta') || s.includes('petit')) return 'road-atlanta';
     if (s.includes('suzuka')) return 'suzuka';
     if (s.includes('le-mans') || s.includes('lemans') || s.includes('sarthe')) return 'lemans';
     if (s.includes('indy')) return 'indy';
@@ -144,6 +145,8 @@ function formatEventTitle(eId, evName) {
     if (s.includes('sebring-12h') || s.includes('sebring-12hr')) return '12 Hours of Sebring';
     if (s.includes('bathurst-12')) return 'Bathurst 12';
     if (s.includes('road-america-6h')) return 'Road America 6h';
+    if (s.includes('petit-le-mans') || s.includes('petit')) return 'Petit Le Mans (Road Atlanta)';
+    if (s.includes('watkins-glen-6h') || s.includes('watkins')) return 'Watkins Glen 6 Hour';
     if (s.includes('suzuka-1000')) return 'Suzuka 1000km';
     if (s.includes('indy-500')) return 'INDY 500';
     return eId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
@@ -595,7 +598,8 @@ async function loadPodiumResultsFromDatabase(options = {}) {
                     const data = d.data();
                     eventsMeta[d.id.toLowerCase()] = {
                         title: data.title || data.name || '',
-                        date: data.date || ''
+                        date: data.date || '',
+                        startDate: data.startDate || ''
                     };
                 });
             } catch (evErr) {
@@ -607,9 +611,10 @@ async function loadPodiumResultsFromDatabase(options = {}) {
             resSnap.forEach(doc => {
                 const r = doc.data();
                 const eid = (r.eventId || '').trim();
+                const cleanEid = eid.toLowerCase();
 
                 // STRICT: Skip league event results (gtc-*), identical to /results
-                if (eid.toLowerCase().startsWith('gtc-')) return;
+                if (cleanEid.startsWith('gtc-')) return;
 
                 // STRICT: Only include team entries (GRiD UP entries)
                 const teamName = (r.teamName || '').trim();
@@ -619,7 +624,7 @@ async function loadPodiumResultsFromDatabase(options = {}) {
                 // STRICT FILTER: Discard any result that is not P1, P2, or P3
                 const pos = parseFinishPosition(r.finish);
                 if (pos === null) return;
-                if (cleanEid.includes('roar') || (eid && eid.toLowerCase().includes('roar'))) return;
+                if (cleanEid.includes('roar')) return;
 
                 const evInfo = eventsMeta[cleanEid] || eventsMeta[cleanEid.replace(/-26$|-25$/, '')] || {};
 
@@ -683,7 +688,7 @@ async function loadPodiumResultsFromDatabase(options = {}) {
                     trackLength: trackObj.length,
                     image: getTrophyImageForPosition(pos),
                     source: getEventTargetUrl(eid),
-                    timestamp: r.timestamp || ''
+                    timestamp: evInfo.startDate || r.timestamp || ''
                 };
 
                 const key = getDedupKey(podiumObj);
