@@ -477,30 +477,15 @@ function handleUrlHash() {
 }
 
 /**
- * Client-Side Manual Refresh Trigger
+ * Client-Side Telemetry Refresh
  */
 async function refreshTelemetryData() {
-    const btn = document.getElementById('btn-sync-telemetry');
-    const txt = document.getElementById('btn-sync-text');
-    if (btn) {
-        btn.disabled = true;
-        if (txt) txt.textContent = 'Updating...';
-    }
-
     try {
         await loadStatsData(true);
-        if (txt) txt.textContent = 'Updated ✓';
-        setTimeout(() => {
-            if (txt) txt.textContent = 'Check for Updates';
-            if (btn) btn.disabled = false;
-        }, 1800);
     } catch (e) {
         console.error("Refresh error:", e);
-        if (txt) txt.textContent = 'Check for Updates';
-        if (btn) btn.disabled = false;
     }
 }
-const syncFromGarage61 = refreshTelemetryData;
 
 /**
  * Set Up Event Listeners
