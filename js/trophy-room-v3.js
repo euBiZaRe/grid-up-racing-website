@@ -2,9 +2,9 @@
  * Trophy Room Rendering & Live Database Engine (v3)
  * GRiD UP Sim Racing
  * 
- * Sources directly from official Firestore database (event_results collection)
- * and past event detail pages (/events/past/*.html).
- * STRICT FILTER: ONLY displays P1, P2, and P3 podium finishes. All non-podium finishes are discarded.
+ * Sources directly from official team event results (/results)
+ * STRICT FILTER: ONLY displays official GRiD UP team event podium finishes (P1, P2, and P3).
+ * League races (gtc-*) and non-team competitors are strictly excluded.
  */
 
 let ALL_PODIUMS = [];
@@ -53,7 +53,7 @@ function parseFinishPosition(val) {
 }
 
 /**
- * Infer series category (GT3, GT4, LMP2, GTE, etc.) from car or event name
+ * Infer series category (GT3, GT4, LMP2, GTE, FORMULA, etc.) from car or event name
  */
 function inferCategory(car = '', eventName = '') {
     const c = (car || '').toUpperCase();
@@ -106,7 +106,6 @@ function inferTrackKey(eventId = '', eventName = '') {
     if (s.includes('indy')) return 'indy';
     if (s.includes('bathurst') || s.includes('panorama')) return 'bathurst';
     if (s.includes('portimao') || s.includes('algarve')) return 'portimao';
-    if (s.includes('virginia') || s.includes('vir')) return 'road-america';
     return 'daytona';
 }
 
@@ -125,10 +124,6 @@ function formatEventTitle(eId, evName) {
     if (s.includes('road-america-6h')) return 'Road America 6h';
     if (s.includes('suzuka-1000')) return 'Suzuka 1000km';
     if (s.includes('indy-500')) return 'INDY 500';
-    if (s.includes('gtc-elkhart-120')) return 'GTC: Elkhart Lake 120';
-    if (s.includes('gtc-glen-24')) return 'GTC: Watkins Glen 2.4H';
-    if (s.includes('gtc-spa-3h')) return 'GTC: Spa 3 Hours';
-    if (s.includes('gtc-virginia-120')) return 'GTC: Virginia 120';
     return eId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }
 
@@ -140,12 +135,23 @@ function inferEventImage(eventId = '', pos = 1) {
     if (s.includes('daytona-24') || s === 'daytona-24') return '/assets/results/Jan1726.png';
     if (s.includes('roar') || s === 'iracing-roar') return '/assets/bg-banner.png';
     if (s.includes('nurburgring')) return '/assets/results/May226(2).png';
+    if (s.includes('road-america') || s === 'road-america-6h') return '/assets/results/July2526.png';
     if (s.includes('spa')) return '/assets/results/July1126.png';
     if (s.includes('sebring')) return '/assets/results/Mar2826.png';
     if (s.includes('portimao')) return '/assets/results/July2526(1).png';
     if (s.includes('bathurst')) return '/assets/results/Feb2126.png';
     if (s.includes('daytona')) return '/assets/results/Jan1726.png';
     return '/assets/bg-banner.png';
+}
+
+function getEventTargetUrl(eventId = '') {
+    const e = (eventId || '').toLowerCase();
+    if (e.includes('daytona-24')) return '/events/past/daytona-24.html';
+    if (e.includes('roar') || e.includes('iracing-roar')) return '/events/past/iracing-roar.html';
+    if (e.includes('bathurst-12')) return '/events/past/bathurst-12.html';
+    if (e.includes('daytona-500')) return '/events/past/daytona-500.html';
+    if (e.includes('sebring-12')) return '/events/past/sebring-12hr.html';
+    return '/results.html';
 }
 
 // Registry of official past event detail pages
@@ -202,13 +208,125 @@ const PAST_EVENT_SOURCES = [
     }
 ];
 
-// Offline verified archive of all confirmed P1, P2, and P3 podium finishes
+// Offline verified archive of all confirmed team event P1, P2, and P3 podium finishes
 const VERIFIED_PAST_PAGE_PODIUMS = [
+    {
+        "id": "road-america-6h-grid-up-red-1",
+        "eventId": "road-america-6h",
+        "event": "Road America 6h",
+        "date": "July 24-26, 2026",
+        "season": 2026,
+        "teamName": "GRiD UP Red",
+        "car": "Porsche 963 GTP",
+        "drivers": [
+            "Faraz Ebrahim",
+            "Anthony Savignano"
+        ],
+        "qualy": "-",
+        "split": "Split 11",
+        "finish": "P1",
+        "position": 1,
+        "positionLabel": "1ST PLACE",
+        "accent": "gold",
+        "category": "LMP2",
+        "manufacturer": "porsche",
+        "trackKey": "road-america",
+        "trackName": "Road America",
+        "trackLength": "6.515 km",
+        "image": "/assets/results/July2526.png",
+        "source": "/results.html",
+        "timestamp": "2026-07-26T20:00:00Z"
+    },
+    {
+        "id": "indy-500-grid-up-sim-racing-1",
+        "eventId": "indy-500",
+        "event": "INDY 500",
+        "date": "May 5-18, 2026",
+        "season": 2026,
+        "teamName": "GRiD UP Sim Racing",
+        "car": "Dallara IR18",
+        "drivers": [
+            "Alex Cortez"
+        ],
+        "qualy": "-",
+        "split": "",
+        "finish": "P1",
+        "position": 1,
+        "positionLabel": "1ST PLACE",
+        "accent": "gold",
+        "category": "FORMULA",
+        "manufacturer": "dallara",
+        "trackKey": "indy",
+        "trackName": "Indianapolis Motor Speedway",
+        "trackLength": "4.023 km",
+        "image": "/assets/bg-banner.png",
+        "source": "/results.html",
+        "timestamp": "2026-05-18T20:00:00Z"
+    },
+    {
+        "id": "daytona-24-grid-up-sim-racing-2",
+        "eventId": "daytona-24",
+        "event": "Daytona 24",
+        "date": "January 16-18, 2026",
+        "season": 2026,
+        "teamName": "GRiD UP Sim Racing",
+        "car": "Dallara P217 (LMP2)",
+        "drivers": [
+            "Andrew Fabian",
+            "Martyn Cook",
+            "Jacob Reid",
+            "Alex Cortez",
+            "Hector Hernandez"
+        ],
+        "qualy": "P4",
+        "split": "Split 3 / 3018",
+        "finish": "P2",
+        "position": 2,
+        "positionLabel": "2ND PLACE",
+        "accent": "silver",
+        "category": "LMP2",
+        "manufacturer": "dallara",
+        "trackKey": "daytona",
+        "trackName": "Daytona International Speedway",
+        "trackLength": "5.730 km",
+        "image": "/assets/results/Jan1726.png",
+        "source": "/events/past/daytona-24.html",
+        "timestamp": "2026-01-18T20:00:00Z"
+    },
+    {
+        "id": "nurburgring-24h-26-grid-up-sim-racing-2",
+        "eventId": "nurburgring-24h-26",
+        "event": "24 Hours of N\u00fcrburgring",
+        "date": "May 1-3, 2026",
+        "season": 2026,
+        "teamName": "GRiD UP Sim Racing",
+        "car": "Aston Martin Vantage GT3 EVO",
+        "drivers": [
+            "Alexander Cortez",
+            "Connor Deasey",
+            "Jacob Reid",
+            "Logan Wilt"
+        ],
+        "qualy": "-",
+        "split": "",
+        "finish": "P2",
+        "position": 2,
+        "positionLabel": "2ND PLACE",
+        "accent": "silver",
+        "category": "GT3",
+        "manufacturer": "aston",
+        "trackKey": "nurburgring",
+        "trackName": "N\u00fcrburgring Nordschleife / GP",
+        "trackLength": "25.378 km",
+        "image": "/assets/results/May226(2).png",
+        "source": "/results.html",
+        "timestamp": "2026-05-03T20:00:00Z"
+    },
     {
         "id": "suzuka-1000km-grid-up-purple-2",
         "eventId": "suzuka-1000km",
         "event": "Suzuka 1000km",
-        "date": "Sept 10-15",
+        "date": "Sept 10-15, 2026",
         "season": 2026,
         "teamName": "GRiD UP Purple",
         "car": "Ferrari 296 GT3",
@@ -229,757 +347,14 @@ const VERIFIED_PAST_PAGE_PODIUMS = [
         "trackName": "Suzuka International Racing Course",
         "trackLength": "5.807 km",
         "image": "/assets/bg-banner.png",
-        "source": "/events/past/suzuka-1000km.html",
+        "source": "/results.html",
         "timestamp": "2026-09-12T19:08:34.349Z"
-    },
-    {
-        "id": "road-america-6h-grid-up-red-1",
-        "eventId": "road-america-6h",
-        "event": "Road America 6h",
-        "date": "July 24-26",
-        "season": 2026,
-        "teamName": "GRiD UP Red",
-        "car": "Porsche 963 GTP",
-        "drivers": [
-            "Faraz Ebrahim",
-            "Anthony Savignano"
-        ],
-        "qualy": "P2",
-        "split": "Split 11",
-        "finish": "P1",
-        "position": 1,
-        "positionLabel": "1ST PLACE",
-        "accent": "gold",
-        "category": "LMP2",
-        "manufacturer": "porsche",
-        "trackKey": "road-america",
-        "trackName": "Road America",
-        "trackLength": "6.515 km",
-        "image": "/assets/bg-banner.png",
-        "source": "/events/past/road-america-6h.html",
-        "timestamp": "2026-07-25T11:17:50.692Z"
-    },
-    {
-        "id": "gtc-elkhart-120-bite-point-racing---b-1",
-        "eventId": "gtc-elkhart-120",
-        "event": "GTC: Elkhart Lake 120",
-        "date": "July 18, 2026",
-        "season": 2026,
-        "teamName": "Bite Point Racing | B",
-        "car": "Porsche 911 GT3 R (992)",
-        "drivers": [
-            "Harrison Holliday"
-        ],
-        "qualy": "P4",
-        "split": "",
-        "finish": "P1",
-        "position": 1,
-        "positionLabel": "1ST PLACE",
-        "accent": "gold",
-        "category": "GT3",
-        "manufacturer": "porsche",
-        "trackKey": "road-america",
-        "trackName": "Road America",
-        "trackLength": "6.515 km",
-        "image": "/assets/bg-banner.png",
-        "source": "/events/past/gtc-elkhart-120.html",
-        "timestamp": "2026-07-18T15:00:00Z"
-    },
-    {
-        "id": "gtc-elkhart-120-tekkart-motorsport--306-3",
-        "eventId": "gtc-elkhart-120",
-        "event": "GTC: Elkhart Lake 120",
-        "date": "July 18, 2026",
-        "season": 2026,
-        "teamName": "Tekkart Motorsport #306",
-        "car": "Porsche 911 GT3 R (992)",
-        "drivers": [
-            "Damijan Horvatin"
-        ],
-        "qualy": "P5",
-        "split": "",
-        "finish": "P3",
-        "position": 3,
-        "positionLabel": "3RD PLACE",
-        "accent": "bronze",
-        "category": "GT3",
-        "manufacturer": "porsche",
-        "trackKey": "road-america",
-        "trackName": "Road America",
-        "trackLength": "6.515 km",
-        "image": "/assets/bg-banner.png",
-        "source": "/events/past/gtc-elkhart-120.html",
-        "timestamp": "2026-07-18T15:00:00Z"
-    },
-    {
-        "id": "gtc-elkhart-120-juan-2",
-        "eventId": "gtc-elkhart-120",
-        "event": "GTC: Elkhart Lake 120",
-        "date": "July 18, 2026",
-        "season": 2026,
-        "teamName": "juan",
-        "car": "Porsche 911 GT3 R (992)",
-        "drivers": [
-            "Michael O'Dell"
-        ],
-        "qualy": "P1",
-        "split": "",
-        "finish": "P2",
-        "position": 2,
-        "positionLabel": "2ND PLACE",
-        "accent": "silver",
-        "category": "GT3",
-        "manufacturer": "porsche",
-        "trackKey": "road-america",
-        "trackName": "Road America",
-        "trackLength": "6.515 km",
-        "image": "/assets/bg-banner.png",
-        "source": "/events/past/gtc-elkhart-120.html",
-        "timestamp": "2026-07-18T15:00:00Z"
-    },
-    {
-        "id": "gtc-virginia-120-motohaus-white-2",
-        "eventId": "gtc-virginia-120",
-        "event": "GTC: Virginia 120",
-        "date": "May 23, 2026",
-        "season": 2026,
-        "teamName": "Motohaus White",
-        "car": "Mercedes-AMG GT4",
-        "drivers": [
-            "Xavier Williams"
-        ],
-        "qualy": "P5",
-        "split": "",
-        "finish": "P2",
-        "position": 2,
-        "positionLabel": "2ND PLACE",
-        "accent": "silver",
-        "category": "GT4",
-        "manufacturer": "amg",
-        "trackKey": "road-america",
-        "trackName": "Virginia International Raceway",
-        "trackLength": "5.260 km",
-        "image": "/assets/bg-banner.png",
-        "source": "/events/past/gtc-virginia-120.html",
-        "timestamp": "2026-05-23T16:00:00Z"
-    },
-    {
-        "id": "gtc-glen-24-motohaus-white-2",
-        "eventId": "gtc-glen-24",
-        "event": "GTC: Watkins Glen 2.4H",
-        "date": "June 13, 2026",
-        "season": 2026,
-        "teamName": "Motohaus White",
-        "car": "Mercedes-AMG GT4",
-        "drivers": [
-            "Xavier Williams"
-        ],
-        "qualy": "P2",
-        "split": "",
-        "finish": "P2",
-        "position": 2,
-        "positionLabel": "2ND PLACE",
-        "accent": "silver",
-        "category": "GT4",
-        "manufacturer": "amg",
-        "trackKey": "watkins-glen",
-        "trackName": "Watkins Glen International",
-        "trackLength": "5.472 km",
-        "image": "/assets/bg-banner.png",
-        "source": "/events/past/gtc-glen-24.html",
-        "timestamp": "2026-06-13T15:00:00Z"
-    },
-    {
-        "id": "gtc-spa-3h-wildcats-racing-1",
-        "eventId": "gtc-spa-3h",
-        "event": "GTC: Spa 3 Hours",
-        "date": "June 27, 2026",
-        "season": 2026,
-        "teamName": "Wildcats Racing",
-        "car": "Ford Mustang GT4",
-        "drivers": [
-            "Stephen Smalley"
-        ],
-        "qualy": "P4",
-        "split": "",
-        "finish": "P1",
-        "position": 1,
-        "positionLabel": "1ST PLACE",
-        "accent": "gold",
-        "category": "GT4",
-        "manufacturer": "ford",
-        "trackKey": "spa",
-        "trackName": "Circuit de Spa-Francorchamps",
-        "trackLength": "7.004 km",
-        "image": "/assets/bg-banner.png",
-        "source": "/events/past/gtc-spa-3h.html",
-        "timestamp": "2026-06-27T15:00:00Z"
-    },
-    {
-        "id": "gtc-spa-3h-bwe-racing--346-2",
-        "eventId": "gtc-spa-3h",
-        "event": "GTC: Spa 3 Hours",
-        "date": "June 27, 2026",
-        "season": 2026,
-        "teamName": "BWE Racing-#346",
-        "car": "Porsche 911 GT3 R (992)",
-        "drivers": [
-            "Alex Claudio"
-        ],
-        "qualy": "P3",
-        "split": "",
-        "finish": "P2",
-        "position": 2,
-        "positionLabel": "2ND PLACE",
-        "accent": "silver",
-        "category": "GT3",
-        "manufacturer": "porsche",
-        "trackKey": "spa",
-        "trackName": "Circuit de Spa-Francorchamps",
-        "trackLength": "7.004 km",
-        "image": "/assets/bg-banner.png",
-        "source": "/events/past/gtc-spa-3h.html",
-        "timestamp": "2026-06-27T15:00:00Z"
-    },
-    {
-        "id": "gtc-spa-3h-bite-point-racing---b-3",
-        "eventId": "gtc-spa-3h",
-        "event": "GTC: Spa 3 Hours",
-        "date": "June 27, 2026",
-        "season": 2026,
-        "teamName": "Bite Point Racing | B",
-        "car": "Porsche 911 GT3 R (992)",
-        "drivers": [
-            "Harrison Holliday",
-            "Timothy Schaefer"
-        ],
-        "qualy": "P2",
-        "split": "",
-        "finish": "P3",
-        "position": 3,
-        "positionLabel": "3RD PLACE",
-        "accent": "bronze",
-        "category": "GT3",
-        "manufacturer": "porsche",
-        "trackKey": "spa",
-        "trackName": "Circuit de Spa-Francorchamps",
-        "trackLength": "7.004 km",
-        "image": "/assets/bg-banner.png",
-        "source": "/events/past/gtc-spa-3h.html",
-        "timestamp": "2026-06-27T15:00:00Z"
-    },
-    {
-        "id": "gtc-elkhart-120-apex-racing-3",
-        "eventId": "gtc-elkhart-120",
-        "event": "GTC: Elkhart Lake 120",
-        "date": "July 18, 2026",
-        "season": 2026,
-        "teamName": "Apex Racing",
-        "car": "Ford Mustang GT4",
-        "drivers": [
-            "David Shreve",
-            "Mark Prince"
-        ],
-        "qualy": "P18",
-        "split": "",
-        "finish": "P3",
-        "position": 3,
-        "positionLabel": "3RD PLACE",
-        "accent": "bronze",
-        "category": "GT4",
-        "manufacturer": "ford",
-        "trackKey": "road-america",
-        "trackName": "Road America",
-        "trackLength": "6.515 km",
-        "image": "/assets/bg-banner.png",
-        "source": "/events/past/gtc-elkhart-120.html",
-        "timestamp": "2026-07-18T15:00:00Z"
-    },
-    {
-        "id": "gtc-spa-3h-f-f-racing-1",
-        "eventId": "gtc-spa-3h",
-        "event": "GTC: Spa 3 Hours",
-        "date": "June 27, 2026",
-        "season": 2026,
-        "teamName": "F&F Racing",
-        "car": "Ferrari 296 GT3",
-        "drivers": [
-            "Alexander Cortez"
-        ],
-        "qualy": "P9",
-        "split": "",
-        "finish": "P1",
-        "position": 1,
-        "positionLabel": "1ST PLACE",
-        "accent": "gold",
-        "category": "GT3",
-        "manufacturer": "ferrari",
-        "trackKey": "spa",
-        "trackName": "Circuit de Spa-Francorchamps",
-        "trackLength": "7.004 km",
-        "image": "/assets/bg-banner.png",
-        "source": "/events/past/gtc-spa-3h.html",
-        "timestamp": "2026-06-27T15:00:00Z"
-    },
-    {
-        "id": "gtc-elkhart-120-motohaus-black-2",
-        "eventId": "gtc-elkhart-120",
-        "event": "GTC: Elkhart Lake 120",
-        "date": "July 18, 2026",
-        "season": 2026,
-        "teamName": "Motohaus Black",
-        "car": "Ford Mustang GT4",
-        "drivers": [
-            "Xavier Williams"
-        ],
-        "qualy": "P21",
-        "split": "",
-        "finish": "P2",
-        "position": 2,
-        "positionLabel": "2ND PLACE",
-        "accent": "silver",
-        "category": "GT4",
-        "manufacturer": "ford",
-        "trackKey": "road-america",
-        "trackName": "Road America",
-        "trackLength": "6.515 km",
-        "image": "/assets/bg-banner.png",
-        "source": "/events/past/gtc-elkhart-120.html",
-        "timestamp": "2026-07-18T15:00:00Z"
-    },
-    {
-        "id": "gtc-glen-24-flinkstraat-flyers-3",
-        "eventId": "gtc-glen-24",
-        "event": "GTC: Watkins Glen 2.4H",
-        "date": "June 13, 2026",
-        "season": 2026,
-        "teamName": "Flinkstraat Flyers",
-        "car": "Chevrolet Corvette Z06 GT3.R",
-        "drivers": [
-            "Joseph Francis"
-        ],
-        "qualy": "P8",
-        "split": "",
-        "finish": "P3",
-        "position": 3,
-        "positionLabel": "3RD PLACE",
-        "accent": "bronze",
-        "category": "GT3",
-        "manufacturer": "chevrolet",
-        "trackKey": "watkins-glen",
-        "trackName": "Watkins Glen International",
-        "trackLength": "5.472 km",
-        "image": "/assets/bg-banner.png",
-        "source": "/events/past/gtc-glen-24.html",
-        "timestamp": "2026-06-13T15:00:00Z"
-    },
-    {
-        "id": "gtc-elkhart-120-tekkart-motorsport-1",
-        "eventId": "gtc-elkhart-120",
-        "event": "GTC: Elkhart Lake 120",
-        "date": "July 18, 2026",
-        "season": 2026,
-        "teamName": "Tekkart Motorsport",
-        "car": "Ford Mustang GT4",
-        "drivers": [
-            "Pierre Poussi"
-        ],
-        "qualy": "P17",
-        "split": "",
-        "finish": "P1",
-        "position": 1,
-        "positionLabel": "1ST PLACE",
-        "accent": "gold",
-        "category": "GT4",
-        "manufacturer": "ford",
-        "trackKey": "road-america",
-        "trackName": "Road America",
-        "trackLength": "6.515 km",
-        "image": "/assets/bg-banner.png",
-        "source": "/events/past/gtc-elkhart-120.html",
-        "timestamp": "2026-07-18T15:00:00Z"
-    },
-    {
-        "id": "gtc-virginia-120-refined-motorsport-2",
-        "eventId": "gtc-virginia-120",
-        "event": "GTC: Virginia 120",
-        "date": "May 23, 2026",
-        "season": 2026,
-        "teamName": "Refined Motorsport",
-        "car": "Porsche 911 GT3 R (992)",
-        "drivers": [
-            "Connor Deasey"
-        ],
-        "qualy": "P4",
-        "split": "",
-        "finish": "P2",
-        "position": 2,
-        "positionLabel": "2ND PLACE",
-        "accent": "silver",
-        "category": "GT3",
-        "manufacturer": "porsche",
-        "trackKey": "road-america",
-        "trackName": "Virginia International Raceway",
-        "trackLength": "5.260 km",
-        "image": "/assets/bg-banner.png",
-        "source": "/events/past/gtc-virginia-120.html",
-        "timestamp": "2026-05-23T16:00:00Z"
-    },
-    {
-        "id": "gtc-virginia-120-juan-1",
-        "eventId": "gtc-virginia-120",
-        "event": "GTC: Virginia 120",
-        "date": "May 23, 2026",
-        "season": 2026,
-        "teamName": "juan",
-        "car": "Chevrolet Corvette Z06 GT3.R",
-        "drivers": [
-            "Michael O'Dell",
-            "Erskine Jones"
-        ],
-        "qualy": "P1",
-        "split": "",
-        "finish": "P1",
-        "position": 1,
-        "positionLabel": "1ST PLACE",
-        "accent": "gold",
-        "category": "GT3",
-        "manufacturer": "chevrolet",
-        "trackKey": "road-america",
-        "trackName": "Virginia International Raceway",
-        "trackLength": "5.260 km",
-        "image": "/assets/bg-banner.png",
-        "source": "/events/past/gtc-virginia-120.html",
-        "timestamp": "2026-05-23T16:00:00Z"
-    },
-    {
-        "id": "gtc-glen-24-apex-racing-3",
-        "eventId": "gtc-glen-24",
-        "event": "GTC: Watkins Glen 2.4H",
-        "date": "June 13, 2026",
-        "season": 2026,
-        "teamName": "Apex Racing",
-        "car": "Ford Mustang GT4",
-        "drivers": [
-            "David Shreve",
-            "Mark Prince"
-        ],
-        "qualy": "P1",
-        "split": "",
-        "finish": "P3",
-        "position": 3,
-        "positionLabel": "3RD PLACE",
-        "accent": "bronze",
-        "category": "GT4",
-        "manufacturer": "ford",
-        "trackKey": "watkins-glen",
-        "trackName": "Watkins Glen International",
-        "trackLength": "5.472 km",
-        "image": "/assets/bg-banner.png",
-        "source": "/events/past/gtc-glen-24.html",
-        "timestamp": "2026-06-13T15:00:00Z"
-    },
-    {
-        "id": "nurburgring-24h-26-grid-up-sim-racing-2",
-        "eventId": "nurburgring-24h-26",
-        "event": "N\u00fcrburgring 24h",
-        "date": "May 1-3",
-        "season": 2026,
-        "teamName": "GRiD UP Sim Racing",
-        "car": "Aston Martin Vantage GT3 EVO",
-        "drivers": [
-            "Alexander Cortez",
-            "Connor Deasey",
-            "Jacob Reid",
-            "Logan Wilt"
-        ],
-        "qualy": "P6",
-        "split": "",
-        "finish": "P2",
-        "position": 2,
-        "positionLabel": "2ND PLACE",
-        "accent": "silver",
-        "category": "GT3",
-        "manufacturer": "aston",
-        "trackKey": "nurburgring",
-        "trackName": "N\u00fcrburgring Nordschleife / GP",
-        "trackLength": "25.378 km",
-        "image": "/assets/results/May226(2).png",
-        "source": "/events/past/nurburgring-24h-26.html",
-        "timestamp": "2026-05-02T12:00:00Z"
-    },
-    {
-        "id": "gtc-virginia-120-solo-dolo-1",
-        "eventId": "gtc-virginia-120",
-        "event": "GTC: Virginia 120",
-        "date": "May 23, 2026",
-        "season": 2026,
-        "teamName": "solo dolo",
-        "car": "Ford Mustang GT4",
-        "drivers": [
-            "Zack Saunders"
-        ],
-        "qualy": "P1",
-        "split": "",
-        "finish": "P1",
-        "position": 1,
-        "positionLabel": "1ST PLACE",
-        "accent": "gold",
-        "category": "GT4",
-        "manufacturer": "ford",
-        "trackKey": "road-america",
-        "trackName": "Virginia International Raceway",
-        "trackLength": "5.260 km",
-        "image": "/assets/bg-banner.png",
-        "source": "/events/past/gtc-virginia-120.html",
-        "timestamp": "2026-05-23T16:00:00Z"
-    },
-    {
-        "id": "indy-500-grid-up-sim-racing-1",
-        "eventId": "indy-500",
-        "event": "INDY 500",
-        "date": "May 5-18",
-        "season": 2026,
-        "teamName": "GRiD UP Sim Racing",
-        "car": "Dallara IR18",
-        "drivers": [
-            "Alex Cortez"
-        ],
-        "qualy": "P23",
-        "split": "Split 20",
-        "finish": "P1",
-        "position": 1,
-        "positionLabel": "1ST PLACE",
-        "accent": "gold",
-        "category": "FORMULA",
-        "manufacturer": "dallara",
-        "trackKey": "indy",
-        "trackName": "Indianapolis Motor Speedway",
-        "trackLength": "4.023 km",
-        "image": "/assets/bg-banner.png",
-        "source": "/events/past/indy-500.html",
-        "timestamp": "2026-05-18T17:20:11.619Z"
-    },
-    {
-        "id": "gtc-glen-24-grumpy-duck-racing-1",
-        "eventId": "gtc-glen-24",
-        "event": "GTC: Watkins Glen 2.4H",
-        "date": "June 13, 2026",
-        "season": 2026,
-        "teamName": "Grumpy duck racing",
-        "car": "Ford Mustang GT4",
-        "drivers": [
-            "Zack Saunders",
-            "Adam L. Jones"
-        ],
-        "qualy": "P3",
-        "split": "",
-        "finish": "P1",
-        "position": 1,
-        "positionLabel": "1ST PLACE",
-        "accent": "gold",
-        "category": "GT4",
-        "manufacturer": "ford",
-        "trackKey": "watkins-glen",
-        "trackName": "Watkins Glen International",
-        "trackLength": "5.472 km",
-        "image": "/assets/bg-banner.png",
-        "source": "/events/past/gtc-glen-24.html",
-        "timestamp": "2026-06-13T15:00:00Z"
-    },
-    {
-        "id": "gtc-spa-3h-angry-rooster-racing-3",
-        "eventId": "gtc-spa-3h",
-        "event": "GTC: Spa 3 Hours",
-        "date": "June 27, 2026",
-        "season": 2026,
-        "teamName": "Angry Rooster Racing",
-        "car": "Ford Mustang GT4",
-        "drivers": [
-            "Andrew B Fabian"
-        ],
-        "qualy": "P1",
-        "split": "",
-        "finish": "P3",
-        "position": 3,
-        "positionLabel": "3RD PLACE",
-        "accent": "bronze",
-        "category": "GT4",
-        "manufacturer": "ford",
-        "trackKey": "spa",
-        "trackName": "Circuit de Spa-Francorchamps",
-        "trackLength": "7.004 km",
-        "image": "/assets/bg-banner.png",
-        "source": "/events/past/gtc-spa-3h.html",
-        "timestamp": "2026-06-27T15:00:00Z"
-    },
-    {
-        "id": "gtc-glen-24-f-f-racing-2",
-        "eventId": "gtc-glen-24",
-        "event": "GTC: Watkins Glen 2.4H",
-        "date": "June 13, 2026",
-        "season": 2026,
-        "teamName": "F&F Racing",
-        "car": "Ferrari 296 GT3",
-        "drivers": [
-            "Faraz Ebrahim",
-            "Alexander Cortez"
-        ],
-        "qualy": "P1",
-        "split": "",
-        "finish": "P2",
-        "position": 2,
-        "positionLabel": "2ND PLACE",
-        "accent": "silver",
-        "category": "GT3",
-        "manufacturer": "ferrari",
-        "trackKey": "watkins-glen",
-        "trackName": "Watkins Glen International",
-        "trackLength": "5.472 km",
-        "image": "/assets/bg-banner.png",
-        "source": "/events/past/gtc-glen-24.html",
-        "timestamp": "2026-06-13T15:00:00Z"
-    },
-    {
-        "id": "gtc-virginia-120-dream-team-3",
-        "eventId": "gtc-virginia-120",
-        "event": "GTC: Virginia 120",
-        "date": "May 23, 2026",
-        "season": 2026,
-        "teamName": "Dream Team",
-        "car": "Porsche 911 GT3 R (992)",
-        "drivers": [
-            "Terry Cantwell",
-            "Gabe Wilmoth"
-        ],
-        "qualy": "P7",
-        "split": "",
-        "finish": "P3",
-        "position": 3,
-        "positionLabel": "3RD PLACE",
-        "accent": "bronze",
-        "category": "GT3",
-        "manufacturer": "porsche",
-        "trackKey": "road-america",
-        "trackName": "Virginia International Raceway",
-        "trackLength": "5.260 km",
-        "image": "/assets/bg-banner.png",
-        "source": "/events/past/gtc-virginia-120.html",
-        "timestamp": "2026-05-23T16:00:00Z"
-    },
-    {
-        "id": "gtc-virginia-120-apex-racing-3",
-        "eventId": "gtc-virginia-120",
-        "event": "GTC: Virginia 120",
-        "date": "May 23, 2026",
-        "season": 2026,
-        "teamName": "Apex Racing",
-        "car": "Ford Mustang GT4",
-        "drivers": [
-            "David Shreve"
-        ],
-        "qualy": "P6",
-        "split": "",
-        "finish": "P3",
-        "position": 3,
-        "positionLabel": "3RD PLACE",
-        "accent": "bronze",
-        "category": "GT4",
-        "manufacturer": "ford",
-        "trackKey": "road-america",
-        "trackName": "Virginia International Raceway",
-        "trackLength": "5.260 km",
-        "image": "/assets/bg-banner.png",
-        "source": "/events/past/gtc-virginia-120.html",
-        "timestamp": "2026-05-23T16:00:00Z"
-    },
-    {
-        "id": "daytona-24h-26-grid-up-sim-racing-2",
-        "eventId": "daytona-24h-26",
-        "event": "Daytona 24",
-        "date": "2026-01-17",
-        "season": 2026,
-        "teamName": "GRiD UP Sim Racing",
-        "car": "Dallara P217",
-        "drivers": [
-            "Andrew Fabian",
-            "Martyn Cook",
-            "Jacob Reid",
-            "Alex Cortez",
-            "Hector Hernandez"
-        ],
-        "qualy": "P4",
-        "split": "",
-        "finish": "P2",
-        "position": 2,
-        "positionLabel": "2ND PLACE",
-        "accent": "silver",
-        "category": "LMP2",
-        "manufacturer": "dallara",
-        "trackKey": "daytona",
-        "trackName": "Daytona International Speedway",
-        "trackLength": "5.730 km",
-        "image": "/assets/results/Jan1726.png",
-        "source": "/events/past/daytona-24h-26.html",
-        "timestamp": "2026-01-17T12:00:00Z"
-    },
-    {
-        "id": "gtc-spa-3h-sal-simms-racing-2",
-        "eventId": "gtc-spa-3h",
-        "event": "GTC: Spa 3 Hours",
-        "date": "June 27, 2026",
-        "season": 2026,
-        "teamName": "Sal Simms Racing",
-        "car": "Ford Mustang GT4",
-        "drivers": [
-            "Marsalis Simms"
-        ],
-        "qualy": "P3",
-        "split": "",
-        "finish": "P2",
-        "position": 2,
-        "positionLabel": "2ND PLACE",
-        "accent": "silver",
-        "category": "GT4",
-        "manufacturer": "ford",
-        "trackKey": "spa",
-        "trackName": "Circuit de Spa-Francorchamps",
-        "trackLength": "7.004 km",
-        "image": "/assets/bg-banner.png",
-        "source": "/events/past/gtc-spa-3h.html",
-        "timestamp": "2026-06-27T15:00:00Z"
-    },
-    {
-        "id": "gtc-glen-24-burnout-racing-1",
-        "eventId": "gtc-glen-24",
-        "event": "GTC: Watkins Glen 2.4H",
-        "date": "June 13, 2026",
-        "season": 2026,
-        "teamName": "Burnout Racing",
-        "car": "McLaren 720S GT3 EVO",
-        "drivers": [
-            "Jacob Reid"
-        ],
-        "qualy": "P2",
-        "split": "",
-        "finish": "P1",
-        "position": 1,
-        "positionLabel": "1ST PLACE",
-        "accent": "gold",
-        "category": "GT3",
-        "manufacturer": "mclaren",
-        "trackKey": "watkins-glen",
-        "trackName": "Watkins Glen International",
-        "trackLength": "5.472 km",
-        "image": "/assets/bg-banner.png",
-        "source": "/events/past/gtc-glen-24.html",
-        "timestamp": "2026-06-13T15:00:00Z"
     },
     {
         "id": "iracing-roar-grid-up-sim-racing-3",
         "eventId": "iracing-roar",
         "event": "iRacing ROAR",
-        "date": "Jan 9-10",
+        "date": "January 9-10, 2026",
         "season": 2026,
         "teamName": "GRiD UP Sim Racing",
         "car": "BMW M4 GT3",
@@ -1030,7 +405,7 @@ async function waitForFirestore(timeoutMs = 3500) {
 }
 
 /**
- * Parse an HTML past event detail page for podium finishes
+ * Parse an HTML past event detail page for team podium finishes
  */
 function parseSingleEventHtml(htmlText, sourceInfo) {
     const parser = new DOMParser();
@@ -1094,6 +469,10 @@ function parseSingleEventHtml(htmlText, sourceInfo) {
             teamName = rawText.split('\n')[0].trim();
         }
 
+        // STRICT: Only include GRiD UP team entries
+        const cleanTeam = teamName.toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (!cleanTeam.includes('gridup')) return;
+
         let splitStr = '';
         if (cells.length >= 4) {
             splitStr = cells[1].textContent.trim();
@@ -1132,7 +511,7 @@ function parseSingleEventHtml(htmlText, sourceInfo) {
             trackName: trackInfo.name,
             trackLength: trackInfo.length,
             image: sourceInfo.image || inferEventImage(sourceInfo.id, pos),
-            source: sourceInfo.path,
+            source: getEventTargetUrl(sourceInfo.id),
             timestamp: sourceInfo.timestamp || ''
         });
     });
@@ -1160,7 +539,8 @@ function getDedupKey(p) {
 
 /**
  * 1. Fetch live podium results directly from Firestore (event_results) and official past event detail pages.
- * STRICT FILTER: ONLY displays P1, P2, and P3 podium finishes. All non-podium finishes are discarded.
+ * STRICT FILTER: ONLY displays official GRiD UP team event results from /results (P1, P2, and P3).
+ * League races (gtc-*) and non-team competitors are strictly excluded.
  */
 async function loadPodiumResultsFromDatabase() {
     const featuredGrid = document.getElementById('featured-podiums-grid');
@@ -1195,11 +575,20 @@ async function loadPodiumResultsFromDatabase() {
             const resSnap = await dbInstance.collection("event_results").get();
             resSnap.forEach(doc => {
                 const r = doc.data();
-                const pos = parseFinishPosition(r.finish);
+                const eid = (r.eventId || '').trim();
+
+                // STRICT: Skip league event results (gtc-*), identical to /results
+                if (eid.toLowerCase().startsWith('gtc-')) return;
+
+                // STRICT: Only include team entries (GRiD UP entries)
+                const teamName = (r.teamName || '').trim();
+                const cleanTeam = teamName.toLowerCase().replace(/[^a-z0-9]/g, '');
+                if (!cleanTeam.includes('gridup')) return;
+
                 // STRICT FILTER: Discard any result that is not P1, P2, or P3
+                const pos = parseFinishPosition(r.finish);
                 if (pos === null) return;
 
-                const eid = (r.eventId || '').trim();
                 const cleanEid = eid.toLowerCase();
                 const evInfo = eventsMeta[cleanEid] || eventsMeta[cleanEid.replace(/-26$|-25$/, '')] || {};
 
@@ -1215,7 +604,6 @@ async function loadPodiumResultsFromDatabase() {
                 }
                 if (!evDate) evDate = '2026 Season';
 
-                const teamName = (r.teamName || 'GRiD UP Sim Racing').trim();
                 let carName = (r.car || 'Official Entry').trim();
                 if (carName.toLowerCase() === 'ferarri 296 gt3') carName = 'Ferrari 296 GT3';
 
@@ -1263,7 +651,7 @@ async function loadPodiumResultsFromDatabase() {
                     trackName: trackObj.name,
                     trackLength: trackObj.length,
                     image: inferEventImage(eid, pos),
-                    source: `/events/past/${eid}.html`,
+                    source: getEventTargetUrl(eid),
                     timestamp: r.timestamp || ''
                 };
 
@@ -1275,7 +663,7 @@ async function loadPodiumResultsFromDatabase() {
         console.warn("Firestore event_results fetch error:", dbErr);
     }
 
-    // STEP B: Also check past event detail pages for any additional podiums
+    // STEP B: Also check past event detail pages for any additional team podiums
     try {
         const isHttp = window.location.protocol.startsWith('http');
         const fetchPromises = PAST_EVENT_SOURCES.map(async (src) => {
@@ -1389,7 +777,7 @@ function renderSeriesButtons() {
         if (p.category) availableCategories.add(p.category);
     });
 
-    const categoriesList = ['ALL', 'GT3', 'GT4', 'LMP2', 'FORMULA', 'GTE', 'TOURING']
+    const categoriesList = ['ALL', 'GT3', 'LMP2', 'FORMULA', 'GT4', 'GTE', 'TOURING']
         .filter(cat => availableCategories.has(cat));
 
     container.innerHTML = categoriesList.map(cat => `
@@ -1476,7 +864,7 @@ function renderFeaturedPodiums() {
         const posClass = item.position === 1 ? 'pos-1 gold' : (item.position === 2 ? 'pos-2 silver' : 'pos-3 bronze');
         const posSup = item.position === 1 ? 'ST' : (item.position === 2 ? 'ND' : 'RD');
         const driversStr = Array.isArray(item.drivers) ? item.drivers.join(' / ') : item.drivers;
-        const targetUrl = item.source || `/events/past/${item.eventId}.html`;
+        const targetUrl = item.source || getEventTargetUrl(item.eventId);
 
         return `
             <div class="featured-card ${posClass}" data-index="${idx}" style="cursor: pointer;" onclick="window.location.href='${targetUrl}'" title="View official event details">
@@ -1630,7 +1018,7 @@ function renderPastPodiums() {
                         ${items.map(item => {
                             const posClass = item.position === 1 ? 'gold' : (item.position === 2 ? 'silver' : 'bronze');
                             const driversStr = Array.isArray(item.drivers) ? item.drivers.join(', ') : item.drivers;
-                            const targetUrl = item.source || `/events/past/${item.eventId}.html`;
+                            const targetUrl = item.source || getEventTargetUrl(item.eventId);
                             return `
                                 <tr class="trophy-list-row ${posClass}" style="cursor: pointer;" onclick="window.location.href='${targetUrl}'" title="View official event details">
                                     <td class="col-pos">
@@ -1659,7 +1047,7 @@ function renderPastPodiums() {
     container.innerHTML = items.map(item => {
         const posClass = item.position === 1 ? 'pos-1 gold' : (item.position === 2 ? 'pos-2 silver' : 'pos-3 bronze');
         const driversStr = Array.isArray(item.drivers) ? item.drivers.join(' / ') : item.drivers;
-        const targetUrl = item.source || `/events/past/${item.eventId}.html`;
+        const targetUrl = item.source || getEventTargetUrl(item.eventId);
 
         return `
             <div class="past-card ${posClass}" style="cursor: pointer;" onclick="window.location.href='${targetUrl}'" title="View official event details">
