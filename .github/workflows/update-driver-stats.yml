@@ -1,0 +1,32 @@
+name: Update Driver Telemetry & Stats
+
+on:
+  schedule:
+    - cron: '0 */2 * * *' # Automatically runs every 2 hours
+  workflow_dispatch: # Allows manual trigger anytime from the Actions tab
+
+jobs:
+  update-telemetry:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Run Telemetry Sync
+        run: python scripts/sync_garage61.py
+        env:
+          G61_PAT: ${{ secrets.G61_PAT }}
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/garage61-stats.json
+          git diff --quiet && git diff --staged --quiet || (git commit -m "auto: live sync team telemetry and driver stats [skip ci]" && git push)
