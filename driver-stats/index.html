@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) - Deferred initialization -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      function initAnalytics(){
+        if(window.analyticsLoaded) return;
+        window.analyticsLoaded = true;
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = 'https://www.googletagmanager.com/gtag/js?id=G-5JMPYRH8H9';
+        document.head.appendChild(s);
+        gtag('js', new Date());
+        gtag('config', 'G-5JMPYRH8H9');
+      }
+      if (document.readyState === 'complete') {
+        setTimeout(initAnalytics, 2500);
+      } else {
+        window.addEventListener('load', function() { setTimeout(initAnalytics, 2500); });
+      }
+      ['click', 'scroll', 'keydown', 'touchstart'].forEach(function(e) {
+        window.addEventListener(e, initAnalytics, { once: true, passive: true });
+      });
+    </script>
+
+    <!-- Hidden Page - Not Indexed by Search Engines -->
+    <meta name="robots" content="noindex, nofollow">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver Telemetry & Stats | GRiD UP Sim Racing</title>
+
+    <!-- Google Fonts & Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="/style.css?v=25">
+    <link rel="stylesheet" href="/css/driver-stats.css?v=1">
+    <link rel="icon" type="image/png" href="/assets/G_2.png">
+</head>
+<body class="driver-stats-page">
+    <!-- Main Navigation Bar -->
+    <nav id="navbar" class="scrolled">
+        <div class="container nav-content">
+            <a href="/index.html" class="logo">
+                <img src="/assets/logo.png" decoding="async" width="160" height="38" alt="GRiD UP" style="height: 38px; vertical-align: middle;">
+            </a>
+            <div class="menu-toggle" aria-label="Toggle navigation">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/index.html">HOME</a></li>
+                <li><a href="/events.html">EVENTS</a></li>
+                <li><a href="/reports.html">NEWS</a></li>
+                <li><a href="/roster.html">ROSTER</a></li>
+                <li><a href="/telemetry.html">TELEMETRY</a></li>
+                <li><a href="/results.html">RESULTS</a></li>
+                <li><a href="/trophy-room.html">TROPHY ROOM</a></li>
+                <li><a href="https://discord.gg/gridup" target="_blank" rel="noopener"><img src="/assets/discord_header.png" alt="Discord" style="height: 25px; vertical-align: middle;"></a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Header -->
+    <header class="stats-hero">
+        <div class="container stats-hero-content">
+            <div class="stats-badge">
+                <span class="stats-badge-pulse"></span>
+                <span>Garage 61 Telemetry Platform</span>
+            </div>
+            <h1>DRIVER TELEMETRY & STATS</h1>
+            <p>Official performance reports, total team mileage, and individual driving dossiers compiled from real-time Garage 61 telemetry data.</p>
+
+            <div class="stats-sync-bar">
+                <span id="sync-timestamp">Synced: September 2026</span>
+                <button id="btn-sync-telemetry" class="btn-sync" onclick="syncFromGarage61()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                    <span>Sync Live Data</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container section" style="padding-top: 2rem; padding-bottom: 5rem;">
+        <!-- KPI Overview Cards -->
+        <section class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-label">Team Total Mileage</div>
+                <div id="kpi-total-laps" class="kpi-val">---</div>
+                <div class="kpi-sub">Total verified laps driven</div>
+            </div>
+            <div class="kpi-card purple">
+                <div class="kpi-label">Track Time Logged</div>
+                <div id="kpi-total-hours" class="kpi-val">---</div>
+                <div class="kpi-sub">Hours behind the wheel</div>
+            </div>
+            <div class="kpi-card green">
+                <div class="kpi-label">Clean Lap Accuracy</div>
+                <div id="kpi-clean-pct" class="kpi-val">---</div>
+                <div class="kpi-sub">Precision driving rate</div>
+            </div>
+            <div class="kpi-card amber">
+                <div class="kpi-label">Roster Drivers</div>
+                <div id="kpi-total-drivers" class="kpi-val">---</div>
+                <div class="kpi-sub">Active telemetry profiles</div>
+            </div>
+        </section>
+
+        <!-- Controls: Search, Filters, Sort, View Toggle -->
+        <section class="controls-panel">
+            <div class="search-box">
+                <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                <input type="text" id="driver-search-input" placeholder="Search driver by name or vehicle..." autocomplete="off">
+            </div>
+
+            <div class="filter-chips">
+                <button class="chip active" data-filter="all">All Drivers</button>
+                <button class="chip" data-filter="mileage">>10k Laps</button>
+                <button class="chip" data-filter="clean">>85% Clean</button>
+                <button class="chip" data-filter="active">300+ Days</button>
+            </div>
+
+            <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                <div class="sort-select-wrapper">
+                    <label for="sort-select">Sort:</label>
+                    <select id="sort-select" class="sort-select">
+                        <option value="laps-desc">Total Laps</option>
+                        <option value="hours-desc">Track Hours</option>
+                        <option value="clean-desc">Clean Accuracy %</option>
+                        <option value="days-desc">Active Days</option>
+                        <option value="name-asc">Name (A-Z)</option>
+                    </select>
+                </div>
+
+                <div class="view-toggle-btns">
+                    <button id="btn-view-grid" class="view-btn active" title="Grid Card View">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4zM4 10h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4zM4 16h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4z"/></svg>
+                    </button>
+                    <button id="btn-view-table" class="view-btn" title="Table Ranking View">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Driver Cards / Leaderboard Target Container -->
+        <section id="drivers-container" class="drivers-grid">
+            <!-- Populated dynamically via js/driver-stats.js -->
+        </section>
+    </main>
+
+    <!-- Individual Driver Dossier Modal Report -->
+    <div id="driver-dossier-modal" class="dossier-modal-overlay">
+        <div class="dossier-modal-card">
+            <button class="dossier-close-btn" onclick="closeDriverDossier()" title="Close Dossier">&times;</button>
+            <div id="dossier-modal-content">
+                <!-- Dynamically populated via openDriverDossier() -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Site Footer -->
+    <footer>
+        <div class="container">
+            <div style="display: flex; justify-content: center; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <a href="https://discord.gg/gridup" target="_blank" rel="noopener" style="opacity: 0.6; transition: opacity 0.3s ease;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 127.14 96.36" fill="#ffffff"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a67.55,67.55,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.31,60,73.31,53s5-12.74,11.43-12.74S96.2,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
+                </a>
+                <a href="https://www.youtube.com/@griduptv" target="_blank" rel="noopener" style="opacity: 0.6; transition: opacity 0.3s ease;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="#ffffff" style="margin-top: -1px;"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+                </a>
+            </div>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin: 0; padding-bottom: 1rem;">&copy; 2026 GRiD UP SIM RACING. ALL RIGHTS RESERVED.</p>
+        </div>
+    </footer>
+
+    <!-- Core Scripts -->
+    <script defer src="/script.js?v=25"></script>
+    <script defer src="/js/driver-stats.js?v=1"></script>
+</body>
+</html>
