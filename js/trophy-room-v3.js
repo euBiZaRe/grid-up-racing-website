@@ -813,13 +813,15 @@ function getTrackSvg(trackKey) {
     const track = (window.TRACK_OUTLINES && window.TRACK_OUTLINES[trackKey]) || {
         name: 'Circuit',
         length: '5.000 km',
+        viewBox: '0 0 100 60',
         svgPath: 'M 15 35 Q 12 18 30 16 L 75 16 Q 92 18 90 35 Q 88 50 72 48 L 52 44 L 32 48 Q 15 50 15 35 Z'
     };
+    const vb = track.viewBox || '0 0 100 60';
 
     return `
         <div class="trophy-track-box">
-            <svg viewBox="0 0 100 60" class="track-svg" preserveAspectRatio="xMidYMid meet">
-                <path d="${track.svgPath}" class="track-path" />
+            <svg viewBox="${vb}" class="track-svg" preserveAspectRatio="xMidYMid meet">
+                <path d="${track.svgPath}" class="track-path" vector-effect="non-scaling-stroke" />
             </svg>
             <div class="track-info">
                 <span class="track-name">${track.name}</span>
@@ -1154,17 +1156,51 @@ function setupEventListeners() {
 
     const prevBtn = document.getElementById('carousel-prev');
     const nextBtn = document.getElementById('carousel-next');
+    const grid = document.getElementById('featured-podiums-grid');
 
     if (prevBtn) prevBtn.addEventListener('click', () => scrollFeaturedCarousel(-1));
     if (nextBtn) nextBtn.addEventListener('click', () => scrollFeaturedCarousel(1));
+
+    window.addEventListener('resize', () => {
+        updateCarouselDots();
+    });
+
+    if (grid) {
+        grid.addEventListener('scroll', () => {
+            const cards = grid.querySelectorAll('.featured-card');
+            if (cards.length <= 1) return;
+            const container = document.getElementById('carousel-dots');
+            if (!container || container.style.display === 'none') return;
+
+            let closestIdx = 0;
+            let minDiff = Infinity;
+            const gridLeft = grid.getBoundingClientRect().left;
+            cards.forEach((card, idx) => {
+                const diff = Math.abs(card.getBoundingClientRect().left - gridLeft);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closestIdx = idx;
+                }
+            });
+            if (closestIdx !== CURRENT_FEATURED_INDEX) {
+                CURRENT_FEATURED_INDEX = closestIdx;
+                const dots = container.querySelectorAll('.carousel-dot');
+                dots.forEach((dot, i) => {
+                    dot.classList.toggle('active', i === closestIdx);
+                });
+            }
+        }, { passive: true });
+    }
 }
+
+let LAST_FEATURED_COUNT = 0;
 
 function scrollFeaturedCarousel(direction) {
     const grid = document.getElementById('featured-podiums-grid');
     if (!grid) return;
 
     const cards = grid.querySelectorAll('.featured-card');
-    if (cards.length === 0) return;
+    if (cards.length <= 1) return;
 
     CURRENT_FEATURED_INDEX += direction;
     if (CURRENT_FEATURED_INDEX < 0) CURRENT_FEATURED_INDEX = 0;
@@ -1177,15 +1213,53 @@ function scrollFeaturedCarousel(direction) {
     updateCarouselDots(cards.length);
 }
 
-function updateCarouselDots(total) {
+function updateCarouselDots(total = LAST_FEATURED_COUNT) {
+    LAST_FEATURED_COUNT = total;
     const container = document.getElementById('carousel-dots');
-    if (!container) return;
+    const prevBtn = document.getElementById('carousel-prev');
+    const nextBtn = document.getElementById('carousel-next');
+    const grid = document.getElementById('featured-podiums-grid');
 
-    let dotsHtml = '';
-    for (let i = 0; i < total; i++) {
-        dotsHtml += `<span class="carousel-dot ${i === CURRENT_FEATURED_INDEX ? 'active' : ''}" onclick="goToFeatured(${i})"></span>`;
+    const isMobile = window.innerWidth <= 900;
+    // On desktop (> 900px), up to 3 cards fit in a single row without horizontal overflow.
+    // If total <= 3 on desktop, or total <= 1 on mobile, or grid doesn't overflow: only one page!
+    const isSinglePage = total <= 1 || (!isMobile && total <= 3) || (grid && grid.scrollWidth <= grid.clientWidth + 15);
+
+    if (isSinglePage || total === 0) {
+        if (prevBtn) {
+            prevBtn.classList.add('is-hidden');
+            prevBtn.style.display = 'none';
+        }
+        if (nextBtn) {
+            nextBtn.classList.add('is-hidden');
+            nextBtn.style.display = 'none';
+        }
+        if (container) {
+            container.classList.add('is-hidden');
+            container.style.display = 'none';
+            container.innerHTML = '';
+        }
+        return;
     }
-    container.innerHTML = dotsHtml;
+
+    // Multiple pages exist - show navigation controls
+    if (prevBtn) {
+        prevBtn.classList.remove('is-hidden');
+        prevBtn.style.display = '';
+    }
+    if (nextBtn) {
+        nextBtn.classList.remove('is-hidden');
+        nextBtn.style.display = '';
+    }
+    if (container) {
+        container.classList.remove('is-hidden');
+        container.style.display = 'flex';
+        let dotsHtml = '';
+        for (let i = 0; i < total; i++) {
+            dotsHtml += `<span class="carousel-dot ${i === CURRENT_FEATURED_INDEX ? 'active' : ''}" onclick="goToFeatured(${i})"></span>`;
+        }
+        container.innerHTML = dotsHtml;
+    }
 }
 
 window.goToFeatured = function(idx) {

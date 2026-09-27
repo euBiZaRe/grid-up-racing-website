@@ -308,6 +308,10 @@ body.trophy-room-page {
 
 .featured-carousel-nav.prev { left: -22px; }
 .featured-carousel-nav.next { right: -22px; }
+.featured-carousel-nav.is-hidden,
+.carousel-dots.is-hidden {
+    display: none !important;
+}
 
 .featured-podiums-grid {
     display: grid;
@@ -522,6 +526,7 @@ body.trophy-room-page {
     stroke-linejoin: round;
     opacity: 0.85;
     filter: drop-shadow(0 0 5px var(--neon-red-glow));
+    vector-effect: non-scaling-stroke;
 }
 
 .track-info {
