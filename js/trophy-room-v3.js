@@ -63,10 +63,10 @@ function parseFinishPosition(val) {
  * P3 = Bronze Trophy
  */
 function getTrophyImageForPosition(pos = 1) {
-    if (pos === 1) return '/assets/trophies/trophy-gold.jpg';
-    if (pos === 2) return '/assets/trophies/trophy-silver.jpg';
-    if (pos === 3) return '/assets/trophies/trophy-bronze.jpg';
-    return '/assets/trophies/trophy-gold.jpg';
+    if (pos === 1) return '/assets/trophies/trophy-gold.jpg?v=36';
+    if (pos === 2) return '/assets/trophies/trophy-silver.jpg?v=36';
+    if (pos === 3) return '/assets/trophies/trophy-bronze.jpg?v=36';
+    return '/assets/trophies/trophy-gold.jpg?v=36';
 }
 
 /**
@@ -161,7 +161,7 @@ const PAST_EVENT_SOURCES = [
         name: 'Daytona 24',
         path: '/events/past/daytona-24.html',
         localPath: 'events/past/daytona-24.html',
-        image: '/assets/trophies/trophy-silver.jpg',
+        image: '/assets/trophies/trophy-silver.jpg?v=36',
         trackKey: 'daytona',
         season: 2026,
         timestamp: '2026-01-18T20:00:00Z'
@@ -171,7 +171,7 @@ const PAST_EVENT_SOURCES = [
         name: 'iRacing ROAR',
         path: '/events/past/iracing-roar.html',
         localPath: 'events/past/iracing-roar.html',
-        image: '/assets/trophies/trophy-bronze.jpg',
+        image: '/assets/trophies/trophy-bronze.jpg?v=36',
         trackKey: 'daytona',
         season: 2026,
         timestamp: '2026-01-10T20:00:00Z'
@@ -181,7 +181,7 @@ const PAST_EVENT_SOURCES = [
         name: 'Bathurst 12',
         path: '/events/past/bathurst-12.html',
         localPath: 'events/past/bathurst-12.html',
-        image: '/assets/trophies/trophy-gold.jpg',
+        image: '/assets/trophies/trophy-gold.jpg?v=36',
         trackKey: 'bathurst',
         season: 2026,
         timestamp: '2026-02-22T20:00:00Z'
@@ -191,7 +191,7 @@ const PAST_EVENT_SOURCES = [
         name: 'Daytona 500',
         path: '/events/past/daytona-500.html',
         localPath: 'events/past/daytona-500.html',
-        image: '/assets/trophies/trophy-gold.jpg',
+        image: '/assets/trophies/trophy-gold.jpg?v=36',
         trackKey: 'daytona',
         season: 2026,
         timestamp: '2026-02-18T20:00:00Z'
@@ -201,7 +201,7 @@ const PAST_EVENT_SOURCES = [
         name: 'Sebring 12HR',
         path: '/events/past/sebring-12hr.html',
         localPath: 'events/past/sebring-12hr.html',
-        image: '/assets/trophies/trophy-gold.jpg',
+        image: '/assets/trophies/trophy-gold.jpg?v=36',
         trackKey: 'sebring',
         season: 2026,
         timestamp: '2026-03-29T20:00:00Z'
@@ -233,7 +233,7 @@ const VERIFIED_PAST_PAGE_PODIUMS = [
         "trackKey": "road-america",
         "trackName": "Road America",
         "trackLength": "6.515 km",
-        "image": "/assets/trophies/trophy-gold.jpg",
+        "image": "/assets/trophies/trophy-gold.jpg?v=36",
         "source": "/results.html",
         "timestamp": "2026-07-26T20:00:00Z"
     },
@@ -259,7 +259,7 @@ const VERIFIED_PAST_PAGE_PODIUMS = [
         "trackKey": "indy",
         "trackName": "Indianapolis Motor Speedway",
         "trackLength": "4.023 km",
-        "image": "/assets/trophies/trophy-gold.jpg",
+        "image": "/assets/trophies/trophy-gold.jpg?v=36",
         "source": "/results.html",
         "timestamp": "2026-05-18T20:00:00Z"
     },
@@ -289,7 +289,7 @@ const VERIFIED_PAST_PAGE_PODIUMS = [
         "trackKey": "daytona",
         "trackName": "Daytona International Speedway",
         "trackLength": "5.730 km",
-        "image": "/assets/trophies/trophy-silver.jpg",
+        "image": "/assets/trophies/trophy-silver.jpg?v=36",
         "source": "/events/past/daytona-24.html",
         "timestamp": "2026-01-18T20:00:00Z"
     },
@@ -318,7 +318,7 @@ const VERIFIED_PAST_PAGE_PODIUMS = [
         "trackKey": "nurburgring",
         "trackName": "N\u00fcrburgring Nordschleife / GP",
         "trackLength": "25.378 km",
-        "image": "/assets/trophies/trophy-silver.jpg",
+        "image": "/assets/trophies/trophy-silver.jpg?v=36",
         "source": "/results.html",
         "timestamp": "2026-05-03T20:00:00Z"
     },
@@ -346,7 +346,7 @@ const VERIFIED_PAST_PAGE_PODIUMS = [
         "trackKey": "suzuka",
         "trackName": "Suzuka International Racing Course",
         "trackLength": "5.807 km",
-        "image": "/assets/trophies/trophy-silver.jpg",
+        "image": "/assets/trophies/trophy-silver.jpg?v=36",
         "source": "/results.html",
         "timestamp": "2026-09-12T19:08:34.349Z"
     },
@@ -374,7 +374,7 @@ const VERIFIED_PAST_PAGE_PODIUMS = [
         "trackKey": "daytona",
         "trackName": "Daytona International Speedway",
         "trackLength": "5.730 km",
-        "image": "/assets/trophies/trophy-bronze.jpg",
+        "image": "/assets/trophies/trophy-bronze.jpg?v=36",
         "source": "/events/past/iracing-roar.html",
         "timestamp": "2026-01-10T20:00:00Z"
     }
