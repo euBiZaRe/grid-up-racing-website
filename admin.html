@@ -1843,7 +1843,7 @@
                             <p style="color: var(--text-muted); font-size: 0.8rem; margin: 0;">Manage the teams selectable in the Desktop Telemetry Recorder App and Live Telemetry dashboards.</p>
                         </div>
                         <button onclick="loadTelemetryTeamsAdmin()" class="btn btn-outline" style="display: flex; align-items: center; gap: 6px; font-size: 0.75rem; padding: 0.4rem 0.8rem;">
-                            <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i> Refresh
+                            <i class="fas fa-sync-alt"></i> Refresh
                         </button>
                     </div>
 
@@ -6051,7 +6051,7 @@
 
             try {
                 const rtdb = getTelemetryRTDB();
-                const snap = await rtdb.ref('config/teams').once('value');
+                const snap = await rtdb.ref('teams/meta_teams').once('value');
                 const data = snap.val();
 
                 if (!data || Object.keys(data).length === 0) {
@@ -6118,7 +6118,9 @@
                     `;
                     list.appendChild(tr);
                 });
-                lucide.createIcons();
+                if (window.lucide && typeof lucide.createIcons === 'function') {
+                    lucide.createIcons();
+                }
             } catch (err) {
                 console.error("Failed to load telemetry teams:", err);
                 list.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #ef4444; padding: 2rem;">Error: ${err.message}</td></tr>`;
@@ -6148,7 +6150,7 @@
 
             try {
                 const rtdb = getTelemetryRTDB();
-                await rtdb.ref(`config/teams/${id}`).set({
+                await rtdb.ref(`teams/meta_teams/${id}`).set({
                     id: id,
                     name: name,
                     color: color,
@@ -6171,7 +6173,7 @@
         async function toggleTelemetryTeamStatus(id, newStatus) {
             try {
                 const rtdb = getTelemetryRTDB();
-                await rtdb.ref(`config/teams/${id}`).update({ enabled: newStatus });
+                await rtdb.ref(`teams/meta_teams/${id}`).update({ enabled: newStatus });
                 loadTelemetryTeamsAdmin();
             } catch (err) {
                 alert("Failed to toggle status: " + err.message);
@@ -6203,7 +6205,7 @@
             if (!confirm(`Are you sure you want to permanently delete team "${id}"?`)) return;
             try {
                 const rtdb = getTelemetryRTDB();
-                await rtdb.ref(`config/teams/${id}`).remove();
+                await rtdb.ref(`teams/meta_teams/${id}`).remove();
                 alert(`Team "${id}" deleted!`);
                 loadTelemetryTeamsAdmin();
             } catch (err) {
