@@ -2,7 +2,7 @@ export type CarStatus = 'ON_TRACK' | 'PIT_LANE' | 'IN_STALL' | 'OUT_LAP' | 'IN_L
 
 export type StintStatus = 'PLANNED' | 'LIVE' | 'COMPLETED' | 'CANCELLED' | 'OVERRIDDEN';
 
-export type TelemetrySource = 'GARAGE61' | 'LOCAL' | 'DEMO' | 'MANUAL';
+export type TelemetrySource = 'GRIDUP_TOOL' | 'GARAGE61' | 'LOCAL' | 'DEMO' | 'MANUAL';
 
 export interface Driver {
   id: string;

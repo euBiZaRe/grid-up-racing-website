@@ -3,6 +3,7 @@ import { Race, Car, Stint, TelemetrySample, RaceAlert, RaceStrategyConfig, Drive
 import { generateInitialSchedule, recalculateDownstreamStrategy, advanceStintOnPitExit, formatSecondsToRaceClock } from '../lib/strategyEngine';
 import { DemoSimulator } from '../lib/telemetry/DemoSimulator';
 import { Garage61Provider } from '../lib/telemetry/Garage61Provider';
+import { GridUpTelemetryProvider } from '../lib/telemetry/GridUpTelemetryProvider';
 import { LocalTelemetryProvider } from '../lib/telemetry/LocalTelemetryProvider';
 import { TelemetryProvider } from '../lib/telemetry/TelemetryProvider';
 
@@ -22,7 +23,7 @@ interface RaceContextType {
   resetDemoRace: () => void;
   createNewRace: (raceData: Partial<Race>) => void;
   telemetrySource: string;
-  setTelemetrySource: (source: 'DEMO' | 'GARAGE61' | 'LOCAL') => void;
+  setTelemetrySource: (source: 'GRIDUP_TOOL' | 'GARAGE61' | 'LOCAL' | 'DEMO') => void;
   garage61Token: string;
   setGarage61Token: (token: string) => void;
   isSimulatingFast: boolean;
@@ -151,7 +152,7 @@ export const RaceProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   const [activeCarId, setActiveCarId] = useState<string>(race.activeCarId || race.cars[0]?.id || 'car-144');
-  const [telemetrySource, setTelemetrySource] = useState<'DEMO' | 'GARAGE61' | 'LOCAL'>('DEMO');
+  const [telemetrySource, setTelemetrySource] = useState<'GRIDUP_TOOL' | 'GARAGE61' | 'LOCAL' | 'DEMO'>('GRIDUP_TOOL');
   const [garage61Token, setGarage61Token] = useState<string>(() => localStorage.getItem('gridup_g61_token') || '');
   const [isSimulatingFast, setIsSimulatingFast] = useState<boolean>(false);
   const [demoSim] = useState(() => new DemoSimulator());
@@ -236,7 +237,11 @@ export const RaceProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     let provider: TelemetryProvider;
 
-    if (telemetrySource === 'DEMO') {
+        if (telemetrySource === 'GRIDUP_TOOL') {
+      provider = new GridUpTelemetryProvider();
+      provider.connect({ teamKey: 'gridUp_sim', carNumber: activeCar.carNumber });
+      provider.onSample(handleTelemetrySample);
+    } else if (telemetrySource === 'DEMO') {
       provider = demoSim;
       provider.connect();
       provider.onSample(handleTelemetrySample);

@@ -99,11 +99,11 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center gap-2 sm:gap-3">
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-xs">
             <Radio className={`w-3.5 h-3.5 ${
-              telemetrySource === 'GARAGE61' ? 'text-cyan-400 animate-pulse' :
+              telemetrySource === 'GRIDUP_TOOL' ? 'text-emerald-400 animate-pulse' : telemetrySource === 'GARAGE61' ? 'text-cyan-400 animate-pulse' :
               telemetrySource === 'LOCAL' ? 'text-emerald-400' : 'text-purple-400'
             }`} />
             <span className="hidden sm:inline text-slate-300 font-medium">Source:</span>
-            <span className="font-bold text-white font-orbitron text-[11px]">{telemetrySource}</span>
+            <span className="font-bold text-white font-orbitron text-[11px]">{telemetrySource === 'GRIDUP_TOOL' ? 'GRiD UP TOOL' : telemetrySource}</span>
           </div>
 
           <button

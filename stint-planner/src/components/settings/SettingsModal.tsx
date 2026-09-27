@@ -49,10 +49,10 @@ export const SettingsModal: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
             <label className="text-xs uppercase font-bold text-slate-300 block mb-2">
               Active Telemetry Provider
             </label>
-            <div className="grid grid-cols-3 gap-2">
-              {(['DEMO', 'GARAGE61', 'LOCAL'] as const).map(source => (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {(['GRIDUP_TOOL', 'GARAGE61', 'LOCAL', 'DEMO'] as const).map(source => (
                 <button
-                  key={source}
+                  key={source === 'GRIDUP_TOOL' ? 'GRiD UP Tool' : source === 'GARAGE61' ? 'Garage 61' : source === 'LOCAL' ? 'iRacing Local' : 'Demo Sim'}
                   onClick={() => setTelemetrySource(source)}
                   className={`py-2 px-3 rounded-xl border text-xs font-bold font-orbitron transition-all ${
                     telemetrySource === source
@@ -60,7 +60,7 @@ export const SettingsModal: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
                       : 'bg-white/5 hover:bg-white/10 border-white/10 text-slate-400'
                   }`}
                 >
-                  {source}
+                  {source === 'GRIDUP_TOOL' ? 'GRiD UP Tool' : source === 'GARAGE61' ? 'Garage 61' : source === 'LOCAL' ? 'iRacing Local' : 'Demo Sim'}
                 </button>
               ))}
             </div>
