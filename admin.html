@@ -34,37 +34,25 @@
 
         /* Hero Command Bar */
         .admin-hero-header {
-            margin-bottom: 1.75rem;
-            padding: 1.4rem 2rem;
-            background: linear-gradient(135deg, rgba(13, 20, 36, 0.85) 0%, rgba(8, 12, 22, 0.95) 100%);
+            margin-bottom: 1.25rem;
+            padding: 1.25rem 1.75rem;
+            background: rgba(13, 20, 36, 0.75);
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 14px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 1.5rem;
+            gap: 1.25rem;
             flex-wrap: wrap;
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .admin-hero-header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, #00d2ff 0%, rgba(0, 210, 255, 0.2) 60%, transparent 100%);
         }
 
         .admin-hero-title-group {
             display: flex;
             flex-direction: column;
-            gap: 0.4rem;
+            gap: 0.35rem;
         }
 
         .admin-badge-eyebrow {
@@ -73,14 +61,10 @@
             gap: 8px;
             color: #00d2ff;
             font-size: 0.65rem;
-            font-weight: 800;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 2.5px;
-            padding: 3px 10px;
-            background: rgba(0, 210, 255, 0.08);
-            border: 1px solid rgba(0, 210, 255, 0.22);
-            border-radius: 999px;
-            width: fit-content;
+            letter-spacing: 1.8px;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
         .admin-badge-eyebrow .live-pulse-dot {
@@ -98,50 +82,50 @@
         }
 
         .admin-hero-title {
-            font-family: var(--font-heading);
-            font-size: 1.85rem;
-            font-weight: 900;
-            letter-spacing: -0.5px;
-            margin: 0;
-            color: #ffffff;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+            font-size: 1.5rem !important;
+            font-weight: 800 !important;
+            letter-spacing: -0.02em !important;
+            margin: 0 !important;
+            color: #ffffff !important;
             display: flex;
             align-items: center;
             gap: 0.75rem;
+            text-shadow: none !important;
         }
 
         .admin-profile-pill {
             display: flex;
             align-items: center;
             gap: 0.85rem;
-            padding: 0.6rem 1.15rem;
+            padding: 0.55rem 1.1rem;
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.07);
-            border-radius: 12px;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
         }
 
         .admin-avatar-icon {
-            width: 34px;
-            height: 34px;
+            width: 32px;
+            height: 32px;
             border-radius: 8px;
-            background: linear-gradient(135deg, rgba(0, 210, 255, 0.15), rgba(0, 119, 255, 0.15));
-            border: 1px solid rgba(0, 210, 255, 0.3);
+            background: rgba(0, 210, 255, 0.1);
+            border: 1px solid rgba(0, 210, 255, 0.25);
             display: flex;
             align-items: center;
             justify-content: center;
             color: #00d2ff;
-            font-size: 0.95rem;
+            font-size: 0.88rem;
         }
 
         .admin-session-status {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
             font-size: 0.65rem;
             color: #10b981;
-            font-weight: 800;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.8px;
         }
 
         .admin-session-status .status-dot {
@@ -152,11 +136,11 @@
             box-shadow: 0 0 8px #10b981;
         }
 
-        /* Segmented Navigation Bar Grid */
+        /* Segmented Navigation Bar */
         .admin-layout {
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
+            gap: 1.25rem;
             width: 100%;
         }
 
@@ -166,126 +150,90 @@
         }
 
         .admin-nav-bar {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 10px;
-            margin-bottom: 1.75rem;
-        }
-
-        @media (max-width: 1100px) {
-            .admin-nav-bar {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-
-        @media (max-width: 768px) {
-            .admin-nav-bar {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            .admin-hero-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .admin-profile-pill {
-                width: 100%;
-                justify-content: space-between;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .admin-nav-bar {
-                grid-template-columns: 1fr;
-            }
-            .admin-hero-title {
-                font-size: 1.45rem;
-            }
+            position: static !important;
+            width: 100% !important;
+            top: auto !important;
+            z-index: auto !important;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 1.25rem;
+            padding: 6px;
+            background: rgba(13, 20, 36, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 12px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
         }
 
         .admin-nav-bar .admin-nav-btn {
             appearance: none;
             -webkit-appearance: none;
-            background: rgba(14, 21, 37, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 10px;
-            padding: 0.85rem 1rem;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            padding: 0.55rem 0.95rem;
             color: #94a3b8;
-            font-family: inherit;
-            font-size: 0.78rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            display: flex;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 0.65rem;
+            gap: 0.55rem;
             cursor: pointer;
-            transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.18s ease;
             position: relative;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             text-decoration: none;
             user-select: none;
             white-space: nowrap;
+            box-shadow: none;
         }
 
         .admin-nav-bar .admin-nav-btn i {
-            font-size: 0.95rem;
-            transition: transform 0.2s ease, color 0.2s ease;
+            font-size: 0.85rem;
+            transition: transform 0.18s ease, color 0.18s ease;
             opacity: 0.8;
-            color: #94a3b8;
+            color: #64748b;
         }
 
         .admin-nav-bar .admin-nav-btn:hover {
             color: #ffffff;
-            background: rgba(22, 33, 56, 0.9);
-            border-color: rgba(0, 210, 255, 0.45);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 18px rgba(0, 210, 255, 0.15);
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.08);
         }
 
         .admin-nav-bar .admin-nav-btn:hover i {
             color: #00d2ff;
-            transform: scale(1.1);
             opacity: 1;
         }
 
         .admin-nav-bar .admin-nav-btn.active,
         .admin-nav-bar .admin-nav-btn.btn-primary {
             color: #ffffff !important;
-            background: linear-gradient(135deg, rgba(0, 210, 255, 0.18) 0%, rgba(0, 102, 204, 0.24) 100%) !important;
-            border-color: #00d2ff !important;
-            box-shadow: 0 0 18px rgba(0, 210, 255, 0.25), inset 0 0 10px rgba(0, 210, 255, 0.12) !important;
-            font-weight: 800;
+            background: rgba(0, 210, 255, 0.12) !important;
+            border-color: rgba(0, 210, 255, 0.4) !important;
+            box-shadow: 0 0 14px rgba(0, 210, 255, 0.15) !important;
+            font-weight: 700 !important;
         }
 
         .admin-nav-bar .admin-nav-btn.active i,
         .admin-nav-bar .admin-nav-btn.btn-primary i {
             color: #00d2ff !important;
             opacity: 1;
-            filter: drop-shadow(0 0 6px rgba(0, 210, 255, 0.6));
-        }
-
-        .admin-nav-bar .admin-nav-btn.active::after,
-        .admin-nav-bar .admin-nav-btn.btn-primary::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 20%;
-            right: 20%;
-            height: 2px;
-            background: #00d2ff;
-            box-shadow: 0 0 8px #00d2ff;
-            border-radius: 2px;
         }
 
         .admin-nav-badge {
-            background: rgba(0, 210, 255, 0.25);
+            background: rgba(0, 210, 255, 0.2);
             border: 1px solid rgba(0, 210, 255, 0.45);
             color: #00d2ff;
-            font-size: 0.6rem;
-            padding: 1px 6px;
+            font-size: 0.58rem;
+            padding: 1px 5px;
             border-radius: 4px;
-            font-weight: 800;
+            font-weight: 700;
             letter-spacing: 0.5px;
             margin-left: 2px;
         }
@@ -344,47 +292,48 @@
 
         /* Polished Empty State Component */
         .admin-empty-state {
-            padding: 4.5rem 2rem;
+            padding: 3.5rem 2rem;
             text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: rgba(14, 21, 37, 0.35);
-            border-radius: 12px;
-            margin: 1rem;
-            border: 1px dashed rgba(255, 255, 255, 0.1);
+            background: transparent;
+            border: none;
+            margin: 0;
         }
 
         .admin-empty-icon {
-            width: 60px;
-            height: 60px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
             background: rgba(0, 210, 255, 0.08);
-            border: 1px solid rgba(0, 210, 255, 0.22);
+            border: 1px solid rgba(0, 210, 255, 0.2);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             color: #00d2ff;
-            margin-bottom: 1.25rem;
-            box-shadow: 0 0 25px rgba(0, 210, 255, 0.12);
+            margin-bottom: 0.85rem;
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.1);
         }
 
         .admin-empty-state h4 {
-            font-size: 1.15rem;
-            font-weight: 800;
-            color: #ffffff;
-            margin-bottom: 0.5rem;
-            letter-spacing: 0.5px;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+            font-size: 1.05rem !important;
+            font-weight: 700 !important;
+            color: #ffffff !important;
+            margin-bottom: 0.35rem !important;
+            letter-spacing: 0 !important;
         }
 
         .admin-empty-state p {
-            font-size: 0.88rem;
-            color: #64748b;
-            max-width: 420px;
-            line-height: 1.5;
-            margin: 0;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+            font-size: 0.85rem !important;
+            color: #64748b !important;
+            max-width: 380px !important;
+            line-height: 1.5 !important;
+            margin: 0 !important;
         }
         .status-badge {
             padding: 0.25rem 0.75rem;
@@ -742,7 +691,7 @@
             </header>
 
             <div class="admin-layout">
-                <nav class="admin-nav-bar animate-fade-in" aria-label="Admin Navigation">
+                <div class="admin-nav-bar animate-fade-in" role="tablist" aria-label="Admin Navigation">
                     <button onclick="switchTab('applications')" class="admin-nav-btn active" id="tab-applications">
                         <i class="fas fa-file-signature"></i>
                         <span>Applications</span>
@@ -784,12 +733,12 @@
                         <i class="fas fa-chart-line"></i>
                         <span>Telemetry Teams</span>
                     </button>
-                </nav>
+                </div>
 
                 <div class="admin-main">
                     <!-- Applications Section -->
                     <div id="section-applications" class="tab-content" style="display: none;">
-                <div class="glass" style="padding: 1.5rem; overflow-x: auto;">
+                <div class="glass" style="padding: 0; overflow-x: auto;">
                 <table class="claims-table mobile-table">
                     <thead>
                         <tr>
@@ -827,7 +776,7 @@
                         <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Pending<br>Review</div>
                     </div>
                 </div>
-                <div class="glass" style="padding: 1.5rem; overflow-x: auto;">
+                <div class="glass" style="padding: 0; overflow-x: auto;">
                 <table class="claims-table mobile-table">
                     <thead>
                         <tr>
