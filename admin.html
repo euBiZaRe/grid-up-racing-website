@@ -437,47 +437,46 @@
                 .studio-team-select {
             background: #0f172a !important;
             border: 1px solid rgba(0, 207, 255, 0.45) !important;
-            border-radius: 8px !important;
+            border-radius: 6px !important;
             color: #ffffff !important;
             font-family: inherit !important;
-            font-size: 1.1rem !important;
+            font-size: 0.92rem !important;
             font-weight: 800 !important;
-            padding: 0.45rem 2.2rem 0.45rem 0.85rem !important;
-            width: 320px !important;
-            max-width: 100% !important;
+            padding: 0.35rem 1.8rem 0.35rem 0.65rem !important;
+            width: 100% !important;
             outline: none !important;
             cursor: pointer !important;
             appearance: none !important;
             -webkit-appearance: none !important;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2300cfff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2300cfff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
             background-repeat: no-repeat !important;
-            background-position: right 0.75rem center !important;
+            background-position: right 0.6rem center !important;
             transition: all 0.2s ease !important;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
         }
         .studio-team-select:hover, .studio-team-select:focus {
             border-color: var(--primary) !important;
-            box-shadow: 0 0 20px rgba(0, 207, 255, 0.3) !important;
+            box-shadow: 0 0 15px rgba(0, 207, 255, 0.3) !important;
         }
         .studio-team-select option {
             background: #0b0f19 !important;
             color: #ffffff !important;
-            padding: 8px 12px !important;
-            font-size: 0.9rem !important;
+            padding: 6px 10px !important;
+            font-size: 0.85rem !important;
             font-weight: 700 !important;
         }
 
         .studio-event-select option {
             background: #0b0f19 !important;
             color: #ffffff !important;
-            padding: 10px 14px !important;
+            padding: 8px 12px !important;
             font-size: 0.85rem !important;
         }
         .builder-canvas {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(440px, 1fr));
-            gap: 1.5rem;
-            margin-top: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
             align-items: stretch;
         }
         @media (max-width: 950px) {
@@ -488,50 +487,51 @@
         .builder-car-card {
             background: linear-gradient(180deg, rgba(20, 24, 35, 0.88) 0%, rgba(12, 15, 22, 0.98) 100%);
             border: 1px solid rgba(0, 207, 255, 0.25);
-            border-radius: 16px;
-            padding: 1.5rem;
+            border-radius: 12px;
+            padding: 0.85rem 1rem;
             position: relative;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+            justify-content: flex-start;
+            gap: 0.6rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
         .builder-car-card:hover {
-            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.7);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65);
         }
         .racing-number-plate {
             background: linear-gradient(135deg, rgba(0, 207, 255, 0.18) 0%, rgba(8, 12, 20, 0.95) 100%);
             border: 2px solid var(--primary);
-            border-radius: 10px;
-            padding: 0.3rem 0.65rem;
+            border-radius: 8px;
+            padding: 0.15rem 0.45rem;
             display: inline-flex;
             flex-direction: column;
             align-items: center;
-            box-shadow: 0 4px 15px rgba(0, 207, 255, 0.25);
-            min-width: 62px;
+            box-shadow: 0 2px 10px rgba(0, 207, 255, 0.2);
+            min-width: 48px;
         }
         .number-plate-label {
-            font-size: 0.5rem;
+            font-size: 0.45rem;
             font-weight: 900;
-            letter-spacing: 1.5px;
+            letter-spacing: 1px;
             color: var(--primary);
             text-transform: uppercase;
             line-height: 1;
-            margin-bottom: 2px;
+            margin-bottom: 1px;
         }
         .number-plate-input {
             background: transparent !important;
             border: none !important;
             color: #ffffff !important;
-            font-size: 1.35rem !important;
+            font-size: 1.15rem !important;
             font-weight: 900 !important;
-            width: 50px !important;
+            width: 40px !important;
             text-align: center !important;
             outline: none !important;
             font-family: monospace, sans-serif !important;
             padding: 0 !important;
-            line-height: 1.2 !important;
+            line-height: 1.1 !important;
         }
         .car-team-name-input {
             background: rgba(255, 255, 255, 0.04) !important;
@@ -550,14 +550,28 @@
             background: rgba(0, 207, 255, 0.06) !important;
             box-shadow: 0 0 15px rgba(0, 207, 255, 0.25) !important;
         }
+        .builder-driver-pool-container {
+            position: sticky;
+            top: 72px;
+            z-index: 100;
+            background: rgba(11, 15, 25, 0.95) !important;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(0, 207, 255, 0.25) !important;
+            border-radius: 12px;
+            padding: 0.75rem 1.25rem !important;
+            margin-bottom: 1rem !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            transition: all 0.2s ease;
+        }
         .studio-mini-select {
             background: #0f172a !important;
             border: 1px solid rgba(255, 255, 255, 0.15) !important;
             color: #ffffff !important;
-            font-size: 0.75rem !important;
+            font-size: 0.7rem !important;
             font-weight: 700 !important;
-            padding: 0.35rem 0.75rem !important;
-            border-radius: 6px !important;
+            padding: 0.2rem 0.5rem !important;
+            border-radius: 4px !important;
             outline: none !important;
             transition: all 0.2s ease !important;
             cursor: pointer !important;
@@ -602,12 +616,12 @@
         .driver-pool-card {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 0.55rem 0.95rem;
-            border-radius: 8px;
-            font-size: 0.78rem;
+            padding: 0.3rem 0.65rem;
+            border-radius: 6px;
+            font-size: 0.74rem;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             flex-wrap: wrap;
             cursor: grab;
             user-select: none;
@@ -628,11 +642,11 @@
             background: rgba(16, 185, 129, 0.04);
         }
         .team-drop-zone {
-            border: 2px dashed rgba(255, 255, 255, 0.16);
-            border-radius: 12px;
-            padding: 1rem;
-            min-height: 85px;
-            background: rgba(0, 0, 0, 0.3);
+            border: 1px dashed rgba(255, 255, 255, 0.18);
+            border-radius: 8px;
+            padding: 0.45rem 0.6rem;
+            min-height: 50px;
+            background: rgba(0, 0, 0, 0.25);
             transition: all 0.2s ease;
         }
         .team-drop-zone.drag-over {
@@ -644,16 +658,17 @@
         .team-driver-item {
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 8px;
-            padding: 0.55rem 0.9rem;
+            border-radius: 6px;
+            padding: 0.25rem 0.55rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 10px;
+            gap: 6px;
             flex-wrap: wrap;
             transition: all 0.2s ease;
             cursor: grab;
             user-select: none;
+            font-size: 0.76rem;
         }
         .team-driver-item:hover {
             border-color: rgba(255, 255, 255, 0.25);
@@ -905,27 +920,28 @@
                     </div>
 
                     <!-- Event Metadata & Eligible Classes Banner -->
-                    <div id="builder-event-meta-banner" style="background: rgba(0,0,0,0.45); border: 1px solid rgba(0,207,255,0.2); border-left: 4px solid var(--primary); border-radius: 12px; padding: 1.1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.25rem;">
-                        <div id="builder-event-summary" style="font-size: 0.85rem; color: var(--text-muted);">Select an upcoming race to start assembling car entries.</div>
-                        <div id="builder-event-classes-pills" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;"></div>
+                    <div id="builder-event-meta-banner" style="background: rgba(0,0,0,0.45); border: 1px solid rgba(0,207,255,0.2); border-left: 4px solid var(--primary); border-radius: 10px; padding: 0.65rem 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.75rem;">
+                        <div id="builder-event-summary" style="font-size: 0.82rem; color: var(--text-muted);">Select an upcoming race to start assembling car entries.</div>
+                        <div id="builder-event-classes-pills" style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;"></div>
                     </div>
                 </div>
 
-                <!-- Driver Pool & Availability Responses -->
-                <div class="glass" style="padding: 1.5rem 2rem; margin-bottom: 2rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08); background: rgba(13,16,24,0.6);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <div style="width: 28px; height: 28px; border-radius: 6px; background: rgba(0,207,255,0.12); display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 0.85rem;">
+                <!-- Driver Pool & Availability Responses (Sticky so it stays visible when scrolling down) -->
+                <div id="builder-driver-pool-container" class="builder-driver-pool-container glass">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.45rem; flex-wrap: wrap; gap: 0.5rem;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 22px; height: 22px; border-radius: 5px; background: rgba(0,207,255,0.12); display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 0.75rem;">
                                 <i class="fas fa-users"></i>
                             </div>
-                            <h4 style="color: #fff; font-size: 0.95rem; font-weight: 800; margin: 0; letter-spacing: 0.5px;">Driver Availability Pool</h4>
+                            <h4 style="color: #fff; font-size: 0.85rem; font-weight: 800; margin: 0; letter-spacing: 0.5px;">Driver Availability Pool</h4>
+                            <span style="font-size: 0.68rem; color: var(--text-muted);">(Drag into any team tile below)</span>
                         </div>
-                        <div id="builder-driver-stats" style="display: flex; gap: 10px; font-size: 0.75rem;">
-                            <span id="builder-driver-count-badge" style="background: rgba(255,255,255,0.06); padding: 4px 10px; border-radius: 6px; color: var(--text-muted); font-weight: 700;">0 Responded</span>
+                        <div id="builder-driver-stats" style="display: flex; gap: 6px; font-size: 0.7rem;">
+                            <span id="builder-driver-count-badge" style="background: rgba(255,255,255,0.06); padding: 2px 7px; border-radius: 4px; color: var(--text-muted); font-weight: 700;">0 Responded</span>
                         </div>
                     </div>
-                    <div id="builder-driver-pool-list" style="display: flex; flex-wrap: wrap; gap: 0.75rem;">
-                        <p style="color: var(--text-muted); font-size: 0.8rem; margin: 0;">Loading driver responses...</p>
+                    <div id="builder-driver-pool-list" style="display: flex; flex-wrap: wrap; gap: 0.45rem; max-height: 105px; overflow-y: auto; padding-right: 4px;">
+                        <p style="color: var(--text-muted); font-size: 0.75rem; margin: 0;">Loading driver responses...</p>
                     </div>
                 </div>
 
@@ -3487,7 +3503,7 @@
                 `).join('') + `<option value="__custom__">+ Custom Team Name...</option>`;
 
                 // Captain Options Dropdown
-                let captainOptionsHtml = `<option value="">-- No Captain Selected --</option>`;
+                let captainOptionsHtml = `<option value="">-- No Captain --</option>`;
                 if (car.captain && !carDriversList.includes(car.captain)) {
                     captainOptionsHtml += `<option value="${car.captain}" selected>👑 ${car.captain}</option>`;
                 }
@@ -3499,15 +3515,14 @@
                 let driversListHtml = '';
                 if (carDriversList.length === 0) {
                     driversListHtml = `
-                        <div style="text-align: center; padding: 2.2rem 1rem; border: 1px dashed rgba(255,255,255,0.12); border-radius: 10px; color: var(--text-muted); font-size: 0.8rem; background: rgba(0,0,0,0.25);">
-                            <i class="fas fa-hand-holding" style="color: ${theme.color}; font-size: 1.6rem; opacity: 0.7; display: block; margin-bottom: 0.5rem;"></i>
-                            <strong style="color: #fff; font-size: 0.85rem;">Drop Drivers Here</strong>
-                            <p style="margin: 0.35rem 0 0 0; font-size: 0.72rem; color: rgba(255,255,255,0.45);">Drag names from Availability Pool into <strong>${currentTeamName}</strong></p>
+                        <div style="text-align: center; padding: 0.5rem 0.5rem; border: 1px dashed rgba(255,255,255,0.08); border-radius: 6px; background: rgba(0,0,0,0.16); display: flex; align-items: center; justify-content: center; gap: 6px;">
+                            <i class="fas fa-hand-holding" style="color: ${theme.color}; font-size: 0.8rem; opacity: 0.7;"></i>
+                            <span style="color: rgba(255,255,255,0.45); font-size: 0.68rem;">Drop drivers here for <strong>${currentTeamName}</strong></span>
                         </div>
                     `;
                 } else {
                     driversListHtml = `
-                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
                             ${carDriversList.map((driverName) => {
                                 const resp = responses.find(r => (r.driverName || '').trim().toLowerCase() === driverName.trim().toLowerCase());
                                 const ir = getDriverIRating(resp ? resp.id : null, car.car_class) || getDriverIRating(driverName, car.car_class);
@@ -3519,21 +3534,21 @@
 
                                 return `
                                     <div class="team-driver-item" style="border-left: 3px solid ${isCaptain ? '#fbbf24' : theme.color};">
-                                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                                            <i class="fas fa-grip-vertical" style="color: rgba(255,255,255,0.25);"></i>
-                                            <strong style="color: #fff; font-size: 0.84rem;">${driverName}</strong>
-                                            ${isCaptain ? `<span style="background: rgba(251,191,36,0.2); border: 1px solid #fbbf24; color: #fbbf24; font-size: 0.65rem; font-weight: 800; padding: 2px 7px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;"><i class="fas fa-crown"></i> Team Captain</span>` : ''}
-                                            ${ir ? `<span style="background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.35); color: #60a5fa; font-size: 0.68rem; font-weight: 800; padding: 2px 6px; border-radius: 4px;"><i class="fas fa-chart-line" style="font-size: 0.6rem;"></i> ${ir.toLocaleString()} iR</span>` : ''}
-                                            ${driverChassis ? `<span style="background: rgba(255,255,255,0.06); color: #cbd5e1; font-size: 0.68rem; padding: 2px 6px; border-radius: 4px;"><i class="fas fa-car-side" style="color: var(--primary); font-size: 0.6rem;"></i> ${driverChassis}</span>` : ''}
-                                            ${!isEligible ? `<span style="background: rgba(239,68,68,0.2); color: #f87171; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 700;">⚠️ ${driverClass}</span>` : ''}
+                                        <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                            <i class="fas fa-grip-vertical" style="color: rgba(255,255,255,0.2); font-size: 0.65rem;"></i>
+                                            <strong style="color: #fff; font-size: 0.76rem;">${driverName}</strong>
+                                            ${isCaptain ? `<span style="background: rgba(251,191,36,0.18); border: 1px solid #fbbf24; color: #fbbf24; font-size: 0.6rem; font-weight: 800; padding: 1px 5px; border-radius: 3px;"><i class="fas fa-crown"></i> Captain</span>` : ''}
+                                            ${ir ? `<span style="background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); color: #60a5fa; font-size: 0.64rem; font-weight: 800; padding: 1px 5px; border-radius: 3px;">${ir.toLocaleString()} iR</span>` : ''}
+                                            ${driverChassis ? `<span style="background: rgba(255,255,255,0.06); color: #cbd5e1; font-size: 0.64rem; padding: 1px 5px; border-radius: 3px;">${driverChassis}</span>` : ''}
+                                            ${!isEligible ? `<span style="background: rgba(239,68,68,0.2); color: #f87171; font-size: 0.6rem; padding: 1px 4px; border-radius: 3px; font-weight: 700;">⚠️ ${driverClass}</span>` : ''}
                                         </div>
-                                        <div style="display: flex; align-items: center; gap: 6px;">
+                                        <div style="display: flex; align-items: center; gap: 4px;">
                                             ${!isCaptain ? `
-                                                <button type="button" onclick="setAdminTeamCaptain(${cIdx}, '${escapedName}')" class="btn btn-outline" style="padding: 2px 8px; font-size: 0.68rem; border-color: rgba(251,191,36,0.35); color: #fbbf24; border-radius: 4px;" title="Set as Team Captain">
-                                                    <i class="fas fa-crown"></i> Make Captain
+                                                <button type="button" onclick="setAdminTeamCaptain(${cIdx}, '${escapedName}')" class="btn btn-outline" style="padding: 1px 5px; font-size: 0.62rem; border-color: rgba(251,191,36,0.35); color: #fbbf24; border-radius: 3px;" title="Set as Team Captain">
+                                                    👑 Captain
                                                 </button>
                                             ` : ''}
-                                            <button type="button" onclick="removeDriverFromAdminTeam(${cIdx}, '${escapedName}')" class="btn btn-outline" style="padding: 2px 7px; font-size: 0.72rem; border-color: rgba(239,68,68,0.3); color: #ef4444; border-radius: 4px;" title="Remove driver from this team">
+                                            <button type="button" onclick="removeDriverFromAdminTeam(${cIdx}, '${escapedName}')" class="btn btn-outline" style="padding: 1px 5px; font-size: 0.65rem; border-color: rgba(239,68,68,0.3); color: #ef4444; border-radius: 3px;" title="Remove driver from this team">
                                                 <i class="fas fa-times"></i>
                                             </button>
                                         </div>
@@ -3546,76 +3561,69 @@
 
                 carsHtml += `
                     <div class="builder-car-card" style="border-color: ${theme.border}; background: ${theme.bg}; box-shadow: ${theme.glow};">
-                        <!-- Card Header -->
-                        <div style="border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 1.1rem; margin-bottom: 1.1rem;">
-                            <!-- Top Row: Car # Plate, Team Selector, Team SOF, Delete -->
-                            <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 0.85rem; flex-wrap: wrap;">
-                                <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 200px;">
-                                    <div class="racing-number-plate" style="border-color: ${theme.color}; box-shadow: 0 4px 15px ${theme.border};">
-                                        <span class="number-plate-label" style="color: ${theme.color};">CAR #</span>
-                                        <input type="text" class="number-plate-input" value="${car.carNumber || theme.number}" oninput="updateAdminCarField(${cIdx}, 'carNumber', this.value)">
-                                    </div>
-                                    <div style="flex: 1;">
-                                        <select class="studio-team-select" style="width: 100%; border-color: ${theme.border};" onchange="onAdminCarTeamSelect(${cIdx}, this.value)">
-                                            ${teamOptionsHtml}
-                                        </select>
-                                    </div>
+                        <!-- Top Row: Car # Plate, Team Selector, Team SOF, Stints Button, Delete Button -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;">
+                            <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 170px;">
+                                <div class="racing-number-plate" style="border-color: ${theme.color}; box-shadow: 0 2px 10px ${theme.border};">
+                                    <span class="number-plate-label" style="color: ${theme.color};">CAR #</span>
+                                    <input type="text" class="number-plate-input" value="${car.carNumber || theme.number}" oninput="updateAdminCarField(${cIdx}, 'carNumber', this.value)">
                                 </div>
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <div style="background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.35); padding: 5px 10px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px;" title="Team Strength of Field (Average Driver iRating)">
-                                        <i class="fas fa-chart-line" style="color: #60a5fa; font-size: 0.75rem;"></i>
-                                        <span style="font-size: 0.65rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase;">SOF:</span>
-                                        <strong style="color: #60a5fa; font-size: 0.85rem; font-weight: 900;">${teamSOF ? teamSOF.toLocaleString() + ' iR' : '---'}</strong>
-                                    </div>
-                                    <button type="button" onclick="removeAdminBuilderCar(${cIdx})" title="Delete Car Entry" class="btn btn-outline" style="color: #ef4444; border-color: rgba(239,68,68,0.3); padding: 0.4rem 0.75rem; font-size: 0.78rem; border-radius: 8px;">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
+                                <div style="flex: 1;">
+                                    <select class="studio-team-select" style="border-color: ${theme.border};" onchange="onAdminCarTeamSelect(${cIdx}, this.value)">
+                                        ${teamOptionsHtml}
+                                    </select>
                                 </div>
                             </div>
-
-                            <!-- Sub Row: Class, Chassis, Captain, Stint Link -->
-                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
-                                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                                    <div style="display: flex; align-items: center; gap: 5px;">
-                                        <span style="font-size: 0.68rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Class:</span>
-                                        <select onchange="updateAdminCarClass(${cIdx}, this.value)" class="studio-mini-select" style="color: var(--primary); font-weight: 800;">
-                                            ${classOptionsHtml}
-                                        </select>
-                                    </div>
-                                    <div style="display: flex; align-items: center; gap: 5px;">
-                                        <span style="font-size: 0.68rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Car:</span>
-                                        <select onchange="updateAdminCarField(${cIdx}, 'carModel', this.value)" class="studio-mini-select">
-                                            ${modelOptionsHtml}
-                                        </select>
-                                    </div>
-                                    <div style="display: flex; align-items: center; gap: 5px;">
-                                        <span style="font-size: 0.68rem; font-weight: 800; color: #fbbf24; text-transform: uppercase;">Captain:</span>
-                                        <select onchange="setAdminTeamCaptain(${cIdx}, this.value)" class="studio-mini-select" style="color: #fbbf24; font-weight: 800;">
-                                            ${captainOptionsHtml}
-                                        </select>
-                                    </div>
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <div style="background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.3); padding: 3px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 5px;" title="Team Strength of Field (Average Driver iRating)">
+                                    <i class="fas fa-chart-line" style="color: #60a5fa; font-size: 0.7rem;"></i>
+                                    <span style="font-size: 0.62rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase;">SOF:</span>
+                                    <strong style="color: #60a5fa; font-size: 0.78rem; font-weight: 900;">${teamSOF ? teamSOF.toLocaleString() + ' iR' : '---'}</strong>
                                 </div>
-                                <button type="button" onclick="viewLiveStintsFromAdmin(${cIdx})" class="btn btn-outline" style="font-size: 0.72rem; padding: 0.35rem 0.75rem; border-radius: 6px; border-color: rgba(0,207,255,0.4); color: var(--primary); font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">
+                                <button type="button" onclick="viewLiveStintsFromAdmin(${cIdx})" class="btn btn-outline" style="font-size: 0.68rem; padding: 0.3rem 0.55rem; border-radius: 6px; border-color: rgba(0,207,255,0.35); color: var(--primary); font-weight: 700; display: inline-flex; align-items: center; gap: 4px;" title="Open Stint Planner for this team">
                                     <i class="fas fa-stopwatch"></i> Stints &rarr;
                                 </button>
+                                <button type="button" onclick="removeAdminBuilderCar(${cIdx})" title="Delete Car Entry" class="btn btn-outline" style="color: #ef4444; border-color: rgba(239,68,68,0.3); padding: 0.3rem 0.55rem; font-size: 0.72rem; border-radius: 6px;">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Sub Row: Class + Chassis + Captain in one tight bar -->
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; background: rgba(0,0,0,0.22); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05);">
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <span style="font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Class:</span>
+                                <select onchange="updateAdminCarClass(${cIdx}, this.value)" class="studio-mini-select" style="color: var(--primary); font-weight: 800;">
+                                    ${classOptionsHtml}
+                                </select>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 4px; flex: 1; min-width: 110px;">
+                                <span style="font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Car:</span>
+                                <select onchange="updateAdminCarField(${cIdx}, 'carModel', this.value)" class="studio-mini-select" style="width: 100%;">
+                                    ${modelOptionsHtml}
+                                </select>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <span style="font-size: 0.65rem; font-weight: 800; color: #fbbf24; text-transform: uppercase;">👑 Captain:</span>
+                                <select onchange="setAdminTeamCaptain(${cIdx}, this.value)" class="studio-mini-select" style="color: #fbbf24; font-weight: 800; max-width: 120px;">
+                                    ${captainOptionsHtml}
+                                </select>
                             </div>
                         </div>
 
                         <!-- Drop Zone Body -->
                         <div class="team-drop-zone"
-                             style="min-height: 160px; border-color: ${theme.border};"
+                             style="border-color: ${theme.border};"
                              ondragover="adminOnTeamDragOver(event)"
                              ondragleave="adminOnTeamDragLeave(event)"
                              ondrop="adminOnTeamDrop(event, ${cIdx})">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; flex-wrap: wrap; gap: 8px;">
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <span style="font-size: 0.72rem; font-weight: 800; color: ${theme.color}; text-transform: uppercase; letter-spacing: 0.5px;">
-                                        <i class="fas fa-users" style="margin-right: 4px;"></i> Team Roster (${carDriversList.length} ${carDriversList.length === 1 ? 'Driver' : 'Drivers'})
-                                    </span>
-                                    ${car.captain ? `<span style="background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.3); color: #fbbf24; font-size: 0.68rem; font-weight: 800; padding: 2px 7px; border-radius: 4px;"><i class="fas fa-crown"></i> Captain: ${car.captain}</span>` : ''}
-                                </div>
-                                <span style="font-size: 0.68rem; color: var(--text-muted);">
-                                    <i class="fas fa-arrows-alt" style="margin-right: 3px;"></i> Drag & drop driver cards from pool
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem; gap: 6px;">
+                                <span style="font-size: 0.68rem; font-weight: 800; color: ${theme.color}; text-transform: uppercase; letter-spacing: 0.5px;">
+                                    <i class="fas fa-users" style="margin-right: 3px;"></i> Team Roster (${carDriversList.length})
+                                    ${car.captain ? `<span style="color: #fbbf24; margin-left: 6px; font-weight: 700;">(👑 ${car.captain})</span>` : ''}
+                                </span>
+                                <span style="font-size: 0.62rem; color: var(--text-muted);">
+                                    Drop drivers here
                                 </span>
                             </div>
                             ${driversListHtml}
