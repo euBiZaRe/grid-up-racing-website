@@ -53,8 +53,6 @@ body::before {
         linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
     background-size: 100% 100%, 100% 100%, 48px 48px, 48px 48px;
-    transform: translateZ(0);
-    will-change: transform;
 }
 
 /* Custom Scrollbar */
@@ -90,6 +88,8 @@ a, a[data-href] {
 .section {
     padding: 6rem 0;
     position: relative;
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 500px;
 }
 
 /* Typography */
@@ -693,7 +693,6 @@ nav .container {
     object-fit: cover;
     z-index: 0;
     opacity: 0.35;
-    will-change: transform;
     pointer-events: none;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
@@ -826,6 +825,7 @@ nav .container {
     transform: translateZ(0);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
+    contain: layout paint;
 }
 
 .race-tile:hover {
@@ -1011,6 +1011,7 @@ nav .container {
     transform: translateZ(0);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
+    contain: layout paint;
 }
 
 .cinematic-poster img.bg-layer {

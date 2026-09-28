@@ -99,6 +99,53 @@ const revealObserver = new IntersectionObserver(revealCallback, {
 
 revealElements.forEach(el => revealObserver.observe(el));
 
+// Hero Video Decoder Memory Optimization (Pauses GPU/video decoder when offscreen or in background tab)
+function initHeroVideoOptimizer() {
+    const heroVideo = document.querySelector('video.hero-img');
+    if (!heroVideo) return;
+
+    // Respect reduced motion preference if user requested
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        heroVideo.pause();
+        return;
+    }
+
+    if ('IntersectionObserver' in window) {
+        const videoObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !document.hidden) {
+                    if (heroVideo.paused) {
+                        heroVideo.play().catch(() => {});
+                    }
+                } else {
+                    if (!heroVideo.paused) {
+                        heroVideo.pause();
+                    }
+                }
+            });
+        }, { threshold: 0.05 });
+
+        videoObserver.observe(heroVideo);
+
+        // Pause video immediately if tab is hidden or minimized
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                if (!heroVideo.paused) heroVideo.pause();
+            } else {
+                const rect = heroVideo.getBoundingClientRect();
+                if (rect.bottom > 0 && rect.top < window.innerHeight) {
+                    if (heroVideo.paused) heroVideo.play().catch(() => {});
+                }
+            }
+        });
+    }
+}
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initHeroVideoOptimizer);
+} else {
+    initHeroVideoOptimizer();
+}
+
 // Smooth Scrolling for Nav Links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
@@ -373,8 +420,22 @@ function initCarousel() {
             }
         }
 
-        // Start Auto Scroll Feature (only if overflowing and user is not interacting)
+        // Observe container visibility so auto-scroll only operates when visible
+        if (!container._visibilityObserver && 'IntersectionObserver' in window) {
+            container._isVisible = false;
+            container._visibilityObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    container._isVisible = entry.isIntersecting;
+                });
+            }, { threshold: 0.05 });
+            container._visibilityObserver.observe(container);
+        } else if (!('IntersectionObserver' in window)) {
+            container._isVisible = true;
+        }
+
+        // Start Auto Scroll Feature (only if visible, not hidden, overflowing and user is not interacting)
         container._carouselInterval = setInterval(() => {
+            if (document.hidden || !container._isVisible) return;
             const isPaused = container._getIsPaused ? container._getIsPaused() : false;
             if (!isPaused && container.scrollWidth > container.clientWidth + 20) {
                 const firstCard = track.firstElementChild;
@@ -1257,13 +1318,19 @@ async function loadRecentResults() {
     const resultsTrack = document.getElementById('results-track');
     if (!resultsTrack) return;
 
+    // Homepage optimization: only load 8 most recent results for carousel to minimize image memory
+    const isHomePage = !!document.getElementById('home') || !!document.getElementById('dynamic-upcoming-track');
+    const resultLimit = isHomePage ? 8 : 30;
+
     // Attempt to load from cache first
     const cachedResults = localStorage.getItem('gridup_recent_results');
     let cacheLoaded = false;
     if (cachedResults && !window.recentResultsLoaded) {
         try {
             console.log("Loading recent results from cache...");
-            renderRecentResultsUI(JSON.parse(cachedResults));
+            const parsed = JSON.parse(cachedResults);
+            const toRender = isHomePage ? parsed.slice(0, resultLimit) : parsed;
+            renderRecentResultsUI(toRender);
             cacheLoaded = true;
         } catch (e) {
             console.warn("Failed to load results from cache:", e);
@@ -1277,7 +1344,7 @@ async function loadRecentResults() {
     try {
         const snap = await db.collection("race_results")
             .orderBy("timestamp", "desc")
-            .limit(30)
+            .limit(resultLimit)
             .get();
 
         if (snap.empty) {
@@ -1285,7 +1352,9 @@ async function loadRecentResults() {
         } else {
             const results = [];
             snap.forEach(doc => results.push(doc.data()));
-            localStorage.setItem('gridup_recent_results', JSON.stringify(results));
+            if (!isHomePage) {
+                localStorage.setItem('gridup_recent_results', JSON.stringify(results));
+            }
             renderRecentResultsUI(results);
             window.recentResultsLoaded = true;
         }
@@ -1318,16 +1387,16 @@ function renderRecentResultsUI(results) {
 
         if (isPoster) {
             card.innerHTML = `
-                <img src="${bgImg}" style="width:100%; height:100%; object-fit:cover; border-radius: inherit; display:block;">
+                <img src="${bgImg}" loading="lazy" decoding="async" style="width:100%; height:100%; object-fit:cover; border-radius: inherit; display:block;">
                 <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,207,255,0.08); opacity:0; transition:opacity 0.3s; z-index:6; border-radius:inherit;" class="hover-overlay">
                     <div style="padding:0.75rem 1.5rem; border:2px solid var(--primary); color:var(--primary); font-weight:800; font-size:0.8rem; letter-spacing:2px; border-radius:4px; backdrop-filter:blur(5px);">VIEW POSTER</div>
                 </div>
             `;
         } else {
             card.innerHTML = `
-                <img src="${bgImg}" class="bg-layer">
-                ${fgImg ? `<img src="${fgImg}" class="fg-layer">` : ''}
-                <img src="assets/logo.png" class="event-branding" onerror="this.style.display='none'">
+                <img src="${bgImg}" class="bg-layer" loading="lazy" decoding="async">
+                ${fgImg ? `<img src="${fgImg}" class="fg-layer" loading="lazy" decoding="async">` : ''}
+                <img src="assets/logo.png" class="event-branding" loading="lazy" decoding="async" onerror="this.style.display='none'">
                 <div class="gradient-overlay"></div>
                 <div class="text-overlay" style="top: 1.5rem; left: 1.5rem; text-align: left;">
                     <div style="font-size: 0.6rem; color: var(--primary); font-weight: 900; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 0.2rem;">GRiD UP // SPECIAL EVENT</div>
@@ -1345,7 +1414,7 @@ function renderRecentResultsUI(results) {
                         <div style="font-size: 0.6rem; color: var(--primary); font-weight: 700; margin-top: 0.2rem; letter-spacing: 2px;">CONFIRMED TEAM ENTRY</div>
                     </div>
                     <div style="background: rgba(255,255,255,0.1); padding: 0.6rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(8px);">
-                        <img src="assets/logo.png" style="height: 25px;" onerror="this.style.display='none'">
+                        <img src="assets/logo.png" style="height: 25px;" loading="lazy" decoding="async" onerror="this.style.display='none'">
                     </div>
                 </div>
                 <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,207,255,0.1); opacity: 0; transition: opacity 0.3s; z-index: 6;" class="hover-overlay">
@@ -1863,11 +1932,17 @@ async function downloadActiveCard() {
     } finally {
         btn.innerHTML = originalHTML;
         btn.disabled = false;
+        // Release 1920x1080 canvas buffer immediately to reclaim memory
+        if (canvas) {
+            canvas.width = 0;
+            canvas.height = 0;
+        }
     }
 }
 // Initialize on page load
 function initializeApp() {
     injectCredits();
+    initHeroVideoOptimizer();
 
     // Prevent running public homepage queries/intervals on admin or portal dashboards
     const path = window.location.pathname.toLowerCase();
@@ -1905,6 +1980,7 @@ if (document.readyState === 'loading') {
 
 function startRealTimeEventCheck() {
     setInterval(() => {
+        if (document.hidden) return; // Skip if tab is inactive
         const cachedEvents = localStorage.getItem('gridup_upcoming_events');
         if (cachedEvents) {
             try {
