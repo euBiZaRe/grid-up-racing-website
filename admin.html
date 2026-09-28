@@ -3104,30 +3104,64 @@
             return result;
         }
 
+        function normalizeDriverName(name) {
+            if (!name) return '';
+            return String(name)
+                .toLowerCase()
+                .replace(/[^a-z0-9\s]/g, '')     // remove punctuation
+                .replace(/\b[a-z]\b/g, '')        // remove single letter middle initials (e.g. 'b' in 'Andrew B Fabian')
+                .replace(/\d+$/g, '')             // remove trailing numbers (e.g. 'rivera8', 'turner2')
+                .replace(/\s+/g, ' ')             // collapse multiple spaces
+                .trim();
+        }
+
         function getDriverIRating(driverNameOrUid, carClass = 'GT3') {
             if (!driverNameOrUid) return null;
             const str = String(driverNameOrUid).trim();
             const norm = str.toLowerCase();
+            const cleaned = normalizeDriverName(str);
             const map = window._adminDriverRosterMap || {};
 
             let d = map[str] || map[norm];
-            if (!d && typeof ROSTER_CACHE !== 'undefined' && ROSTER_CACHE) {
-                d = ROSTER_CACHE[str] || Object.values(ROSTER_CACHE).find(item => item && (item.name && item.name.trim().toLowerCase() === norm || item.linkedUid === str || item.uid === str));
+            if (!d && cleaned) {
+                d = map[cleaned];
             }
             if (!d) {
-                const simplified = norm.replace(/\d+$/, '').trim();
-                if (simplified && map[simplified]) {
-                    d = map[simplified];
+                const parts = norm.split(/\s+/);
+                if (parts.length >= 2) {
+                    const flKey = `${parts[0]}_${parts[parts.length - 1]}`;
+                    if (map[flKey]) d = map[flKey];
                 }
             }
+            if (!d && typeof ROSTER_CACHE !== 'undefined' && ROSTER_CACHE) {
+                d = ROSTER_CACHE[str] || Object.values(ROSTER_CACHE).find(item => {
+                    if (!item) return false;
+                    const inorm = normalizeDriverName(item.name);
+                    return (inorm && (inorm === cleaned || inorm === norm)) || item.linkedUid === str || item.uid === str;
+                });
+            }
             if (!d) {
-                const match = Object.values(map).find(item => item && item.name && item.name.trim().toLowerCase() === norm);
+                const match = Object.values(map).find(item => {
+                    if (!item || !item.name) return false;
+                    const inorm = normalizeDriverName(item.name);
+                    return inorm && (inorm === cleaned || inorm === norm);
+                });
                 if (match) d = match;
             }
-            if (!d) return null;
-
-            const detailedRatings = (d.iracing && d.iracing.ratings) || {};
-            const statsRatings = (d.stats && d.stats.iRatings) || {};
+            if (!d) {
+                // Try matching first and last name across roster map
+                const parts = norm.split(/\s+/);
+                if (parts.length >= 2) {
+                    const fName = parts[0];
+                    const lName = parts[parts.length - 1];
+                    const match = Object.values(map).find(item => {
+                        if (!item || !item.name) return false;
+                        const iParts = item.name.trim().toLowerCase().split(/\s+/);
+                        return iParts.length >= 2 && iParts[0] === fName && iParts[iParts.length - 1] === lName;
+                    });
+                    if (match) d = match;
+                }
+            }
 
             const extractVal = (v) => {
                 if (v === null || v === undefined) return null;
@@ -3139,34 +3173,70 @@
             let val = null;
             const cLow = (carClass || '').toLowerCase();
 
-            if (cLow.includes('formula') || cLow.includes('indy')) {
-                val = extractVal(detailedRatings.formulaCar) || extractVal(statsRatings.FORMULA);
-            } else if (cLow.includes('nascar') || cLow.includes('oval')) {
-                val = extractVal(detailedRatings.oval) || extractVal(statsRatings.OVAL);
-            } else if (cLow.includes('dirt')) {
-                val = extractVal(detailedRatings.dirtRoad) || extractVal(statsRatings.DIRT_ROAD) || extractVal(detailedRatings.dirtOval) || extractVal(statsRatings.DIRT_OVAL);
-            } else {
-                // Sports car / GT3 / GTP / LMP2 / Supercars / etc.
-                val = extractVal(detailedRatings.sportsCar) || extractVal(statsRatings.SPORTS) || extractVal(detailedRatings.road) || extractVal(statsRatings.ROAD);
+            if (d) {
+                const detailedRatings = (d.iracing && d.iracing.ratings) || {};
+                const statsRatings = (d.stats && d.stats.iRatings) || {};
+
+                if (cLow.includes('formula') || cLow.includes('indy')) {
+                    val = extractVal(detailedRatings.formulaCar) || extractVal(statsRatings.FORMULA);
+                } else if (cLow.includes('nascar') || cLow.includes('oval')) {
+                    val = extractVal(detailedRatings.oval) || extractVal(statsRatings.OVAL);
+                } else if (cLow.includes('dirt')) {
+                    val = extractVal(detailedRatings.dirtRoad) || extractVal(statsRatings.DIRT_ROAD) || extractVal(detailedRatings.dirtOval) || extractVal(statsRatings.DIRT_OVAL);
+                } else {
+                    // Sports car / GT3 / GTP / LMP2 / Supercars / etc.
+                    val = extractVal(detailedRatings.sportsCar) || extractVal(statsRatings.SPORTS) || extractVal(detailedRatings.road) || extractVal(statsRatings.ROAD);
+                }
+
+                if (!val) {
+                    val = extractVal(detailedRatings.sportsCar) || extractVal(statsRatings.SPORTS) || extractVal(detailedRatings.road) || extractVal(statsRatings.ROAD);
+                }
+                if (!val) {
+                    val = extractVal(detailedRatings.formulaCar) || extractVal(statsRatings.FORMULA) || extractVal(detailedRatings.oval) || extractVal(statsRatings.OVAL);
+                }
+                if (!val && d.irating) {
+                    if (typeof d.irating === 'number') {
+                        val = d.irating > 0 ? d.irating : null;
+                    } else if (typeof d.irating === 'string') {
+                        const s = d.irating.trim().toLowerCase();
+                        if (s.includes('k')) {
+                            const parsed = parseFloat(s);
+                            if (!isNaN(parsed) && parsed > 0) val = Math.round(parsed * 1000);
+                        } else {
+                            const parsed = parseInt(s.replace(/[^0-9]/g, ''), 10);
+                            if (!isNaN(parsed) && parsed > 0) val = parsed;
+                        }
+                    }
+                }
             }
 
-            if (!val) {
-                val = extractVal(detailedRatings.sportsCar) || extractVal(statsRatings.SPORTS) || extractVal(detailedRatings.road) || extractVal(statsRatings.ROAD);
-            }
-            if (!val) {
-                val = extractVal(detailedRatings.formulaCar) || extractVal(statsRatings.FORMULA) || extractVal(detailedRatings.oval) || extractVal(statsRatings.OVAL);
-            }
-            if (!val && d.irating) {
-                if (typeof d.irating === 'number') {
-                    val = d.irating > 0 ? d.irating : null;
-                } else if (typeof d.irating === 'string') {
-                    const s = d.irating.trim().toLowerCase();
-                    if (s.includes('k')) {
-                        const parsed = parseFloat(s);
-                        if (!isNaN(parsed) && parsed > 0) val = Math.round(parsed * 1000);
+            // Fallback: check window._localDriverStatsCache
+            if (!val && window._localDriverStatsCache) {
+                const cache = window._localDriverStatsCache;
+                let cEntry = cache[str] || cache[norm];
+                if (!cEntry || !cEntry['Sports Car'] || !cEntry['Sports Car'].irating) {
+                    const matchedKey = Object.keys(cache).find(k => {
+                        const knorm = normalizeDriverName(k);
+                        if (knorm && (knorm === cleaned || knorm === norm) && cache[k] && cache[k]['Sports Car'] && cache[k]['Sports Car'].irating) {
+                            return true;
+                        }
+                        return false;
+                    });
+                    if (matchedKey) cEntry = cache[matchedKey];
+                }
+
+                if (cEntry) {
+                    if (cLow.includes('formula') || cLow.includes('indy')) {
+                        val = cEntry['Formula Car'] && cEntry['Formula Car'].irating;
+                    } else if (cLow.includes('nascar') || cLow.includes('oval')) {
+                        val = cEntry['Oval'] && cEntry['Oval'].irating;
+                    } else if (cLow.includes('dirt')) {
+                        val = (cEntry['Dirt Road'] && cEntry['Dirt Road'].irating) || (cEntry['Dirt Oval'] && cEntry['Dirt Oval'].irating);
                     } else {
-                        const parsed = parseInt(s.replace(/[^0-9]/g, ''), 10);
-                        if (!isNaN(parsed) && parsed > 0) val = parsed;
+                        val = (cEntry['Sports Car'] && cEntry['Sports Car'].irating) || (cEntry['Road'] && cEntry['Road'].irating);
+                    }
+                    if (!val) {
+                        val = (cEntry['Sports Car'] && cEntry['Sports Car'].irating) || (cEntry['Road'] && cEntry['Road'].irating) || (cEntry['Formula Car'] && cEntry['Formula Car'].irating) || (cEntry['Oval'] && cEntry['Oval'].irating);
                     }
                 }
             }
@@ -3206,11 +3276,30 @@
                         if (d.linkedUid) window._adminDriverRosterMap[d.linkedUid] = d;
                         if (d.uid) window._adminDriverRosterMap[d.uid] = d;
                         if (d.name) {
-                            window._adminDriverRosterMap[d.name.trim().toLowerCase()] = d;
+                            const raw = d.name.trim().toLowerCase();
+                            window._adminDriverRosterMap[raw] = d;
+                            const norm = normalizeDriverName(d.name);
+                            if (norm) window._adminDriverRosterMap[norm] = d;
+                            const parts = raw.split(/\s+/);
+                            if (parts.length >= 2) {
+                                window._adminDriverRosterMap[`${parts[0]}_${parts[parts.length - 1]}`] = d;
+                            }
                         }
                     });
                 } catch (e) {
                     console.warn("Could not load drivers for Team Builder iRating:", e);
+                }
+
+                // Also load local driver_stats_2.json as a fallback
+                if (!window._localDriverStatsCache) {
+                    try {
+                        const r = await fetch('driver_stats_2.json?v=' + Date.now());
+                        if (r.ok) {
+                            window._localDriverStatsCache = await r.json();
+                        }
+                    } catch (e) {
+                        console.warn("Could not load driver_stats_2.json cache:", e);
+                    }
                 }
             }
 
