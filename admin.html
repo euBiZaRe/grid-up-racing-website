@@ -474,23 +474,31 @@
             font-size: 0.85rem !important;
         }
         .builder-canvas {
-            display: flex;
-            flex-direction: column;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(440px, 1fr));
             gap: 1.5rem;
             margin-top: 1.5rem;
+            align-items: stretch;
+        }
+        @media (max-width: 950px) {
+            .builder-canvas {
+                grid-template-columns: 1fr;
+            }
         }
         .builder-car-card {
-            background: linear-gradient(180deg, rgba(20, 24, 35, 0.85) 0%, rgba(12, 15, 22, 0.95) 100%);
+            background: linear-gradient(180deg, rgba(20, 24, 35, 0.88) 0%, rgba(12, 15, 22, 0.98) 100%);
             border: 1px solid rgba(0, 207, 255, 0.25);
             border-radius: 16px;
-            padding: 1.75rem;
+            padding: 1.5rem;
             position: relative;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
         }
         .builder-car-card:hover {
-            border-color: rgba(0, 207, 255, 0.45);
-            box-shadow: 0 12px 35px rgba(0, 207, 255, 0.08);
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.7);
         }
         .racing-number-plate {
             background: linear-gradient(135deg, rgba(0, 207, 255, 0.18) 0%, rgba(8, 12, 20, 0.95) 100%);
@@ -887,6 +895,9 @@
                             <button onclick="publishBuilderLineups()" class="btn btn-primary" style="font-size: 0.85rem; padding: 0.65rem 1.4rem; border-radius: 10px; font-weight: 800; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 0 25px rgba(0,207,255,0.35);">
                                 <i class="fas fa-cloud-upload-alt"></i> Publish Official Lineups
                             </button>
+                            <button type="button" onclick="addAllDefaultTeams()" class="btn btn-outline" style="font-size: 0.85rem; padding: 0.65rem 1.1rem; border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; border-color: rgba(0,207,255,0.4); color: var(--primary);">
+                                <i class="fas fa-th-large"></i> Ensure All 6 Team Tiles
+                            </button>
                             <button type="button" onclick="viewLiveStintsFromAdmin()" class="btn btn-outline" style="font-size: 0.85rem; padding: 0.65rem 1.1rem; border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px;">
                                 <i class="fas fa-stopwatch" style="color: var(--primary);"></i> Open Stint Planner
                             </button>
@@ -925,8 +936,11 @@
 
                 <!-- Studio Footer Actions -->
                 <div style="margin-top: 1.75rem; display: flex; gap: 1rem; flex-wrap: wrap;">
-                    <button onclick="addBuilderCar()" class="btn btn-outline" style="flex: 2; border-color: rgba(0,207,255,0.4); background: rgba(0,207,255,0.05); padding: 1rem 1.5rem; border-radius: 12px; font-size: 0.85rem; font-weight: 800; letter-spacing: 0.5px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease;">
-                        <i class="fas fa-plus-circle" style="color: var(--primary);"></i> + Add Another Car Entry
+                    <button onclick="addAllDefaultTeams()" class="btn btn-outline" style="flex: 1; border-color: rgba(0,207,255,0.4); background: rgba(0,207,255,0.06); padding: 1rem 1.25rem; border-radius: 12px; font-size: 0.85rem; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease;">
+                        <i class="fas fa-th-large" style="color: var(--primary);"></i> Ensure All 6 GRiD UP Teams
+                    </button>
+                    <button onclick="addBuilderCar()" class="btn btn-outline" style="flex: 1; border-color: rgba(255,255,255,0.18); padding: 1rem 1.25rem; border-radius: 12px; font-size: 0.85rem; font-weight: 800; letter-spacing: 0.5px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease;">
+                        <i class="fas fa-plus-circle" style="color: var(--primary);"></i> + Add Custom Car Entry
                     </button>
                     <button onclick="toggleLapSync()" class="btn btn-outline" style="flex: 1; border-color: rgba(255,255,255,0.15); padding: 1rem 1.25rem; border-radius: 12px; font-size: 0.8rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
                         <i class="fas fa-stopwatch" style="color: var(--primary);"></i> Sync Fastest Laps (Garage 61)
@@ -2944,19 +2958,85 @@
             return 6;
         }
 
-        const DEFAULT_GRIDUP_TEAMS = [
-            "GRiD UP Sim Racing",
-            "GRiD UP Blue",
-            "GRiD UP Black",
-            "GRiD UP Red",
-            "GRiD UP White",
-            "GRiD UP Purple"
+        const DEFAULT_TEAM_CONFIG = [
+            { name: "GRiD UP Sim Racing", number: "144", color: "#00cfff", border: "rgba(0, 207, 255, 0.45)", bg: "linear-gradient(180deg, rgba(0, 207, 255, 0.08) 0%, rgba(13, 17, 27, 0.96) 100%)", glow: "0 0 20px rgba(0, 207, 255, 0.15)" },
+            { name: "GRiD UP Blue",       number: "141", color: "#3b82f6", border: "rgba(59, 130, 246, 0.45)", bg: "linear-gradient(180deg, rgba(59, 130, 246, 0.08) 0%, rgba(13, 17, 27, 0.96) 100%)", glow: "0 0 20px rgba(59, 130, 246, 0.15)" },
+            { name: "GRiD UP Black",      number: "142", color: "#94a3b8", border: "rgba(148, 163, 184, 0.4)", bg: "linear-gradient(180deg, rgba(148, 163, 184, 0.07) 0%, rgba(13, 17, 27, 0.96) 100%)", glow: "0 0 20px rgba(148, 163, 184, 0.12)" },
+            { name: "GRiD UP Red",        number: "143", color: "#ef4444", border: "rgba(239, 68, 68, 0.45)", bg: "linear-gradient(180deg, rgba(239, 68, 68, 0.08) 0%, rgba(13, 17, 27, 0.96) 100%)", glow: "0 0 20px rgba(239, 68, 68, 0.15)" },
+            { name: "GRiD UP White",      number: "145", color: "#f8fafc", border: "rgba(248, 250, 252, 0.4)", bg: "linear-gradient(180deg, rgba(248, 250, 252, 0.07) 0%, rgba(13, 17, 27, 0.96) 100%)", glow: "0 0 20px rgba(248, 250, 252, 0.12)" },
+            { name: "GRiD UP Purple",     number: "146", color: "#a855f7", border: "rgba(168, 85, 247, 0.45)", bg: "linear-gradient(180deg, rgba(168, 85, 247, 0.08) 0%, rgba(13, 17, 27, 0.96) 100%)", glow: "0 0 20px rgba(168, 85, 247, 0.15)" }
         ];
+
+        const DEFAULT_GRIDUP_TEAMS = DEFAULT_TEAM_CONFIG.map(t => t.name);
         let DYNAMIC_GRIDUP_TEAMS = [...DEFAULT_GRIDUP_TEAMS];
 
         async function loadDynamicTeamsList() {
             DYNAMIC_GRIDUP_TEAMS = [...DEFAULT_GRIDUP_TEAMS];
         }
+
+        function getTeamTheme(name) {
+            const clean = (name || '').toLowerCase();
+            if (clean.includes('blue')) return DEFAULT_TEAM_CONFIG[1];
+            if (clean.includes('black')) return DEFAULT_TEAM_CONFIG[2];
+            if (clean.includes('red')) return DEFAULT_TEAM_CONFIG[3];
+            if (clean.includes('white')) return DEFAULT_TEAM_CONFIG[4];
+            if (clean.includes('purple')) return DEFAULT_TEAM_CONFIG[5];
+            return DEFAULT_TEAM_CONFIG[0];
+        }
+
+        function ensureAllDefaultTeamsPresent(eligibleClasses, durationHours) {
+            if (!Array.isArray(window._adminBuilderCars)) {
+                window._adminBuilderCars = [];
+            }
+            const primaryClass = (eligibleClasses && eligibleClasses[0]) || (window._adminBuilderEligibleClasses && window._adminBuilderEligibleClasses[0]) || 'GT3';
+            const defaultModel = (EVENT_CAR_CATALOG[primaryClass] && EVENT_CAR_CATALOG[primaryClass][0]) || `${primaryClass} Chassis`;
+            const defaultStint = primaryClass === 'Supercars' ? 45 : (primaryClass === 'GTP' || primaryClass === 'LMP2') ? 45 : 60;
+            const dur = durationHours || window._adminBuilderDurationHours || 6;
+
+            DEFAULT_TEAM_CONFIG.forEach(cfg => {
+                const existing = window._adminBuilderCars.find(c => {
+                    const cName = (c.name || c.teamName || '').toLowerCase().trim();
+                    const targetName = cfg.name.toLowerCase().trim();
+                    const numMatch = c.carNumber && String(c.carNumber).trim() === String(cfg.number).trim();
+                    return cName === targetName || numMatch;
+                });
+
+                if (!existing) {
+                    window._adminBuilderCars.push({
+                        carNumber: cfg.number,
+                        name: cfg.name,
+                        teamName: cfg.name,
+                        car_class: primaryClass,
+                        carModel: defaultModel,
+                        stintMinutes: defaultStint,
+                        captain: "",
+                        drivers: [],
+                        stints: generateCarStints(dur, defaultStint, [], [], cfg.number, primaryClass)
+                    });
+                } else {
+                    if (!existing.carNumber) existing.carNumber = cfg.number;
+                    if (!existing.name) existing.name = cfg.name;
+                    if (!existing.teamName) existing.teamName = cfg.name;
+                }
+            });
+
+            // Keep standard order, followed by any custom teams
+            window._adminBuilderCars.sort((a, b) => {
+                const aName = (a.name || a.teamName || '').toLowerCase();
+                const bName = (b.name || b.teamName || '').toLowerCase();
+                const aIdx = DEFAULT_TEAM_CONFIG.findIndex(t => aName === t.name.toLowerCase() || (a.carNumber && String(a.carNumber) === t.number));
+                const bIdx = DEFAULT_TEAM_CONFIG.findIndex(t => bName === t.name.toLowerCase() || (b.carNumber && String(b.carNumber) === t.number));
+                if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+                if (aIdx !== -1) return -1;
+                if (bIdx !== -1) return 1;
+                return 0;
+            });
+        }
+
+        window.addAllDefaultTeams = function() {
+            ensureAllDefaultTeamsPresent(window._adminBuilderEligibleClasses, window._adminBuilderDurationHours);
+            refreshAdminBuilderUI();
+        };
 
         window._adminBuilderCurrentEvent = null;
         window._adminBuilderEligibleClasses = ['GT3'];
@@ -3221,34 +3301,18 @@
                 }
             }
 
-            // If empty, seed default car using event's eligible class
-            if (window._adminBuilderCars.length === 0) {
-                const primaryClass = eligibleClasses[0] || 'GT3';
-                const defaultModel = (EVENT_CAR_CATALOG[primaryClass] && EVENT_CAR_CATALOG[primaryClass][0]) || `${primaryClass} Chassis`;
-                const defaultStint = primaryClass === 'Supercars' ? 45 : (primaryClass === 'GTP' || primaryClass === 'LMP2') ? 45 : 60;
+            // Ensure all 6 standard GRiD UP teams are present as tiles
+            ensureAllDefaultTeamsPresent(eligibleClasses, durationHours);
 
-                window._adminBuilderCars = [{
-                    carNumber: "144",
-                    name: "GRiD UP Sim Racing",
-                    teamName: "GRiD UP Sim Racing",
-                    car_class: primaryClass,
-                    carModel: defaultModel,
-                    stintMinutes: defaultStint,
-                    captain: "",
-                    drivers: [],
-                    stints: generateCarStints(durationHours, defaultStint, [], [], '144', primaryClass)
-                }];
-            } else {
-                // Ensure stints array exists and matches totalStints for loaded cars
-                window._adminBuilderCars.forEach(car => {
-                    const stintMins = car.stintMinutes || (car.car_class === 'Supercars' ? 45 : 60);
-                    car.stintMinutes = stintMins;
-                    const totalStints = Math.ceil((durationHours * 60) / stintMins);
-                    if (!car.stints || car.stints.length !== totalStints) {
-                        car.stints = generateCarStints(durationHours, stintMins, car.stints, car.drivers, car.carNumber, car.car_class);
-                    }
-                });
-            }
+            // Ensure stints array exists and matches totalStints for all cars
+            window._adminBuilderCars.forEach(car => {
+                const stintMins = car.stintMinutes || (car.car_class === 'Supercars' ? 45 : 60);
+                car.stintMinutes = stintMins;
+                const totalStints = Math.ceil((durationHours * 60) / stintMins);
+                if (!car.stints || car.stints.length !== totalStints) {
+                    car.stints = generateCarStints(durationHours, stintMins, car.stints, car.drivers, car.carNumber, car.car_class);
+                }
+            });
 
             refreshAdminBuilderUI();
         }
@@ -3382,6 +3446,11 @@
                 }
 
                 const carDriversList = car.drivers || [];
+                const currentTeamName = (car.name || car.teamName || 'GRiD UP Sim Racing').replace(/Esports\s*/gi, '').replace(/\s+/g, ' ').trim();
+                car.name = currentTeamName;
+                car.teamName = currentTeamName;
+
+                const theme = getTeamTheme(currentTeamName);
 
                 // Calculate Team SOF from assigned drivers
                 const driverRatings = carDriversList.map(name => {
@@ -3409,10 +3478,6 @@
                 `).join('');
 
                 // Team Options Dropdown
-                let currentTeamName = (car.name || car.teamName || 'GRiD UP Sim Racing').replace(/Esports\s*/gi, '').replace(/\s+/g, ' ').trim();
-                car.name = currentTeamName;
-                car.teamName = currentTeamName;
-
                 let teamList = [...DEFAULT_GRIDUP_TEAMS];
                 if (!teamList.includes(currentTeamName)) {
                     teamList.push(currentTeamName);
@@ -3434,16 +3499,16 @@
                 let driversListHtml = '';
                 if (carDriversList.length === 0) {
                     driversListHtml = `
-                        <div style="text-align: center; padding: 2rem 1rem; border: 1px dashed rgba(255,255,255,0.12); border-radius: 8px; color: var(--text-muted); font-size: 0.8rem; background: rgba(0,0,0,0.25);">
-                            <i class="fas fa-hand-holding" style="color: var(--primary); font-size: 1.5rem; opacity: 0.6; display: block; margin-bottom: 0.5rem;"></i>
-                            <strong>Drop Drivers Here</strong>
-                            <p style="margin: 0.35rem 0 0 0; font-size: 0.72rem; color: rgba(255,255,255,0.4);">Drag names from the Availability Pool above to build this team</p>
+                        <div style="text-align: center; padding: 2.2rem 1rem; border: 1px dashed rgba(255,255,255,0.12); border-radius: 10px; color: var(--text-muted); font-size: 0.8rem; background: rgba(0,0,0,0.25);">
+                            <i class="fas fa-hand-holding" style="color: ${theme.color}; font-size: 1.6rem; opacity: 0.7; display: block; margin-bottom: 0.5rem;"></i>
+                            <strong style="color: #fff; font-size: 0.85rem;">Drop Drivers Here</strong>
+                            <p style="margin: 0.35rem 0 0 0; font-size: 0.72rem; color: rgba(255,255,255,0.45);">Drag names from Availability Pool into <strong>${currentTeamName}</strong></p>
                         </div>
                     `;
                 } else {
                     driversListHtml = `
                         <div style="display: flex; flex-direction: column; gap: 8px;">
-                            ${carDriversList.map((driverName, dIdx) => {
+                            ${carDriversList.map((driverName) => {
                                 const resp = responses.find(r => (r.driverName || '').trim().toLowerCase() === driverName.trim().toLowerCase());
                                 const ir = getDriverIRating(resp ? resp.id : null, car.car_class) || getDriverIRating(driverName, car.car_class);
                                 const driverClass = resp ? (resp.preferredClass || '') : '';
@@ -3453,7 +3518,7 @@
                                 const escapedName = driverName.replace(/'/g, "\\'");
 
                                 return `
-                                    <div class="team-driver-item" style="border-left: 3px solid ${isCaptain ? '#fbbf24' : 'var(--primary)'};">
+                                    <div class="team-driver-item" style="border-left: 3px solid ${isCaptain ? '#fbbf24' : theme.color};">
                                         <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                                             <i class="fas fa-grip-vertical" style="color: rgba(255,255,255,0.25);"></i>
                                             <strong style="color: #fff; font-size: 0.84rem;">${driverName}</strong>
@@ -3480,68 +3545,77 @@
                 }
 
                 carsHtml += `
-                    <div class="builder-car-card">
+                    <div class="builder-car-card" style="border-color: ${theme.border}; background: ${theme.bg}; box-shadow: ${theme.glow};">
                         <!-- Card Header -->
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 1.25rem; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
-                            <div style="display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap;">
-                                <div class="racing-number-plate">
-                                    <span class="number-plate-label">CAR #</span>
-                                    <input type="text" class="number-plate-input" value="${car.carNumber || '144'}" oninput="updateAdminCarField(${cIdx}, 'carNumber', this.value)">
-                                </div>
-                                <div>
-                                    <select class="studio-team-select" onchange="onAdminCarTeamSelect(${cIdx}, this.value)">
-                                        ${teamOptionsHtml}
-                                    </select>
-                                    <div style="display: flex; align-items: center; gap: 12px; margin-top: 8px; flex-wrap: wrap;">
-                                        <div style="display: flex; align-items: center; gap: 6px;">
-                                             <span style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Class:</span>
-                                            <select onchange="updateAdminCarClass(${cIdx}, this.value)" class="studio-mini-select" style="color: var(--primary); font-weight: 800;">
-                                                ${classOptionsHtml}
-                                            </select>
-                                        </div>
-                                        <div style="display: flex; align-items: center; gap: 6px;">
-                                            <span style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Chassis:</span>
-                                            <select onchange="updateAdminCarField(${cIdx}, 'carModel', this.value)" class="studio-mini-select">
-                                                ${modelOptionsHtml}
-                                            </select>
-                                        </div>
-                                        <div style="display: flex; align-items: center; gap: 6px;">
-                                            <span style="font-size: 0.7rem; font-weight: 800; color: #fbbf24; text-transform: uppercase;">Captain:</span>
-                                            <select onchange="setAdminTeamCaptain(${cIdx}, this.value)" class="studio-mini-select" style="color: #fbbf24; font-weight: 800;">
-                                                ${captainOptionsHtml}
-                                            </select>
-                                        </div>
+                        <div style="border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 1.1rem; margin-bottom: 1.1rem;">
+                            <!-- Top Row: Car # Plate, Team Selector, Team SOF, Delete -->
+                            <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 0.85rem; flex-wrap: wrap;">
+                                <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 200px;">
+                                    <div class="racing-number-plate" style="border-color: ${theme.color}; box-shadow: 0 4px 15px ${theme.border};">
+                                        <span class="number-plate-label" style="color: ${theme.color};">CAR #</span>
+                                        <input type="text" class="number-plate-input" value="${car.carNumber || theme.number}" oninput="updateAdminCarField(${cIdx}, 'carNumber', this.value)">
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <select class="studio-team-select" style="width: 100%; border-color: ${theme.border};" onchange="onAdminCarTeamSelect(${cIdx}, this.value)">
+                                            ${teamOptionsHtml}
+                                        </select>
                                     </div>
                                 </div>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
-                                <div style="background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.35); padding: 5px 12px; border-radius: 8px; display: inline-flex; align-items: center; gap: 7px;" title="Team Strength of Field (Average Driver iRating)">
-                                    <i class="fas fa-chart-line" style="color: #60a5fa; font-size: 0.75rem;"></i>
-                                    <span style="font-size: 0.68rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Team SOF:</span>
-                                    <strong style="color: #60a5fa; font-size: 0.85rem; font-weight: 900;">${teamSOF ? teamSOF.toLocaleString() + ' iR' : '---'}</strong>
-                                    ${driverRatings.length > 0 ? `<span style="font-size: 0.68rem; color: rgba(255,255,255,0.45); font-weight: 600;">(${driverRatings.length} ${driverRatings.length === 1 ? 'driver' : 'drivers'})</span>` : ''}
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div style="background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.35); padding: 5px 10px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px;" title="Team Strength of Field (Average Driver iRating)">
+                                        <i class="fas fa-chart-line" style="color: #60a5fa; font-size: 0.75rem;"></i>
+                                        <span style="font-size: 0.65rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase;">SOF:</span>
+                                        <strong style="color: #60a5fa; font-size: 0.85rem; font-weight: 900;">${teamSOF ? teamSOF.toLocaleString() + ' iR' : '---'}</strong>
+                                    </div>
+                                    <button type="button" onclick="removeAdminBuilderCar(${cIdx})" title="Delete Car Entry" class="btn btn-outline" style="color: #ef4444; border-color: rgba(239,68,68,0.3); padding: 0.4rem 0.75rem; font-size: 0.78rem; border-radius: 8px;">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
                                 </div>
-                                <button type="button" onclick="viewLiveStintsFromAdmin(${cIdx})" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.45rem 0.9rem; border-radius: 8px; border-color: rgba(0,207,255,0.4); color: var(--primary); font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
-                                    <i class="fas fa-stopwatch"></i> Open Stint Planner &rarr;
+                            </div>
+
+                            <!-- Sub Row: Class, Chassis, Captain, Stint Link -->
+                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+                                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                    <div style="display: flex; align-items: center; gap: 5px;">
+                                        <span style="font-size: 0.68rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Class:</span>
+                                        <select onchange="updateAdminCarClass(${cIdx}, this.value)" class="studio-mini-select" style="color: var(--primary); font-weight: 800;">
+                                            ${classOptionsHtml}
+                                        </select>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 5px;">
+                                        <span style="font-size: 0.68rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Car:</span>
+                                        <select onchange="updateAdminCarField(${cIdx}, 'carModel', this.value)" class="studio-mini-select">
+                                            ${modelOptionsHtml}
+                                        </select>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 5px;">
+                                        <span style="font-size: 0.68rem; font-weight: 800; color: #fbbf24; text-transform: uppercase;">Captain:</span>
+                                        <select onchange="setAdminTeamCaptain(${cIdx}, this.value)" class="studio-mini-select" style="color: #fbbf24; font-weight: 800;">
+                                            ${captainOptionsHtml}
+                                        </select>
+                                    </div>
+                                </div>
+                                <button type="button" onclick="viewLiveStintsFromAdmin(${cIdx})" class="btn btn-outline" style="font-size: 0.72rem; padding: 0.35rem 0.75rem; border-radius: 6px; border-color: rgba(0,207,255,0.4); color: var(--primary); font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">
+                                    <i class="fas fa-stopwatch"></i> Stints &rarr;
                                 </button>
-                                <button type="button" onclick="removeAdminBuilderCar(${cIdx})" title="Delete Car Entry" class="btn btn-outline" style="color: #ef4444; border-color: rgba(239,68,68,0.3); padding: 0.45rem 0.85rem; font-size: 0.8rem; border-radius: 8px;"><i class="fas fa-trash-alt"></i></button>
                             </div>
                         </div>
 
                         <!-- Drop Zone Body -->
                         <div class="team-drop-zone"
+                             style="min-height: 160px; border-color: ${theme.border};"
                              ondragover="adminOnTeamDragOver(event)"
                              ondragleave="adminOnTeamDragLeave(event)"
                              ondrop="adminOnTeamDrop(event, ${cIdx})">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; flex-wrap: wrap; gap: 8px;">
                                 <div style="display: flex; align-items: center; gap: 8px;">
-                                    <span style="font-size: 0.72rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px;">
+                                    <span style="font-size: 0.72rem; font-weight: 800; color: ${theme.color}; text-transform: uppercase; letter-spacing: 0.5px;">
                                         <i class="fas fa-users" style="margin-right: 4px;"></i> Team Roster (${carDriversList.length} ${carDriversList.length === 1 ? 'Driver' : 'Drivers'})
                                     </span>
                                     ${car.captain ? `<span style="background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.3); color: #fbbf24; font-size: 0.68rem; font-weight: 800; padding: 2px 7px; border-radius: 4px;"><i class="fas fa-crown"></i> Captain: ${car.captain}</span>` : ''}
                                 </div>
-                                <span style="font-size: 0.7rem; color: var(--text-muted);">
-                                    <i class="fas fa-arrows-alt" style="margin-right: 3px;"></i> Drag & drop driver cards from pool into this tile
+                                <span style="font-size: 0.68rem; color: var(--text-muted);">
+                                    <i class="fas fa-arrows-alt" style="margin-right: 3px;"></i> Drag & drop driver cards from pool
                                 </span>
                             </div>
                             ${driversListHtml}
