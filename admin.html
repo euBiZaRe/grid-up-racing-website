@@ -2945,6 +2945,76 @@
             return result;
         }
 
+        function getDriverIRating(driverNameOrUid, carClass = 'GT3') {
+            if (!driverNameOrUid) return null;
+            const str = String(driverNameOrUid).trim();
+            const norm = str.toLowerCase();
+            const map = window._adminDriverRosterMap || {};
+
+            let d = map[str] || map[norm];
+            if (!d && typeof ROSTER_CACHE !== 'undefined' && ROSTER_CACHE) {
+                d = ROSTER_CACHE[str] || Object.values(ROSTER_CACHE).find(item => item && (item.name && item.name.trim().toLowerCase() === norm || item.linkedUid === str || item.uid === str));
+            }
+            if (!d) {
+                const simplified = norm.replace(/\d+$/, '').trim();
+                if (simplified && map[simplified]) {
+                    d = map[simplified];
+                }
+            }
+            if (!d) {
+                const match = Object.values(map).find(item => item && item.name && item.name.trim().toLowerCase() === norm);
+                if (match) d = match;
+            }
+            if (!d) return null;
+
+            const detailedRatings = (d.iracing && d.iracing.ratings) || {};
+            const statsRatings = (d.stats && d.stats.iRatings) || {};
+
+            const extractVal = (v) => {
+                if (v === null || v === undefined) return null;
+                if (typeof v === 'object' && 'value' in v) return extractVal(v.value);
+                const num = Number(v);
+                return (!isNaN(num) && num > 0) ? num : null;
+            };
+
+            let val = null;
+            const cLow = (carClass || '').toLowerCase();
+
+            if (cLow.includes('formula') || cLow.includes('indy')) {
+                val = extractVal(detailedRatings.formulaCar) || extractVal(statsRatings.FORMULA);
+            } else if (cLow.includes('nascar') || cLow.includes('oval')) {
+                val = extractVal(detailedRatings.oval) || extractVal(statsRatings.OVAL);
+            } else if (cLow.includes('dirt')) {
+                val = extractVal(detailedRatings.dirtRoad) || extractVal(statsRatings.DIRT_ROAD) || extractVal(detailedRatings.dirtOval) || extractVal(statsRatings.DIRT_OVAL);
+            } else {
+                // Sports car / GT3 / GTP / LMP2 / Supercars / etc.
+                val = extractVal(detailedRatings.sportsCar) || extractVal(statsRatings.SPORTS) || extractVal(detailedRatings.road) || extractVal(statsRatings.ROAD);
+            }
+
+            if (!val) {
+                val = extractVal(detailedRatings.sportsCar) || extractVal(statsRatings.SPORTS) || extractVal(detailedRatings.road) || extractVal(statsRatings.ROAD);
+            }
+            if (!val) {
+                val = extractVal(detailedRatings.formulaCar) || extractVal(statsRatings.FORMULA) || extractVal(detailedRatings.oval) || extractVal(statsRatings.OVAL);
+            }
+            if (!val && d.irating) {
+                if (typeof d.irating === 'number') {
+                    val = d.irating > 0 ? d.irating : null;
+                } else if (typeof d.irating === 'string') {
+                    const s = d.irating.trim().toLowerCase();
+                    if (s.includes('k')) {
+                        const parsed = parseFloat(s);
+                        if (!isNaN(parsed) && parsed > 0) val = Math.round(parsed * 1000);
+                    } else {
+                        const parsed = parseInt(s.replace(/[^0-9]/g, ''), 10);
+                        if (!isNaN(parsed) && parsed > 0) val = parsed;
+                    }
+                }
+            }
+
+            return (val && !isNaN(val) && val > 0) ? Math.round(val) : null;
+        }
+
         function refreshAdminBuilderUI() {
             if (!window._adminBuilderCurrentEvent) return;
             renderAdminBuilderCars(
@@ -2959,6 +3029,26 @@
             await loadDynamicTeamsList();
             const selector = document.getElementById('lineup-event-selector');
             if (!selector) return;
+
+            // Ensure driver roster is loaded for iRating lookups
+            if (forceReload || !window._adminDriverRosterMap || Object.keys(window._adminDriverRosterMap).length === 0) {
+                window._adminDriverRosterMap = {};
+                try {
+                    const dSnap = await db.collection("drivers").get();
+                    dSnap.forEach(doc => {
+                        const d = doc.data();
+                        const id = doc.id;
+                        window._adminDriverRosterMap[id] = d;
+                        if (d.linkedUid) window._adminDriverRosterMap[d.linkedUid] = d;
+                        if (d.uid) window._adminDriverRosterMap[d.uid] = d;
+                        if (d.name) {
+                            window._adminDriverRosterMap[d.name.trim().toLowerCase()] = d;
+                        }
+                    });
+                } catch (e) {
+                    console.warn("Could not load drivers for Team Builder iRating:", e);
+                }
+            }
 
             // Ensure events are loaded if not loaded yet
             if (!UPCOMING_EVENTS || UPCOMING_EVENTS.length === 0) {
@@ -3042,11 +3132,17 @@
             const confirmedCount = responses.filter(r => r.status === 'signed_up').length;
             const interestedCount = responses.filter(r => r.status === 'interested' || r.status === 'tentative').length;
 
+            const poolRatings = availableResponses.map(d => {
+                return getDriverIRating(d.id, eligibleClasses[0] || 'GT3') || getDriverIRating(d.driverName, eligibleClasses[0] || 'GT3');
+            }).filter(r => typeof r === 'number' && r > 0);
+            const poolAvgIR = poolRatings.length > 0 ? Math.round(poolRatings.reduce((a, b) => a + b, 0) / poolRatings.length) : null;
+
             if (statsEl) {
                 statsEl.innerHTML = `
                     <span style="background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #34d399; padding: 3px 8px; border-radius: 6px; font-weight: 700;"><i class="fas fa-check-circle"></i> ${confirmedCount} I'm In</span>
                     <span style="background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); color: #fbbf24; padding: 3px 8px; border-radius: 6px; font-weight: 700;"><i class="fas fa-star"></i> ${interestedCount} Interested</span>
                     <span style="background: rgba(255,255,255,0.06); color: var(--text-muted); padding: 3px 8px; border-radius: 6px; font-weight: 700;">${availableResponses.length} Available</span>
+                    ${poolAvgIR ? `<span style="background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); color: #60a5fa; padding: 3px 8px; border-radius: 6px; font-weight: 700;" title="Average iRating across available drivers"><i class="fas fa-chart-line"></i> Pool Avg: ${poolAvgIR.toLocaleString()} iR</span>` : ''}
                 `;
             }
 
@@ -3070,6 +3166,12 @@
                         const driverChassis = d.preferredChassis || d.preferredCar || d.chassis || d.selectedCar || d.car || '';
                         const isEligible = eligibleClasses.some(ec => ec.toLowerCase() === driverClass.toLowerCase() || (ec === 'Supercars' && driverClass.toLowerCase().includes('supercar')));
                         
+                        // Lookup driver iRating
+                        const irating = getDriverIRating(d.id, eligibleClasses[0] || 'GT3') || getDriverIRating(d.driverName, eligibleClasses[0] || 'GT3');
+                        const iratingBadge = irating
+                            ? `<span style="background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.35); color: #60a5fa; font-size: 0.68rem; font-weight: 800; padding: 2px 7px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;" title="Driver iRating for this discipline"><i class="fas fa-chart-line" style="font-size: 0.6rem;"></i> ${irating.toLocaleString()} iR</span>`
+                            : `<span style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); color: var(--text-muted); font-size: 0.65rem; padding: 2px 6px; border-radius: 4px;" title="No iRating on file">No iR</span>`;
+
                         let eligibilityBadge = '';
                         if (!isEligible) {
                             eligibilityBadge = `
@@ -3102,6 +3204,7 @@
                                 <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${statusColor}; flex-shrink: 0;"></span>
                                 <strong style="color: #fff;">${d.driverName || 'Driver'}</strong>
                                 <span style="color: ${statusColor}; font-size: 0.7rem; font-weight: 700;">(${statusLabel})</span>
+                                ${iratingBadge}
                                 ${eligibilityBadge}
                                 ${carBadge}
                             </div>
@@ -3183,6 +3286,20 @@
                     car.stints = generateCarStints(durationHours, stintMinutes, car.stints, car.drivers, car.carNumber, car.car_class);
                 }
 
+                // Calculate Team SOF (Strength of Field) from assigned drivers
+                const assignedStintDrivers = [...new Set((car.stints || []).map(s => s.driverName).filter(n => n && n !== 'Unassigned' && n !== 'Driver 1'))];
+                const carDriversList = (car.drivers && car.drivers.length > 0)
+                    ? [...new Set([...car.drivers, ...assignedStintDrivers])]
+                    : assignedStintDrivers;
+
+                const driverRatings = carDriversList.map(name => {
+                    const resp = responses.find(r => (r.driverName || '').trim().toLowerCase() === name.trim().toLowerCase());
+                    return getDriverIRating(resp ? resp.id : null, car.car_class) || getDriverIRating(name, car.car_class);
+                }).filter(r => typeof r === 'number' && r > 0);
+
+                const teamSOF = driverRatings.length > 0 ? Math.round(driverRatings.reduce((sum, v) => sum + v, 0) / driverRatings.length) : null;
+                car.teamSOF = teamSOF;
+
                 // Stint Rows
                 let stintRowsHtml = '';
                 let uncoveredCount = 0;
@@ -3194,7 +3311,9 @@
                     const activeDrivers = responses.filter(r => r.status === 'signed_up' || r.status === 'interested' || r.status === 'tentative');
 
                     if (s.driverName && !isUncovered && !activeDrivers.some(r => (r.driverName || 'Driver') === s.driverName)) {
-                        driverOptions += `<option value="${s.driverName}" selected>${s.driverName} (Assigned)</option>`;
+                        const ir = getDriverIRating(s.driverName, car.car_class);
+                        const irTag = ir ? ` [${ir.toLocaleString()} iR]` : '';
+                        driverOptions += `<option value="${s.driverName}" selected>${s.driverName}${irTag} (Assigned)</option>`;
                     }
 
                     activeDrivers.forEach(r => {
@@ -3205,7 +3324,9 @@
                         const isEligible = eligibleClasses.some(ec => ec.toLowerCase() === driverClass.toLowerCase() || (ec === 'Supercars' && driverClass.toLowerCase().includes('supercar')));
                         const tag = isEligible ? `[${driverClass} ✓]` : `[${driverClass} ⚠️]`;
                         const carTag = driverChassis ? ` — ${driverChassis}` : '';
-                        driverOptions += `<option value="${name}" ${s.driverName === name ? 'selected' : ''}>${name} ${tag}${carTag} (${statusTag})</option>`;
+                        const ir = getDriverIRating(r.id, car.car_class) || getDriverIRating(name, car.car_class);
+                        const irTag = ir ? ` [${ir.toLocaleString()} iR]` : '';
+                        driverOptions += `<option value="${name}" ${s.driverName === name ? 'selected' : ''}>${name}${irTag} ${tag}${carTag} (${statusTag})</option>`;
                     });
 
                     stintRowsHtml += `
@@ -3284,7 +3405,10 @@
                 }
                 captainCandidates.forEach(name => {
                     if (name) {
-                        captainOptionsHtml += `<option value="${name}" ${car.captain === name ? 'selected' : ''}>👑 ${name}</option>`;
+                        const resp = responses.find(r => (r.driverName || '').trim().toLowerCase() === name.trim().toLowerCase());
+                        const ir = getDriverIRating(resp ? resp.id : null, car.car_class) || getDriverIRating(name, car.car_class);
+                        const irTag = ir ? ` (${ir.toLocaleString()} iR)` : '';
+                        captainOptionsHtml += `<option value="${name}" ${car.captain === name ? 'selected' : ''}>👑 ${name}${irTag}</option>`;
                     }
                 });
 
@@ -3302,7 +3426,7 @@
                                     </select>
                                     <div style="display: flex; align-items: center; gap: 12px; margin-top: 8px; flex-wrap: wrap;">
                                         <div style="display: flex; align-items: center; gap: 6px;">
-                                            <span style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Class:</span>
+                                             <span style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Class:</span>
                                             <select onchange="updateAdminCarClass(${cIdx}, this.value)" class="studio-mini-select" style="color: var(--primary); font-weight: 800;">
                                                 ${classOptionsHtml}
                                             </select>
@@ -3322,7 +3446,13 @@
                                     </div>
                                 </div>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                                <div style="background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.35); padding: 5px 12px; border-radius: 8px; display: inline-flex; align-items: center; gap: 7px;" title="Team Strength of Field (Average Driver iRating)">
+                                    <i class="fas fa-chart-line" style="color: #60a5fa; font-size: 0.75rem;"></i>
+                                    <span style="font-size: 0.68rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Team SOF:</span>
+                                    <strong style="color: #60a5fa; font-size: 0.85rem; font-weight: 900;">${teamSOF ? teamSOF.toLocaleString() + ' iR' : '---'}</strong>
+                                    ${driverRatings.length > 0 ? `<span style="font-size: 0.68rem; color: rgba(255,255,255,0.45); font-weight: 600;">(${driverRatings.length} ${driverRatings.length === 1 ? 'driver' : 'drivers'})</span>` : ''}
+                                </div>
                                 ${uncoveredCount > 0 ? `<span style="background: rgba(239,68,68,0.18); border: 1px solid rgba(239,68,68,0.35); color: #f87171; padding: 5px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; display: inline-flex; align-items: center; gap: 6px;"><i class="fas fa-exclamation-triangle"></i> ${uncoveredCount} Unassigned Stints</span>` : `<span style="background: rgba(16,185,129,0.18); border: 1px solid rgba(16,185,129,0.35); color: #34d399; padding: 5px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; display: inline-flex; align-items: center; gap: 6px;"><i class="fas fa-check-circle"></i> 100% Stints Covered</span>`}
                                 <button type="button" onclick="removeAdminBuilderCar(${cIdx})" title="Delete Car Entry" class="btn btn-outline" style="color: #ef4444; border-color: rgba(239,68,68,0.3); padding: 0.45rem 0.85rem; font-size: 0.8rem; border-radius: 8px; transition: all 0.2s ease;"><i class="fas fa-trash-alt"></i></button>
                             </div>
@@ -3349,10 +3479,11 @@
                         <!-- Collapsible Stint Run-Sheet Table -->
                         <div style="margin-top: 1.25rem;">
                             <button type="button" onclick="toggleAdminCarStints(${cIdx})" class="btn btn-outline" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1.25rem; border-radius: 10px; font-size: 0.82rem; background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.08); transition: all 0.2s ease;">
-                                <span style="display: flex; align-items: center; gap: 10px;">
+                                <span style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                                     <i class="fas fa-calendar-alt" style="color: var(--primary);"></i>
                                     <strong style="color: #fff;">Stint Schedule & Driver Allocations</strong>
                                     <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">(${car.stints ? car.stints.length : 0} Stints Scheduled)</span>
+                                    ${teamSOF ? `<span style="background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); padding: 2px 8px; border-radius: 12px; font-size: 0.68rem; font-weight: 800;"><i class="fas fa-chart-line" style="font-size: 0.6rem;"></i> Team SOF: ${teamSOF.toLocaleString()}</span>` : ''}
                                     ${uncoveredCount > 0 ? `<span style="background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); padding: 2px 8px; border-radius: 12px; font-size: 0.68rem; font-weight: 800;">${uncoveredCount} Open</span>` : `<span style="background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); padding: 2px 8px; border-radius: 12px; font-size: 0.68rem; font-weight: 800;">All Covered ✓</span>`}
                                 </span>
                                 <span style="display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: var(--primary); font-weight: 700;">
