@@ -1806,38 +1806,167 @@
                     standingsRows = '<tr><td colspan="6" style="text-align:center; padding:1.5rem; color:var(--text-muted);">No standings data available</td></tr>';
                 }
 
-                // Build Relative Rows — showing gap/interval to the car ahead
+                // Build Relative Rows — showing real-time physical track proximity relative to the user/player
                 let relativeRows = '';
+                let relativeSubTitle = 'Track Relative';
                 if (primaryTel.drivers) {
                     const allDrivers = Object.values(primaryTel.drivers).filter(d => d && d.name);
 
-                    // Sort all drivers by race position so P1 is always at the top
-                    const relativeDrivers = allDrivers.sort((a, b) => (a.classPos || a.pos || 99) - (b.classPos || b.pos || 99));
+                    // 1. Identify player driver
+                    let playerDriver = allDrivers.find(d => d.isPlayer);
+                    if (!playerDriver && primaryTel.playerIdx !== undefined && primaryTel.drivers[primaryTel.playerIdx]) {
+                        playerDriver = primaryTel.drivers[primaryTel.playerIdx];
+                    }
+                    if (!playerDriver && primaryDriverName) {
+                        playerDriver = allDrivers.find(d => d.name === primaryDriverName);
+                    }
+                    if (!playerDriver && typeof primaryTel.progress === 'number' && allDrivers.length > 0) {
+                        // Driver closest to primaryTel.progress
+                        playerDriver = allDrivers.slice().sort((a, b) => 
+                            Math.abs((a.progress || 0) - primaryTel.progress) - Math.abs((b.progress || 0) - primaryTel.progress)
+                        )[0];
+                    }
 
-                    relativeDrivers.forEach((d, index) => {
-                        const isPlayerRow = d.isPlayer ? 'class="standings-row-player"' : '';
+                    const playerProgress = (playerDriver && typeof playerDriver.progress === 'number') 
+                        ? playerDriver.progress 
+                        : (typeof primaryTel.progress === 'number' ? primaryTel.progress : 0);
+
+                    const playerLap = (playerDriver && typeof playerDriver.lap === 'number') 
+                        ? playerDriver.lap 
+                        : (typeof primaryTel.lap === 'number' ? primaryTel.lap : 0);
+
+                    if (playerDriver) {
+                        relativeSubTitle = `Track Relative (to #${playerDriver.carNum || ''} ${playerDriver.name || 'Player'})`;
+                    }
+
+                    // 2. Filter drivers currently on track (valid progress >= 0)
+                    const activeOnTrack = allDrivers.filter(d => typeof d.progress === 'number' && d.progress >= 0);
+
+                    // 3. Determine reference lap time (refLapTime in seconds) for converting track pct delta to seconds
+                    let refLapTime = 0;
+                    if (playerDriver && playerDriver.lastLap > 15 && playerDriver.lastLap < 600) {
+                        refLapTime = playerDriver.lastLap;
+                    } else if (playerDriver && playerDriver.bestLap > 15 && playerDriver.bestLap < 600) {
+                        refLapTime = playerDriver.bestLap;
+                    } else if (primaryTel.lastLap > 15 && primaryTel.lastLap < 600) {
+                        refLapTime = primaryTel.lastLap;
+                    } else if (primaryTel.bestLap > 15 && primaryTel.bestLap < 600) {
+                        refLapTime = primaryTel.bestLap;
+                    } else {
+                        // Median valid lap time across drivers
+                        const validLaps = activeOnTrack
+                            .map(d => (d.lastLap > 15 && d.lastLap < 600) ? d.lastLap : ((d.bestLap > 15 && d.bestLap < 600) ? d.bestLap : null))
+                            .filter(t => t !== null)
+                            .sort((a, b) => a - b);
+                        if (validLaps.length > 0) {
+                            refLapTime = validLaps[Math.floor(validLaps.length / 2)];
+                        }
+                    }
+
+                    if (!refLapTime || refLapTime <= 0) {
+                        const trackLen = (primaryStream.session && primaryStream.session.trackLength) || (primaryTel.session && primaryTel.session.trackLength);
+                        if (trackLen && trackLen > 500) {
+                            refLapTime = trackLen / 50; // estimate ~50 m/s (~180 km/h average)
+                        } else {
+                            refLapTime = 90; // default 90s fallback
+                        }
+                    }
+
+                    // 4. Calculate circular track delta for each driver
+                    const mappedDrivers = activeOnTrack.map(d => {
+                        const isThisPlayer = (playerDriver && (d === playerDriver || d.carNum === playerDriver.carNum)) || d.isPlayer;
+                        
+                        let deltaPct = 0;
+                        if (!isThisPlayer) {
+                            deltaPct = d.progress - playerProgress;
+                            // Circular wraparound across the start/finish line
+                            while (deltaPct > 0.5) deltaPct -= 1.0;
+                            while (deltaPct < -0.5) deltaPct += 1.0;
+                        }
+
+                        // Total lap progression difference to classify lapping / same lap / lapped
+                        const carTotalLaps = (d.lap || 0) + d.progress;
+                        const playerTotalLaps = playerLap + playerProgress;
+                        const lapDiff = isThisPlayer ? 0 : (carTotalLaps - playerTotalLaps);
+
+                        return {
+                            driver: d,
+                            isPlayer: isThisPlayer,
+                            deltaPct,
+                            lapDiff
+                        };
+                    });
+
+                    // Sort descending by deltaPct:
+                    // Largest positive deltaPct (ahead on track, furthest to nearest) -> 0 (player) -> negative deltaPct (behind on track, nearest to furthest)
+                    mappedDrivers.sort((a, b) => b.deltaPct - a.deltaPct);
+
+                    // Dynamic refLapTime calibration if telemetry provides gap_ahead
+                    if (primaryTel.gap_ahead) {
+                        const parsedAhead = parseFloat(primaryTel.gap_ahead);
+                        if (!isNaN(parsedAhead) && parsedAhead > 0.1 && parsedAhead < 300) {
+                            const playerIdxInSorted = mappedDrivers.findIndex(m => m.isPlayer);
+                            if (playerIdxInSorted > 0) {
+                                const immediateAhead = mappedDrivers[playerIdxInSorted - 1];
+                                if (immediateAhead && immediateAhead.deltaPct > 0.001) {
+                                    const impliedLap = parsedAhead / immediateAhead.deltaPct;
+                                    if (impliedLap >= 25 && impliedLap <= 400) {
+                                        refLapTime = impliedLap;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Render rows
+                    mappedDrivers.forEach(m => {
+                        const d = m.driver;
+                        const isPlayerRow = m.isPlayer ? 'class="standings-row-player"' : '';
                         const classIndicator = d.classColor ? `<span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#${d.classColor}; margin-right:4px;"></span>` : '';
 
-                        let gapStr = '--';
-                        let gapColor = '#e5e7eb'; // neutral white
+                        // In pit indicator
+                        const inPit = d.surface === 2 || d.surface === 1 || d.inPit === true || d.in_pit === true;
+                        const pitBadge = inPit ? `<span style="font-size:0.55rem; color:#f59e0b; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.35); border-radius:3px; padding:1px 4px; font-weight:700; margin-left:6px; letter-spacing:0.5px;">PIT</span>` : '';
 
-                        if (index === 0) {
-                            gapStr = 'Leader';
-                            gapColor = '#f59e0b'; // Gold for leader
+                        let gapStr = '--';
+                        let gapColor = '#e5e7eb';
+                        let driverNameColor = '#f3f4f6';
+
+                        if (m.isPlayer) {
+                            gapStr = '0.0s';
+                            gapColor = '#34d399';
+                            driverNameColor = '#34d399';
                         } else {
-                            const prev = relativeDrivers[index - 1];
-                            if (d.f2Time !== undefined && prev.f2Time !== undefined) {
-                                const interval = Math.abs(d.f2Time - prev.f2Time);
-                                gapStr = `+${interval.toFixed(1)}s`;
+                            const gapSec = m.deltaPct * refLapTime;
+                            if (m.deltaPct > 0) {
+                                gapStr = `+${gapSec.toFixed(1)}s`;
+                                gapColor = '#e5e7eb';
+                            } else {
+                                gapStr = `-${Math.abs(gapSec).toFixed(1)}s`;
+                                gapColor = '#e5e7eb';
+                            }
+
+                            // Motorsport standard lap coloring (iRacing convention):
+                            // Red: Car is lapping player (a lap ahead in race classification)
+                            // Blue: Car is lapped by player (a lap behind in race classification)
+                            // White: Same lap battle
+                            if (m.lapDiff > 0.6) {
+                                driverNameColor = '#f87171'; // Red: Lapping us
+                            } else if (m.lapDiff < -0.6) {
+                                driverNameColor = '#38bdf8'; // Blue: Lapped car
+                            } else {
+                                driverNameColor = '#f3f4f6'; // White: Same lap
                             }
                         }
 
+                        const displayPos = (d.classPos > 0 ? d.classPos : (d.pos > 0 ? d.pos : '-'));
+
                         relativeRows += `
                             <tr ${isPlayerRow}>
-                                <td style="text-align: center; font-weight: bold;">${d.classPos || d.pos}</td>
-                                <td><span class="car-num-tag">${d.carNum}</span></td>
-                                <td><div style="display:flex; align-items:center; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${classIndicator}${d.name}</div></td>
-                                <td style="text-align: center; font-weight: bold; color: ${gapColor};">${gapStr}</td>
+                                <td style="text-align: center; font-weight: bold;">${displayPos}</td>
+                                <td><span class="car-num-tag">${d.carNum || '-'}</span></td>
+                                <td><div style="display:flex; align-items:center; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:${driverNameColor}; font-weight:${m.isPlayer ? '800' : '500'};">${classIndicator}${d.name}${pitBadge}</div></td>
+                                <td style="text-align: center; font-weight: bold; color: ${gapColor}; font-family: monospace;">${gapStr}</td>
                             </tr>
                         `;
                     });
@@ -2015,7 +2144,7 @@
                     relativeBody.innerHTML = relativeRows;
                 }
                 if (relativeDriverMeta) {
-                    relativeDriverMeta.innerText = `Interval Gaps (Between Cars)`;
+                    relativeDriverMeta.innerText = relativeSubTitle;
                 }
 
                 
