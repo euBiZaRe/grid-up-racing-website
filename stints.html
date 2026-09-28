@@ -687,9 +687,13 @@
                 return;
             }
 
-            // Read target event from URL
+            // Read target event and car from URL
             const urlParams = new URLSearchParams(window.location.search);
             const targetFromUrl = urlParams.get('event') || window.location.hash.replace('#', '').trim();
+            const carFromUrl = urlParams.get('car');
+            if (carFromUrl !== null && !isNaN(parseInt(carFromUrl))) {
+                window._activePlanningCarIndex = parseInt(carFromUrl);
+            }
 
             await loadAvailableEvents(targetFromUrl);
         }
@@ -862,6 +866,7 @@
                 // Permissions check: Is current user the captain of this specific team or an Admin?
                 const isCaptain = (userDriverName && captainName && userDriverName.trim().toLowerCase() === captainName.trim().toLowerCase()) || isUserAdmin;
                 if (isCaptain) userIsCaptainOfAny = true;
+                const isPlanningThisCar = (window._activePlanningCarIndex === cIdx);
 
                 // Calculate Driver Stint Counts & Durations
                 const driverStats = {};
@@ -881,7 +886,7 @@
                 if (stints.length === 0) {
                     stintRowsHtml = `<tr><td colspan="5" style="text-align:center; padding: 2rem; color: var(--text-muted);">No stints scheduled yet for this car entry.</td></tr>`;
                 } else {
-                    stints.forEach(s => {
+                    stints.forEach((s, sIdx) => {
                         const isUncovered = !s.driverName || s.driverName === 'Unassigned' || s.driverName === 'Driver 1';
                         
                         let badgeClass = 'badge-scheduled';
@@ -900,25 +905,66 @@
                             statusText = 'COMPLETED';
                         }
 
-                        stintRowsHtml += `
-                            <tr>
-                                <td style="font-weight: 800; color: var(--primary);">#${s.stintIndex}</td>
-                                <td>
-                                    <strong style="color: ${isUncovered ? '#f87171' : '#ffffff'}; font-size: 0.9rem;">
-                                        ${isUncovered ? '<i class="fas fa-exclamation-triangle" style="margin-right: 4px;"></i> Open Slot' : s.driverName}
-                                    </strong>
-                                </td>
-                                <td style="font-family: monospace; color: rgba(255,255,255,0.75); font-size: 0.8rem;">
-                                    ${s.plannedStartTimeStr || '00:00'} &rarr; ${s.plannedEndTimeStr || '01:00'}
-                                </td>
-                                <td style="font-family: monospace; color: #fff; font-size: 0.8rem;">
-                                    ${s.plannedDurationMinutes || stintMinutes} mins
-                                </td>
-                                <td>
-                                    <span class="stint-status-badge ${badgeClass}">${statusText}</span>
-                                </td>
-                            </tr>
-                        `;
+                        if (isPlanningThisCar) {
+                            let driverOptions = `<option value="">-- Open Slot / Unassigned --</option>`;
+                            const carDrivers = (car.drivers && car.drivers.length > 0) ? car.drivers : [];
+                            if (s.driverName && !isUncovered && !carDrivers.includes(s.driverName)) {
+                                driverOptions += `<option value="${s.driverName}" selected>${s.driverName} (Assigned)</option>`;
+                            }
+                            carDrivers.forEach(d => {
+                                const isCapt = captainName && captainName.toLowerCase() === d.toLowerCase();
+                                driverOptions += `<option value="${d}" ${s.driverName === d ? 'selected' : ''}>${isCapt ? '👑 ' : ''}${d}</option>`;
+                            });
+
+                            stintRowsHtml += `
+                                <tr style="background: rgba(0,207,255,0.03);">
+                                    <td style="font-weight: 800; color: var(--primary);">#${s.stintIndex}</td>
+                                    <td>
+                                        <select onchange="updateStintDriver(${cIdx}, ${sIdx}, this.value)" style="background: rgba(10,12,18,0.92); border: 1px solid rgba(0,207,255,0.4); color: #fff; padding: 0.4rem 0.65rem; border-radius: 6px; font-size: 0.85rem; font-weight: 700; width: 100%; max-width: 260px;">
+                                            ${driverOptions}
+                                        </select>
+                                        <div style="margin-top: 5px;">
+                                            <input type="text" value="${s.notes || ''}" placeholder="Stint notes (fuel, tires, pit strategy)..." onchange="updateStintNotes(${cIdx}, ${sIdx}, this.value)" style="background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.88); font-size: 0.72rem; padding: 3px 8px; border-radius: 4px; width: 100%; max-width: 260px;">
+                                        </div>
+                                    </td>
+                                    <td style="font-family: monospace; color: rgba(255,255,255,0.75); font-size: 0.8rem;">
+                                        ${s.plannedStartTimeStr || '00:00'} &rarr; ${s.plannedEndTimeStr || '01:00'}
+                                    </td>
+                                    <td style="font-family: monospace; color: #fff; font-size: 0.8rem;">
+                                        ${s.plannedDurationMinutes || stintMinutes} mins
+                                    </td>
+                                    <td>
+                                        <select onchange="updateStintStatus(${cIdx}, ${sIdx}, this.value)" style="background: rgba(10,12,18,0.85); border: 1px solid rgba(255,255,255,0.18); color: #fff; padding: 3px 6px; border-radius: 4px; font-size: 0.72rem; font-weight: 700;">
+                                            <option value="scheduled" ${(!s.status || s.status === 'scheduled') ? 'selected' : ''}>SCHEDULED</option>
+                                            <option value="on_deck" ${s.status === 'on_deck' ? 'selected' : ''}>ON DECK</option>
+                                            <option value="active" ${s.status === 'active' ? 'selected' : ''}>ON TRACK</option>
+                                            <option value="completed" ${s.status === 'completed' ? 'selected' : ''}>COMPLETED</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                            `;
+                        } else {
+                            stintRowsHtml += `
+                                <tr>
+                                    <td style="font-weight: 800; color: var(--primary);">#${s.stintIndex}</td>
+                                    <td>
+                                        <strong style="color: ${isUncovered ? '#f87171' : '#ffffff'}; font-size: 0.9rem;">
+                                            ${isUncovered ? '<i class="fas fa-exclamation-triangle" style="margin-right: 4px;"></i> Open Slot' : s.driverName}
+                                        </strong>
+                                        ${s.notes ? `<div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 3px;"><i class="fas fa-info-circle" style="color: var(--primary); font-size: 0.65rem;"></i> ${s.notes}</div>` : ''}
+                                    </td>
+                                    <td style="font-family: monospace; color: rgba(255,255,255,0.75); font-size: 0.8rem;">
+                                        ${s.plannedStartTimeStr || '00:00'} &rarr; ${s.plannedEndTimeStr || '01:00'}
+                                    </td>
+                                    <td style="font-family: monospace; color: #fff; font-size: 0.8rem;">
+                                        ${s.plannedDurationMinutes || stintMinutes} mins
+                                    </td>
+                                    <td>
+                                        <span class="stint-status-badge ${badgeClass}">${statusText}</span>
+                                    </td>
+                                </tr>
+                            `;
+                        }
                     });
                 }
 
@@ -950,6 +996,14 @@
                                             <button type="button" onclick="openRenameModal(${cIdx})" class="edit-schedule-btn" title="Edit this team's schedule name">
                                                 <i class="fas fa-pencil-alt"></i> Edit Name
                                             </button>
+                                            <button type="button" onclick="toggleStintPlanning(${cIdx})" class="edit-schedule-btn" style="${isPlanningThisCar ? 'background: rgba(245,158,11,0.2); border-color: #fbbf24; color: #fbbf24;' : ''}" title="Plan driver assignments for this team's stints">
+                                                <i class="fas ${isPlanningThisCar ? 'fa-times' : 'fa-clipboard-list'}"></i> ${isPlanningThisCar ? 'Close Planner' : 'Plan Stints'}
+                                            </button>
+                                            ${isPlanningThisCar ? `
+                                                <button type="button" onclick="saveStintPlan(${cIdx})" class="btn btn-primary" style="font-size: 0.75rem; padding: 0.35rem 0.85rem; border-radius: 6px; font-weight: 800; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; box-shadow: 0 0 12px rgba(16,185,129,0.3); display: inline-flex; align-items: center; gap: 5px;">
+                                                    <i class="fas fa-save"></i> Save Plan
+                                                </button>
+                                            ` : ''}
                                         ` : ''}
                                     </div>
                                     <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 0.75rem; color: var(--text-muted);">
@@ -967,7 +1021,12 @@
                             </div>
 
                             <!-- Right Stats -->
-                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                                ${car.teamSOF ? `
+                                    <span style="background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.35); color: #60a5fa; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; display: inline-flex; align-items: center; gap: 6px;" title="Team Strength of Field">
+                                        <i class="fas fa-chart-line"></i> Team SOF: ${car.teamSOF.toLocaleString()} iR
+                                    </span>
+                                ` : ''}
                                 ${uncoveredStints > 0 ? `
                                     <span style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.35); color: #f87171; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; display: inline-flex; align-items: center; gap: 6px;">
                                         <i class="fas fa-exclamation-triangle"></i> ${uncoveredStints} Unassigned
@@ -979,6 +1038,21 @@
                                 `}
                             </div>
                         </div>
+
+                        ${isPlanningThisCar ? `
+                            <div style="background: rgba(245,158,11,0.08); border-top: 1px solid rgba(245,158,11,0.25); border-bottom: 1px solid rgba(245,158,11,0.25); padding: 0.75rem 1.75rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-crown" style="color: #fbbf24; font-size: 1rem;"></i>
+                                    <div>
+                                        <strong style="color: #fbbf24; font-size: 0.8rem;">Captain Stint Planning Mode Active</strong>
+                                        <span style="font-size: 0.72rem; color: var(--text-muted); display: block;">Select drivers from your team for each stint window below, add notes, and save.</span>
+                                    </div>
+                                </div>
+                                <button type="button" onclick="saveStintPlan(${cIdx})" class="btn btn-primary" style="font-size: 0.75rem; padding: 0.4rem 1rem; border-radius: 6px; font-weight: 800; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none;">
+                                    <i class="fas fa-check"></i> Save Stint Plan
+                                </button>
+                            </div>
+                        ` : ''}
 
                         <!-- Driver Roster Summary -->
                         <div style="background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--card-border); padding: 0.75rem 1.75rem; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
@@ -1020,6 +1094,63 @@
                 }
             }
         }
+
+        // --- Stint Planning Logic for Team Captains ---
+        window.toggleStintPlanning = function(cIdx) {
+            if (window._activePlanningCarIndex === cIdx) {
+                window._activePlanningCarIndex = -1;
+            } else {
+                window._activePlanningCarIndex = cIdx;
+            }
+            if (currentLineupData) {
+                renderStintSchedules(currentLineupData);
+            }
+        };
+
+        window.updateStintDriver = function(cIdx, sIdx, driverName) {
+            if (!currentLineupData || !currentLineupData.teams || !currentLineupData.teams[cIdx]) return;
+            const car = currentLineupData.teams[cIdx];
+            if (car.stints && car.stints[sIdx]) {
+                car.stints[sIdx].driverName = driverName || 'Unassigned';
+                // If newly assigned driver is valid and not yet in car.drivers, add them
+                if (driverName && driverName !== 'Unassigned' && car.drivers && !car.drivers.includes(driverName)) {
+                    car.drivers.push(driverName);
+                }
+            }
+        };
+
+        window.updateStintNotes = function(cIdx, sIdx, notes) {
+            if (!currentLineupData || !currentLineupData.teams || !currentLineupData.teams[cIdx]) return;
+            const car = currentLineupData.teams[cIdx];
+            if (car.stints && car.stints[sIdx]) {
+                car.stints[sIdx].notes = notes;
+            }
+        };
+
+        window.updateStintStatus = function(cIdx, sIdx, status) {
+            if (!currentLineupData || !currentLineupData.teams || !currentLineupData.teams[cIdx]) return;
+            const car = currentLineupData.teams[cIdx];
+            if (car.stints && car.stints[sIdx]) {
+                car.stints[sIdx].status = status;
+            }
+        };
+
+        window.saveStintPlan = async function(cIdx) {
+            if (!currentEventId || !currentLineupData || !currentLineupData.teams) return;
+            try {
+                await db.collection("race_lineups").doc(currentEventId).set({
+                    teams: currentLineupData.teams,
+                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+
+                showToast("Stint schedule successfully saved!");
+                window._activePlanningCarIndex = -1;
+                renderStintSchedules(currentLineupData);
+            } catch (err) {
+                console.error("Error saving stint plan:", err);
+                alert("Failed to save stint plan: " + err.message);
+            }
+        };
 
         // Empty State when event has no published lineups
         function renderEmptyLineupState(ev) {
