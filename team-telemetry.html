@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google Analytics - Deferred -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      function initAnalytics(){
+        if(window.analyticsLoaded) return;
+        window.analyticsLoaded = true;
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = 'https://www.googletagmanager.com/gtag/js?id=G-5JMPYRH8H9';
+        document.head.appendChild(s);
+        gtag('js', new Date());
+        gtag('config', 'G-5JMPYRH8H9');
+      }
+      if (document.readyState === 'complete') {
+        setTimeout(initAnalytics, 2500);
+      } else {
+        window.addEventListener('load', function() { setTimeout(initAnalytics, 2500); });
+      }
+      ['click', 'scroll', 'keydown', 'touchstart'].forEach(function(e) {
+        window.addEventListener(e, initAnalytics, { once: true, passive: true });
+      });
+    </script>
+
+    <!-- Hidden Page - Not Indexed by Search Engines -->
+    <meta name="robots" content="noindex, nofollow">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Telemetry & Setup Intelligence | GRiD UP Sim Racing</title>
+
+    <!-- Google Fonts & Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="style.css?v=26">
+    <link rel="stylesheet" href="css/team-telemetry.css?v=1">
+    <link rel="icon" type="image/png" href="assets/G_2.png">
+</head>
+<body class="team-telemetry-page">
+
+    <!-- Top Sticky Bar -->
+    <header class="telemetry-top-bar">
+        <div style="display: flex; align-items: center; gap: 1.25rem;">
+            <a href="index.html" class="telemetry-brand">
+                <img src="assets/logo.png" alt="GRiD UP Sim Racing">
+            </a>
+            <span class="intel-badge">
+                <i class="fas fa-microchip"></i> Team Session Intel & Setup Advisor
+            </span>
+        </div>
+        <div class="telemetry-top-right">
+            <span id="captain-auth-pill" class="captain-status-badge" style="display: none;">
+                <span class="captain-pulse-dot"></span> Loading Captain Profile...
+            </span>
+            <a href="stints.html" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.45rem 1rem; border-radius: 50px; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fas fa-stopwatch"></i> Stint Schedules
+            </a>
+            <a href="portal.html" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.45rem 1rem; border-radius: 50px; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fas fa-users-cog"></i> Driver Portal
+            </a>
+            <a href="admin.html" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.45rem 1rem; border-radius: 50px; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fas fa-shield-alt"></i> Admin
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="intel-container">
+
+        <!-- Hero Header -->
+        <section class="intel-hero">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 0.5rem;">
+                <span class="captain-status-badge">
+                    <span class="captain-pulse-dot"></span>
+                    RACE CAPTAIN & ENGINEER INTELLIGENCE
+                </span>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">
+                    <i class="fas fa-shield-halved" style="color: var(--captain-gold); margin-right: 4px;"></i> Confidential Team Telemetry
+                </span>
+            </div>
+            <h1 class="hero-title" id="display-event-name">Loading Team Session Intel...</h1>
+            <div id="display-car-track" style="font-size: 0.95rem; font-weight: 700; color: #cbd5e1; margin-bottom: 0.75rem;">
+                <!-- Car and Track Info -->
+            </div>
+            <p class="hero-subtitle">
+                Track and compare recent driving sessions for your assigned team drivers on selected car & track combinations from specific timestamps, analyze multi-driver telemetry deltas, and receive intelligent setup change suggestions engineered to benefit the entire squad over endurance distances.
+            </p>
+        </section>
+
+        <!-- Control Hub & Filter Bar -->
+        <section class="filter-card">
+            <div class="filter-grid">
+                <!-- 1. Event Selection -->
+                <div class="filter-group">
+                    <label class="filter-label" for="select-event">
+                        <i class="fas fa-flag-checkered"></i> 1. Select Event:
+                    </label>
+                    <select id="select-event" class="filter-select">
+                        <option value="">Loading Events...</option>
+                    </select>
+                </div>
+
+                <!-- 2. Team Car Entry -->
+                <div class="filter-group">
+                    <label class="filter-label" for="select-team-car">
+                        <i class="fas fa-shield-alt"></i> 2. Team Car Entry:
+                    </label>
+                    <select id="select-team-car" class="filter-select">
+                        <option value="0">Loading Team Cars...</option>
+                    </select>
+                </div>
+
+                <!-- 3. Car Selection -->
+                <div class="filter-group">
+                    <label class="filter-label" for="select-car">
+                        <i class="fas fa-car-side"></i> 3. Car Chassis:
+                    </label>
+                    <select id="select-car" class="filter-select">
+                        <option value="">Loading Cars...</option>
+                    </select>
+                </div>
+
+                <!-- 4. Track Selection -->
+                <div class="filter-group">
+                    <label class="filter-label" for="select-track">
+                        <i class="fas fa-map-marked-alt"></i> 4. Circuit / Track:
+                    </label>
+                    <select id="select-track" class="filter-select">
+                        <option value="">Loading Tracks...</option>
+                    </select>
+                </div>
+
+                <!-- 5. Time Window (Specific Start Time) -->
+                <div class="filter-group">
+                    <label class="filter-label" for="filter-start-time">
+                        <i class="fas fa-calendar-day"></i> 5. Track From Specific Date/Time:
+                    </label>
+                    <input type="datetime-local" id="filter-start-time" class="filter-input">
+                </div>
+
+                <!-- 6. Session Type -->
+                <div class="filter-group">
+                    <label class="filter-label" for="select-session-type">
+                        <i class="fas fa-stopwatch-20"></i> Session Type:
+                    </label>
+                    <select id="select-session-type" class="filter-select">
+                        <option value="all">All Sessions (Practice, Qual, Race)</option>
+                        <option value="practice">Practice Only</option>
+                        <option value="qualifying">Qualifying Only</option>
+                        <option value="race">Race Only</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Quick Time Presets Row -->
+            <div class="time-presets-row">
+                <span class="time-preset-label"><i class="fas fa-clock"></i> Quick Time Filters:</span>
+                <button type="button" class="preset-chip" data-preset="24h" onclick="applyTimePreset('24h')">⚡ Last 24 Hours</button>
+                <button type="button" class="preset-chip" data-preset="3d" onclick="applyTimePreset('3d')">📅 Last 3 Days</button>
+                <button type="button" class="preset-chip active" data-preset="7d" onclick="applyTimePreset('7d')">🏁 Last 7 Days (Race Week)</button>
+                <button type="button" class="preset-chip" data-preset="14d" onclick="applyTimePreset('14d')">⏱️ Last 14 Days</button>
+                <button type="button" class="preset-chip" data-preset="30d" onclick="applyTimePreset('30d')">📊 Last 30 Days</button>
+                <button type="button" class="preset-chip" data-preset="all" onclick="applyTimePreset('all')">🌐 All-Time History</button>
+            </div>
+        </section>
+
+        <!-- KPI Overview Summary Row -->
+        <section class="kpi-row">
+            <div class="kpi-stat-card cyan">
+                <div class="kpi-title">Team Laps Driven</div>
+                <div class="kpi-number" id="kpi-team-laps">---</div>
+                <div class="kpi-subtitle">On selected car & track within window</div>
+            </div>
+            <div class="kpi-stat-card gold">
+                <div class="kpi-title">Team Fastest Lap</div>
+                <div class="kpi-number" id="kpi-team-best">--:--.---</div>
+                <div class="kpi-subtitle">Outright squad benchmark</div>
+            </div>
+            <div class="kpi-stat-card emerald">
+                <div class="kpi-title">Clean Lap Accuracy</div>
+                <div class="kpi-number" id="kpi-team-clean">---%</div>
+                <div class="kpi-subtitle">Track limits & incident rate</div>
+            </div>
+            <div class="kpi-stat-card purple">
+                <div class="kpi-title">Sessions Logged</div>
+                <div class="kpi-number" id="kpi-team-sessions">---</div>
+                <div class="kpi-subtitle">Verified telemetry runs</div>
+            </div>
+        </section>
+
+        <!-- Section 1: Team Driver Driving Sessions Dossier -->
+        <div class="section-header-block">
+            <div class="section-title-wrap">
+                <i class="fas fa-users" style="color: var(--primary); font-size: 1.25rem;"></i>
+                <h2 class="section-heading">Team Driver Driving Sessions</h2>
+                <span class="section-count-badge">Assigned Squad</span>
+            </div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">
+                <i class="fas fa-info-circle" style="color: var(--primary); margin-right: 4px;"></i>
+                Showing verified telemetry sessions for drivers assigned to this team entry
+            </div>
+        </div>
+
+        <section id="drivers-intel-grid" class="drivers-sessions-grid">
+            <!-- Populated via js/team-telemetry.js -->
+            <div class="empty-intel-box" style="grid-column: 1/-1;">
+                <i class="fas fa-circle-notch fa-spin"></i>
+                <h4>Syncing Driving Sessions...</h4>
+                <p>Loading telemetry profiles and matching driver records...</p>
+            </div>
+        </section>
+
+        <!-- Section 2: Head-to-Head Comparison Matrix -->
+        <div class="section-header-block" style="margin-top: 3.5rem;">
+            <div class="section-title-wrap">
+                <i class="fas fa-scale-balanced" style="color: var(--captain-gold); font-size: 1.25rem;"></i>
+                <h2 class="section-heading">Squad Telemetry Delta Matrix</h2>
+                <span class="section-count-badge">Head-to-Head</span>
+            </div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">
+                Direct comparison of driver pace, consistency index, speed traps, and fuel efficiency
+            </div>
+        </div>
+
+        <section class="matrix-card">
+            <table class="matrix-table">
+                <thead>
+                    <tr>
+                        <th>Driver</th>
+                        <th>Best Lap</th>
+                        <th>Delta to Fastest</th>
+                        <th>Clean Laps %</th>
+                        <th>Speed Trap</th>
+                        <th>Consistency ($\sigma$)</th>
+                        <th>Fuel Burn / Lap</th>
+                    </tr>
+                </thead>
+                <tbody id="matrix-table-body">
+                    <!-- Populated dynamically -->
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Section 3: Intelligent Setup Advisor & Telemetry Diagnostics -->
+        <div class="section-header-block" style="margin-top: 3.5rem;">
+            <div class="section-title-wrap">
+                <i class="fas fa-tools" style="color: var(--accent-emerald); font-size: 1.25rem;"></i>
+                <h2 class="section-heading">Intelligent Setup Advisor & Team Diagnostics</h2>
+                <span class="section-count-badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399;">Multi-Driver AI</span>
+            </div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">
+                Cross-driver telemetry recommendations engineered to maximize overall team pace and endurance stability
+            </div>
+        </div>
+
+        <section id="setup-advisor-grid" class="setup-advisor-grid">
+            <!-- Populated via js/team-telemetry.js -->
+        </section>
+
+        <!-- Section 4: Captain Live Setup Tweaker Form -->
+        <section class="tweaker-card">
+            <div class="tweaker-header">
+                <div>
+                    <h3 style="font-family: 'Orbitron', sans-serif; font-size: 1.15rem; color: #ffffff; margin: 0 0 4px 0; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-sliders" style="color: var(--captain-gold);"></i> Official Team Setup Sheet & Debrief
+                    </h3>
+                    <span style="font-size: 0.78rem; color: var(--text-muted);">
+                        Team Captains can publish official setup values directly to the event lineup for all drivers and engineers to see.
+                    </span>
+                </div>
+                <div class="tweaker-actions">
+                    <button type="button" onclick="copySetupDebrief()" class="btn btn-outline" style="font-size: 0.78rem; padding: 0.45rem 1rem; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-copy"></i> Copy Setup Debrief (Discord)
+                    </button>
+                    <button type="button" id="btn-save-setup" onclick="saveTeamSetupSheet()" class="btn btn-primary" style="font-size: 0.78rem; padding: 0.45rem 1.25rem; border-radius: 8px; font-weight: 800; background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); color: #000; border: none; box-shadow: 0 0 15px rgba(251, 191, 36, 0.3); display: inline-flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-save"></i> Save to Team Lineup
+                    </button>
+                </div>
+            </div>
+
+            <div class="tweaker-inputs-grid">
+                <div class="tweaker-field">
+                    <label for="tweak-rear-wing">Rear Wing Angle (Clicks)</label>
+                    <input type="number" id="tweak-rear-wing" min="1" max="15" value="7">
+                </div>
+                <div class="tweaker-field">
+                    <label for="tweak-front-arb">Front ARB Stiffness (1-10)</label>
+                    <input type="number" id="tweak-front-arb" min="1" max="10" value="5">
+                </div>
+                <div class="tweaker-field">
+                    <label for="tweak-rear-arb">Rear ARB Stiffness (1-10)</label>
+                    <input type="number" id="tweak-rear-arb" min="1" max="10" value="3">
+                </div>
+                <div class="tweaker-field">
+                    <label for="tweak-brake-bias">Brake Bias Ratio (%)</label>
+                    <input type="number" id="tweak-brake-bias" step="0.1" min="48.0" max="65.0" value="53.8">
+                </div>
+                <div class="tweaker-field">
+                    <label for="tweak-diff-coast">Diff Coast Ramp Angle (°)</label>
+                    <input type="number" id="tweak-diff-coast" step="5" min="20" max="85" value="45">
+                </div>
+                <div class="tweaker-field" style="grid-column: 1 / -1;">
+                    <label for="tweak-pressures">Cold Tire Pressures (psi)</label>
+                    <input type="text" id="tweak-pressures" value="LF 22.6 / RF 23.2 / LR 22.8 / RR 23.2">
+                </div>
+                <div class="tweaker-field" style="grid-column: 1 / -1;">
+                    <label for="tweak-notes">Captain & Engineer Setup Notes</label>
+                    <input type="text" id="tweak-notes" placeholder="Stint strategy, tire saving instructions, curb warnings for the squad..." value="Target hot pressures: 26.8 psi. Safe over Mountain/Eau Rouge kerbs. Easy rotation on trail-braking.">
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="intel-toast" class="intel-toast">
+        <i class="fas fa-check-circle" style="color: var(--accent-emerald); font-size: 1.15rem;"></i>
+        <span id="toast-text">Operation completed</span>
+    </div>
+
+    <!-- Firebase SDK (Matching other pages) -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+
+    <!-- App Scripts -->
+    <script defer src="script.js?v=26"></script>
+    <script defer src="js/auth.js?v=12"></script>
+    <script defer src="js/team-telemetry.js?v=1"></script>
+</body>
+</html>
