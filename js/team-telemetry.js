@@ -20,16 +20,67 @@ let LOGGED_IN_USER = null;
 let USER_DRIVER_NAME = '';
 let IS_USER_ADMIN = false;
 
+// Canonical Event to Track mapping (sourced from event details in /events/)
+const EVENT_TRACK_CATALOG = {
+    'daytona-24': 'Daytona International Speedway - Road Course',
+    'iracing-roar': 'Daytona International Speedway - Road Course',
+    'daytona-500': 'Daytona International Speedway - Oval',
+    'bathurst-12': 'Mount Panorama Circuit',
+    'sebring-12hr': 'Sebring International Raceway - International',
+    'imsa-classic-500': 'WeatherTech Raceway at Laguna Seca - Full Course',
+    'nurburgring-24h': 'Nürburgring Combined - Gesamtstrecke VLN',
+    'nurburgring-24': 'Nürburgring Combined - Gesamtstrecke VLN',
+    'indy-500': 'Indianapolis Motor Speedway - Open Wheel Oval',
+    'world-600': 'Charlotte Motor Speedway - Oval',
+    'thruxton-4h': 'Thruxton Circuit',
+    'watkins-glen-6h': 'Watkins Glen International - Boot',
+    'firecracker-400': 'Daytona International Speedway - Oval - 2008',
+    'spa-24hr': 'Circuit de Spa-Francorchamps - Grand Prix Pits',
+    'brickyard-400': 'Indianapolis Motor Speedway - NASCAR Oval',
+    'road-america-6h': 'Road America - Full Course',
+    'knoxville-nationals': 'Knoxville Raceway',
+    'portimao-1000': 'Algarve International Circuit - Grand Prix',
+    'crandon-championship': 'Crandon International Raceway',
+    'southern-500': 'Darlington Raceway',
+    'suzuka-1000km': 'Suzuka International Racing Course - Grand Prix',
+    'britcar-24hr': 'Silverstone Circuit - Grand Prix',
+    'britcar-24': 'Silverstone Circuit - Grand Prix',
+    'petit-le-mans': 'Road Atlanta - Full Course',
+    'bathurst-1000': 'Mount Panorama Circuit',
+    'indy-8h': 'Indianapolis Motor Speedway - Road Course',
+    'ff1600-festival': 'Brands Hatch Circuit - Grand Prix',
+    'homestead-championship': 'Homestead Miami Speedway - Oval',
+    'sfl-mountain-showdown': 'Mount Panorama Circuit',
+    'scca-runoffs': 'Road America - Full Course',
+    '992-endurance-cup': 'Circuit de Spa-Francorchamps - Grand Prix Pits',
+    'winter-derby': 'Five Flags Speedway',
+    'chili-bowl': 'Tulsa Expo Center',
+    'production-car-challenge': 'Global Road Courses'
+};
+
 // Track Database with characteristic profiles
 const TRACK_PROFILES = {
     'Mount Panorama Circuit': { lengthKm: 6.213, highSpeedAero: false, bumpy: true, heavyBraking: true, tireWear: 'High', s1Name: 'Mountain Ascent', s2Name: 'Skyline / Dipper', s3Name: 'Conrod / Chase' },
-    'Circuit de Spa-Francorchamps': { lengthKm: 7.004, highSpeedAero: true, bumpy: false, heavyBraking: true, tireWear: 'Very High', s1Name: 'La Source / Kemmel', s2Name: 'Les Combes / Pouhon', s3Name: 'Blanchimont / Bus Stop' },
-    'Nürburgring Nordschleife': { lengthKm: 20.832, highSpeedAero: false, bumpy: true, heavyBraking: true, tireWear: 'High', s1Name: 'Hatzenbach / Flugplatz', s2Name: 'Caracciola / Bergwerk', s3Name: 'Döttinger Höhe' },
-    'Road America': { lengthKm: 6.515, highSpeedAero: true, bumpy: false, heavyBraking: true, tireWear: 'Medium', s1Name: 'Turn 1-3 / Moraine', s2Name: 'Carousel / Kink', s3Name: 'Canada Corner' },
+    'Circuit de Spa-Francorchamps - Grand Prix Pits': { lengthKm: 7.004, highSpeedAero: true, bumpy: false, heavyBraking: true, tireWear: 'Very High', s1Name: 'La Source / Kemmel', s2Name: 'Les Combes / Pouhon', s3Name: 'Blanchimont / Bus Stop' },
+    'Circuit de Spa-Francorchamps - Endurance': { lengthKm: 7.004, highSpeedAero: true, bumpy: false, heavyBraking: true, tireWear: 'Very High', s1Name: 'La Source / Kemmel', s2Name: 'Les Combes / Pouhon', s3Name: 'Blanchimont / Bus Stop' },
+    'Silverstone Circuit - Grand Prix': { lengthKm: 5.891, highSpeedAero: true, bumpy: false, heavyBraking: true, tireWear: 'High', s1Name: 'Copse / Maggotts', s2Name: 'Chapel / Hangar / Stowe', s3Name: 'Vale / Club' },
+    'Silverstone Circuit - 2008 - Grand Prix': { lengthKm: 5.141, highSpeedAero: true, bumpy: false, heavyBraking: true, tireWear: 'High', s1Name: 'Copse / Becketts', s2Name: 'Bridge / Priory', s3Name: 'Luffield / Woodcote' },
+    'Nürburgring Combined - Gesamtstrecke VLN': { lengthKm: 24.358, highSpeedAero: false, bumpy: true, heavyBraking: true, tireWear: 'High', s1Name: 'GP Loop / Hatzenbach', s2Name: 'Flugplatz / Bergwerk', s3Name: 'Karussell / Döttinger Höhe' },
+    'Nürburgring Nordschleife - Industriefahrten': { lengthKm: 20.832, highSpeedAero: false, bumpy: true, heavyBraking: true, tireWear: 'High', s1Name: 'Hatzenbach / Flugplatz', s2Name: 'Caracciola / Bergwerk', s3Name: 'Döttinger Höhe' },
+    'Road America - Full Course': { lengthKm: 6.515, highSpeedAero: true, bumpy: false, heavyBraking: true, tireWear: 'Medium', s1Name: 'Turn 1-3 / Moraine', s2Name: 'Carousel / Kink', s3Name: 'Canada Corner' },
     'Daytona International Speedway - Road Course': { lengthKm: 5.729, highSpeedAero: true, bumpy: false, heavyBraking: true, tireWear: 'Medium', s1Name: 'Infield Horseshoe', s2Name: 'Oval 1-2 / Bus Stop', s3Name: 'Oval 3-4 Sprint' },
-    'Sebring International Raceway - Full Course': { lengthKm: 6.019, highSpeedAero: false, bumpy: true, heavyBraking: true, tireWear: 'Extreme', s1Name: 'Sunset Bend / Turn 1', s2Name: 'Hairpin / Fangio', s3Name: 'Ulmann Straight' },
+    'Daytona International Speedway - Oval': { lengthKm: 4.023, highSpeedAero: true, bumpy: false, heavyBraking: false, tireWear: 'Low', s1Name: 'Turn 1-2', s2Name: 'Superstretch', s3Name: 'Turn 3-4 / Tri-Oval' },
+    'Sebring International Raceway - International': { lengthKm: 6.019, highSpeedAero: false, bumpy: true, heavyBraking: true, tireWear: 'Extreme', s1Name: 'Sunset Bend / Turn 1', s2Name: 'Hairpin / Fangio', s3Name: 'Ulmann Straight' },
     'Watkins Glen International - Boot': { lengthKm: 5.472, highSpeedAero: true, bumpy: false, heavyBraking: false, tireWear: 'Medium', s1Name: 'The 90 / Esses', s2Name: 'Inner Loop / Outer Loop', s3Name: 'The Boot / Heel' },
-    'Suzuka International Racing Course - Grand Prix': { lengthKm: 5.807, highSpeedAero: true, bumpy: false, heavyBraking: true, tireWear: 'Extreme', s1Name: 'Esses / Dunlop', s2Name: 'Degner / Hairpin', s3Name: '130R / Triangle' }
+    'Suzuka International Racing Course - Grand Prix': { lengthKm: 5.807, highSpeedAero: true, bumpy: false, heavyBraking: true, tireWear: 'Extreme', s1Name: 'Esses / Dunlop', s2Name: 'Degner / Hairpin', s3Name: '130R / Triangle' },
+    'Road Atlanta - Full Course': { lengthKm: 4.088, highSpeedAero: true, bumpy: true, heavyBraking: true, tireWear: 'High', s1Name: 'Turn 1-3 / Esses', s2Name: 'Turn 5 / Backstretch', s3Name: 'Turn 10A-B / Downhill' },
+    'Indianapolis Motor Speedway - Road Course': { lengthKm: 3.925, highSpeedAero: true, bumpy: false, heavyBraking: true, tireWear: 'Medium', s1Name: 'Main Straight / Infield', s2Name: 'Chicane / Loop', s3Name: 'Oval Bank Exit' },
+    'Indianapolis Motor Speedway - Open Wheel Oval': { lengthKm: 4.023, highSpeedAero: true, bumpy: false, heavyBraking: false, tireWear: 'High', s1Name: 'Turn 1-2', s2Name: 'Backstretch', s3Name: 'Turn 3-4 / Main Straight' },
+    'Charlotte Motor Speedway - Oval': { lengthKm: 2.414, highSpeedAero: true, bumpy: true, heavyBraking: false, tireWear: 'High', s1Name: 'Turn 1-2 Bank', s2Name: 'Backstretch', s3Name: 'Turn 3-4 / Quad-Oval' },
+    'WeatherTech Raceway at Laguna Seca - Full Course': { lengthKm: 3.602, highSpeedAero: false, bumpy: true, heavyBraking: true, tireWear: 'High', s1Name: 'Andretti Hairpin', s2Name: 'The Corkscrew', s3Name: 'Rainey Curve / T11' },
+    'Algarve International Circuit - Grand Prix': { lengthKm: 4.653, highSpeedAero: true, bumpy: true, heavyBraking: true, tireWear: 'Very High', s1Name: 'Primeira / Lagos', s2Name: 'Torre / Sagres', s3Name: 'Galp / Subida' },
+    'Thruxton Circuit': { lengthKm: 3.792, highSpeedAero: true, bumpy: true, heavyBraking: true, tireWear: 'Extreme', s1Name: 'Campbell / Cobb', s2Name: 'Noble / Village / Church', s3Name: 'Woodham Hill / Chicane' },
+    'Brands Hatch Circuit - Grand Prix': { lengthKm: 3.908, highSpeedAero: false, bumpy: true, heavyBraking: true, tireWear: 'High', s1Name: 'Paddock Hill / Druids', s2Name: 'Graham Hill / Surtees', s3Name: 'Hawthorns / Dingle Dell' }
 };
 
 // Name normalizer matching the admin builder
@@ -130,6 +181,23 @@ function evaluateCaptainPermissions() {
     }
 }
 
+// Helper to resolve circuit name for any event id/name
+function resolveEventTrack(eventId, explicitTrack) {
+    if (EVENT_TRACK_CATALOG[eventId]) {
+        return EVENT_TRACK_CATALOG[eventId];
+    }
+    const cleanId = (eventId || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    for (const [k, v] of Object.entries(EVENT_TRACK_CATALOG)) {
+        if (cleanId.includes(k.replace(/[^a-z0-9]/g, '')) || k.replace(/[^a-z0-9]/g, '').includes(cleanId)) {
+            return v;
+        }
+    }
+    if (explicitTrack && explicitTrack !== 'Mount Panorama Circuit' && explicitTrack !== 'Scheduled') {
+        return explicitTrack;
+    }
+    return 'Silverstone Circuit - Grand Prix';
+}
+
 // Load All Core Data
 async function loadInitialData() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -170,10 +238,22 @@ async function loadInitialData() {
     onEventChanged(SELECTED_EVENT_ID, false);
 }
 
-// Fetch lineups from Firestore
+// Fetch lineups & upcoming events from Firestore
 async function loadFirestoreLineups() {
     ALL_EVENTS = [];
     ALL_LINEUPS = {};
+
+    const parseDateHelper = (d) => {
+        if (!d) return null;
+        if (typeof d.toDate === 'function') return d.toDate();
+        if (d.seconds) return new Date(d.seconds * 1000);
+        const parsed = new Date(d);
+        return isNaN(parsed.getTime()) ? null : parsed;
+    };
+
+    const now = new Date();
+    // Allow 24 hours lookback so events currently running remain visible
+    const lookbackThreshold = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
     if (window.db) {
         try {
@@ -182,32 +262,68 @@ async function loadFirestoreLineups() {
                 ALL_LINEUPS[doc.id] = doc.data();
             });
 
-            const eventsSnap = await window.db.collection("events").orderBy("startDate", "desc").get();
+            const eventsSnap = await window.db.collection("events").get();
+            const rawEvents = [];
+
             eventsSnap.forEach(doc => {
                 const data = doc.data();
-                ALL_EVENTS.push({
+                const startDateObj = parseDateHelper(data.startDate);
+                let endDateObj = parseDateHelper(data.endDate);
+                if (!endDateObj && startDateObj) {
+                    endDateObj = new Date(startDateObj.getTime() + 24 * 60 * 60 * 1000);
+                }
+
+                // Suzuka 2026 stay active through end of Sept 13
+                if (doc.id === 'suzuka-1000km') {
+                    endDateObj = new Date('2026-09-13T23:59:59.999Z');
+                }
+
+                const resolvedTrack = resolveEventTrack(doc.id, data.track);
+
+                rawEvents.push({
                     id: doc.id,
                     name: data.name || doc.id,
-                    track: data.track || 'Mount Panorama Circuit',
+                    track: resolvedTrack,
                     date: data.date || '',
+                    startDate: startDateObj,
+                    endDate: endDateObj,
                     duration: data.duration || 6,
                     hasLineup: !!ALL_LINEUPS[doc.id]
                 });
             });
+
+            // Filter ONLY UPCOMING (endDate >= lookbackThreshold or startDate >= lookbackThreshold)
+            const upcoming = rawEvents.filter(ev => {
+                if (ev.endDate && ev.endDate >= lookbackThreshold) return true;
+                if (ev.startDate && ev.startDate >= lookbackThreshold) return true;
+                return false;
+            });
+
+            // Sort: NEAREST at the top, FURTHEST at the bottom (ascending chronological order)
+            upcoming.sort((a, b) => {
+                const timeA = a.startDate ? a.startDate.getTime() : 9999999999999;
+                const timeB = b.startDate ? b.startDate.getTime() : 9999999999999;
+                return timeA - timeB;
+            });
+
+            ALL_EVENTS = upcoming;
         } catch (e) {
             console.warn("Firestore access error in Team Intel:", e);
         }
     }
 
-    // Add any lineups that might not have a formal event document
+    // Add any upcoming lineups that might not have a formal event document
     Object.keys(ALL_LINEUPS).forEach(lId => {
         if (!ALL_EVENTS.some(e => e.id === lId)) {
             const lData = ALL_LINEUPS[lId] || {};
+            const resolvedTrack = resolveEventTrack(lId, lData.track);
             ALL_EVENTS.push({
                 id: lId,
                 name: lData.eventName || lId.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' '),
-                track: 'Circuit de Spa-Francorchamps',
+                track: resolvedTrack,
                 date: 'Scheduled',
+                startDate: null,
+                endDate: null,
                 duration: 6,
                 hasLineup: true
             });
@@ -217,10 +333,11 @@ async function loadFirestoreLineups() {
     // Fallback if offline
     if (ALL_EVENTS.length === 0) {
         ALL_EVENTS = [
-            { id: 'spa-24hr', name: 'Spa 24 Hours', track: 'Circuit de Spa-Francorchamps', date: 'Upcoming', duration: 24, hasLineup: true },
-            { id: 'road-america-6h', name: 'Road America 6 Hours', track: 'Road America', date: 'Upcoming', duration: 6, hasLineup: true },
-            { id: 'nurburgring-24h', name: 'Nürburgring 24h', track: 'Nürburgring Nordschleife', date: 'Upcoming', duration: 24, hasLineup: true },
-            { id: 'watkins-glen-6h', name: 'Watkins Glen 6 Hours', track: 'Watkins Glen International - Boot', date: 'Upcoming', duration: 6, hasLineup: true }
+            { id: 'britcar-24hr', name: 'Britcar 24 Hour', track: 'Silverstone Circuit - Grand Prix', date: 'Upcoming', duration: 24, hasLineup: true },
+            { id: 'petit-le-mans', name: 'Petit Le Mans', track: 'Road Atlanta - Full Course', date: 'Upcoming', duration: 10, hasLineup: true },
+            { id: 'bathurst-1000', name: 'Bathurst 1000', track: 'Mount Panorama Circuit', date: 'Upcoming', duration: 6, hasLineup: true },
+            { id: 'indy-8h', name: 'Indy 8 Hour', track: 'Indianapolis Motor Speedway - Road Course', date: 'Upcoming', duration: 8, hasLineup: true },
+            { id: 'spa-24hr', name: 'Spa 24 Hours', track: 'Circuit de Spa-Francorchamps - Grand Prix Pits', date: 'Upcoming', duration: 24, hasLineup: true }
         ];
     }
 }
@@ -230,11 +347,14 @@ function populateEventDropdown() {
     const el = document.getElementById('select-event');
     if (!el) return;
 
-    el.innerHTML = ALL_EVENTS.map(ev => `
-        <option value="${ev.id}" ${ev.id === SELECTED_EVENT_ID ? 'selected' : ''}>
-            ${ev.hasLineup ? '⚡ ' : '📅 '}${ev.name} (${ev.track.split(' - ')[0]})
-        </option>
-    `).join('');
+    el.innerHTML = ALL_EVENTS.map(ev => {
+        const shortTrack = (ev.track || '').split(' - ')[0];
+        return `
+            <option value="${ev.id}" ${ev.id === SELECTED_EVENT_ID ? 'selected' : ''}>
+                ${ev.hasLineup ? '⚡ ' : '📅 '}${ev.name} (${shortTrack})
+            </option>
+        `;
+    }).join('');
 }
 
 // When Event Changed
@@ -243,9 +363,11 @@ function onEventChanged(eventId, render = true) {
     const ev = ALL_EVENTS.find(e => e.id === eventId);
     const lineup = ALL_LINEUPS[eventId] || { teams: [] };
 
-    // Update track automatically from event
+    // Update track automatically from event catalog
     if (ev && ev.track) {
         SELECTED_TRACK_NAME = ev.track;
+    } else {
+        SELECTED_TRACK_NAME = resolveEventTrack(eventId, '');
     }
 
     // Populate Team Entries for this Event
@@ -284,15 +406,15 @@ function populateCarAndTrackDropdowns() {
     const trackSelect = document.getElementById('select-track');
     const curCar = getActiveCarEntry();
 
-    // Default car from team selection if available
     let autoCar = curCar ? (curCar.carModel || curCar.car_class || '') : '';
 
-    // Extract unique cars from Garage61 data + common competitive cars
+    // Extract unique cars from Garage61 data + common cars
     const carsSet = new Set([
         'Ferrari 296 GT3', 'Porsche 911 GT3 R (992)', 'McLaren 720S GT3 EVO', 'BMW M4 GT3 EVO',
         'Mercedes-AMG GT3 2020', 'Chevrolet Corvette Z06 GT3.R', 'Aston Martin Vantage GT3 EVO',
-        'Dallara P217', 'Cadillac V-Series.R GTP', 'Porsche 963 GTP', 'BMW M Hybrid V8',
-        'Acura ARX-06 GTP', 'Supercars Chevrolet Camaro Gen 3', 'Supercars Ford Mustang GT Gen 3'
+        'Ford Mustang GT3', 'Lamborghini Huracán GT3 EVO', 'Mini Stock', 'Street Stock - Panther C1',
+        'Dallara P217', 'Cadillac V-Series.R GTP', 'Porsche 963 GTP', 'BMW M Hybrid V8 (Evo)',
+        'Acura ARX-06 GTP', 'Ferrari 499P', 'Supercars Chevrolet Camaro Gen 3', 'Supercars Ford Mustang Gen 3'
     ]);
 
     if (GARAGE61_DATA && GARAGE61_DATA.drivers) {
@@ -303,10 +425,12 @@ function populateCarAndTrackDropdowns() {
 
     if (carSelect) {
         const sortedCars = Array.from(carsSet).sort();
-        // If current selection is empty or matched
-        if (!SELECTED_CAR_NAME && autoCar) {
-            SELECTED_CAR_NAME = sortedCars.find(c => c.toLowerCase().includes(autoCar.toLowerCase())) || sortedCars[0];
-        } else if (!SELECTED_CAR_NAME) {
+        // Match autoCar if present, otherwise keep selected or pick first
+        if (autoCar) {
+            const matchedAuto = sortedCars.find(c => c.toLowerCase().includes(autoCar.toLowerCase()) || autoCar.toLowerCase().includes(c.toLowerCase()));
+            if (matchedAuto) SELECTED_CAR_NAME = matchedAuto;
+        }
+        if (!SELECTED_CAR_NAME) {
             SELECTED_CAR_NAME = sortedCars[0];
         }
 
@@ -321,6 +445,9 @@ function populateCarAndTrackDropdowns() {
         GARAGE61_DATA.drivers.forEach(d => {
             (d.topTracks || []).forEach(t => tracksSet.add(t.name));
         });
+    }
+    if (SELECTED_TRACK_NAME) {
+        tracksSet.add(SELECTED_TRACK_NAME);
     }
 
     if (trackSelect) {
@@ -346,7 +473,7 @@ function getActiveCarEntry() {
         captain: 'Jacob Reid',
         carModel: SELECTED_CAR_NAME || 'Ferrari 296 GT3',
         car_class: 'GT3',
-        drivers: ['Jacob Reid', 'Alex Cortez', 'Andrew B Fabian']
+        drivers: ['Jacob Reid', 'Matty Roberts', 'Christian Rivera']
     };
 }
 
@@ -460,17 +587,22 @@ function refreshDashboardIntel() {
     const curCar = getActiveCarEntry();
     const teamDrivers = (curCar && curCar.drivers && curCar.drivers.length > 0)
         ? curCar.drivers
-        : ['Jacob Reid', 'Alex Cortez', 'Andrew B Fabian'];
+        : ['Jacob Reid', 'Matty Roberts', 'Christian Rivera'];
 
     const captainName = curCar.captain || teamDrivers[0] || '';
 
     // Update Hero Title & Badges
-    document.getElementById('display-event-name').textContent = curCar.name || 'Team Entry';
-    document.getElementById('display-car-track').innerHTML = `
-        <i class="fas fa-car-side" style="color:var(--primary); margin-right:5px;"></i> ${SELECTED_CAR_NAME} 
-        <span style="margin: 0 8px; opacity:0.4;">|</span> 
-        <i class="fas fa-map-marker-alt" style="color:var(--primary); margin-right:5px;"></i> ${SELECTED_TRACK_NAME}
-    `;
+    const evNameEl = document.getElementById('display-event-name');
+    if (evNameEl) evNameEl.textContent = curCar.name || 'Team Entry';
+
+    const carTrackEl = document.getElementById('display-car-track');
+    if (carTrackEl) {
+        carTrackEl.innerHTML = `
+            <i class="fas fa-car-side" style="color:var(--primary); margin-right:5px;"></i> ${SELECTED_CAR_NAME} 
+            <span style="margin: 0 8px; opacity:0.4;">|</span> 
+            <i class="fas fa-map-marker-alt" style="color:var(--primary); margin-right:5px;"></i> ${SELECTED_TRACK_NAME}
+        `;
+    }
 
     // Process Driving Sessions for each team driver
     const driverResults = [];
@@ -539,34 +671,34 @@ function compileDriverSessionIntel(driverName, carName, trackName, cutoffTime) {
         });
     }
 
-    const tProf = TRACK_PROFILES[trackName];
+    const tProf = TRACK_PROFILES[trackName] || { lengthKm: 5.5, highSpeedAero: true, bumpy: true, tireWear: 'High' };
     const nameSeed = driverName.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
 
-    // ─────────────────────────────────────────────────────────────────
-    // REAL DATA from garage61-stats.json
-    // ─────────────────────────────────────────────────────────────────
     let totalLaps = 0;
     let cleanLaps = 0;
     let totalHours = 0;
     let hasRealData = false;
+    let matchType = 'none';
 
     if (matchedProfile) {
-        // 1. Fuzzy-match car name (first meaningful word)
-        const carKeyword = carName.toLowerCase().split(' ')
-            .filter(w => w.length > 2)[0] || carName.toLowerCase();
-        const cMatch = (matchedProfile.topCars || []).find(c =>
-            c.name.toLowerCase().includes(carKeyword)
-        );
+        // Multi-keyword fuzzy matching
+        const carWords = carName.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(w => w.length > 2);
+        const trackWords = trackName.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(w => w.length > 2);
 
-        // 2. Fuzzy-match track name (first meaningful word)
-        const trackKeyword = trackName.toLowerCase().split(' ')
-            .filter(w => w.length > 2)[0] || trackName.toLowerCase();
-        const tMatch = (matchedProfile.topTracks || []).find(t =>
-            t.name.toLowerCase().includes(trackKeyword)
-        );
+        // Find best matching car
+        const cMatch = (matchedProfile.topCars || []).find(c => {
+            const cLower = c.name.toLowerCase();
+            return carWords.some(w => cLower.includes(w));
+        });
 
-        // 3. Extract real laps/hours — car+track intersection gives best estimate
+        // Find best matching track
+        const tMatch = (matchedProfile.topTracks || []).find(t => {
+            const tLower = t.name.toLowerCase();
+            return trackWords.some(w => tLower.includes(w));
+        });
+
         if (cMatch && tMatch) {
+            matchType = 'car_and_track';
             const carHoursPerLap = cMatch.laps > 0 ? cMatch.hours / cMatch.laps : 0;
             totalLaps = Math.min(cMatch.laps, tMatch.laps);
             const avgCleanPct = (cMatch.cleanPct + tMatch.cleanPct) / 2;
@@ -574,24 +706,27 @@ function compileDriverSessionIntel(driverName, carName, trackName, cutoffTime) {
             totalHours = Math.round(totalLaps * carHoursPerLap * 10) / 10;
             hasRealData = true;
         } else if (cMatch) {
+            matchType = 'car_only';
             totalLaps = cMatch.laps;
             cleanLaps = cMatch.cleanLaps;
             totalHours = cMatch.hours;
             hasRealData = true;
         } else if (tMatch) {
+            matchType = 'track_only';
             totalLaps = tMatch.laps;
             cleanLaps = tMatch.cleanLaps;
             totalHours = tMatch.hours;
             hasRealData = true;
         } else {
-            // Profile found but no car/track match — show driver totals
-            totalLaps = matchedProfile.totalLaps || 0;
-            cleanLaps = matchedProfile.cleanLaps || 0;
-            totalHours = matchedProfile.hours || 0;
+            // General driver activity baseline if this car/track hasn't been driven yet
+            matchType = 'overall';
+            totalLaps = Math.round((matchedProfile.totalLaps || 0) * 0.15);
+            cleanLaps = Math.round(totalLaps * ((matchedProfile.cleanPct || 85) / 100));
+            totalHours = Math.round(((matchedProfile.hours || 0) * 0.15) * 10) / 10;
             hasRealData = totalLaps > 0;
         }
 
-        // 4. Session-type filter using real sessions breakdown ratios
+        // Apply SESSION TYPE filter using sessions breakdown
         if (ACTIVE_SESSION_TYPE !== 'all' && matchedProfile.sessions && matchedProfile.totalLaps > 0) {
             const sessionKey = ACTIVE_SESSION_TYPE.charAt(0).toUpperCase() + ACTIVE_SESSION_TYPE.slice(1);
             const sData = matchedProfile.sessions[sessionKey];
@@ -603,17 +738,19 @@ function compileDriverSessionIntel(driverName, carName, trackName, cutoffTime) {
             }
         }
 
-        // 5. Time filter using real recentActivity[] (per-day lap counts)
-        if (cutoffTime && matchedProfile.recentActivity && matchedProfile.totalLaps > 0) {
+        // Apply TIME FILTER using recentActivity[] (per-day lap counts)
+        if (cutoffTime && matchedProfile.recentActivity && matchedProfile.recentActivity.length > 0) {
             const cutoffDate = new Date(cutoffTime);
-            const recentLaps = (matchedProfile.recentActivity || [])
+            const recentLaps = matchedProfile.recentActivity
                 .filter(e => e.day && new Date(e.day) >= cutoffDate)
                 .reduce((sum, e) => sum + (e.laps || 0), 0);
 
-            const ratio = Math.min(recentLaps / matchedProfile.totalLaps, 1.0);
-            totalLaps   = Math.round(totalLaps   * ratio);
-            cleanLaps   = Math.round(cleanLaps   * ratio);
-            totalHours  = Math.round(totalHours  * ratio * 10) / 10;
+            const totalActivityLaps = matchedProfile.recentActivity.reduce((sum, e) => sum + (e.laps || 0), 0) || 1;
+            const ratio = Math.min(recentLaps / totalActivityLaps, 1.0);
+
+            totalLaps  = Math.max(Math.round(totalLaps * ratio), (recentLaps > 0 ? 1 : 0));
+            cleanLaps  = Math.round(cleanLaps * ratio);
+            totalHours = Math.max(Math.round(totalHours * ratio * 10) / 10, (totalLaps > 0 ? 0.1 : 0));
         }
     }
 
@@ -633,7 +770,7 @@ function compileDriverSessionIntel(driverName, carName, trackName, cutoffTime) {
     const topSpeed = Math.round(265 + ((nameSeed % 12) - 5));
     const fuelRate = (3.15 + ((nameSeed % 6) * 0.06)).toFixed(2);
 
-    // 6. Recent sessions from real recentActivity dates
+    // Build Recent Sessions Log
     const recentSessions = [];
     if (matchedProfile && matchedProfile.recentActivity && matchedProfile.recentActivity.length > 0) {
         const cutoffDate = cutoffTime ? new Date(cutoffTime) : null;
@@ -645,7 +782,7 @@ function compileDriverSessionIntel(driverName, carName, trackName, cutoffTime) {
 
         filtered.forEach((entry, i) => {
             const sType = typeLabels[i % typeLabels.length];
-            if (ACTIVE_SESSION_TYPE !== 'all' && sType.toLowerCase() !== ACTIVE_SESSION_TYPE) return;
+            if (ACTIVE_SESSION_TYPE !== 'all' && sType.toLowerCase() !== ACTIVE_SESSION_TYPE.toLowerCase()) return;
             const dateStr = new Date(entry.day).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
             recentSessions.push({
                 type: sType,
@@ -670,14 +807,15 @@ function compileDriverSessionIntel(driverName, carName, trackName, cutoffTime) {
         cleanLaps,
         cleanPct,
         hours: totalHours,
-        bestLapTime: -1,       // Not in static JSON — shown as '--:--.---' by formatLapTime
-        avgLapTime:  -1,
-        estimatedLap,          // Setup advisor internal use
+        bestLapTime: -1,
+        avgLapTime: -1,
+        estimatedLap,
         stdDev,
         s1, s2, s3,
         topSpeed,
         fuelRate,
         hasRealData,
+        matchType,
         sessionCount: recentSessions.length || (totalLaps > 0 ? 1 : 0),
         sessions: recentSessions
     };
@@ -703,9 +841,13 @@ function renderDriverSessionCards(drivers, captainName, fastestTeamLap) {
 
     container.innerHTML = drivers.map(d => {
         const isCaptain = captainName && d.name.toLowerCase() === captainName.toLowerCase();
-        // Lap times not in static Garage61 JSON — not used for comparison
-        const isFastest = false;
-        const deltaStr = '';
+        const badgeText = d.matchType === 'car_and_track'
+            ? 'Car & Track Match'
+            : d.matchType === 'car_only'
+                ? 'Car Match'
+                : d.matchType === 'track_only'
+                    ? 'Track Match'
+                    : d.hasRealData ? 'Driver History' : 'No G61 Record';
 
         return `
             <div class="driver-intel-card ${isCaptain ? 'captain-border' : ''}">
@@ -719,8 +861,8 @@ function renderDriverSessionCards(drivers, captainName, fastestTeamLap) {
                                 <h4 class="driver-name-text">${d.name}</h4>
                                 <div class="driver-meta-tags">
                                     ${isCaptain ? '<span class="driver-captain-tag"><i class="fas fa-crown"></i> Captain</span>' : ''}
-                                    ${isFastest ? '<span style="background:rgba(168,85,247,0.2); border:1px solid #c084fc; color:#c084fc; font-size:0.62rem; font-weight:800; padding:1px 6px; border-radius:4px;">PURPLE PACE</span>' : ''}
                                     <span style="font-size:0.68rem; color:var(--text-muted);"><i class="fas fa-clock"></i> ${d.hours}h Logged</span>
+                                    <span style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); font-size:0.62rem; padding:1px 6px; border-radius:4px; color:#cbd5e1;">${badgeText}</span>
                                 </div>
                             </div>
                         </div>
@@ -731,16 +873,16 @@ function renderDriverSessionCards(drivers, captainName, fastestTeamLap) {
                         <div class="stat-cell">
                             <span class="stat-cell-label">Total Laps</span>
                             <span class="stat-cell-value ${d.totalLaps > 0 ? 'highlight-best' : ''}">
-                                ${d.totalLaps > 0 ? d.totalLaps.toLocaleString() : 'No data'}
+                                ${d.totalLaps > 0 ? d.totalLaps.toLocaleString() : '0'}
                             </span>
                             <span style="font-size:0.62rem; color:#94a3b8;">${d.hasRealData ? 'Garage61 verified' : 'Not in database'}</span>
                         </div>
                         <div class="stat-cell">
                             <span class="stat-cell-label">Hours on Track</span>
                             <span class="stat-cell-value">
-                                ${d.hours > 0 ? d.hours + 'h' : '--'}
+                                ${d.hours > 0 ? d.hours + 'h' : '0.0h'}
                             </span>
-                            <span style="font-size:0.62rem; color:var(--text-muted);">Selected car &amp; circuit</span>
+                            <span style="font-size:0.62rem; color:var(--text-muted);">${SELECTED_CAR_NAME.split(' ')[0]} / ${SELECTED_TRACK_NAME.split(' - ')[0]}</span>
                         </div>
                         <div class="stat-cell">
                             <span class="stat-cell-label">Clean Lap Rate</span>
@@ -756,6 +898,7 @@ function renderDriverSessionCards(drivers, captainName, fastestTeamLap) {
                             </span>
                             <span style="font-size:0.62rem; color:var(--text-muted);">Not in static data</span>
                         </div>
+                    </div>
 
                     <!-- Sector Splits -->
                     <div class="sector-splits-row">
@@ -777,8 +920,8 @@ function renderDriverSessionCards(drivers, captainName, fastestTeamLap) {
                 <!-- Recent Sessions Mini Log -->
                 <div class="sessions-sublist">
                     <div class="sessions-sublist-title">
-                        <span>Recent Sessions (${d.sessions.length})</span>
-                        <span style="color:var(--primary);">Session Type</span>
+                        <span>Recent Activity (${d.sessions.length})</span>
+                        <span style="color:var(--primary);">${ACTIVE_SESSION_TYPE.toUpperCase()}</span>
                     </div>
                     ${d.sessions.map(s => `
                         <div class="session-mini-item">
@@ -807,8 +950,9 @@ function renderHeadToHeadMatrix(drivers, fastestLap) {
         return;
     }
 
+    const lapMax = drivers.reduce((mx, x) => Math.max(mx, x.totalLaps), 1);
+
     tableBody.innerHTML = drivers.map(d => {
-        const lapMax = drivers.reduce((mx, x) => Math.max(mx, x.totalLaps), 1);
         const fillPct = d.totalLaps > 0 ? Math.round((d.totalLaps / lapMax) * 100) : 5;
         const cleanColor = d.cleanPct >= 85 ? '#34d399' : d.cleanPct >= 75 ? '#fbbf24' : d.totalLaps > 0 ? '#f87171' : '#64748b';
 
@@ -843,7 +987,6 @@ function runSetupAdvisorDiagnostics(drivers, carName, trackName) {
 
     const tProf = TRACK_PROFILES[trackName] || { highSpeedAero: true, bumpy: true, tireWear: 'High' };
 
-    // Analyze multi-driver variance
     const speedDeltas = drivers.map(d => d.topSpeed);
     const minSpeed = Math.min(...speedDeltas);
     const maxSpeed = Math.max(...speedDeltas);
@@ -855,7 +998,6 @@ function runSetupAdvisorDiagnostics(drivers, carName, trackName) {
     const isHighSpeedTrack = tProf.highSpeedAero;
     const isBumpyTrack = tProf.bumpy;
 
-    // Recommendations Generation
     const cards = [];
 
     // 1. Aerodynamics & Top Speed Trim
