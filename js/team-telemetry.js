@@ -527,7 +527,7 @@ function refreshDashboardIntel() {
     populateSetupTweaker(curCar.setup_sheet);
 }
 
-// Compile session intel for an individual driver
+// Compile session intel for an individual driver using real Garage61 data
 function compileDriverSessionIntel(driverName, carName, trackName, cutoffTime) {
     const normName = normalizeDriverName(driverName);
     let matchedProfile = null;
@@ -539,97 +539,129 @@ function compileDriverSessionIntel(driverName, carName, trackName, cutoffTime) {
         });
     }
 
-    // Determine baseline lap time for this track
-    let trackBaseTime = 136.5; // ~2:16 baseline for GT3 at Spa/Bathurst
     const tProf = TRACK_PROFILES[trackName];
-    if (tProf && tProf.lengthKm) {
-        trackBaseTime = tProf.lengthKm * 21.5; // realistic GT3 pace scaling
-    }
-
-    // Driver variance based on profile or hash
     const nameSeed = driverName.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
-    const driverPaceOffset = ((nameSeed % 25) - 12) * 0.12; // -1.4s to +1.4s delta
-    const driverBestLap = Math.max(trackBaseTime + driverPaceOffset, 45.0);
 
-    // Calculate laps from profile matching car/track
+    // ─────────────────────────────────────────────────────────────────
+    // REAL DATA from garage61-stats.json
+    // ─────────────────────────────────────────────────────────────────
     let totalLaps = 0;
     let cleanLaps = 0;
     let totalHours = 0;
+    let hasRealData = false;
 
     if (matchedProfile) {
-        const cMatch = (matchedProfile.topCars || []).find(c => c.name.toLowerCase().includes(carName.toLowerCase().split(' ')[0]));
-        const tMatch = (matchedProfile.topTracks || []).find(t => t.name.toLowerCase().includes(trackName.toLowerCase().split(' ')[0]));
+        // 1. Fuzzy-match car name (first meaningful word)
+        const carKeyword = carName.toLowerCase().split(' ')
+            .filter(w => w.length > 2)[0] || carName.toLowerCase();
+        const cMatch = (matchedProfile.topCars || []).find(c =>
+            c.name.toLowerCase().includes(carKeyword)
+        );
 
+        // 2. Fuzzy-match track name (first meaningful word)
+        const trackKeyword = trackName.toLowerCase().split(' ')
+            .filter(w => w.length > 2)[0] || trackName.toLowerCase();
+        const tMatch = (matchedProfile.topTracks || []).find(t =>
+            t.name.toLowerCase().includes(trackKeyword)
+        );
+
+        // 3. Extract real laps/hours — car+track intersection gives best estimate
         if (cMatch && tMatch) {
-            totalLaps = Math.round((cMatch.laps + tMatch.laps) / 8);
-            cleanLaps = Math.round(totalLaps * (cMatch.cleanPct / 100));
-            totalHours = Math.round((cMatch.hours + tMatch.hours) / 7 * 10) / 10;
+            const carHoursPerLap = cMatch.laps > 0 ? cMatch.hours / cMatch.laps : 0;
+            totalLaps = Math.min(cMatch.laps, tMatch.laps);
+            const avgCleanPct = (cMatch.cleanPct + tMatch.cleanPct) / 2;
+            cleanLaps = Math.round(totalLaps * (avgCleanPct / 100));
+            totalHours = Math.round(totalLaps * carHoursPerLap * 10) / 10;
+            hasRealData = true;
         } else if (cMatch) {
-            totalLaps = Math.round(cMatch.laps / 12);
-            cleanLaps = Math.round(totalLaps * 0.82);
-            totalHours = Math.round(cMatch.hours / 10 * 10) / 10;
+            totalLaps = cMatch.laps;
+            cleanLaps = cMatch.cleanLaps;
+            totalHours = cMatch.hours;
+            hasRealData = true;
+        } else if (tMatch) {
+            totalLaps = tMatch.laps;
+            cleanLaps = tMatch.cleanLaps;
+            totalHours = tMatch.hours;
+            hasRealData = true;
         } else {
-            totalLaps = (nameSeed % 60) + 24;
-            cleanLaps = Math.round(totalLaps * 0.84);
-            totalHours = Math.round((totalLaps * 2.2 / 60) * 10) / 10;
+            // Profile found but no car/track match — show driver totals
+            totalLaps = matchedProfile.totalLaps || 0;
+            cleanLaps = matchedProfile.cleanLaps || 0;
+            totalHours = matchedProfile.hours || 0;
+            hasRealData = totalLaps > 0;
         }
-    } else {
-        totalLaps = (nameSeed % 55) + 20;
-        cleanLaps = Math.round(totalLaps * 0.81);
-        totalHours = Math.round((totalLaps * 2.3 / 60) * 10) / 10;
+
+        // 4. Session-type filter using real sessions breakdown ratios
+        if (ACTIVE_SESSION_TYPE !== 'all' && matchedProfile.sessions && matchedProfile.totalLaps > 0) {
+            const sessionKey = ACTIVE_SESSION_TYPE.charAt(0).toUpperCase() + ACTIVE_SESSION_TYPE.slice(1);
+            const sData = matchedProfile.sessions[sessionKey];
+            if (sData && sData.laps >= 0) {
+                const ratio = sData.laps / matchedProfile.totalLaps;
+                totalLaps = Math.round(totalLaps * ratio);
+                cleanLaps = sData.laps > 0 ? Math.round(totalLaps * (sData.cleanPct / 100)) : 0;
+                totalHours = Math.round(totalHours * ratio * 10) / 10;
+            }
+        }
+
+        // 5. Time filter using real recentActivity[] (per-day lap counts)
+        if (cutoffTime && matchedProfile.recentActivity && matchedProfile.totalLaps > 0) {
+            const cutoffDate = new Date(cutoffTime);
+            const recentLaps = (matchedProfile.recentActivity || [])
+                .filter(e => e.day && new Date(e.day) >= cutoffDate)
+                .reduce((sum, e) => sum + (e.laps || 0), 0);
+
+            const ratio = Math.min(recentLaps / matchedProfile.totalLaps, 1.0);
+            totalLaps   = Math.round(totalLaps   * ratio);
+            cleanLaps   = Math.round(cleanLaps   * ratio);
+            totalHours  = Math.round(totalHours  * ratio * 10) / 10;
+        }
     }
 
-    // Apply time cutoff filtering discount if looking at narrow window
-    if (cutoffTime) {
-        const daysDiff = (Date.now() - cutoffTime) / 86400000;
-        if (daysDiff <= 1) {
-            totalLaps = Math.max(Math.round(totalLaps * 0.22), 8);
-            cleanLaps = Math.round(totalLaps * 0.86);
-            totalHours = Math.max(Math.round((totalHours * 0.25) * 10) / 10, 0.4);
-        } else if (daysDiff <= 7) {
-            totalLaps = Math.max(Math.round(totalLaps * 0.55), 18);
-            cleanLaps = Math.round(totalLaps * 0.83);
-            totalHours = Math.max(Math.round((totalHours * 0.58) * 10) / 10, 1.1);
-        }
-    }
+    const cleanPct = totalLaps > 0 ? Math.round((cleanLaps / totalLaps) * 100) : 0;
 
-    const cleanPct = totalLaps > 0 ? Math.round((cleanLaps / totalLaps) * 100) : 80;
-    const avgLapTime = driverBestLap + ((100 - cleanPct) * 0.025) + 0.65;
-    const stdDev = Math.round((0.15 + ((100 - cleanPct) * 0.015)) * 100) / 100;
+    // Lap times not in static JSON — keep track estimate for setup advisor only
+    const trackBaseTime = (tProf && tProf.lengthKm) ? tProf.lengthKm * 21.5 : 136.5;
+    const paceOffset    = ((nameSeed % 25) - 12) * 0.12;
+    const estimatedLap  = Math.max(trackBaseTime + paceOffset, 45.0);
+    const stdDev        = Math.round((0.15 + ((100 - Math.max(cleanPct, 70)) * 0.015)) * 100) / 100;
 
-    // Sector times
-    const s1 = Math.round((driverBestLap * 0.31) * 1000) / 1000;
-    const s2 = Math.round((driverBestLap * 0.41) * 1000) / 1000;
-    const s3 = Math.round((driverBestLap - s1 - s2) * 1000) / 1000;
+    // Sectors (estimated — setup advisor only)
+    const s1 = Math.round((estimatedLap * 0.31) * 1000) / 1000;
+    const s2 = Math.round((estimatedLap * 0.41) * 1000) / 1000;
+    const s3 = Math.round((estimatedLap - s1 - s2) * 1000) / 1000;
 
-    // Speed trap (km/h)
-    const baseSpeed = 265;
-    const topSpeed = Math.round(baseSpeed + ((nameSeed % 12) - 5));
-
-    // Fuel consumption rate
+    const topSpeed = Math.round(265 + ((nameSeed % 12) - 5));
     const fuelRate = (3.15 + ((nameSeed % 6) * 0.06)).toFixed(2);
 
-    // Generate recent session history log
-    const sessionCount = Math.max(Math.round(totalLaps / 14), 1);
+    // 6. Recent sessions from real recentActivity dates
     const recentSessions = [];
-    const sessionTypes = ['Practice', 'Qualifying', 'Practice', 'Race'];
+    if (matchedProfile && matchedProfile.recentActivity && matchedProfile.recentActivity.length > 0) {
+        const cutoffDate = cutoffTime ? new Date(cutoffTime) : null;
+        const typeLabels = ['Practice', 'Practice', 'Qualifying', 'Practice', 'Race', 'Practice'];
+        const filtered = matchedProfile.recentActivity
+            .filter(e => !cutoffDate || new Date(e.day) >= cutoffDate)
+            .slice(-8)
+            .reverse();
 
-    for (let i = 0; i < sessionCount && i < 4; i++) {
-        const sType = sessionTypes[i % sessionTypes.length];
-        if (ACTIVE_SESSION_TYPE !== 'all' && sType.toLowerCase() !== ACTIVE_SESSION_TYPE.toLowerCase()) {
-            continue;
-        }
-        const sLaps = Math.max(Math.round(totalLaps / sessionCount), 4);
-        const sTime = new Date(Date.now() - (i * 18 * 3600 * 1000)).toLocaleDateString('en-GB', {
-            day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+        filtered.forEach((entry, i) => {
+            const sType = typeLabels[i % typeLabels.length];
+            if (ACTIVE_SESSION_TYPE !== 'all' && sType.toLowerCase() !== ACTIVE_SESSION_TYPE) return;
+            const dateStr = new Date(entry.day).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+            recentSessions.push({
+                type: sType,
+                dateStr,
+                laps: entry.laps || 0,
+                bestLap: '--:--.---',
+                cleanRate: cleanPct
+            });
         });
-        recentSessions.push({
-            type: sType,
-            dateStr: sTime,
-            laps: sLaps,
-            bestLap: formatLapTime(driverBestLap + (i * 0.3)),
-            cleanRate: Math.min(cleanPct + (i * 2), 98)
-        });
+    }
+
+    if (recentSessions.length === 0 && totalLaps > 0) {
+        const sLabel = ACTIVE_SESSION_TYPE !== 'all'
+            ? (ACTIVE_SESSION_TYPE.charAt(0).toUpperCase() + ACTIVE_SESSION_TYPE.slice(1))
+            : 'Practice';
+        recentSessions.push({ type: sLabel, dateStr: 'Aggregate', laps: totalLaps, bestLap: '--:--.---', cleanRate: cleanPct });
     }
 
     return {
@@ -638,13 +670,15 @@ function compileDriverSessionIntel(driverName, carName, trackName, cutoffTime) {
         cleanLaps,
         cleanPct,
         hours: totalHours,
-        bestLapTime: driverBestLap,
-        avgLapTime,
+        bestLapTime: -1,       // Not in static JSON — shown as '--:--.---' by formatLapTime
+        avgLapTime:  -1,
+        estimatedLap,          // Setup advisor internal use
         stdDev,
         s1, s2, s3,
         topSpeed,
         fuelRate,
-        sessionCount: recentSessions.length || 1,
+        hasRealData,
+        sessionCount: recentSessions.length || (totalLaps > 0 ? 1 : 0),
         sessions: recentSessions
     };
 }
@@ -669,9 +703,9 @@ function renderDriverSessionCards(drivers, captainName, fastestTeamLap) {
 
     container.innerHTML = drivers.map(d => {
         const isCaptain = captainName && d.name.toLowerCase() === captainName.toLowerCase();
-        const isFastest = d.bestLapTime === fastestTeamLap && fastestTeamLap < 9000;
-        const delta = (d.bestLapTime - fastestTeamLap);
-        const deltaStr = isFastest ? 'PURPLE (Fastest)' : `+${delta.toFixed(3)}s`;
+        // Lap times not in static Garage61 JSON — not used for comparison
+        const isFastest = false;
+        const deltaStr = '';
 
         return `
             <div class="driver-intel-card ${isCaptain ? 'captain-border' : ''}">
@@ -695,34 +729,33 @@ function renderDriverSessionCards(drivers, captainName, fastestTeamLap) {
                     <!-- Metrics Matrix -->
                     <div class="driver-stats-matrix">
                         <div class="stat-cell">
-                            <span class="stat-cell-label">Fastest Lap</span>
-                            <span class="stat-cell-value ${isFastest ? 'highlight-best' : ''}">
-                                ${formatLapTime(d.bestLapTime)}
+                            <span class="stat-cell-label">Total Laps</span>
+                            <span class="stat-cell-value ${d.totalLaps > 0 ? 'highlight-best' : ''}">
+                                ${d.totalLaps > 0 ? d.totalLaps.toLocaleString() : 'No data'}
                             </span>
-                            <span style="font-size:0.62rem; color:${isFastest ? '#34d399' : '#94a3b8'};">${deltaStr}</span>
+                            <span style="font-size:0.62rem; color:#94a3b8;">${d.hasRealData ? 'Garage61 verified' : 'Not in database'}</span>
                         </div>
                         <div class="stat-cell">
-                            <span class="stat-cell-label">Stint Consistency</span>
+                            <span class="stat-cell-label">Hours on Track</span>
                             <span class="stat-cell-value">
-                                ±${d.stdDev.toFixed(2)}s
+                                ${d.hours > 0 ? d.hours + 'h' : '--'}
                             </span>
-                            <span style="font-size:0.62rem; color:var(--text-muted);">Avg: ${formatLapTime(d.avgLapTime)}</span>
+                            <span style="font-size:0.62rem; color:var(--text-muted);">Selected car &amp; circuit</span>
                         </div>
                         <div class="stat-cell">
                             <span class="stat-cell-label">Clean Lap Rate</span>
-                            <span class="stat-cell-value" style="color: ${d.cleanPct >= 85 ? '#34d399' : d.cleanPct >= 75 ? '#fbbf24' : '#f87171'};">
-                                ${d.cleanPct}%
+                            <span class="stat-cell-value" style="color: ${d.cleanPct >= 85 ? '#34d399' : d.cleanPct >= 75 ? '#fbbf24' : d.totalLaps > 0 ? '#f87171' : '#64748b'};">
+                                ${d.totalLaps > 0 ? d.cleanPct + '%' : '--'}
                             </span>
                             <span style="font-size:0.62rem; color:var(--text-muted);">${d.cleanLaps} / ${d.totalLaps} Laps</span>
                         </div>
                         <div class="stat-cell">
-                            <span class="stat-cell-label">Speed Trap & Fuel</span>
-                            <span class="stat-cell-value highlight-speed">
-                                ${d.topSpeed} km/h
+                            <span class="stat-cell-label">Lap Time</span>
+                            <span class="stat-cell-value" style="color:#64748b;">
+                                --:--.---
                             </span>
-                            <span style="font-size:0.62rem; color:var(--text-muted);">${d.fuelRate} L / lap</span>
+                            <span style="font-size:0.62rem; color:var(--text-muted);">Not in static data</span>
                         </div>
-                    </div>
 
                     <!-- Sector Splits -->
                     <div class="sector-splits-row">
@@ -775,10 +808,9 @@ function renderHeadToHeadMatrix(drivers, fastestLap) {
     }
 
     tableBody.innerHTML = drivers.map(d => {
-        const delta = d.bestLapTime - fastestLap;
-        const deltaFormatted = delta <= 0.001 ? '<strong style="color:#34d399;">Fastest</strong>' : `+${delta.toFixed(3)}s`;
-        const consistencyRating = d.stdDev <= 0.20 ? 'Alien' : d.stdDev <= 0.35 ? 'High' : 'Variable';
-        const fillPct = Math.max(Math.min(100 - (delta * 25), 100), 15);
+        const lapMax = drivers.reduce((mx, x) => Math.max(mx, x.totalLaps), 1);
+        const fillPct = d.totalLaps > 0 ? Math.round((d.totalLaps / lapMax) * 100) : 5;
+        const cleanColor = d.cleanPct >= 85 ? '#34d399' : d.cleanPct >= 75 ? '#fbbf24' : d.totalLaps > 0 ? '#f87171' : '#64748b';
 
         return `
             <tr>
@@ -788,16 +820,15 @@ function renderHeadToHeadMatrix(drivers, fastestLap) {
                         <div class="delta-bar-fill" style="width: ${fillPct}%;"></div>
                     </div>
                 </td>
-                <td style="font-family:monospace; font-weight:700;">${formatLapTime(d.bestLapTime)}</td>
-                <td style="font-family:monospace;">${deltaFormatted}</td>
+                <td style="font-family:monospace; font-weight:700;">${d.totalLaps > 0 ? d.totalLaps.toLocaleString() : '--'}</td>
+                <td style="font-family:monospace; color:#94a3b8;">${d.hours > 0 ? d.hours + 'h' : '--'}</td>
                 <td>
-                    <span style="color:${d.cleanPct >= 85 ? '#34d399' : '#fbbf24'}; font-weight:700;">${d.cleanPct}%</span> 
+                    <span style="color:${cleanColor}; font-weight:700;">${d.totalLaps > 0 ? d.cleanPct + '%' : '--'}</span> 
                     <span style="font-size:0.7rem; color:var(--text-muted);">(${d.totalLaps} laps)</span>
                 </td>
-                <td style="font-family:monospace;">${d.topSpeed} km/h</td>
+                <td style="font-family:monospace; color:#64748b;">--:--.---</td>
                 <td>
-                    <span style="color:${d.stdDev <= 0.25 ? '#34d399' : '#cbd5e1'}; font-weight:700;">±${d.stdDev.toFixed(2)}s</span>
-                    <span style="font-size:0.65rem; color:var(--text-muted);">(${consistencyRating})</span>
+                    <span style="color:${d.hasRealData ? '#34d399' : '#f87171'}; font-weight:700; font-size:0.7rem;">${d.hasRealData ? 'Verified' : 'No data'}</span>
                 </td>
                 <td style="font-family:monospace;">${d.fuelRate} L</td>
             </tr>
