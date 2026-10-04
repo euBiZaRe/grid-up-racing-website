@@ -717,13 +717,17 @@
     margin-bottom: 4.5rem; /* Room for sticky bottom bar */
 }
 
+#admin-hub.admin-content {
+    overflow: visible !important;
+}
+
 /* LEFT PANEL: DRIVER POOL */
 .tb-driver-pool-panel {
     flex: 0 0 32%;
     max-width: 35%;
     position: sticky;
-    top: 75px;
-    max-height: calc(100vh - 120px);
+    top: 80px;
+    max-height: calc(100vh - 100px);
     display: flex;
     flex-direction: column;
     background: linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, rgba(10, 14, 24, 0.98) 100%);
@@ -732,7 +736,7 @@
     padding: 1.15rem;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     transition: all 0.2s ease;
-    z-index: 90;
+    z-index: 100;
 }
 
 .tb-driver-pool-panel.drag-over {
@@ -897,16 +901,27 @@
     flex-direction: column;
     gap: 0.6rem;
     overflow-y: auto;
-    padding-right: 4px;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    padding-right: 6px;
     flex: 1;
+    min-height: 0;
 }
 
 .pool-cards-container::-webkit-scrollbar {
-    width: 5px;
+    width: 6px;
+}
+.pool-cards-container::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 4px;
 }
 .pool-cards-container::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(0, 207, 255, 0.35);
     border-radius: 4px;
+}
+.pool-cards-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 207, 255, 0.7);
 }
 
 /* Individual Driver Pool Card */
@@ -1832,9 +1847,9 @@ body.meeting-mode-active .team-status-pill {
 }
 
 /* ===================================================
-   RESPONSIVENESS (1366x768 & mobile)
+   RESPONSIVENESS (mobile & narrow tablets)
    =================================================== */
-@media (max-width: 1280px) {
+@media (max-width: 960px) {
     .team-builder-workspace {
         flex-direction: column;
     }
@@ -1842,7 +1857,7 @@ body.meeting-mode-active .team-status-pill {
         flex: 1 1 100%;
         max-width: 100%;
         position: static;
-        max-height: 280px;
+        max-height: 380px;
     }
     .tb-teams-grid-panel {
         width: 100%;
@@ -1894,7 +1909,7 @@ body.meeting-mode-active .team-status-pill {
         </div>
 
         <!-- Admin Content -->
-        <div id="admin-hub" class="admin-content" style="position: relative; overflow: hidden; padding-bottom: 2rem;">
+        <div id="admin-hub" class="admin-content" style="position: relative; overflow: visible; padding-bottom: 2rem;">
             <div class="tread-overlay" style="opacity: 0.05;"></div>
             <header class="admin-hero-header">
                 <div class="admin-hero-title-group">
@@ -5259,7 +5274,30 @@ body.meeting-mode-active .team-status-pill {
         }
 
         // Drag & Drop Handlers
+        let _dragScrollTimer = null;
+        let _isDraggingDriver = false;
+
+        function handleDragWindowAutoScroll(e) {
+            if (!_isDraggingDriver) return;
+            const threshold = 110;
+            const viewportH = window.innerHeight;
+            const clientY = e.clientY;
+
+            if (clientY < threshold) {
+                // Scroll up
+                const speed = Math.max(8, Math.round((threshold - clientY) / 4));
+                window.scrollBy({ top: -speed, behavior: 'auto' });
+            } else if (clientY > viewportH - threshold) {
+                // Scroll down
+                const speed = Math.max(8, Math.round((clientY - (viewportH - threshold)) / 4));
+                window.scrollBy({ top: speed, behavior: 'auto' });
+            }
+        }
+
         window.adminOnDriverDragStart = function(e, driverName, source = 'pool', originCarIdx = -1) {
+            _isDraggingDriver = true;
+            document.addEventListener('dragover', handleDragWindowAutoScroll, { passive: true });
+
             e.dataTransfer.setData("text/plain", driverName);
             e.dataTransfer.setData("source", source);
             e.dataTransfer.setData("originCarIdx", String(originCarIdx));
@@ -5272,6 +5310,9 @@ body.meeting-mode-active .team-status-pill {
         };
 
         window.adminOnDriverDragEnd = function(e) {
+            _isDraggingDriver = false;
+            document.removeEventListener('dragover', handleDragWindowAutoScroll);
+
             document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
             const unassignZone = document.getElementById('pool-unassign-dropzone');
             if (unassignZone) unassignZone.classList.remove('active');
