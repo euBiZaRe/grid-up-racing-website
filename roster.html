@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 
@@ -91,6 +91,27 @@
             color: var(--primary);
             font-weight: 800;
         }
+        .d-rating-val-wrap {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .d-rating-sr {
+            font-size: 0.62rem;
+            font-weight: 800;
+            font-family: monospace, sans-serif;
+            padding: 1px 5px;
+            border-radius: 3px;
+            line-height: 1.1;
+            letter-spacing: 0.3px;
+            display: inline-block;
+        }
+        .d-rating-sr.lic-p { background: rgba(0, 207, 255, 0.2); color: #38bdf8; border: 1px solid rgba(0, 207, 255, 0.4); }
+        .d-rating-sr.lic-a { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); }
+        .d-rating-sr.lic-b { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+        .d-rating-sr.lic-c { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+        .d-rating-sr.lic-d { background: rgba(249, 115, 22, 0.2); color: #fb923c; border: 1px solid rgba(249, 115, 22, 0.4); }
+        .d-rating-sr.lic-r { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
     </style>
 </head>
 <body class="roster-page">
@@ -262,6 +283,57 @@
             const rosterGrid = document.getElementById('roster-grid');
 
             try {
+                // Fetch fresh local stats cache
+                let localStatsCache = {};
+                try {
+                    const r = await fetch('driver_stats_2.json?v=' + Date.now());
+                    if (r.ok) localStatsCache = await r.json();
+                } catch (e) {
+                    console.warn("Could not load local stats cache:", e);
+                }
+
+                function normalizeName(str) {
+                    if (!str) return '';
+                    return String(str)
+                        .toLowerCase()
+                        .replace(/[^a-z0-9\s]/g, '')
+                        .replace(/\b[a-z]\b/g, '')
+                        .replace(/\d+$/g, '')
+                        .replace(/\s+/g, ' ')
+                        .trim();
+                }
+
+                function findStatsInCache(name) {
+                    if (!name || !localStatsCache) return null;
+                    const raw = String(name).trim();
+                    if (localStatsCache[raw]) return localStatsCache[raw];
+                    const norm = raw.toLowerCase();
+                    if (localStatsCache[norm]) return localStatsCache[norm];
+                    const cleaned = normalizeName(raw);
+                    if (cleaned && localStatsCache[cleaned]) return localStatsCache[cleaned];
+
+                    const keys = Object.keys(localStatsCache);
+                    for (const k of keys) {
+                        if (k.toLowerCase() === norm) return localStatsCache[k];
+                        const kClean = normalizeName(k);
+                        if (kClean && (kClean === cleaned || kClean === norm)) return localStatsCache[k];
+                    }
+                    const parts = norm.replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(Boolean);
+                    if (parts.length >= 2) {
+                        const fName = parts[0];
+                        const lName = parts[parts.length - 1].replace(/\d+$/, '');
+                        for (const k of keys) {
+                            const kParts = k.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(Boolean);
+                            if (kParts.length >= 2) {
+                                const kFirst = kParts[0];
+                                const kLast = kParts[kParts.length - 1].replace(/\d+$/, '');
+                                if (kFirst === fName && kLast === lName) return localStatsCache[k];
+                            }
+                        }
+                    }
+                    return null;
+                }
+
                 // Fetch claims to identify verified profiles
                 try {
                     const claimsSnap = await db.collection("claims").where("status", "==", "verified").get();
@@ -302,48 +374,72 @@
                 // Helper to render checkmark if verified
                 const getCheckmarkHTML = (name) => {
                     const isVerified = name && verifiedDrivers.has(name.trim().toLowerCase());
-                    // Check if toggle is currently checked (if admin loaded later/toggled already)
                     const toggle = document.getElementById('admin-verified-toggle');
                     const displayStyle = (toggle && toggle.checked && isVerified) ? 'inline-block' : 'none';
                     return isVerified ? `<span class="verified-check" style="display: ${displayStyle}; color: #10B981; margin-left: 0.5rem; font-size: 1.1rem; font-weight: 700;" title="Verified Driver">✓</span>` : '';
                 };
 
-                // Helper to format ratings for driver cards
-                const formatRating = (val) => {
-                    if (!val || val === 0 || val === '0' || val === '---') return 'N/A';
-                    const num = parseInt(val);
-                    return isNaN(num) || num <= 0 ? 'N/A' : String(num);
-                };
-
                 const getRatingsHTML = (d) => {
+                    const cEntry = findStatsInCache(d.name) || {};
                     const stats = d.stats || {};
                     const iratings = stats.iRatings || {};
+                    const licenses = stats.licenseLevels || {};
                     const iracingObj = d.iracing || {};
                     const detailedRatings = iracingObj.ratings || {};
 
-                    const getVal = (irKey, intKey) => {
-                        // Prefer iracing.ratings (newest accurate data from API)
-                        if (detailedRatings[irKey] && detailedRatings[irKey].value > 0) return formatRating(detailedRatings[irKey].value);
-                        // Fallback to legacy stats.iRatings
-                        if (iratings[intKey] && iratings[intKey] > 0) return formatRating(iratings[intKey]);
-                        return 'N/A';
+                    const getDiscInfo = (cName, irKey, intKey) => {
+                        let ir = null;
+                        let sr = null;
+
+                        // 1. Check local stats cache first
+                        if (cEntry[cName]) {
+                            if (cEntry[cName].irating && cEntry[cName].irating > 0) ir = cEntry[cName].irating;
+                            if (cEntry[cName].sr) sr = cEntry[cName].sr.trim();
+                        }
+
+                        // 2. Fallback to Firestore iracing.ratings or stats.iRatings
+                        if (!ir) {
+                            if (detailedRatings[irKey] && detailedRatings[irKey].value > 0) ir = detailedRatings[irKey].value;
+                            else if (iratings[intKey] && iratings[intKey] > 0) ir = iratings[intKey];
+                        }
+                        if (!sr) {
+                            if (licenses[intKey]) sr = licenses[intKey].trim();
+                        }
+
+                        const irText = (ir && ir > 0) ? Number(ir).toLocaleString() : 'N/A';
+                        let srClass = 'lic-r';
+                        if (sr) {
+                            const first = sr.charAt(0).toUpperCase();
+                            if (first === 'P') srClass = 'lic-p';
+                            else if (first === 'A') srClass = 'lic-a';
+                            else if (first === 'B') srClass = 'lic-b';
+                            else if (first === 'C') srClass = 'lic-c';
+                            else if (first === 'D') srClass = 'lic-d';
+                        }
+
+                        return { irText, sr, srClass, hasIr: irText !== 'N/A' };
                     };
 
-                    const sports = getVal('sportsCar', 'SPORTS');
-                    const formula = getVal('formulaCar', 'FORMULA');
-                    const oval = getVal('oval', 'OVAL');
-                    const dirtRoad = getVal('dirtRoad', 'DIRT_ROAD');
-                    const dirtOval = getVal('dirtOval', 'DIRT_OVAL');
-                    const road = getVal('road', 'ROAD');
+                    const disciplines = [
+                        { label: 'Sports Car', info: getDiscInfo('Sports Car', 'sportsCar', 'SPORTS') },
+                        { label: 'Formula', info: getDiscInfo('Formula Car', 'formulaCar', 'FORMULA') },
+                        { label: 'Oval', info: getDiscInfo('Oval', 'oval', 'OVAL') },
+                        { label: 'Dirt Road', info: getDiscInfo('Dirt Road', 'dirtRoad', 'DIRT_ROAD') },
+                        { label: 'Dirt Oval', info: getDiscInfo('Dirt Oval', 'dirtOval', 'DIRT_OVAL') },
+                        { label: 'Road', info: getDiscInfo('Road', 'road', 'ROAD') }
+                    ];
 
                     return `
                         <div class="driver-ratings-compact">
-                            <div class="d-rating-row"><span class="d-rating-lbl">Sports Car</span><span class="d-rating-val ${sports !== 'N/A' ? 'highlight' : ''}">${sports}</span></div>
-                            <div class="d-rating-row"><span class="d-rating-lbl">Formula</span><span class="d-rating-val ${formula !== 'N/A' ? 'highlight' : ''}">${formula}</span></div>
-                            <div class="d-rating-row"><span class="d-rating-lbl">Oval</span><span class="d-rating-val ${oval !== 'N/A' ? 'highlight' : ''}">${oval}</span></div>
-                            <div class="d-rating-row"><span class="d-rating-lbl">Dirt Road</span><span class="d-rating-val ${dirtRoad !== 'N/A' ? 'highlight' : ''}">${dirtRoad}</span></div>
-                            <div class="d-rating-row"><span class="d-rating-lbl">Dirt Oval</span><span class="d-rating-val ${dirtOval !== 'N/A' ? 'highlight' : ''}">${dirtOval}</span></div>
-                            <div class="d-rating-row"><span class="d-rating-lbl">Road</span><span class="d-rating-val ${road !== 'N/A' ? 'highlight' : ''}">${road}</span></div>
+                            ${disciplines.map(disc => `
+                                <div class="d-rating-row">
+                                    <span class="d-rating-lbl">${disc.label}</span>
+                                    <span class="d-rating-val-wrap">
+                                        <span class="d-rating-val ${disc.info.hasIr ? 'highlight' : ''}">${disc.info.irText}</span>
+                                        ${disc.info.sr ? `<span class="d-rating-sr ${disc.info.srClass}" title="Safety Rating: ${disc.info.sr}">${disc.info.sr}</span>` : ''}
+                                    </span>
+                                </div>
+                            `).join('')}
                         </div>
                     `;
                 };

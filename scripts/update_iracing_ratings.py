@@ -5,8 +5,13 @@ import sys
 import time
 from datetime import datetime, timezone
 import requests
-import firebase_admin
-from firebase_admin import credentials, firestore
+try:
+    import firebase_admin
+    from firebase_admin import credentials, firestore
+except ImportError:
+    firebase_admin = None
+    credentials = None
+    firestore = None
 
 # File paths
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -28,6 +33,8 @@ DISCIPLINES = [
 
 def init_firebase():
     """Initializes Firebase Admin SDK using environment variable or local credential."""
+    if not firebase_admin:
+        return None
     sa_json = os.environ.get('FIREBASE_SERVICE_ACCOUNT')
     if sa_json:
         try:
