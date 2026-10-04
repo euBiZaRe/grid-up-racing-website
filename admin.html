@@ -988,6 +988,60 @@
     gap: 4px;
 }
 
+.driver-stats-badges {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.driver-sr-pill {
+    font-size: 0.65rem;
+    font-weight: 800;
+    font-family: monospace, sans-serif;
+    padding: 2px 6px;
+    border-radius: 4px;
+    line-height: 1.1;
+    letter-spacing: 0.3px;
+    display: inline-flex;
+    align-items: center;
+}
+
+.driver-sr-pill.license-p {
+    background: rgba(0, 207, 255, 0.2);
+    border: 1px solid rgba(0, 207, 255, 0.45);
+    color: #38bdf8;
+}
+
+.driver-sr-pill.license-a {
+    background: rgba(59, 130, 246, 0.2);
+    border: 1px solid rgba(59, 130, 246, 0.45);
+    color: #60a5fa;
+}
+
+.driver-sr-pill.license-b {
+    background: rgba(16, 185, 129, 0.2);
+    border: 1px solid rgba(16, 185, 129, 0.45);
+    color: #34d399;
+}
+
+.driver-sr-pill.license-c {
+    background: rgba(245, 158, 11, 0.2);
+    border: 1px solid rgba(245, 158, 11, 0.45);
+    color: #fbbf24;
+}
+
+.driver-sr-pill.license-d {
+    background: rgba(249, 115, 22, 0.2);
+    border: 1px solid rgba(249, 115, 22, 0.45);
+    color: #fb923c;
+}
+
+.driver-sr-pill.license-r {
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.45);
+    color: #f87171;
+}
+
 .driver-card-mid {
     display: flex;
     justify-content: space-between;
@@ -1841,6 +1895,11 @@ body.meeting-mode-active .driver-irating-badge {
     font-size: 0.85rem !important;
 }
 
+body.meeting-mode-active .driver-sr-pill {
+    font-size: 0.78rem !important;
+    padding: 3px 8px !important;
+}
+
 body.meeting-mode-active .team-status-pill {
     font-size: 0.85rem !important;
     padding: 4px 10px !important;
@@ -2118,6 +2177,9 @@ body.meeting-mode-active .team-status-pill {
                         <div class="tb-action-buttons-group">
                             <button type="button" onclick="openAutoBalanceModal()" class="btn btn-tool" title="Auto-balance available drivers into squads by iRating">
                                 <i class="fas fa-wand-magic-sparkles" style="color:var(--primary);"></i> AUTO BALANCE
+                            </button>
+                            <button type="button" onclick="syncDriverStatsLive()" id="btn-builder-sync-stats" class="btn btn-tool" title="Sync live iRating and Safety Ratings for all drivers">
+                                <i class="fas fa-arrows-rotate" style="color:#38bdf8;"></i> SYNC STATS
                             </button>
                             <button type="button" onclick="undoBuilderAction()" id="btn-builder-undo" class="btn btn-tool" title="Undo last change" disabled style="opacity:0.5;">
                                 <i class="fas fa-undo-alt"></i> UNDO
@@ -4432,17 +4494,88 @@ body.meeting-mode-active .team-status-pill {
                 .trim();
         }
 
+        function findDriverStatsInLocalCache(driverNameOrUid) {
+            if (!driverNameOrUid || !window._localDriverStatsCache) return null;
+            const cache = window._localDriverStatsCache;
+            const str = String(driverNameOrUid).trim();
+            if (cache[str]) return cache[str];
+
+            const norm = str.toLowerCase();
+            if (cache[norm]) return cache[norm];
+
+            const cleaned = normalizeDriverName(str);
+            if (cleaned && cache[cleaned]) return cache[cleaned];
+
+            const keys = Object.keys(cache);
+            for (let i = 0; i < keys.length; i++) {
+                const k = keys[i];
+                if (k.toLowerCase() === norm) return cache[k];
+                const kClean = normalizeDriverName(k);
+                if (kClean && (kClean === cleaned || kClean === norm)) return cache[k];
+            }
+
+            // Try matching first and last name (ignoring middle initials and trailing digits)
+            const parts = str.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(Boolean);
+            if (parts.length >= 2) {
+                const fName = parts[0];
+                const lName = parts[parts.length - 1].replace(/\d+$/, '');
+                for (let i = 0; i < keys.length; i++) {
+                    const k = keys[i];
+                    const kParts = k.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(Boolean);
+                    if (kParts.length >= 2) {
+                        const kFirst = kParts[0];
+                        const kLast = kParts[kParts.length - 1].replace(/\d+$/, '');
+                        if (kFirst === fName && kLast === lName) {
+                            return cache[k];
+                        }
+                    }
+                }
+            }
+
+            // If string is a UID or doc id, check if _adminDriverRosterMap has a driver name
+            if (window._adminDriverRosterMap && window._adminDriverRosterMap[str]) {
+                const rDoc = window._adminDriverRosterMap[str];
+                if (rDoc && rDoc.name && rDoc.name !== str) {
+                    return findDriverStatsInLocalCache(rDoc.name);
+                }
+            }
+
+            return null;
+        }
+
         function getDriverIRating(driverNameOrUid, carClass = 'GT3') {
             if (!driverNameOrUid) return null;
             const str = String(driverNameOrUid).trim();
+            const cLow = (carClass || '').toLowerCase();
+
+            // 1. Check local stats cache first (freshest live iRacing career data from driver_stats_2.json)
+            const cEntry = findDriverStatsInLocalCache(str);
+            if (cEntry) {
+                let val = null;
+                if (cLow.includes('formula') || cLow.includes('indy')) {
+                    val = cEntry['Formula Car']?.irating || cEntry['Sports Car']?.irating;
+                } else if (cLow.includes('nascar') || cLow.includes('oval')) {
+                    val = cEntry['Oval']?.irating;
+                } else if (cLow.includes('dirt')) {
+                    val = cEntry['Dirt Road']?.irating || cEntry['Dirt Oval']?.irating;
+                } else {
+                    val = cEntry['Sports Car']?.irating || cEntry['Road']?.irating;
+                }
+                if (!val) {
+                    val = cEntry['Sports Car']?.irating || cEntry['Road']?.irating || cEntry['Formula Car']?.irating || cEntry['Oval']?.irating;
+                }
+                if (val && !isNaN(val) && val > 0) {
+                    return Math.round(val);
+                }
+            }
+
+            // 2. Fallback to Firestore driver doc in _adminDriverRosterMap or ROSTER_CACHE
             const norm = str.toLowerCase();
             const cleaned = normalizeDriverName(str);
             const map = window._adminDriverRosterMap || {};
 
             let d = map[str] || map[norm];
-            if (!d && cleaned) {
-                d = map[cleaned];
-            }
+            if (!d && cleaned) d = map[cleaned];
             if (!d) {
                 const parts = norm.split(/\s+/);
                 if (parts.length >= 2) {
@@ -4466,7 +4599,6 @@ body.meeting-mode-active .team-status-pill {
                 if (match) d = match;
             }
             if (!d) {
-                // Try matching first and last name across roster map
                 const parts = norm.split(/\s+/);
                 if (parts.length >= 2) {
                     const fName = parts[0];
@@ -4480,19 +4612,17 @@ body.meeting-mode-active .team-status-pill {
                 }
             }
 
-            const extractVal = (v) => {
-                if (v === null || v === undefined) return null;
-                if (typeof v === 'object' && 'value' in v) return extractVal(v.value);
-                const num = Number(v);
-                return (!isNaN(num) && num > 0) ? num : null;
-            };
-
-            let val = null;
-            const cLow = (carClass || '').toLowerCase();
-
             if (d) {
+                const extractVal = (v) => {
+                    if (v === null || v === undefined) return null;
+                    if (typeof v === 'object' && 'value' in v) return extractVal(v.value);
+                    const num = Number(v);
+                    return (!isNaN(num) && num > 0) ? num : null;
+                };
+
                 const detailedRatings = (d.iracing && d.iracing.ratings) || {};
                 const statsRatings = (d.stats && d.stats.iRatings) || {};
+                let val = null;
 
                 if (cLow.includes('formula') || cLow.includes('indy')) {
                     val = extractVal(detailedRatings.formulaCar) || extractVal(statsRatings.FORMULA);
@@ -4501,7 +4631,6 @@ body.meeting-mode-active .team-status-pill {
                 } else if (cLow.includes('dirt')) {
                     val = extractVal(detailedRatings.dirtRoad) || extractVal(statsRatings.DIRT_ROAD) || extractVal(detailedRatings.dirtOval) || extractVal(statsRatings.DIRT_OVAL);
                 } else {
-                    // Sports car / GT3 / GTP / LMP2 / Supercars / etc.
                     val = extractVal(detailedRatings.sportsCar) || extractVal(statsRatings.SPORTS) || extractVal(detailedRatings.road) || extractVal(statsRatings.ROAD);
                 }
 
@@ -4525,41 +4654,196 @@ body.meeting-mode-active .team-status-pill {
                         }
                     }
                 }
+                if (val && !isNaN(val) && val > 0) return Math.round(val);
             }
 
-            // Fallback: check window._localDriverStatsCache
-            if (!val && window._localDriverStatsCache) {
-                const cache = window._localDriverStatsCache;
-                let cEntry = cache[str] || cache[norm];
-                if (!cEntry || !cEntry['Sports Car'] || !cEntry['Sports Car'].irating) {
-                    const matchedKey = Object.keys(cache).find(k => {
-                        const knorm = normalizeDriverName(k);
-                        if (knorm && (knorm === cleaned || knorm === norm) && cache[k] && cache[k]['Sports Car'] && cache[k]['Sports Car'].irating) {
-                            return true;
-                        }
-                        return false;
-                    });
-                    if (matchedKey) cEntry = cache[matchedKey];
-                }
-
-                if (cEntry) {
-                    if (cLow.includes('formula') || cLow.includes('indy')) {
-                        val = cEntry['Formula Car'] && cEntry['Formula Car'].irating;
-                    } else if (cLow.includes('nascar') || cLow.includes('oval')) {
-                        val = cEntry['Oval'] && cEntry['Oval'].irating;
-                    } else if (cLow.includes('dirt')) {
-                        val = (cEntry['Dirt Road'] && cEntry['Dirt Road'].irating) || (cEntry['Dirt Oval'] && cEntry['Dirt Oval'].irating);
-                    } else {
-                        val = (cEntry['Sports Car'] && cEntry['Sports Car'].irating) || (cEntry['Road'] && cEntry['Road'].irating);
-                    }
-                    if (!val) {
-                        val = (cEntry['Sports Car'] && cEntry['Sports Car'].irating) || (cEntry['Road'] && cEntry['Road'].irating) || (cEntry['Formula Car'] && cEntry['Formula Car'].irating) || (cEntry['Oval'] && cEntry['Oval'].irating);
-                    }
-                }
-            }
-
-            return (val && !isNaN(val) && val > 0) ? Math.round(val) : null;
+            return null;
         }
+
+        function getDriverSafetyRating(driverNameOrUid, carClass = 'GT3') {
+            if (!driverNameOrUid) return null;
+            const str = String(driverNameOrUid).trim();
+            const cLow = (carClass || '').toLowerCase();
+
+            // 1. Check local stats cache first
+            const cEntry = findDriverStatsInLocalCache(str);
+            if (cEntry) {
+                let sr = null;
+                if (cLow.includes('formula') || cLow.includes('indy')) {
+                    sr = cEntry['Formula Car']?.sr || cEntry['Sports Car']?.sr;
+                } else if (cLow.includes('nascar') || cLow.includes('oval')) {
+                    sr = cEntry['Oval']?.sr;
+                } else if (cLow.includes('dirt')) {
+                    sr = cEntry['Dirt Road']?.sr || cEntry['Dirt Oval']?.sr;
+                } else {
+                    sr = cEntry['Sports Car']?.sr || cEntry['Road']?.sr;
+                }
+                if (!sr) {
+                    sr = cEntry['Sports Car']?.sr || cEntry['Road']?.sr || cEntry['Formula Car']?.sr || cEntry['Oval']?.sr;
+                }
+                if (sr && typeof sr === 'string' && sr.trim()) {
+                    return sr.trim();
+                }
+            }
+
+            // 2. Check Firestore driver doc
+            const norm = str.toLowerCase();
+            const cleaned = normalizeDriverName(str);
+            const map = window._adminDriverRosterMap || {};
+            let d = map[str] || map[norm];
+            if (!d && cleaned) d = map[cleaned];
+            if (!d && typeof ROSTER_CACHE !== 'undefined' && ROSTER_CACHE) {
+                d = ROSTER_CACHE[str] || Object.values(ROSTER_CACHE).find(item => {
+                    if (!item) return false;
+                    const inorm = normalizeDriverName(item.name);
+                    return (inorm && (inorm === cleaned || inorm === norm)) || item.linkedUid === str || item.uid === str;
+                });
+            }
+            if (d) {
+                const statsLicenses = (d.stats && d.stats.licenseLevels) || {};
+                let sr = null;
+                if (cLow.includes('formula') || cLow.includes('indy')) {
+                    sr = statsLicenses.FORMULA || statsLicenses.SPORTS;
+                } else if (cLow.includes('nascar') || cLow.includes('oval')) {
+                    sr = statsLicenses.OVAL;
+                } else if (cLow.includes('dirt')) {
+                    sr = statsLicenses.DIRT_ROAD || statsLicenses.DIRT_OVAL;
+                } else {
+                    sr = statsLicenses.SPORTS || statsLicenses.ROAD;
+                }
+                if (!sr) {
+                    sr = statsLicenses.SPORTS || statsLicenses.ROAD || statsLicenses.FORMULA || statsLicenses.OVAL;
+                }
+                if (sr && typeof sr === 'string' && sr.trim()) return sr.trim();
+
+                const detailedRatings = (d.iracing && d.iracing.ratings) || {};
+                let catObj = detailedRatings.sportsCar || detailedRatings.road || detailedRatings.formulaCar || detailedRatings.oval;
+                if (catObj && catObj.safety_rating !== undefined && catObj.license_level !== undefined) {
+                    const lvl = Number(catObj.license_level);
+                    let letter = 'R';
+                    if (lvl > 20) letter = 'P';
+                    else if (lvl > 16) letter = 'A';
+                    else if (lvl > 12) letter = 'B';
+                    else if (lvl > 8) letter = 'C';
+                    else if (lvl > 4) letter = 'D';
+                    return `${letter} ${Number(catObj.safety_rating).toFixed(2)}`;
+                }
+            }
+
+            return null;
+        }
+
+        function getDriverSrBadgeHtml(srString) {
+            if (!srString || typeof srString !== 'string') return '';
+            const clean = srString.trim();
+            if (!clean) return '';
+            const firstChar = clean.charAt(0).toUpperCase();
+            let cls = 'license-r';
+            if (firstChar === 'P') cls = 'license-p';
+            else if (firstChar === 'A') cls = 'license-a';
+            else if (firstChar === 'B') cls = 'license-b';
+            else if (firstChar === 'C') cls = 'license-c';
+            else if (firstChar === 'D') cls = 'license-d';
+            return `<span class="driver-sr-pill ${cls}" title="iRacing Safety Rating: ${clean}">${clean}</span>`;
+        }
+
+        window.syncDriverStatsLive = async function() {
+            const btn = document.getElementById('btn-builder-sync-stats');
+            const origHtml = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<i class="fas fa-spinner fa-spin" style="color:#38bdf8;"></i> SYNCING...`;
+            }
+
+            try {
+                // 1. Fetch freshest driver_stats_2.json with cache buster
+                const r = await fetch('driver_stats_2.json?v=' + Date.now());
+                if (r.ok) {
+                    window._localDriverStatsCache = await r.json();
+                } else {
+                    throw new Error("Could not fetch driver_stats_2.json: " + r.status);
+                }
+
+                // 2. Sync into Firestore drivers collection if admin is authenticated
+                let updatedCount = 0;
+                if (typeof db !== 'undefined' && db) {
+                    const snap = await db.collection("drivers").get();
+                    const batch = db.batch();
+                    let batchCount = 0;
+
+                    snap.forEach(doc => {
+                        const data = doc.data();
+                        const dName = data.name;
+                        const statsEntry = findDriverStatsInLocalCache(dName);
+                        if (statsEntry && statsEntry['Sports Car']) {
+                            const sportsIr = statsEntry['Sports Car'].irating;
+                            const sportsSr = statsEntry['Sports Car'].sr;
+                            const formulaIr = statsEntry['Formula Car']?.irating || null;
+                            const formulaSr = statsEntry['Formula Car']?.sr || null;
+                            const ovalIr = statsEntry['Oval']?.irating || null;
+                            const ovalSr = statsEntry['Oval']?.sr || null;
+
+                            const iRatings = {
+                                SPORTS: sportsIr,
+                                ROAD: statsEntry['Road']?.irating || sportsIr,
+                                FORMULA: formulaIr,
+                                OVAL: ovalIr,
+                                DIRT_ROAD: statsEntry['Dirt Road']?.irating || null,
+                                DIRT_OVAL: statsEntry['Dirt Oval']?.irating || null
+                            };
+
+                            const licenseLevels = {
+                                SPORTS: sportsSr,
+                                ROAD: statsEntry['Road']?.sr || sportsSr,
+                                FORMULA: formulaSr,
+                                OVAL: ovalSr,
+                                DIRT_ROAD: statsEntry['Dirt Road']?.sr || null,
+                                DIRT_OVAL: statsEntry['Dirt Oval']?.sr || null
+                            };
+
+                            const updatePayload = {
+                                "stats.iRatings": iRatings,
+                                "stats.licenseLevels": licenseLevels,
+                                "irating": sportsIr,
+                                "lastUpdated": firebase.firestore.FieldValue.serverTimestamp()
+                            };
+
+                            batch.update(doc.ref, updatePayload);
+                            batchCount++;
+                            updatedCount++;
+
+                            // Also update local in-memory roster map
+                            if (window._adminDriverRosterMap) {
+                                const existing = window._adminDriverRosterMap[doc.id] || window._adminDriverRosterMap[(data.name || '').toLowerCase()];
+                                if (existing) {
+                                    if (!existing.stats) existing.stats = {};
+                                    existing.stats.iRatings = iRatings;
+                                    existing.stats.licenseLevels = licenseLevels;
+                                    existing.irating = sportsIr;
+                                }
+                            }
+                        }
+                    });
+
+                    if (batchCount > 0) {
+                        await batch.commit();
+                    }
+                }
+
+                // 3. Re-render UI
+                refreshAdminBuilderUI();
+
+                alert(`✅ Driver stats synced successfully!\nUpdated ${updatedCount > 0 ? updatedCount : Object.keys(window._localDriverStatsCache || {}).length} drivers with latest iRating & Safety Ratings.`);
+            } catch (err) {
+                console.error("Error syncing driver stats:", err);
+                alert("Failed to sync driver stats: " + (err.message || err));
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = origHtml;
+                }
+            }
+        };
 
                 // ===================================================
         // TEAM BUILDER STUDIO - ENGINE & STATE
@@ -4819,7 +5103,7 @@ body.meeting-mode-active .team-status-pill {
                     console.warn("Could not load drivers for Team Builder iRating:", e);
                 }
 
-                if (!window._localDriverStatsCache) {
+                if (forceReload || !window._localDriverStatsCache) {
                     try {
                         const r = await fetch('driver_stats_2.json?v=' + Date.now());
                         if (r.ok) {
@@ -5019,8 +5303,10 @@ body.meeting-mode-active .team-status-pill {
                     }
                 });
 
-                // iRating lookup
+                // iRating & SR lookup
                 const irating = getDriverIRating(d.id, eligibleClasses[0] || 'GT3') || getDriverIRating(driverName, eligibleClasses[0] || 'GT3');
+                const safetyRating = getDriverSafetyRating(d.id, eligibleClasses[0] || 'GT3') || getDriverSafetyRating(driverName, eligibleClasses[0] || 'GT3');
+                const srHtml = getDriverSrBadgeHtml(safetyRating);
                 const driverClass = d.preferredClass || 'GT3';
                 const driverChassis = d.preferredChassis || d.preferredCar || d.chassis || d.selectedCar || d.car || '';
                 const isEligible = !driverClass || eligibleClasses.some(ec => ec.toLowerCase() === driverClass.toLowerCase() || (ec === 'Supercars' && driverClass.toLowerCase().includes('supercar')));
@@ -5037,9 +5323,12 @@ body.meeting-mode-active .team-status-pill {
                                 <span class="status-dot ${assignedTeamName ? 'purple' : statusDotClass}"></span>
                                 <strong class="driver-name">${driverName}</strong>
                             </div>
-                            <div class="driver-irating-badge">
-                                <i class="fas fa-chart-line" style="font-size:0.6rem;"></i>
-                                <span class="irating-number">${irating ? irating.toLocaleString() + ' iR' : 'No iR'}</span>
+                            <div class="driver-stats-badges">
+                                <div class="driver-irating-badge">
+                                    <i class="fas fa-chart-line" style="font-size:0.6rem;"></i>
+                                    <span class="irating-number">${irating ? irating.toLocaleString() + ' iR' : 'No iR'}</span>
+                                </div>
+                                ${srHtml}
                             </div>
                         </div>
 
@@ -5152,6 +5441,8 @@ body.meeting-mode-active .team-status-pill {
                             ${carDriversList.map(driverName => {
                                 const resp = responses.find(r => (r.driverName || '').trim().toLowerCase() === driverName.trim().toLowerCase());
                                 const ir = getDriverIRating(resp ? resp.id : null, car.car_class) || getDriverIRating(driverName, car.car_class);
+                                const sr = getDriverSafetyRating(resp ? resp.id : null, car.car_class) || getDriverSafetyRating(driverName, car.car_class);
+                                const srHtml = getDriverSrBadgeHtml(sr);
                                 const driverChassis = resp ? (resp.preferredChassis || resp.preferredCar || resp.chassis || resp.selectedCar || resp.car || '') : '';
                                 const isCaptain = car.captain && car.captain.trim().toLowerCase() === driverName.trim().toLowerCase();
                                 const escapedName = driverName.replace(/'/g, "\\'");
@@ -5172,6 +5463,7 @@ body.meeting-mode-active .team-status-pill {
                                         </div>
                                         <div class="driver-row-details">
                                             <span class="driver-row-ir">${ir ? ir.toLocaleString() + ' iR' : '--'}</span>
+                                            ${srHtml}
                                             ${driverChassis ? `<span class="driver-row-car" title="Preferred Car"><i class="fas fa-car-side" style="color:var(--primary); font-size:0.6rem;"></i> ${driverChassis.split(' ')[0]}</span>` : ''}
                                         </div>
                                         <div class="driver-row-actions">

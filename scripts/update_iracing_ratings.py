@@ -334,6 +334,26 @@ def main():
                     driver_dict["_docId"] = doc_id
                     drivers_list.append(driver_dict)
                 print(f"Loaded {len(drivers_list)} drivers from Firestore via REST API.")
+
+            # Also fetch claims via REST API if claims_map is empty
+            if not claims_map:
+                try:
+                    claims_url = "https://firestore.googleapis.com/v1/projects/grid-up/databases/(default)/documents/claims?pageSize=100"
+                    cr = requests.get(claims_url, timeout=15)
+                    if cr.status_code == 200:
+                        cdocs = cr.json().get("documents", [])
+                        for cdoc in cdocs:
+                            cfields = cdoc.get("fields", {})
+                            cid_val = parse_val(cfields.get("iracingId"))
+                            did_val = parse_val(cfields.get("driverIdentity"))
+                            cname = cdoc.get("name", "").split("/")[-1].strip().lower()
+                            if cid_val:
+                                claims_map[cname] = str(cid_val).strip()
+                                if did_val:
+                                    claims_map[str(did_val).strip().lower()] = str(cid_val).strip()
+                        print(f"Loaded {len(claims_map)} claims mappings via REST API.")
+                except Exception as ce:
+                    print(f"Claims REST API fetch failed: {ce}")
         except Exception as e:
             print(f"Firestore REST API fetch failed: {e}")
 
