@@ -8,7 +8,7 @@ let ALL_EVENTS = [];
 let ALL_LINEUPS = {};
 let GARAGE61_DATA = null;
 let SELECTED_EVENT_ID = '';
-let SELECTED_CAR_INDEX = 0;
+let SELECTED_CAR_INDEX = 'all';
 let SELECTED_CAR_NAME = '';
 let SELECTED_TRACK_NAME = '';
 let START_TIME_FILTER = null; // Cutoff timestamp (ms)
@@ -171,12 +171,18 @@ function evaluateCaptainPermissions() {
     // Toggle Tweaker controls visibility or permissions badge
     const saveBtn = document.getElementById('btn-save-setup');
     if (saveBtn) {
-        saveBtn.disabled = !isCaptain;
-        saveBtn.title = isCaptain ? "Save setup sheet for your team" : "Only the Team Captain or Admin can publish official team setup sheets";
-        if (!isCaptain && LOGGED_IN_USER) {
-            saveBtn.style.opacity = '0.6';
+        if (curCar && curCar.isAll) {
+            saveBtn.disabled = true;
+            saveBtn.title = "Select a specific team entry from the dropdown to edit and publish its car setup sheet";
+            saveBtn.style.opacity = '0.5';
         } else {
-            saveBtn.style.opacity = '1';
+            saveBtn.disabled = !isCaptain;
+            saveBtn.title = isCaptain ? "Save setup sheet for your team" : "Only the Team Captain or Admin can publish official team setup sheets";
+            if (!isCaptain && LOGGED_IN_USER) {
+                saveBtn.style.opacity = '0.6';
+            } else {
+                saveBtn.style.opacity = '1';
+            }
         }
     }
 }
@@ -198,11 +204,74 @@ function resolveEventTrack(eventId, explicitTrack) {
     return 'Silverstone Circuit - Grand Prix';
 }
 
+// Default confirmed squads across GRiD UP special events
+const DEFAULT_EVENT_TEAMS = [
+    {
+        name: 'GRiD UP Sim Racing',
+        carNumber: '144',
+        captain: 'Jacob Reid',
+        carModel: 'Ferrari 296 GT3',
+        car_class: 'Pro Squad',
+        drivers: ['Jacob Reid', 'Alex Cortez', 'Andrew Fabian']
+    },
+    {
+        name: 'GRiD UP Blue',
+        carNumber: '141',
+        captain: 'Daniel Tamminga',
+        carModel: 'BMW M4 GT3 EVO',
+        car_class: 'Endurance',
+        drivers: ['Daniel Tamminga', 'Strats G', 'Chandler English']
+    },
+    {
+        name: 'GRiD UP Black',
+        carNumber: '142',
+        captain: 'Jacob Roberts',
+        carModel: 'Porsche 911 GT3 R (992)',
+        car_class: 'GT3',
+        drivers: ['Jacob Roberts', 'Christian Rivera', 'Andrew Gould']
+    },
+    {
+        name: 'GRiD UP Red',
+        carNumber: '143',
+        captain: 'Matty Roberts',
+        carModel: 'McLaren 720S GT3 EVO',
+        car_class: 'Silver',
+        drivers: ['Matty Roberts', 'Harrison Holliday', 'Zack Saunders']
+    },
+    {
+        name: 'GRiD UP White',
+        carNumber: '145',
+        captain: 'Connor Hatfield',
+        carModel: 'Mercedes-AMG GT3 2020',
+        car_class: 'GT3 Am',
+        drivers: ['Connor Hatfield', 'Levi Wolfe', 'Ric Wishon']
+    },
+    {
+        name: 'GRiD UP Purple',
+        carNumber: '146',
+        captain: 'Jason Hayden',
+        carModel: 'Aston Martin Vantage GT3 EVO',
+        car_class: 'GT3 Club',
+        drivers: ['Jason Hayden', 'Keith Todd', 'Stephen Smalley']
+    }
+];
+
+function getSquadColor(squadName) {
+    if (!squadName) return { text: '#00cfff', bg: 'rgba(0, 207, 255, 0.12)', border: 'rgba(0, 207, 255, 0.3)' };
+    const lower = squadName.toLowerCase();
+    if (lower.includes('blue')) return { text: '#60a5fa', bg: 'rgba(59, 130, 246, 0.15)', border: 'rgba(59, 130, 246, 0.35)' };
+    if (lower.includes('black')) return { text: '#cbd5e1', bg: 'rgba(148, 163, 184, 0.15)', border: 'rgba(148, 163, 184, 0.35)' };
+    if (lower.includes('red')) return { text: '#f87171', bg: 'rgba(239, 68, 68, 0.15)', border: 'rgba(239, 68, 68, 0.35)' };
+    if (lower.includes('white')) return { text: '#f8fafc', bg: 'rgba(248, 250, 252, 0.12)', border: 'rgba(248, 250, 252, 0.35)' };
+    if (lower.includes('purple')) return { text: '#c084fc', bg: 'rgba(168, 85, 247, 0.15)', border: 'rgba(168, 85, 247, 0.35)' };
+    return { text: '#00cfff', bg: 'rgba(0, 207, 255, 0.12)', border: 'rgba(0, 207, 255, 0.3)' };
+}
+
 // Load All Core Data
 async function loadInitialData() {
     const urlParams = new URLSearchParams(window.location.search);
     const targetEvent = urlParams.get('event') || '';
-    const targetCarIdx = parseInt(urlParams.get('car') || '0', 10);
+    const carParam = urlParams.get('car');
     const targetTrack = urlParams.get('track') || '';
     const targetCarName = urlParams.get('carName') || '';
 
@@ -230,7 +299,13 @@ async function loadInitialData() {
         SELECTED_EVENT_ID = ALL_EVENTS[0].id;
     }
 
-    SELECTED_CAR_INDEX = (!isNaN(targetCarIdx) && targetCarIdx >= 0) ? targetCarIdx : 0;
+    if (carParam === 'all') {
+        SELECTED_CAR_INDEX = 'all';
+    } else if (carParam !== null && !isNaN(parseInt(carParam, 10))) {
+        SELECTED_CAR_INDEX = parseInt(carParam, 10);
+    } else {
+        SELECTED_CAR_INDEX = 'all';
+    }
     if (targetTrack) SELECTED_TRACK_NAME = targetTrack;
     if (targetCarName) SELECTED_CAR_NAME = targetCarName;
 
@@ -373,23 +448,28 @@ function onEventChanged(eventId, render = true) {
     // Populate Team Entries for this Event
     const teamSelect = document.getElementById('select-team-car');
     if (teamSelect) {
-        const teams = lineup.teams || [];
-        if (teams.length > 0) {
-            teamSelect.innerHTML = teams.map((t, idx) => {
-                const tName = t.name || t.teamName || `Car #${t.carNumber || idx + 1}`;
-                const tClass = t.car_class || t.carClass || 'GT3';
-                const tChassis = t.carModel || `${tClass} Entry`;
-                const tCapt = t.captain ? ` (👑 ${t.captain})` : '';
-                return `<option value="${idx}" ${idx === SELECTED_CAR_INDEX ? 'selected' : ''}>${tName} - ${tChassis}${tCapt}</option>`;
-            }).join('');
-        } else {
-            teamSelect.innerHTML = `
-                <option value="0">GRiD UP Sim Racing - Pro Squad</option>
-                <option value="1">GRiD UP Blue - Endurance</option>
-                <option value="2">GRiD UP Black - GT3</option>
-                <option value="3">GRiD UP Red - Silver</option>
-            `;
+        const teams = (lineup.teams && lineup.teams.length > 0) ? lineup.teams : DEFAULT_EVENT_TEAMS;
+
+        // If previously selected index is out of bounds for new event, fallback to 'all'
+        if (SELECTED_CAR_INDEX !== 'all') {
+            const numIdx = Number(SELECTED_CAR_INDEX);
+            if (isNaN(numIdx) || numIdx < 0 || numIdx >= teams.length) {
+                SELECTED_CAR_INDEX = 'all';
+            }
         }
+
+        let optionsHtml = `<option value="all" ${SELECTED_CAR_INDEX === 'all' ? 'selected' : ''}>🌟 All Teams (Full Squad)</option>`;
+        optionsHtml += teams.map((t, idx) => {
+            const tName = t.name || t.teamName || `Car #${t.carNumber || idx + 1}`;
+            const tClass = t.car_class || t.carClass || '';
+            const tChassis = t.carModel || (tClass ? `${tClass} Entry` : 'GT3 Entry');
+            const labelDetail = (tClass && t.carModel) ? `${tClass} (${t.carModel})` : (tClass || tChassis);
+            const tCapt = t.captain ? ` (👑 ${t.captain})` : '';
+            const isSelected = (SELECTED_CAR_INDEX !== 'all' && Number(SELECTED_CAR_INDEX) === idx);
+            return `<option value="${idx}" ${isSelected ? 'selected' : ''}>${tName} - ${labelDetail}${tCapt}</option>`;
+        }).join('');
+
+        teamSelect.innerHTML = optionsHtml;
     }
 
     populateCarAndTrackDropdowns();
@@ -461,20 +541,45 @@ function populateCarAndTrackDropdowns() {
     }
 }
 
-// Get Currently Active Team Entry from Firestore lineup
+// Get Currently Active Team Entry from Firestore lineup or default squads
 function getActiveCarEntry() {
     const lineup = ALL_LINEUPS[SELECTED_EVENT_ID];
-    if (lineup && lineup.teams && lineup.teams[SELECTED_CAR_INDEX]) {
-        return lineup.teams[SELECTED_CAR_INDEX];
+    const teams = (lineup && lineup.teams && lineup.teams.length > 0) ? lineup.teams : DEFAULT_EVENT_TEAMS;
+
+    if (SELECTED_CAR_INDEX === 'all') {
+        const allDrivers = [];
+        const driverSquadMap = {};
+
+        teams.forEach((t, tIdx) => {
+            const tName = t.name || t.teamName || `Car #${t.carNumber || tIdx + 1}`;
+            (t.drivers || []).forEach(d => {
+                if (d && !allDrivers.includes(d)) {
+                    allDrivers.push(d);
+                    driverSquadMap[d] = tName;
+                } else if (d && !driverSquadMap[d]) {
+                    driverSquadMap[d] = tName;
+                }
+            });
+        });
+
+        return {
+            name: 'All Teams (Full Squad)',
+            isAll: true,
+            carNumber: 'ALL',
+            captain: '',
+            carModel: SELECTED_CAR_NAME || 'All Squad Cars',
+            car_class: 'Full Squad Roster',
+            drivers: allDrivers,
+            driverSquadMap: driverSquadMap,
+            teams: teams
+        };
     }
-    return {
-        name: 'GRiD UP Sim Racing',
-        carNumber: '144',
-        captain: 'Jacob Reid',
-        carModel: SELECTED_CAR_NAME || 'Ferrari 296 GT3',
-        car_class: 'GT3',
-        drivers: ['Jacob Reid', 'Matty Roberts', 'Christian Rivera']
-    };
+
+    const idx = Number(SELECTED_CAR_INDEX);
+    if (!isNaN(idx) && teams[idx]) {
+        return teams[idx];
+    }
+    return teams[0] || DEFAULT_EVENT_TEAMS[0];
 }
 
 // Setup Event Listeners
@@ -487,9 +592,14 @@ function setupFilterEventListeners() {
     const teamSel = document.getElementById('select-team-car');
     if (teamSel) {
         teamSel.addEventListener('change', (e) => {
-            SELECTED_CAR_INDEX = parseInt(e.target.value, 10);
+            const val = e.target.value;
+            if (val === 'all') {
+                SELECTED_CAR_INDEX = 'all';
+            } else {
+                SELECTED_CAR_INDEX = parseInt(val, 10);
+            }
             const curCar = getActiveCarEntry();
-            if (curCar && curCar.carModel) {
+            if (curCar && curCar.carModel && !curCar.isAll) {
                 SELECTED_CAR_NAME = curCar.carModel;
                 const carSel = document.getElementById('select-car');
                 if (carSel) carSel.value = SELECTED_CAR_NAME;
@@ -593,15 +703,27 @@ function refreshDashboardIntel() {
 
     // Update Hero Title & Badges
     const evNameEl = document.getElementById('display-event-name');
-    if (evNameEl) evNameEl.textContent = curCar.name || 'Team Entry';
+    if (evNameEl) {
+        if (curCar.isAll) {
+            evNameEl.innerHTML = `All Teams (Full Squad) <span style="font-size:0.95rem; font-weight:400; opacity:0.8; display:block; margin-top:4px;">${teamDrivers.length} Drivers across ${curCar.teams ? curCar.teams.length : 6} Team Squads</span>`;
+        } else {
+            evNameEl.textContent = curCar.name || 'Team Entry';
+        }
+    }
 
     const carTrackEl = document.getElementById('display-car-track');
     if (carTrackEl) {
+        const carDisplay = curCar.isAll ? (SELECTED_CAR_NAME || 'All GT3 Chassis') : SELECTED_CAR_NAME;
         carTrackEl.innerHTML = `
-            <i class="fas fa-car-side" style="color:var(--primary); margin-right:5px;"></i> ${SELECTED_CAR_NAME} 
+            <i class="fas fa-car-side" style="color:var(--primary); margin-right:5px;"></i> ${carDisplay} 
             <span style="margin: 0 8px; opacity:0.4;">|</span> 
             <i class="fas fa-map-marker-alt" style="color:var(--primary); margin-right:5px;"></i> ${SELECTED_TRACK_NAME}
         `;
+    }
+
+    const badgeEl = document.querySelector('.section-count-badge');
+    if (badgeEl) {
+        badgeEl.textContent = curCar.isAll ? `Full Squad (${teamDrivers.length} Drivers)` : `${curCar.name || 'Assigned Squad'} (${teamDrivers.length} Drivers)`;
     }
 
     // Process Driving Sessions for each team driver
@@ -647,10 +769,10 @@ function refreshDashboardIntel() {
     if (kpiSessions) kpiSessions.textContent = `${teamTotalSessions} Stints`;
 
     // Render Driver Session Cards
-    renderDriverSessionCards(driverResults, captainName, teamFastestLap);
+    renderDriverSessionCards(driverResults, captainName, teamFastestLap, curCar.driverSquadMap);
 
     // Render Head-to-Head Comparison Table
-    renderHeadToHeadMatrix(driverResults, teamFastestLap);
+    renderHeadToHeadMatrix(driverResults, teamFastestLap, curCar.driverSquadMap);
 
     // Run Telemetry Setup Diagnostics & Render Recommendations
     runSetupAdvisorDiagnostics(driverResults, SELECTED_CAR_NAME, SELECTED_TRACK_NAME);
@@ -822,7 +944,7 @@ function compileDriverSessionIntel(driverName, carName, trackName, cutoffTime) {
 }
 
 // Render Driver Session Cards
-function renderDriverSessionCards(drivers, captainName, fastestTeamLap) {
+function renderDriverSessionCards(drivers, captainName, fastestTeamLap, driverSquadMap = {}) {
     const container = document.getElementById('drivers-intel-grid');
     if (!container) return;
 
@@ -841,6 +963,8 @@ function renderDriverSessionCards(drivers, captainName, fastestTeamLap) {
 
     container.innerHTML = drivers.map(d => {
         const isCaptain = captainName && d.name.toLowerCase() === captainName.toLowerCase();
+        const squadName = (driverSquadMap && driverSquadMap[d.name]) ? driverSquadMap[d.name] : '';
+        const sqCol = getSquadColor(squadName);
         const badgeText = d.matchType === 'car_and_track'
             ? 'Car & Track Match'
             : d.matchType === 'car_only'
@@ -860,6 +984,7 @@ function renderDriverSessionCards(drivers, captainName, fastestTeamLap) {
                             <div>
                                 <h4 class="driver-name-text">${d.name}</h4>
                                 <div class="driver-meta-tags">
+                                    ${squadName ? `<span style="background:${sqCol.bg}; border:1px solid ${sqCol.border}; color:${sqCol.text}; font-size:0.65rem; font-weight:700; padding:1px 7px; border-radius:4px;"><i class="fas fa-users"></i> ${squadName}</span>` : ''}
                                     ${isCaptain ? '<span class="driver-captain-tag"><i class="fas fa-crown"></i> Captain</span>' : ''}
                                     <span style="font-size:0.68rem; color:var(--text-muted);"><i class="fas fa-clock"></i> ${d.hours}h Logged</span>
                                     <span style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); font-size:0.62rem; padding:1px 6px; border-radius:4px; color:#cbd5e1;">${badgeText}</span>
@@ -941,7 +1066,7 @@ function renderDriverSessionCards(drivers, captainName, fastestTeamLap) {
 }
 
 // Render Head-to-Head Comparison Matrix
-function renderHeadToHeadMatrix(drivers, fastestLap) {
+function renderHeadToHeadMatrix(drivers, fastestLap, driverSquadMap = {}) {
     const tableBody = document.getElementById('matrix-table-body');
     if (!tableBody) return;
 
@@ -955,11 +1080,14 @@ function renderHeadToHeadMatrix(drivers, fastestLap) {
     tableBody.innerHTML = drivers.map(d => {
         const fillPct = d.totalLaps > 0 ? Math.round((d.totalLaps / lapMax) * 100) : 5;
         const cleanColor = d.cleanPct >= 85 ? '#34d399' : d.cleanPct >= 75 ? '#fbbf24' : d.totalLaps > 0 ? '#f87171' : '#64748b';
+        const squadName = (driverSquadMap && driverSquadMap[d.name]) ? driverSquadMap[d.name] : '';
+        const sqCol = getSquadColor(squadName);
 
         return `
             <tr>
                 <td>
                     <strong>${d.name}</strong>
+                    ${squadName ? `<span style="display:inline-block; margin-left:6px; font-size:0.65rem; padding:1px 6px; border-radius:3px; background:${sqCol.bg}; color:${sqCol.text}; border:1px solid ${sqCol.border}; font-weight:600;">${squadName}</span>` : ''}
                     <div class="delta-bar-wrapper">
                         <div class="delta-bar-fill" style="width: ${fillPct}%;"></div>
                     </div>
@@ -1170,6 +1298,11 @@ async function saveTeamSetupSheet() {
     const capt = (curCar && curCar.captain) ? curCar.captain.trim().toLowerCase() : '';
     const curNorm = normalizeDriverName(USER_DRIVER_NAME);
     const isCaptain = (curNorm && capt && (curNorm === normalizeDriverName(capt))) || IS_USER_ADMIN;
+
+    if (curCar && curCar.isAll) {
+        showToast("Please select an individual team car entry from the dropdown to save a car setup sheet.", "warning");
+        return;
+    }
 
     if (!isCaptain) {
         showToast("Permission Denied: Only the Team Captain or Admin can publish official team setup sheets.");
