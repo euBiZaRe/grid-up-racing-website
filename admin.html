@@ -410,313 +410,1455 @@
             color: white !important;
         }
     
-                /* Team Builder Studio Styles */
-        .studio-event-select {
-            background: #0f172a !important;
-            border: 1px solid rgba(0, 207, 255, 0.45) !important;
-            color: #ffffff !important;
-            font-family: inherit !important;
-            font-size: 0.85rem !important;
-            font-weight: 700 !important;
-            padding: 0.6rem 2.2rem 0.6rem 1rem !important;
-            border-radius: 8px !important;
-            cursor: pointer !important;
-            outline: none !important;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4) !important;
-            transition: all 0.2s ease !important;
-            appearance: none !important;
-            -webkit-appearance: none !important;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2300cfff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
-            background-repeat: no-repeat !important;
-            background-position: right 0.75rem center !important;
-        }
-        .studio-event-select:hover, .studio-event-select:focus {
-            border-color: var(--primary) !important;
-            box-shadow: 0 0 20px rgba(0, 207, 255, 0.35) !important;
-        }
-                .studio-team-select {
-            background: #0f172a !important;
-            border: 1px solid rgba(0, 207, 255, 0.45) !important;
-            border-radius: 6px !important;
-            color: #ffffff !important;
-            font-family: inherit !important;
-            font-size: 0.92rem !important;
-            font-weight: 800 !important;
-            padding: 0.35rem 1.8rem 0.35rem 0.65rem !important;
-            width: 100% !important;
-            outline: none !important;
-            cursor: pointer !important;
-            appearance: none !important;
-            -webkit-appearance: none !important;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2300cfff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
-            background-repeat: no-repeat !important;
-            background-position: right 0.6rem center !important;
-            transition: all 0.2s ease !important;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
-        }
-        .studio-team-select:hover, .studio-team-select:focus {
-            border-color: var(--primary) !important;
-            box-shadow: 0 0 15px rgba(0, 207, 255, 0.3) !important;
-        }
-        .studio-team-select option {
-            background: #0b0f19 !important;
-            color: #ffffff !important;
-            padding: 6px 10px !important;
-            font-size: 0.85rem !important;
-            font-weight: 700 !important;
-        }
+                /* ===================================================
+   GRiD UP SIM RACING - TEAM BUILDER STUDIO REDESIGN
+   Modern Esports / Motorsport Workspace Styles
+   =================================================== */
 
-        .studio-event-select option {
-            background: #0b0f19 !important;
-            color: #ffffff !important;
-            padding: 8px 12px !important;
-            font-size: 0.85rem !important;
-        }
-        .builder-canvas {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-            gap: 1rem;
-            margin-top: 1rem;
-            align-items: stretch;
-        }
-        @media (max-width: 950px) {
-            .builder-canvas {
-                grid-template-columns: 1fr;
-            }
-        }
-        .builder-car-card {
-            background: linear-gradient(180deg, rgba(20, 24, 35, 0.88) 0%, rgba(12, 15, 22, 0.98) 100%);
-            border: 1px solid rgba(0, 207, 255, 0.25);
-            border-radius: 12px;
-            padding: 0.85rem 1rem;
-            position: relative;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            gap: 0.6rem;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-        }
-        .builder-car-card:hover {
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65);
-        }
-        .racing-number-plate {
-            background: linear-gradient(135deg, rgba(0, 207, 255, 0.18) 0%, rgba(8, 12, 20, 0.95) 100%);
-            border: 2px solid var(--primary);
-            border-radius: 8px;
-            padding: 0.15rem 0.45rem;
-            display: inline-flex;
-            flex-direction: column;
-            align-items: center;
-            box-shadow: 0 2px 10px rgba(0, 207, 255, 0.2);
-            min-width: 48px;
-        }
-        .number-plate-label {
-            font-size: 0.45rem;
-            font-weight: 900;
-            letter-spacing: 1px;
-            color: var(--primary);
-            text-transform: uppercase;
-            line-height: 1;
-            margin-bottom: 1px;
-        }
-        .number-plate-input {
-            background: transparent !important;
-            border: none !important;
-            color: #ffffff !important;
-            font-size: 1.15rem !important;
-            font-weight: 900 !important;
-            width: 40px !important;
-            text-align: center !important;
-            outline: none !important;
-            font-family: monospace, sans-serif !important;
-            padding: 0 !important;
-            line-height: 1.1 !important;
-        }
-        .car-team-name-input {
-            background: rgba(255, 255, 255, 0.04) !important;
-            border: 1px solid rgba(255, 255, 255, 0.12) !important;
-            border-radius: 8px !important;
-            color: #ffffff !important;
-            font-size: 1.15rem !important;
-            font-weight: 800 !important;
-            padding: 0.4rem 0.8rem !important;
-            width: 300px !important;
-            outline: none !important;
-            transition: all 0.2s ease !important;
-        }
-        .car-team-name-input:focus {
-            border-color: var(--primary) !important;
-            background: rgba(0, 207, 255, 0.06) !important;
-            box-shadow: 0 0 15px rgba(0, 207, 255, 0.25) !important;
-        }
-        .builder-driver-pool-container {
-            position: sticky;
-            top: 72px;
-            z-index: 100;
-            background: rgba(11, 15, 25, 0.95) !important;
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(0, 207, 255, 0.25) !important;
-            border-radius: 12px;
-            padding: 0.75rem 1.25rem !important;
-            margin-bottom: 1rem !important;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-            transition: all 0.2s ease;
-        }
-        .studio-mini-select {
-            background: #0f172a !important;
-            border: 1px solid rgba(255, 255, 255, 0.15) !important;
-            color: #ffffff !important;
-            font-size: 0.7rem !important;
-            font-weight: 700 !important;
-            padding: 0.2rem 0.5rem !important;
-            border-radius: 4px !important;
-            outline: none !important;
-            transition: all 0.2s ease !important;
-            cursor: pointer !important;
-        }
-        .studio-mini-select:focus, .studio-mini-select:hover {
-            border-color: var(--primary) !important;
-            color: var(--primary) !important;
-        }
-        .studio-mini-select option {
-            background: #0b0f19 !important;
-            color: #fff !important;
-        }
-        .stint-presets-group {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-            margin: 0.65rem 0 1rem;
-            align-items: center;
-        }
-        .stint-preset-btn {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            color: rgba(255, 255, 255, 0.75);
-            border-radius: 6px;
-            padding: 0.4rem 0.8rem;
-            font-size: 0.72rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .stint-preset-btn:hover {
-            background: rgba(0, 207, 255, 0.1);
-            border-color: rgba(0, 207, 255, 0.4);
-            color: #ffffff;
-        }
-        .stint-preset-btn.active {
-            background: rgba(0, 207, 255, 0.18);
-            border-color: var(--primary);
-            color: #00cfff;
-            box-shadow: 0 0 12px rgba(0, 207, 255, 0.25);
-        }
-        .driver-pool-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 0.3rem 0.65rem;
-            border-radius: 6px;
-            font-size: 0.74rem;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            flex-wrap: wrap;
-            cursor: grab;
-            user-select: none;
-            transition: all 0.2s ease;
-        }
-        .driver-pool-card:active {
-            cursor: grabbing;
-            opacity: 0.6;
-        }
-        .driver-pool-card:hover {
-            border-color: var(--primary);
-            background: rgba(0, 207, 255, 0.05);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
-        }
-        .driver-pool-card.is-assigned {
-            border-color: rgba(16, 185, 129, 0.35);
-            background: rgba(16, 185, 129, 0.04);
-        }
-        .team-drop-zone {
-            border: 1px dashed rgba(255, 255, 255, 0.18);
-            border-radius: 8px;
-            padding: 0.45rem 0.6rem;
-            min-height: 50px;
-            background: rgba(0, 0, 0, 0.25);
-            transition: all 0.2s ease;
-        }
-        .team-drop-zone.drag-over {
-            border-color: var(--primary) !important;
-            background: rgba(0, 207, 255, 0.12) !important;
-            box-shadow: inset 0 0 25px rgba(0, 207, 255, 0.25) !important;
-            transform: scale(1.005);
-        }
-        .team-driver-item {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 6px;
-            padding: 0.25rem 0.55rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 6px;
-            flex-wrap: wrap;
-            transition: all 0.2s ease;
-            cursor: grab;
-            user-select: none;
-            font-size: 0.76rem;
-        }
-        .team-driver-item:hover {
-            border-color: rgba(255, 255, 255, 0.25);
-            background: rgba(255, 255, 255, 0.07);
-        }
-        .team-driver-item:active {
-            cursor: grabbing;
-        }
-        .stint-run-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.8rem;
-        }
-        .stint-run-table th {
-            text-align: left;
-            padding: 0.65rem 0.9rem;
-            background: rgba(0, 0, 0, 0.4);
-            color: var(--primary);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            font-size: 0.65rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            font-weight: 800;
-        }
-        .stint-run-table td {
-            padding: 0.6rem 0.9rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-            vertical-align: middle;
-        }
-        .stint-run-table tbody tr:hover {
-            background: rgba(0, 207, 255, 0.025);
-        }
-        .stint-status-badge {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 6px;
-            font-size: 0.65rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .badge-scheduled { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
-        .badge-ondeck { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
-        .badge-active { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
-        .badge-completed { background: rgba(255, 255, 255, 0.03); color: #6b7280; text-decoration: line-through; }
-        .badge-uncovered { background: rgba(239, 68, 68, 0.18); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35); }
-        .badge-uncovered { background: rgba(239, 68, 68, 0.18); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35); }.badge-uncovered { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
-</style>
+:root {
+    --tb-bg: #0b0f19;
+    --tb-card-bg: rgba(15, 23, 42, 0.75);
+    --tb-card-border: rgba(255, 255, 255, 0.08);
+    --tb-text: #f8fafc;
+    --tb-text-muted: #94a3b8;
+    --tb-cyan: #00cfff;
+    --tb-gold: #fbbf24;
+    --tb-green: #10b981;
+    --tb-purple: #a855f7;
+    --tb-blue: #3b82f6;
+    --tb-red: #ef4444;
+}
+
+/* Header Card */
+.tb-header-card {
+    padding: 1.5rem 1.75rem;
+    margin-bottom: 1.5rem;
+    border-radius: 16px;
+    border: 1px solid rgba(0, 207, 255, 0.25);
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.85) 0%, rgba(10, 14, 24, 0.95) 100%);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.tb-header-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.tb-title-group {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.tb-logo-badge {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: rgba(0, 207, 255, 0.12);
+    border: 1px solid var(--tb-cyan);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--tb-cyan);
+    font-size: 1.35rem;
+    box-shadow: 0 0 15px rgba(0, 207, 255, 0.25);
+}
+
+.tb-title-eyebrow {
+    font-size: 0.65rem;
+    letter-spacing: 1.5px;
+    font-weight: 800;
+    color: var(--tb-cyan);
+    text-transform: uppercase;
+    margin-bottom: 2px;
+}
+
+.tb-main-title {
+    font-size: 1.45rem;
+    color: #ffffff;
+    margin: 0;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+}
+
+.tb-main-title .cyan-accent {
+    color: var(--tb-cyan);
+}
+
+/* Progress Stepper */
+.tb-progress-stepper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 30px;
+    padding: 6px 16px;
+}
+
+.tb-step {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: var(--tb-text-muted);
+    transition: all 0.2s ease;
+}
+
+.tb-step .step-num {
+    font-size: 0.85rem;
+    color: var(--tb-text-muted);
+}
+
+.tb-step.active {
+    color: #ffffff;
+}
+
+.tb-step.active .step-num {
+    color: var(--tb-cyan);
+}
+
+.step-arrow {
+    color: rgba(255, 255, 255, 0.25);
+    font-size: 0.75rem;
+}
+
+/* Header Utilities */
+.tb-header-utility-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.btn-meeting-mode {
+    background: rgba(168, 85, 247, 0.15) !important;
+    border: 1px solid rgba(168, 85, 247, 0.45) !important;
+    color: #c084fc !important;
+    font-size: 0.78rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.5px !important;
+    padding: 0.55rem 1rem !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 7px !important;
+    transition: all 0.2s ease !important;
+}
+
+.btn-meeting-mode:hover {
+    background: rgba(168, 85, 247, 0.25) !important;
+    box-shadow: 0 0 15px rgba(168, 85, 247, 0.35) !important;
+    color: #ffffff !important;
+}
+
+.btn-meeting-mode.active-recording {
+    background: rgba(239, 68, 68, 0.2) !important;
+    border-color: #ef4444 !important;
+    color: #f87171 !important;
+    box-shadow: 0 0 18px rgba(239, 68, 68, 0.4) !important;
+}
+
+.tb-event-selector-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    padding: 4px 10px;
+}
+
+.tb-event-selector-wrap label {
+    font-size: 0.68rem;
+    color: var(--tb-cyan);
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+/* Header Bottom Row: Stats & Action Buttons */
+.tb-header-bottom-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.tb-stats-strip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.tb-stat-pill {
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 5px 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+}
+
+.tb-stat-pill .tb-stat-num {
+    font-weight: 900;
+    color: #ffffff;
+    font-family: monospace, sans-serif;
+    font-size: 0.82rem;
+}
+
+.tb-stat-pill .tb-stat-lbl {
+    color: var(--tb-text-muted);
+    font-weight: 700;
+    font-size: 0.65rem;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+.tb-action-buttons-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.btn-tool {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: #f1f5f9;
+    font-size: 0.74rem;
+    font-weight: 700;
+    padding: 0.5rem 0.85rem;
+    border-radius: 8px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.btn-tool:hover {
+    background: rgba(0, 207, 255, 0.1);
+    border-color: rgba(0, 207, 255, 0.4);
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.btn-tool.btn-danger-soft:hover {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.45);
+    color: #f87171;
+}
+
+.btn-confirm-grid {
+    font-size: 0.82rem !important;
+    padding: 0.55rem 1.25rem !important;
+    border-radius: 8px !important;
+    font-weight: 900 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 7px !important;
+    box-shadow: 0 0 20px rgba(0, 207, 255, 0.35) !important;
+    transition: all 0.2s ease !important;
+}
+
+.btn-confirm-grid:hover {
+    box-shadow: 0 0 30px rgba(0, 207, 255, 0.55) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Event Metadata Banner */
+.tb-event-meta-banner {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(0, 207, 255, 0.2);
+    border-left: 4px solid var(--tb-cyan);
+    border-radius: 8px;
+    padding: 0.6rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.tb-event-summary {
+    font-size: 0.8rem;
+    color: var(--tb-text-muted);
+}
+
+.tb-event-classes-pills {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+/* ===================================================
+   MAIN WORKSPACE LAYOUT: TWO COLUMNS (32% / 68%)
+   =================================================== */
+.team-builder-workspace {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+    width: 100%;
+    margin-bottom: 4.5rem; /* Room for sticky bottom bar */
+}
+
+/* LEFT PANEL: DRIVER POOL */
+.tb-driver-pool-panel {
+    flex: 0 0 32%;
+    max-width: 35%;
+    position: sticky;
+    top: 75px;
+    max-height: calc(100vh - 120px);
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, rgba(10, 14, 24, 0.98) 100%);
+    border: 1px solid rgba(0, 207, 255, 0.25);
+    border-radius: 14px;
+    padding: 1.15rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    transition: all 0.2s ease;
+    z-index: 90;
+}
+
+.tb-driver-pool-panel.drag-over {
+    border-color: #ef4444 !important;
+    background: rgba(239, 68, 68, 0.08) !important;
+    box-shadow: 0 0 25px rgba(239, 68, 68, 0.3) !important;
+}
+
+.pool-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.85rem;
+}
+
+.pool-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pool-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(0, 207, 255, 0.12);
+    color: var(--tb-cyan);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+}
+
+.pool-title {
+    font-size: 0.95rem;
+    font-weight: 900;
+    color: #ffffff;
+    margin: 0;
+    letter-spacing: 0.5px;
+}
+
+.pool-subtitle {
+    font-size: 0.68rem;
+    color: var(--tb-text-muted);
+    margin: 1px 0 0 0;
+}
+
+.pool-total-badge {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--tb-cyan);
+    font-size: 0.68rem;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 6px;
+}
+
+/* Search Box */
+.pool-search-wrap {
+    position: relative;
+    margin-bottom: 0.75rem;
+}
+
+.pool-search-wrap .search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.75rem;
+    color: var(--tb-text-muted);
+}
+
+.pool-search-input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    padding: 0.5rem 2rem 0.5rem 2rem;
+    font-size: 0.78rem;
+    color: #ffffff;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.pool-search-input:focus {
+    border-color: var(--tb-cyan);
+    box-shadow: 0 0 15px rgba(0, 207, 255, 0.2);
+}
+
+.search-clear-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: var(--tb-text-muted);
+    cursor: pointer;
+    font-size: 0.75rem;
+}
+
+/* Filter Chips */
+.pool-filter-chips {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+}
+
+.pool-chip {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--tb-text-muted);
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.pool-chip:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.pool-chip.active {
+    background: rgba(0, 207, 255, 0.18);
+    border-color: var(--tb-cyan);
+    color: var(--tb-cyan);
+    box-shadow: 0 0 10px rgba(0, 207, 255, 0.2);
+}
+
+/* Drop Back To Pool Zone */
+.pool-unassign-dropzone {
+    display: none;
+    background: rgba(239, 68, 68, 0.12);
+    border: 2px dashed rgba(239, 68, 68, 0.45);
+    border-radius: 8px;
+    padding: 0.65rem;
+    text-align: center;
+    color: #f87171;
+    font-size: 0.72rem;
+    font-weight: 800;
+    margin-bottom: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.pool-unassign-dropzone.active {
+    display: block;
+    animation: pulse-drop 1.5s infinite;
+}
+
+@keyframes pulse-drop {
+    0%, 100% { border-color: rgba(239, 68, 68, 0.45); }
+    50% { border-color: rgba(239, 68, 68, 0.9); }
+}
+
+/* Driver Cards Container */
+.pool-cards-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    overflow-y: auto;
+    padding-right: 4px;
+    flex: 1;
+}
+
+.pool-cards-container::-webkit-scrollbar {
+    width: 5px;
+}
+.pool-cards-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+}
+
+/* Individual Driver Pool Card */
+.driver-pool-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 9px;
+    padding: 0.7rem 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    cursor: grab;
+    user-select: none;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.driver-pool-card:active {
+    cursor: grabbing;
+    opacity: 0.6;
+}
+
+.driver-pool-card:hover {
+    border-color: var(--tb-cyan);
+    background: rgba(0, 207, 255, 0.05);
+    transform: translateX(3px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.driver-pool-card.is-assigned {
+    border-color: rgba(168, 85, 247, 0.35);
+    background: rgba(168, 85, 247, 0.04);
+}
+
+.driver-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.driver-name-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.driver-pool-card .driver-name {
+    color: #ffffff;
+    font-size: 0.86rem;
+    font-weight: 800;
+}
+
+.driver-irating-badge {
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.35);
+    color: #60a5fa;
+    font-size: 0.74rem;
+    font-weight: 900;
+    font-family: monospace, sans-serif;
+    padding: 2px 7px;
+    border-radius: 5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.driver-card-mid {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.7rem;
+}
+
+.driver-preferred-car {
+    color: var(--tb-text-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.driver-preferred-car .pref-value {
+    color: #e2e8f0;
+    font-weight: 700;
+}
+
+.driver-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2px;
+    padding-top: 4px;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.drag-handle-hint {
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: rgba(0, 207, 255, 0.7);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.assigned-squad-tag {
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: #c084fc;
+    background: rgba(168, 85, 247, 0.15);
+    border: 1px solid rgba(168, 85, 247, 0.35);
+    padding: 1px 6px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Status Dots */
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+.status-dot.green { background: #10b981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.6); }
+.status-dot.yellow { background: #f59e0b; box-shadow: 0 0 8px rgba(245, 158, 11, 0.6); }
+.status-dot.purple { background: #a855f7; box-shadow: 0 0 8px rgba(168, 85, 247, 0.6); }
+.status-dot.red { background: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.6); }
+
+/* ===================================================
+   RIGHT PANEL: GRID / TEAMS (68%)
+   =================================================== */
+.tb-teams-grid-panel {
+    flex: 1 1 68%;
+    min-width: 0;
+}
+
+.grid-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+}
+
+.grid-panel-title {
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: #ffffff;
+    margin: 0;
+    letter-spacing: 0.5px;
+}
+
+.grid-panel-subtitle {
+    font-size: 0.75rem;
+    color: var(--tb-text-muted);
+    margin: 2px 0 0 0;
+}
+
+.grid-panel-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-xs {
+    padding: 0.35rem 0.75rem !important;
+    font-size: 0.72rem !important;
+    border-radius: 6px !important;
+    font-weight: 700 !important;
+}
+
+/* 2-Column x 3-Row Grid Canvas */
+.builder-canvas-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+    width: 100%;
+}
+
+/* Individual Team Card */
+.builder-car-card {
+    border-radius: 14px;
+    border: 1px solid var(--tb-card-border);
+    padding: 1.15rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.builder-car-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+
+/* Card Top Bar: Plate, Title, Status, SOF */
+.team-card-top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.team-card-identity {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+}
+
+.racing-number-plate {
+    background: #000000;
+    border: 2px solid var(--tb-cyan);
+    border-radius: 8px;
+    padding: 2px 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 46px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.number-plate-label {
+    font-size: 0.45rem;
+    font-weight: 900;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    line-height: 1;
+}
+
+.number-plate-input {
+    background: transparent !important;
+    border: none !important;
+    color: #ffffff !important;
+    font-size: 1.1rem !important;
+    font-weight: 900 !important;
+    width: 36px !important;
+    text-align: center !important;
+    outline: none !important;
+    font-family: monospace, sans-serif !important;
+    padding: 0 !important;
+    line-height: 1 !important;
+}
+
+.team-name-wrap {
+    flex: 1;
+    min-width: 0;
+}
+
+.team-title-text {
+    font-size: 1.05rem;
+    font-weight: 900;
+    color: #ffffff;
+    margin: 0;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.studio-team-select-mini {
+    background: transparent;
+    border: none;
+    color: var(--tb-text-muted);
+    font-size: 0.68rem;
+    cursor: pointer;
+    outline: none;
+    padding: 0;
+}
+
+/* Status Pill */
+.team-status-pill {
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+}
+
+.team-status-pill.status-ready {
+    background: rgba(16, 185, 129, 0.18);
+    border: 1px solid rgba(16, 185, 129, 0.45);
+    color: #34d399;
+}
+
+.team-status-pill.status-needed {
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.45);
+    color: #fbbf24;
+}
+
+.team-status-pill.status-missing-car {
+    background: rgba(239, 68, 68, 0.18);
+    border: 1px solid rgba(239, 68, 68, 0.45);
+    color: #f87171;
+}
+
+/* Prominent SOF Display */
+.team-sof-box {
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(59, 130, 246, 0.35);
+    border-radius: 8px;
+    padding: 4px 10px;
+    text-align: right;
+    min-width: 82px;
+}
+
+.team-sof-box .sof-label {
+    font-size: 0.58rem;
+    font-weight: 800;
+    color: var(--tb-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+}
+
+.team-sof-box .sof-val {
+    font-size: 1.05rem;
+    font-weight: 900;
+    color: #60a5fa;
+    font-family: monospace, sans-serif;
+    line-height: 1.1;
+}
+
+.team-sof-box .sof-val.empty {
+    color: #64748b;
+    font-size: 0.95rem;
+}
+
+.team-sof-box .sof-val small {
+    font-size: 0.65rem;
+    font-weight: 700;
+}
+
+/* Card Controls Bar: Car Chassis & Captain */
+.team-card-sub-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    padding: 6px 10px;
+    flex-wrap: wrap;
+}
+
+.team-car-box {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    min-width: 170px;
+}
+
+.car-tag-title {
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: var(--tb-text-muted);
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.studio-class-select, .studio-model-select {
+    background: #0f172a !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    padding: 0.25rem 0.5rem !important;
+    border-radius: 5px !important;
+    outline: none !important;
+    cursor: pointer !important;
+}
+
+.studio-class-select:focus, .studio-model-select:focus {
+    border-color: var(--tb-cyan) !important;
+}
+
+.studio-captain-select {
+    background: #0f172a !important;
+    border: 1px solid rgba(251, 191, 36, 0.35) !important;
+    color: #fbbf24 !important;
+    font-size: 0.72rem !important;
+    font-weight: 800 !important;
+    padding: 0.25rem 0.5rem !important;
+    border-radius: 5px !important;
+    outline: none !important;
+    cursor: pointer !important;
+}
+
+.team-quick-actions {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-quick-tool {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: var(--tb-text-muted);
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 0.28rem 0.55rem;
+    border-radius: 5px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s ease;
+}
+
+.btn-quick-tool:hover {
+    color: #ffffff;
+    border-color: var(--tb-cyan);
+    background: rgba(0, 207, 255, 0.1);
+}
+
+.btn-tool-delete:hover {
+    color: #f87171 !important;
+    border-color: #ef4444 !important;
+    background: rgba(239, 68, 68, 0.15) !important;
+}
+
+/* Team Roster Section */
+.team-roster-section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+}
+
+.roster-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.roster-title {
+    font-size: 0.72rem;
+    font-weight: 900;
+    color: #cbd5e1;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.roster-count {
+    font-size: 0.72rem;
+    font-weight: 900;
+    padding: 1px 7px;
+    border-radius: 4px;
+}
+
+.roster-count.count-ready {
+    background: rgba(16, 185, 129, 0.18);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.roster-count.count-needed {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+/* Team Drop Zone */
+.team-drop-zone {
+    border: 1.5px dashed rgba(255, 255, 255, 0.16);
+    border-radius: 10px;
+    padding: 0.6rem;
+    min-height: 105px;
+    background: rgba(0, 0, 0, 0.25);
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.team-drop-zone.drag-over {
+    border-color: var(--tb-cyan) !important;
+    background: rgba(0, 207, 255, 0.12) !important;
+    box-shadow: inset 0 0 25px rgba(0, 207, 255, 0.25) !important;
+    transform: scale(1.008);
+}
+
+/* Empty Drop Target */
+.empty-drop-area {
+    text-align: center;
+    padding: 1rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.drop-pulse-ring {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(0, 207, 255, 0.1);
+    border: 1px solid rgba(0, 207, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--tb-cyan);
+    font-size: 0.85rem;
+    margin-bottom: 2px;
+}
+
+.drop-prompt-text {
+    font-size: 0.78rem;
+    font-weight: 900;
+    color: #e2e8f0;
+    letter-spacing: 0.5px;
+}
+
+.drop-sub-text {
+    font-size: 0.68rem;
+    color: var(--tb-text-muted);
+}
+
+/* Roster Driver Row */
+.roster-drivers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.roster-driver-row {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-left: 3px solid var(--tb-cyan);
+    border-radius: 7px;
+    padding: 0.45rem 0.65rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    cursor: grab;
+    user-select: none;
+    transition: all 0.2s ease;
+}
+
+.roster-driver-row:hover {
+    border-color: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.roster-driver-row.is-captain-row {
+    border-left-color: #fbbf24 !important;
+}
+
+.driver-row-identity {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex: 1;
+    min-width: 0;
+}
+
+.grip-handle {
+    color: rgba(255, 255, 255, 0.2);
+    font-size: 0.65rem;
+}
+
+.driver-row-name {
+    color: #ffffff;
+    font-size: 0.82rem;
+    font-weight: 800;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.captain-badge {
+    background: rgba(251, 191, 36, 0.18);
+    border: 1px solid #fbbf24;
+    color: #fbbf24;
+    font-size: 0.58rem;
+    font-weight: 900;
+    padding: 1px 5px;
+    border-radius: 3px;
+    margin-left: 4px;
+}
+
+.driver-row-details {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.driver-row-ir {
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.35);
+    color: #60a5fa;
+    font-size: 0.68rem;
+    font-weight: 900;
+    font-family: monospace, sans-serif;
+    padding: 1px 6px;
+    border-radius: 4px;
+}
+
+.driver-row-car {
+    background: rgba(255, 255, 255, 0.06);
+    color: #cbd5e1;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 4px;
+}
+
+.driver-row-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-set-captain {
+    background: transparent;
+    border: 1px solid rgba(251, 191, 36, 0.35);
+    color: #fbbf24;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    padding: 1px 5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-set-captain:hover {
+    background: rgba(251, 191, 36, 0.2);
+}
+
+.btn-remove-driver {
+    background: transparent;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    padding: 1px 5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-remove-driver:hover {
+    background: rgba(239, 68, 68, 0.2);
+}
+
+.drop-more-hint {
+    text-align: center;
+    margin-top: 5px;
+    font-size: 0.62rem;
+    color: rgba(255, 255, 255, 0.35);
+    border-top: 1px dashed rgba(255, 255, 255, 0.08);
+    padding-top: 4px;
+}
+
+/* ===================================================
+   STICKY BOTTOM SUMMARY BAR
+   =================================================== */
+.tb-sticky-summary-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 999;
+    background: rgba(11, 15, 25, 0.94);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid rgba(0, 207, 255, 0.3);
+    box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.6);
+    padding: 0.75rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.summary-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.summary-title {
+    font-size: 0.8rem;
+    font-weight: 900;
+    color: var(--tb-cyan);
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+}
+
+.summary-stat-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.76rem;
+    color: #e2e8f0;
+}
+
+.summary-stat-group strong {
+    font-family: monospace, sans-serif;
+    font-size: 0.85rem;
+}
+
+.stat-divider {
+    color: rgba(255, 255, 255, 0.2);
+}
+
+.summary-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.summary-readiness-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.summary-readiness-indicator .readiness-text.green {
+    color: #34d399;
+}
+
+.summary-readiness-indicator .readiness-text.yellow {
+    color: #fbbf24;
+}
+
+.btn-summary-confirm {
+    font-size: 0.82rem !important;
+    font-weight: 900 !important;
+    padding: 0.55rem 1.4rem !important;
+    border-radius: 8px !important;
+    box-shadow: 0 0 20px rgba(0, 207, 255, 0.3) !important;
+}
+
+.btn-summary-confirm.btn-grid-ready {
+    background: #10b981 !important;
+    border-color: #10b981 !important;
+    box-shadow: 0 0 25px rgba(16, 185, 129, 0.5) !important;
+}
+
+/* ===================================================
+   AUTO BALANCE MODAL
+   =================================================== */
+.tb-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+}
+
+.tb-modal-box {
+    width: 100%;
+    max-width: 900px;
+    max-height: 90vh;
+    background: #0d121f;
+    border: 1px solid rgba(0, 207, 255, 0.35);
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.tb-modal-header {
+    padding: 1.25rem 1.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.tb-modal-close {
+    background: transparent;
+    border: none;
+    color: var(--tb-text-muted);
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tb-modal-close:hover {
+    color: #ffffff;
+}
+
+.tb-modal-body {
+    padding: 1.5rem 1.75rem;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.auto-balance-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.balance-team-card {
+    border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.balance-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.balance-car-num {
+    font-weight: 900;
+    font-family: monospace, sans-serif;
+    font-size: 1.05rem;
+}
+
+.balance-drivers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.balance-driver-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.04);
+    padding: 4px 8px;
+    border-radius: 5px;
+    font-size: 0.78rem;
+    color: #ffffff;
+}
+
+.balance-ir {
+    color: #60a5fa;
+    font-family: monospace, sans-serif;
+    font-weight: 800;
+}
+
+.tb-modal-footer {
+    padding: 1.15rem 1.75rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+/* ===================================================
+   MEETING MODE ACTIVE OVERRIDES
+   Optimized for Discord Screenshare at 1080p / 1440p
+   =================================================== */
+body.meeting-mode-active #navbar,
+body.meeting-mode-active .admin-hero-header,
+body.meeting-mode-active .admin-nav-bar,
+body.meeting-mode-active .tb-event-meta-banner,
+body.meeting-mode-active .lap-sync-area,
+body.meeting-mode-active .admin-layout > :not(#section-races) {
+    display: none !important;
+}
+
+body.meeting-mode-active .admin-container {
+    max-width: 100% !important;
+    padding: 0.5rem 1.5rem !important;
+}
+
+body.meeting-mode-active .team-builder-workspace {
+    gap: 1.75rem;
+}
+
+body.meeting-mode-active .team-title-text {
+    font-size: 1.25rem !important;
+}
+
+body.meeting-mode-active .team-sof-box .sof-val {
+    font-size: 1.35rem !important;
+}
+
+body.meeting-mode-active .driver-row-name {
+    font-size: 0.95rem !important;
+}
+
+body.meeting-mode-active .driver-row-ir {
+    font-size: 0.82rem !important;
+}
+
+body.meeting-mode-active .driver-pool-card .driver-name {
+    font-size: 0.96rem !important;
+}
+
+body.meeting-mode-active .driver-irating-badge {
+    font-size: 0.85rem !important;
+}
+
+body.meeting-mode-active .team-status-pill {
+    font-size: 0.85rem !important;
+    padding: 4px 10px !important;
+}
+
+/* ===================================================
+   RESPONSIVENESS (1366x768 & mobile)
+   =================================================== */
+@media (max-width: 1280px) {
+    .team-builder-workspace {
+        flex-direction: column;
+    }
+    .tb-driver-pool-panel {
+        flex: 1 1 100%;
+        max-width: 100%;
+        position: static;
+        max-height: 280px;
+    }
+    .tb-teams-grid-panel {
+        width: 100%;
+    }
+}
+
+@media (max-width: 900px) {
+    .builder-canvas-grid {
+        grid-template-columns: 1fr;
+    }
+    .auto-balance-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+    </style>
 </head>
 <body class="admin-page">
     <nav id="navbar" class="scrolled">
@@ -883,90 +2025,246 @@
             </div>
 
             <!-- Race Management Section -->
+                        <!-- Race Management Section: Team Builder Studio Redesign -->
             <div id="section-races" class="tab-content" style="display: none;">
-                <!-- Header Card with Event Selector -->
-                <div class="glass" style="padding: 1.75rem 2rem; margin-bottom: 2rem; border-radius: 16px; border: 1px solid rgba(0,207,255,0.25); background: linear-gradient(180deg, rgba(15,23,42,0.7) 0%, rgba(10,12,18,0.85) 100%);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.25rem; margin-bottom: 1.5rem;">
-                        <div>
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(0,207,255,0.15); border: 1px solid var(--primary); display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 1.1rem;">
-                                    <i class="fas fa-layer-group"></i>
-                                </div>
-                                <div>
-                                    <h2 style="font-size: 1.35rem; color: #fff; margin: 0; font-weight: 800; letter-spacing: 0.5px;">Team Builder Studio</h2>
-                                    <span style="font-size: 0.75rem; color: var(--text-muted);">Assemble multi-car team rosters with drag & drop, calculate Team SOF, and assign team captains</span>
-                                </div>
+                <!-- 1. Top Header Card -->
+                <div class="tb-header-card glass">
+                    <div class="tb-header-top-row">
+                        <div class="tb-title-group">
+                            <div class="tb-logo-badge">
+                                <i class="fas fa-flag-checkered"></i>
+                            </div>
+                            <div>
+                                <div class="tb-title-eyebrow">ESPORTS RACE OPERATIONS</div>
+                                <h2 class="tb-main-title">GRiD UP <span class="cyan-accent">|</span> TEAM BUILDER</h2>
                             </div>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
-                            <div style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 4px 10px;">
-                                <label for="lineup-event-selector" style="font-size: 0.7rem; color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;">
-                                    <i class="fas fa-flag-checkered" style="margin-right: 4px;"></i> Upcoming Race:
-                                </label>
+
+                        <!-- Progress Steps Indicator -->
+                        <div class="tb-progress-stepper">
+                            <div class="tb-step active" id="step-drivers">
+                                <span class="step-num">①</span> <span class="step-label">DRIVERS</span>
+                            </div>
+                            <span class="step-arrow">→</span>
+                            <div class="tb-step active" id="step-build">
+                                <span class="step-num">②</span> <span class="step-label">BUILD TEAMS</span>
+                            </div>
+                            <span class="step-arrow">→</span>
+                            <div class="tb-step" id="step-confirm">
+                                <span class="step-num">③</span> <span class="step-label">CONFIRM GRID</span>
+                            </div>
+                        </div>
+
+                        <!-- Meeting Mode & Race Selector -->
+                        <div class="tb-header-utility-actions">
+                            <button type="button" onclick="toggleMeetingMode()" id="btn-meeting-mode" class="btn btn-meeting-mode" title="Optimize interface for Discord screensharing">
+                                <i class="fas fa-video"></i> <span>MEETING MODE</span>
+                            </button>
+                            <div class="tb-event-selector-wrap">
+                                <label for="lineup-event-selector"><i class="fas fa-trophy"></i> RACE:</label>
                                 <select id="lineup-event-selector" class="studio-event-select" onchange="loadAdminBuilderData(true)">
                                     <option value="">Loading upcoming races...</option>
                                 </select>
                             </div>
-                            <button onclick="publishBuilderLineups()" class="btn btn-primary" style="font-size: 0.85rem; padding: 0.65rem 1.4rem; border-radius: 10px; font-weight: 800; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 0 25px rgba(0,207,255,0.35);">
-                                <i class="fas fa-cloud-upload-alt"></i> Publish Official Lineups
-                            </button>
-                            <button type="button" onclick="addAllDefaultTeams()" class="btn btn-outline" style="font-size: 0.85rem; padding: 0.65rem 1.1rem; border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; border-color: rgba(0,207,255,0.4); color: var(--primary);">
-                                <i class="fas fa-th-large"></i> Ensure All 6 Team Tiles
-                            </button>
-                            <button type="button" onclick="viewLiveStintsFromAdmin()" class="btn btn-outline" style="font-size: 0.85rem; padding: 0.65rem 1.1rem; border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px;">
-                                <i class="fas fa-stopwatch" style="color: var(--primary);"></i> Open Stint Planner
-                            </button>
-                            <button type="button" onclick="openTeamTelemetryFromAdmin()" class="btn btn-outline" style="font-size: 0.85rem; padding: 0.65rem 1.1rem; border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; border-color: rgba(251,191,36,0.4); color: #fbbf24;">
-                                <i class="fas fa-microchip"></i> Telemetry & Setup Intel
-                            </button>
                         </div>
                     </div>
 
-                    <!-- Event Metadata & Eligible Classes Banner -->
-                    <div id="builder-event-meta-banner" style="background: rgba(0,0,0,0.45); border: 1px solid rgba(0,207,255,0.2); border-left: 4px solid var(--primary); border-radius: 10px; padding: 0.65rem 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.75rem;">
-                        <div id="builder-event-summary" style="font-size: 0.82rem; color: var(--text-muted);">Select an upcoming race to start assembling car entries.</div>
-                        <div id="builder-event-classes-pills" style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;"></div>
-                    </div>
-                </div>
-
-                <!-- Driver Pool & Availability Responses (Sticky so it stays visible when scrolling down) -->
-                <div id="builder-driver-pool-container" class="builder-driver-pool-container glass">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.45rem; flex-wrap: wrap; gap: 0.5rem;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 22px; height: 22px; border-radius: 5px; background: rgba(0,207,255,0.12); display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 0.75rem;">
-                                <i class="fas fa-users"></i>
+                    <!-- Header Bottom Row: Live Stats Counters & Quick Actions -->
+                    <div class="tb-header-bottom-row">
+                        <div class="tb-stats-strip" id="tb-stats-strip">
+                            <div class="tb-stat-pill">
+                                <i class="fas fa-car-side" style="color: var(--primary);"></i>
+                                <span class="tb-stat-num" id="stat-total-teams">6</span>
+                                <span class="tb-stat-lbl">TEAMS</span>
                             </div>
-                            <h4 style="color: #fff; font-size: 0.85rem; font-weight: 800; margin: 0; letter-spacing: 0.5px;">Driver Availability Pool</h4>
-                            <span style="font-size: 0.68rem; color: var(--text-muted);">(Drag into any team tile below)</span>
+                            <div class="tb-stat-pill">
+                                <i class="fas fa-user-check" style="color: #34d399;"></i>
+                                <span class="tb-stat-num" id="stat-assigned-drivers">0</span>
+                                <span class="tb-stat-lbl">ASSIGNED</span>
+                            </div>
+                            <div class="tb-stat-pill">
+                                <i class="fas fa-user-clock" style="color: #fbbf24;"></i>
+                                <span class="tb-stat-num" id="stat-unassigned-drivers">0</span>
+                                <span class="tb-stat-lbl">UNASSIGNED</span>
+                            </div>
+                            <div class="tb-stat-pill">
+                                <i class="fas fa-check-double" style="color: #a855f7;"></i>
+                                <span class="tb-stat-num" id="stat-ready-teams">0/6</span>
+                                <span class="tb-stat-lbl">READY</span>
+                            </div>
+                            <div class="tb-stat-pill" id="stat-avg-sof-pill" style="display:none;">
+                                <i class="fas fa-chart-line" style="color: #60a5fa;"></i>
+                                <span class="tb-stat-num" id="stat-avg-sof">--</span>
+                                <span class="tb-stat-lbl">AVG SOF</span>
+                            </div>
                         </div>
-                        <div id="builder-driver-stats" style="display: flex; gap: 6px; font-size: 0.7rem;">
-                            <span id="builder-driver-count-badge" style="background: rgba(255,255,255,0.06); padding: 2px 7px; border-radius: 4px; color: var(--text-muted); font-weight: 700;">0 Responded</span>
+
+                        <!-- Action Toolbar -->
+                        <div class="tb-action-buttons-group">
+                            <button type="button" onclick="openAutoBalanceModal()" class="btn btn-tool" title="Auto-balance available drivers into squads by iRating">
+                                <i class="fas fa-wand-magic-sparkles" style="color:var(--primary);"></i> AUTO BALANCE
+                            </button>
+                            <button type="button" onclick="undoBuilderAction()" id="btn-builder-undo" class="btn btn-tool" title="Undo last change" disabled style="opacity:0.5;">
+                                <i class="fas fa-undo-alt"></i> UNDO
+                            </button>
+                            <button type="button" onclick="clearAllBuilderDrivers()" class="btn btn-tool btn-danger-soft" title="Clear all team rosters back to pool">
+                                <i class="fas fa-trash-can" style="color:#f87171;"></i> CLEAR ALL
+                            </button>
+                            <button type="button" onclick="viewLiveStintsFromAdmin()" class="btn btn-tool" title="Open live stint schedule">
+                                <i class="fas fa-stopwatch" style="color:var(--primary);"></i> STINTS
+                            </button>
+                            <button type="button" onclick="openTeamTelemetryFromAdmin()" class="btn btn-tool" title="Open driver session telemetry & setup intel">
+                                <i class="fas fa-microchip" style="color:#fbbf24;"></i> SETUP & INTEL
+                            </button>
+                            <button type="button" onclick="toggleLapSync()" class="btn btn-tool" title="Sync fastest laps from Garage61 or iRacingData">
+                                <i class="fas fa-bolt" style="color:#34d399;"></i> GARAGE61
+                            </button>
+                            <button type="button" onclick="publishBuilderLineups()" class="btn btn-primary btn-confirm-grid" id="btn-confirm-grid">
+                                <i class="fas fa-check-circle"></i> CONFIRM GRID
+                            </button>
                         </div>
                     </div>
-                    <div id="builder-driver-pool-list" style="display: flex; flex-wrap: wrap; gap: 0.45rem; max-height: 105px; overflow-y: auto; padding-right: 4px;">
-                        <p style="color: var(--text-muted); font-size: 0.75rem; margin: 0;">Loading driver responses...</p>
+
+                    <!-- Event Metadata Banner -->
+                    <div id="builder-event-meta-banner" class="tb-event-meta-banner">
+                        <div id="builder-event-summary" class="tb-event-summary">Select an upcoming race to start assembling car entries.</div>
+                        <div id="builder-event-classes-pills" class="tb-event-classes-pills"></div>
                     </div>
                 </div>
 
-                <!-- Car Entries Canvas -->
-                <div id="builder-cars-canvas" class="builder-canvas">
-                    <!-- Populated by JS -->
+                <!-- 2. Main Two-Column Workspace (32% Left Pool, 68% Right Teams Grid) -->
+                <div class="team-builder-workspace">
+                    <!-- LEFT: DRIVER POOL -->
+                    <aside class="tb-driver-pool-panel glass"
+                           id="builder-driver-pool-panel"
+                           ondragover="adminOnPoolDragOver(event)"
+                           ondragleave="adminOnPoolDragLeave(event)"
+                           ondrop="adminOnPoolDrop(event)">
+                        <div class="pool-header">
+                            <div class="pool-title-wrap">
+                                <div class="pool-icon"><i class="fas fa-users"></i></div>
+                                <div>
+                                    <h3 class="pool-title">DRIVER POOL</h3>
+                                    <p class="pool-subtitle">Drag drivers into a team to assign them</p>
+                                </div>
+                            </div>
+                            <span class="pool-total-badge" id="pool-total-count">0 Available</span>
+                        </div>
+
+                        <!-- Search Drivers -->
+                        <div class="pool-search-wrap">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text"
+                                   id="driver-pool-search"
+                                   class="pool-search-input"
+                                   placeholder="Search drivers..."
+                                   oninput="onDriverPoolSearch(this.value)">
+                            <button type="button"
+                                    id="driver-pool-clear-search"
+                                    onclick="clearDriverPoolSearch()"
+                                    style="display:none;"
+                                    class="search-clear-btn">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+
+                        <!-- Filter Chips -->
+                        <div class="pool-filter-chips">
+                            <button type="button" class="pool-chip active" data-filter="all" onclick="setDriverPoolFilter('all')">ALL</button>
+                            <button type="button" class="pool-chip" data-filter="available" onclick="setDriverPoolFilter('available')">🟢 AVAILABLE</button>
+                            <button type="button" class="pool-chip" data-filter="assigned" onclick="setDriverPoolFilter('assigned')">🟣 ASSIGNED</button>
+                            <button type="button" class="pool-chip" data-filter="interested" onclick="setDriverPoolFilter('interested')">🟡 INTERESTED</button>
+                        </div>
+
+                        <!-- Drop Here To Unassign Zone -->
+                        <div class="pool-unassign-dropzone" id="pool-unassign-dropzone">
+                            <i class="fas fa-reply"></i> DROP HERE TO UNASSIGN FROM SQUAD
+                        </div>
+
+                        <!-- Scrollable Driver Cards Container -->
+                        <div id="builder-driver-pool-list" class="pool-cards-container">
+                            <p style="color: var(--text-muted); font-size: 0.75rem; margin: 0; text-align: center; padding: 1rem 0;">Loading driver responses...</p>
+                        </div>
+                    </aside>
+
+                    <!-- RIGHT: GRID / TEAMS (2-Column x 3-Row Grid) -->
+                    <main class="tb-teams-grid-panel">
+                        <div class="grid-panel-header">
+                            <div>
+                                <h3 class="grid-panel-title"><i class="fas fa-th-large" style="color:var(--primary); margin-right:6px;"></i> GRID / TEAMS</h3>
+                                <p class="grid-panel-subtitle">6 teams &bull; Build your race grid for screenshare</p>
+                            </div>
+                            <div class="grid-panel-actions">
+                                <button type="button" onclick="addAllDefaultTeams()" class="btn btn-outline btn-xs" title="Reset or restore all 6 standard GRiD UP squads">
+                                    <i class="fas fa-th-large" style="color:var(--primary);"></i> Ensure 6 Squads
+                                </button>
+                                <button type="button" onclick="addBuilderCar()" class="btn btn-outline btn-xs" title="Add a custom 7th+ car entry">
+                                    <i class="fas fa-plus"></i> + Add Custom Car
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- The 2x3 Grid of Team Cards -->
+                        <div id="builder-cars-canvas" class="builder-canvas-grid">
+                            <!-- Populated dynamically by JS -->
+                        </div>
+                    </main>
                 </div>
 
-                <!-- Studio Footer Actions -->
-                <div style="margin-top: 1.75rem; display: flex; gap: 1rem; flex-wrap: wrap;">
-                    <button onclick="addAllDefaultTeams()" class="btn btn-outline" style="flex: 1; border-color: rgba(0,207,255,0.4); background: rgba(0,207,255,0.06); padding: 1rem 1.25rem; border-radius: 12px; font-size: 0.85rem; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease;">
-                        <i class="fas fa-th-large" style="color: var(--primary);"></i> Ensure All 6 GRiD UP Teams
-                    </button>
-                    <button onclick="addBuilderCar()" class="btn btn-outline" style="flex: 1; border-color: rgba(255,255,255,0.18); padding: 1rem 1.25rem; border-radius: 12px; font-size: 0.85rem; font-weight: 800; letter-spacing: 0.5px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease;">
-                        <i class="fas fa-plus-circle" style="color: var(--primary);"></i> + Add Custom Car Entry
-                    </button>
-                    <button onclick="toggleLapSync()" class="btn btn-outline" style="flex: 1; border-color: rgba(255,255,255,0.15); padding: 1rem 1.25rem; border-radius: 12px; font-size: 0.8rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
-                        <i class="fas fa-stopwatch" style="color: var(--primary);"></i> Sync Fastest Laps (Garage 61)
-                    </button>
+                <!-- 3. Sticky Bottom Summary Bar -->
+                <div class="tb-sticky-summary-bar glass" id="tb-sticky-summary-bar">
+                    <div class="summary-left">
+                        <span class="summary-title"><i class="fas fa-th-large"></i> GRID SUMMARY</span>
+                        <div class="summary-stat-group">
+                            <span class="stat-item"><i class="fas fa-car-side" style="color:var(--primary);"></i> <strong id="summary-total-teams">6</strong> TEAMS</span>
+                            <span class="stat-divider">•</span>
+                            <span class="stat-item"><i class="fas fa-user-check" style="color:#34d399;"></i> <strong id="summary-assigned-drivers">0</strong> DRIVERS ASSIGNED</span>
+                            <span class="stat-divider">•</span>
+                            <span class="stat-item"><i class="fas fa-chair" style="color:#fbbf24;"></i> <strong id="summary-open-seats">12</strong> SEATS OPEN</span>
+                            <span class="stat-divider">•</span>
+                            <span class="stat-item"><i class="fas fa-chart-line" style="color:#60a5fa;"></i> AVG SOF: <strong id="summary-avg-sof">—</strong></span>
+                        </div>
+                    </div>
+
+                    <div class="summary-right">
+                        <div class="summary-readiness-indicator" id="summary-readiness-indicator">
+                            <span class="readiness-dot yellow"></span>
+                            <span class="readiness-text yellow">⚠️ Initializing squads...</span>
+                        </div>
+                        <button type="button" onclick="publishBuilderLineups()" class="btn btn-primary btn-summary-confirm" id="btn-summary-confirm">
+                            <i class="fas fa-check-circle"></i> CONFIRM TEAM GRID
+                        </button>
+                    </div>
                 </div>
 
-                <!-- Lap Sync Modal Area -->
+                <!-- 4. Auto Balance Preview Modal -->
+                <div id="auto-balance-modal" class="tb-modal-backdrop" style="display: none;">
+                    <div class="tb-modal-box glass">
+                        <div class="tb-modal-header">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-wand-magic-sparkles" style="color: var(--primary); font-size: 1.3rem;"></i>
+                                <div>
+                                    <h3 style="color:#fff; margin:0; font-size:1.15rem; font-weight:900;">RECOMMENDED TEAM BALANCE</h3>
+                                    <p style="color:var(--text-muted); font-size:0.75rem; margin:2px 0 0 0;">iRating-balanced squad distribution across all 6 GRiD UP entries</p>
+                                </div>
+                            </div>
+                            <button type="button" onclick="closeAutoBalanceModal()" class="tb-modal-close"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="tb-modal-body">
+                            <div id="auto-balance-cards-grid" class="auto-balance-grid">
+                                <!-- Rendered dynamically -->
+                            </div>
+                        </div>
+                        <div class="tb-modal-footer">
+                            <button type="button" onclick="closeAutoBalanceModal()" class="btn btn-outline" style="font-size:0.8rem;">Cancel</button>
+                            <button type="button" onclick="applyAutoBalance()" class="btn btn-primary" style="font-size:0.8rem; font-weight:800; box-shadow: 0 0 20px rgba(0,207,255,0.4);">
+                                <i class="fas fa-check"></i> Apply Balance
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. Lap Sync Area (Preserved from existing) -->
                 <div id="lap-sync-area" class="glass" style="display: none; margin-top: 2rem; padding: 2rem; border: 1px dashed var(--primary); border-radius: 16px;">
                     <h4 style="color: var(--primary); margin-bottom: 0.5rem;">Sync Fastest Laps from Garage 61</h4>
                     <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.4;">
@@ -984,7 +2282,7 @@
 
                     <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.05); margin: 2rem 0;">
 
-                    <h4 style="color: var(--primary); margin-bottom: 0.5rem;">Auto-Fetch from iRacingData.com (New)</h4>
+                    <h4 style="color: var(--primary); margin-bottom: 0.5rem;">Auto-Fetch from iRacingData.com</h4>
                     <p style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 1.5rem;">
                         Instead of pasting, you can pull community-wide average best lap times directly from iRacingData.com.
                     </p>
@@ -1000,7 +2298,8 @@
                 </div>
             </div>
 
-            <div id="section-admins" class="tab-content" style="display: none;">
+
+            <div ection-admins" class="tab-content" style="display: none;">
                 <div class="grid" style="grid-template-columns: 1fr 2fr; gap: 2rem; align-items: start;">
                     <!-- Add Admin Form -->
                     <div class="glass" style="padding: 2.5rem; border: 1px solid var(--glass-border);">
@@ -3247,6 +4546,120 @@
             return (val && !isNaN(val) && val > 0) ? Math.round(val) : null;
         }
 
+                // ===================================================
+        // TEAM BUILDER STUDIO - ENGINE & STATE
+        // ===================================================
+
+        window._adminBuilderCurrentEvent = null;
+        window._adminBuilderEligibleClasses = ['GT3'];
+        window._adminBuilderResponses = [];
+        window._adminBuilderDurationHours = 6;
+        window._adminBuilderCars = [];
+        window._adminOpenStints = {};
+        window._lastLoadedLineupEventId = null;
+
+        // Undo & Meeting Mode & Pool Filter State
+        window._adminBuilderHistory = [];
+        window._meetingModeActive = false;
+        window._driverPoolSearchQuery = '';
+        window._driverPoolActiveFilter = 'all';
+        window._pendingAutoBalance = null;
+
+        // Save History Snapshot for Undo
+        function saveBuilderHistoryState() {
+            if (!Array.isArray(window._adminBuilderHistory)) {
+                window._adminBuilderHistory = [];
+            }
+            if (window._adminBuilderHistory.length >= 25) {
+                window._adminBuilderHistory.shift();
+            }
+            window._adminBuilderHistory.push(JSON.parse(JSON.stringify(window._adminBuilderCars || [])));
+            const undoBtn = document.getElementById('btn-builder-undo');
+            if (undoBtn) {
+                undoBtn.disabled = false;
+                undoBtn.style.opacity = '1';
+            }
+        }
+
+        // Undo Last Action
+        window.undoBuilderAction = function() {
+            if (Array.isArray(window._adminBuilderHistory) && window._adminBuilderHistory.length > 0) {
+                window._adminBuilderCars = window._adminBuilderHistory.pop();
+                const undoBtn = document.getElementById('btn-builder-undo');
+                if (undoBtn) {
+                    undoBtn.disabled = (window._adminBuilderHistory.length === 0);
+                    undoBtn.style.opacity = undoBtn.disabled ? '0.5' : '1';
+                }
+                refreshAdminBuilderUI();
+            }
+        };
+
+        // Clear All Team Rosters
+        window.clearAllBuilderDrivers = function() {
+            if (!confirm("Are you sure you want to clear all driver assignments from all teams back to the pool?")) return;
+            saveBuilderHistoryState();
+            (window._adminBuilderCars || []).forEach(car => {
+                car.drivers = [];
+                car.captain = "";
+            });
+            refreshAdminBuilderUI();
+        };
+
+        // Toggle Meeting Mode for Discord Screenshare
+        window.toggleMeetingMode = function() {
+            window._meetingModeActive = !window._meetingModeActive;
+            const body = document.body;
+            const btn = document.getElementById('btn-meeting-mode');
+
+            if (window._meetingModeActive) {
+                body.classList.add('meeting-mode-active');
+                if (btn) {
+                    btn.innerHTML = `<i class="fas fa-circle-stop" style="color:#ef4444;"></i> <span>EXIT MEETING MODE</span>`;
+                    btn.classList.add('active-recording');
+                }
+            } else {
+                body.classList.remove('meeting-mode-active');
+                if (btn) {
+                    btn.innerHTML = `<i class="fas fa-video"></i> <span>MEETING MODE</span>`;
+                    btn.classList.remove('active-recording');
+                }
+            }
+            refreshAdminBuilderUI();
+        };
+
+        // Driver Pool Search & Filters
+        window.onDriverPoolSearch = function(val) {
+            window._driverPoolSearchQuery = (val || '').toLowerCase().trim();
+            const clearBtn = document.getElementById('driver-pool-clear-search');
+            if (clearBtn) {
+                clearBtn.style.display = window._driverPoolSearchQuery ? 'block' : 'none';
+            }
+            renderAdminDriverPool(
+                window._adminBuilderCurrentEvent,
+                window._adminBuilderEligibleClasses || ['GT3'],
+                window._adminBuilderResponses || []
+            );
+        };
+
+        window.clearDriverPoolSearch = function() {
+            const input = document.getElementById('driver-pool-search');
+            if (input) input.value = '';
+            window.onDriverPoolSearch('');
+        };
+
+        window.setDriverPoolFilter = function(filter) {
+            window._driverPoolActiveFilter = filter;
+            document.querySelectorAll('.pool-filter-chips .pool-chip').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-filter') === filter);
+            });
+            renderAdminDriverPool(
+                window._adminBuilderCurrentEvent,
+                window._adminBuilderEligibleClasses || ['GT3'],
+                window._adminBuilderResponses || []
+            );
+        };
+
+        // Main Refresh UI
         function refreshAdminBuilderUI() {
             if (!window._adminBuilderCurrentEvent) return;
             renderAdminDriverPool(
@@ -3260,8 +4673,106 @@
                 window._adminBuilderResponses || [],
                 window._adminBuilderDurationHours || 6
             );
+            updateBuilderHeaderAndSummary(
+                window._adminBuilderCurrentEvent,
+                window._adminBuilderResponses || []
+            );
         }
 
+        // Live Header Counters & Sticky Bottom Bar Updater
+        function updateBuilderHeaderAndSummary(currentEvent, responses) {
+            const cars = window._adminBuilderCars || [];
+            const totalTeams = cars.length;
+
+            const allAssigned = [];
+            cars.forEach(c => {
+                (c.drivers || []).forEach(d => {
+                    if (d && !allAssigned.some(a => a.toLowerCase() === d.toLowerCase())) {
+                        allAssigned.push(d);
+                    }
+                });
+            });
+            const assignedCount = allAssigned.length;
+
+            const availablePool = responses.filter(r => r.status === 'signed_up' || r.status === 'interested' || r.status === 'tentative');
+            const unassignedCount = availablePool.filter(r => !allAssigned.some(a => a.toLowerCase() === (r.driverName || '').toLowerCase())).length;
+
+            let readyTeamsCount = 0;
+            let missingDriversCount = 0;
+            let missingCarCount = 0;
+            const teamSOFs = [];
+
+            cars.forEach(c => {
+                const dCount = (c.drivers || []).length;
+                const hasCar = !!(c.carModel && c.carModel.trim() && !c.carModel.includes('Select Car'));
+                if (dCount >= 2 && hasCar) {
+                    readyTeamsCount++;
+                }
+                if (dCount < 2) missingDriversCount++;
+                if (!hasCar) missingCarCount++;
+                if (typeof c.teamSOF === 'number' && c.teamSOF > 0) {
+                    teamSOFs.push(c.teamSOF);
+                }
+            });
+
+            const avgSOF = teamSOFs.length > 0 ? Math.round(teamSOFs.reduce((a, b) => a + b, 0) / teamSOFs.length) : null;
+            const openSeats = Math.max(0, (totalTeams * 2) - assignedCount);
+
+            // Top Header Counters
+            const statTeams = document.getElementById('stat-total-teams');
+            const statAssigned = document.getElementById('stat-assigned-drivers');
+            const statUnassigned = document.getElementById('stat-unassigned-drivers');
+            const statReady = document.getElementById('stat-ready-teams');
+            const statAvgSof = document.getElementById('stat-avg-sof');
+            const statAvgSofPill = document.getElementById('stat-avg-sof-pill');
+
+            if (statTeams) statTeams.textContent = totalTeams;
+            if (statAssigned) statAssigned.textContent = `${assignedCount} Assigned`;
+            if (statUnassigned) statUnassigned.textContent = `${unassignedCount} Unassigned`;
+            if (statReady) statReady.textContent = `${readyTeamsCount}/${totalTeams} Ready`;
+            if (statAvgSof && avgSOF) {
+                statAvgSof.textContent = `${avgSOF.toLocaleString()} iR`;
+                if (statAvgSofPill) statAvgSofPill.style.display = 'inline-flex';
+            } else if (statAvgSofPill) {
+                statAvgSofPill.style.display = 'none';
+            }
+
+            // Stepper
+            const stepDrivers = document.getElementById('step-drivers');
+            const stepBuild = document.getElementById('step-build');
+            const stepConfirm = document.getElementById('step-confirm');
+            if (stepDrivers) stepDrivers.classList.add('active');
+            if (stepBuild) stepBuild.classList.toggle('active', assignedCount > 0);
+            if (stepConfirm) stepConfirm.classList.toggle('active', readyTeamsCount === totalTeams && totalTeams > 0);
+
+            // Sticky Bottom Bar
+            const sumTeams = document.getElementById('summary-total-teams');
+            const sumAssigned = document.getElementById('summary-assigned-drivers');
+            const sumSeats = document.getElementById('summary-open-seats');
+            const sumSof = document.getElementById('summary-avg-sof');
+            const sumReadyInd = document.getElementById('summary-readiness-indicator');
+            const sumConfirmBtn = document.getElementById('btn-summary-confirm');
+
+            if (sumTeams) sumTeams.textContent = totalTeams;
+            if (sumAssigned) sumAssigned.textContent = assignedCount;
+            if (sumSeats) sumSeats.textContent = openSeats;
+            if (sumSof) sumSof.textContent = avgSOF ? `${avgSOF.toLocaleString()} iR` : '—';
+
+            if (sumReadyInd) {
+                if (readyTeamsCount === totalTeams && totalTeams > 0) {
+                    sumReadyInd.innerHTML = `<span class="status-dot green"></span> <span class="readiness-text green">🟢 GRID READY (${readyTeamsCount}/${totalTeams} Teams Ready)</span>`;
+                    if (sumConfirmBtn) sumConfirmBtn.classList.add('btn-grid-ready');
+                } else {
+                    const issues = [];
+                    if (missingDriversCount > 0) issues.push(`${missingDriversCount} team${missingDriversCount > 1 ? 's' : ''} need drivers`);
+                    if (missingCarCount > 0) issues.push(`${missingCarCount} team${missingCarCount > 1 ? 's' : ''} missing car`);
+                    sumReadyInd.innerHTML = `<span class="status-dot yellow"></span> <span class="readiness-text yellow">⚠️ ${issues.join(' • ')}</span>`;
+                    if (sumConfirmBtn) sumConfirmBtn.classList.remove('btn-grid-ready');
+                }
+            }
+        }
+
+        // Load Admin Builder Data from Firestore
         async function loadAdminBuilderData(forceReload = false) {
             await loadDynamicTeamsList();
             const selector = document.getElementById('lineup-event-selector');
@@ -3293,7 +4804,6 @@
                     console.warn("Could not load drivers for Team Builder iRating:", e);
                 }
 
-                // Also load local driver_stats_2.json as a fallback
                 if (!window._localDriverStatsCache) {
                     try {
                         const r = await fetch('driver_stats_2.json?v=' + Date.now());
@@ -3306,7 +4816,6 @@
                 }
             }
 
-            // Ensure events are loaded if not loaded yet
             if (!UPCOMING_EVENTS || UPCOMING_EVENTS.length === 0) {
                 try {
                     const snapshot = await db.collection("events").orderBy("startDate", "asc").get();
@@ -3321,234 +4830,235 @@
                             UPCOMING_EVENTS.push(eventObj);
                         }
                     });
-                    updateSelectors();
                 } catch (e) {
-                    console.error("Error loading events in loadAdminBuilderData:", e);
+                    console.warn("Could not load events:", e);
                 }
             }
 
-            let activeId = selector.value;
-            if ((!activeId || !UPCOMING_EVENTS.some(e => e.id === activeId)) && UPCOMING_EVENTS.length > 0) {
-                activeId = UPCOMING_EVENTS[0].id;
-                selector.value = activeId;
-            }
+            const eventsList = (UPCOMING_EVENTS && UPCOMING_EVENTS.length > 0) ? UPCOMING_EVENTS : ALL_EVENTS;
+
+            // Update Event Selector dropdown
+            selector.innerHTML = eventsList.map(ev => {
+                const trackName = (ev.track || '').split(' - ')[0];
+                return `<option value="${ev.id}">${ev.name} ${trackName ? `(${trackName})` : ''}</option>`;
+            }).join('');
+
+            const activeId = selector.value || (eventsList.length > 0 ? eventsList[0].id : null);
             if (!activeId) return;
 
-            const allEvts = (typeof ALL_EVENTS !== 'undefined' && ALL_EVENTS.length) ? ALL_EVENTS : UPCOMING_EVENTS;
-            const currentEvent = allEvts.find(e => e.id === activeId) || { id: activeId, name: activeId };
-            const eligibleClasses = getEventEligibleClasses(currentEvent);
-            const durationHours = getEventDurationHours(currentEvent);
-
+            selector.value = activeId;
+            const currentEvent = eventsList.find(e => e.id === activeId);
             window._adminBuilderCurrentEvent = currentEvent;
+
+            // Determine Eligible Classes
+            let eligibleClasses = ['GT3'];
+            if (currentEvent) {
+                if (currentEvent.carClass) {
+                    eligibleClasses = [currentEvent.carClass];
+                } else if (currentEvent.carClasses && Array.isArray(currentEvent.carClasses) && currentEvent.carClasses.length > 0) {
+                    eligibleClasses = currentEvent.carClasses;
+                } else if (currentEvent.name) {
+                    const nameLower = currentEvent.name.toLowerCase();
+                    if (nameLower.includes('supercars') || nameLower.includes('bathurst 1000')) {
+                        eligibleClasses = ['Supercars'];
+                    } else if (nameLower.includes('roar') || nameLower.includes('daytona 24') || nameLower.includes('sebring') || nameLower.includes('petit')) {
+                        eligibleClasses = ['GTP', 'LMP2', 'GT3'];
+                    } else if (nameLower.includes('spa 24') || nameLower.includes('nurburgring') || nameLower.includes('bathurst 12') || nameLower.includes('suzuka')) {
+                        eligibleClasses = ['GT3'];
+                    }
+                }
+            }
             window._adminBuilderEligibleClasses = eligibleClasses;
+
+            // Determine Duration in Hours
+            let durationHours = 6;
+            if (currentEvent) {
+                if (currentEvent.duration) {
+                    durationHours = parseFloat(currentEvent.duration) || 6;
+                } else if (currentEvent.name) {
+                    const n = currentEvent.name.toLowerCase();
+                    if (n.includes('24h') || n.includes('24 hour') || n.includes('24hr')) durationHours = 24;
+                    else if (n.includes('12h') || n.includes('12 hour') || n.includes('12hr')) durationHours = 12;
+                    else if (n.includes('10h') || n.includes('10 hour') || n.includes('petit')) durationHours = 10;
+                    else if (n.includes('6h') || n.includes('6 hour')) durationHours = 6;
+                }
+            }
             window._adminBuilderDurationHours = durationHours;
 
-            // Update Metadata Banner
+            // Render Banner
             const summaryEl = document.getElementById('builder-event-summary');
-            const pillsEl = document.getElementById('builder-event-classes-pills');
-            if (summaryEl) {
+            if (summaryEl && currentEvent) {
+                const dateStr = currentEvent.startDate ? new Date(currentEvent.startDate.seconds ? currentEvent.startDate.seconds * 1000 : currentEvent.startDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Upcoming';
                 summaryEl.innerHTML = `
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
-                        <span style="background: rgba(0,207,255,0.15); border: 1px solid var(--primary); color: var(--primary); font-size: 0.65rem; font-weight: 900; letter-spacing: 1px; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;">ACTIVE RACE</span>
-                        <div style="font-size: 1.15rem; font-weight: 800; color: #fff;">${currentEvent.name}</div>
-                    </div>
-                    <div style="display: flex; gap: 16px; font-size: 0.78rem; color: var(--text-muted); flex-wrap: wrap;">
-                        <span><i class="fas fa-calendar-alt" style="color:var(--primary); margin-right: 5px;"></i> ${currentEvent.date || 'TBA'}</span>
-                        <span><i class="fas fa-stopwatch" style="color:var(--primary); margin-right: 5px;"></i> ${durationHours}H Race Duration</span>
-                        <span><i class="fas fa-map-marker-alt" style="color:var(--primary); margin-right: 5px;"></i> ${currentEvent.track || 'Track TBA'}</span>
-                    </div>
+                    <strong style="color: #fff; font-size: 0.95rem;">${currentEvent.name}</strong> &bull; 
+                    <span style="color: var(--primary);"><i class="fas fa-map-marker-alt"></i> ${currentEvent.track || 'Circuit'}</span> &bull; 
+                    <span><i class="fas fa-calendar-alt"></i> ${dateStr}</span> &bull; 
+                    <span style="color: #60a5fa;"><i class="fas fa-clock"></i> ${durationHours} Hours</span>
                 `;
             }
+
+            const pillsEl = document.getElementById('builder-event-classes-pills');
             if (pillsEl) {
-                pillsEl.innerHTML = `
-                    <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; margin-right: 4px;">Eligible Classes:</span>
-                ` + eligibleClasses.map(c => `
-                    <span style="background: rgba(0,207,255,0.12); border: 1px solid var(--primary); color: #fff; font-size: 0.72rem; font-weight: 800; padding: 4px 10px; border-radius: 8px; display: inline-flex; align-items: center; gap: 5px;">
-                        <i class="fas fa-car" style="color:var(--primary);"></i> ${c}
+                pillsEl.innerHTML = eligibleClasses.map(c => `
+                    <span style="background: rgba(0,207,255,0.15); border: 1px solid var(--primary); color: #00cfff; font-size: 0.65rem; font-weight: 800; padding: 2px 7px; border-radius: 4px;">
+                        ${c}
                     </span>
                 `).join('');
             }
 
-            // Fetch Driver Responses
-            let responses = [];
-            try {
-                const snap = await db.collection("event_availability").doc(activeId).collection("responses").get();
-                snap.forEach(doc => responses.push({ id: doc.id, ...doc.data() }));
-            } catch (err) {
-                console.warn("Could not load availability responses:", err);
-            }
-            window._adminBuilderResponses = responses;
-
-            // Fetch Lineups from Firestore (only if forced or not loaded for this event yet)
-            if (forceReload || !window._adminBuilderCars || window._adminBuilderCars.length === 0 || window._lastLoadedLineupEventId !== activeId) {
+            // Load Existing Race Lineup from Firestore
+            if (window._lastLoadedLineupEventId !== activeId || forceReload) {
                 window._lastLoadedLineupEventId = activeId;
                 try {
                     const lineupDoc = await db.collection("race_lineups").doc(activeId).get();
-                    if (lineupDoc.exists && Array.isArray(lineupDoc.data().teams) && lineupDoc.data().teams.length > 0) {
+                    if (lineupDoc.exists && lineupDoc.data().teams && Array.isArray(lineupDoc.data().teams)) {
                         window._adminBuilderCars = lineupDoc.data().teams;
-                        // Strip 'Esports' from team names and normalize
-                        window._adminBuilderCars.forEach(car => {
-                            if (car.name) car.name = car.name.replace(/Esports\s*/gi, '').replace(/\s+/g, ' ').trim();
-                            if (car.teamName) car.teamName = car.teamName.replace(/Esports\s*/gi, '').replace(/\s+/g, ' ').trim();
-                            if (!car.drivers || car.drivers.length === 0) {
-                                if (car.stints && car.stints.length > 0) {
-                                    car.drivers = [...new Set(car.stints.map(s => s.driverName).filter(n => n && n !== 'Unassigned' && n !== 'Driver 1'))];
-                                } else {
-                                    car.drivers = [];
-                                }
-                            }
-                            if (!car.captain && car.drivers.length > 0) {
-                                car.captain = car.drivers[0];
-                            }
-                        });
                     } else {
                         window._adminBuilderCars = [];
                     }
-                } catch (err) {
-                    console.warn("Could not load existing race lineup:", err);
+                } catch (e) {
+                    console.warn("Could not load race_lineups:", e);
+                    window._adminBuilderCars = [];
                 }
+                ensureAllDefaultTeamsPresent(eligibleClasses, durationHours);
             }
 
-            // Ensure all 6 standard GRiD UP teams are present as tiles
-            ensureAllDefaultTeamsPresent(eligibleClasses, durationHours);
-
-            // Ensure stints array exists and matches totalStints for all cars
-            window._adminBuilderCars.forEach(car => {
-                const stintMins = car.stintMinutes || (car.car_class === 'Supercars' ? 45 : 60);
-                car.stintMinutes = stintMins;
-                const totalStints = Math.ceil((durationHours * 60) / stintMins);
-                if (!car.stints || car.stints.length !== totalStints) {
-                    car.stints = generateCarStints(durationHours, stintMins, car.stints, car.drivers, car.carNumber, car.car_class);
-                }
-            });
+            // Load Driver Availability Responses for this Event
+            try {
+                const respSnap = await db.collection("event_availability").doc(activeId).collection("responses").get();
+                const responses = [];
+                respSnap.forEach(d => responses.push({ id: d.id, ...d.data() }));
+                window._adminBuilderResponses = responses;
+            } catch (e) {
+                console.warn("Could not load event_availability responses:", e);
+                window._adminBuilderResponses = [];
+            }
 
             refreshAdminBuilderUI();
         }
 
+        // Render Driver Pool
         function renderAdminDriverPool(currentEvent, eligibleClasses, responses) {
             const poolList = document.getElementById('builder-driver-pool-list');
-            const statsEl = document.getElementById('builder-driver-stats');
-            if (!poolList && !statsEl) return;
+            const countBadge = document.getElementById('pool-total-count');
+            if (!poolList) return;
 
             const activeId = currentEvent ? currentEvent.id : '';
-            // Filter Driver Pool to only drivers who are interested or signed_up (I'm In)
-            const availableResponses = responses.filter(r => r.status === 'signed_up' || r.status === 'interested' || r.status === 'tentative');
-            const confirmedCount = responses.filter(r => r.status === 'signed_up').length;
-            const interestedCount = responses.filter(r => r.status === 'interested' || r.status === 'tentative').length;
+            const allAvailable = responses.filter(r => r.status === 'signed_up' || r.status === 'interested' || r.status === 'tentative');
 
-            const poolRatings = availableResponses.map(d => {
-                return getDriverIRating(d.id, eligibleClasses[0] || 'GT3') || getDriverIRating(d.driverName, eligibleClasses[0] || 'GT3');
-            }).filter(r => typeof r === 'number' && r > 0);
-            const poolAvgIR = poolRatings.length > 0 ? Math.round(poolRatings.reduce((a, b) => a + b, 0) / poolRatings.length) : null;
+            // Apply filter tab
+            let filtered = allAvailable;
+            if (window._driverPoolActiveFilter === 'available') {
+                filtered = allAvailable.filter(r => {
+                    const dName = (r.driverName || '').trim().toLowerCase();
+                    const isAssigned = (window._adminBuilderCars || []).some(c => (c.drivers || []).some(dn => dn && dn.trim().toLowerCase() === dName));
+                    return !isAssigned && r.status === 'signed_up';
+                });
+            } else if (window._driverPoolActiveFilter === 'assigned') {
+                filtered = allAvailable.filter(r => {
+                    const dName = (r.driverName || '').trim().toLowerCase();
+                    return (window._adminBuilderCars || []).some(c => (c.drivers || []).some(dn => dn && dn.trim().toLowerCase() === dName));
+                });
+            } else if (window._driverPoolActiveFilter === 'interested') {
+                filtered = allAvailable.filter(r => r.status === 'interested' || r.status === 'tentative');
+            }
 
-            if (statsEl) {
-                statsEl.innerHTML = `
-                    <span style="background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #34d399; padding: 3px 8px; border-radius: 6px; font-weight: 700;"><i class="fas fa-check-circle"></i> ${confirmedCount} I'm In</span>
-                    <span style="background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); color: #fbbf24; padding: 3px 8px; border-radius: 6px; font-weight: 700;"><i class="fas fa-star"></i> ${interestedCount} Interested</span>
-                    <span style="background: rgba(255,255,255,0.06); color: var(--text-muted); padding: 3px 8px; border-radius: 6px; font-weight: 700;">${availableResponses.length} Available</span>
-                    ${poolAvgIR ? `<span style="background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); color: #60a5fa; padding: 3px 8px; border-radius: 6px; font-weight: 700;" title="Average iRating across available drivers"><i class="fas fa-chart-line"></i> Pool Avg: ${poolAvgIR.toLocaleString()} iR</span>` : ''}
+            // Apply search query
+            if (window._driverPoolSearchQuery) {
+                const q = window._driverPoolSearchQuery;
+                filtered = filtered.filter(r => {
+                    const n = (r.driverName || '').toLowerCase();
+                    const c = (r.preferredChassis || r.preferredCar || '').toLowerCase();
+                    const cl = (r.preferredClass || '').toLowerCase();
+                    return n.includes(q) || c.includes(q) || cl.includes(q);
+                });
+            }
+
+            if (countBadge) {
+                countBadge.textContent = `${allAvailable.length} Available`;
+            }
+
+            if (filtered.length === 0) {
+                poolList.innerHTML = `
+                    <div style="text-align: center; padding: 2rem 1rem; color: var(--text-muted); font-size: 0.8rem;">
+                        <i class="fas fa-search" style="font-size: 1.4rem; color: var(--primary); opacity: 0.5; margin-bottom: 0.5rem; display: block;"></i>
+                        No drivers matching "${window._driverPoolSearchQuery || window._driverPoolActiveFilter}"
+                    </div>
                 `;
+                return;
             }
 
-            if (poolList) {
-                if (availableResponses.length === 0) {
-                    poolList.innerHTML = `
-                        <div style="width: 100%; text-align: center; padding: 1.5rem 1rem; background: rgba(0,0,0,0.2); border-radius: 10px; border: 1px dashed rgba(255,255,255,0.08);">
-                            <i class="fas fa-user-clock" style="font-size: 1.5rem; color: var(--primary); opacity: 0.6; margin-bottom: 0.5rem; display: block;"></i>
-                            <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0 0 0.5rem 0;">No drivers are currently signed up or interested for this race.</p>
-                            <span style="font-size: 0.75rem; color: rgba(255,255,255,0.4);">Drivers can confirm their availability in the Driver Portal.</span>
-                        </div>
-                    `;
-                } else {
-                    poolList.innerHTML = availableResponses.map(d => {
-                        const isInterested = d.status === 'interested' || d.status === 'tentative';
-                        const statusColor = d.status === 'signed_up' ? '#10b981' : '#f59e0b';
-                        const statusLabel = d.status === 'signed_up' ? "I'm In" : 'Interested';
-                        const driverName = (d.driverName || 'Driver').trim();
+            poolList.innerHTML = filtered.map(d => {
+                const driverName = (d.driverName || 'Driver').trim();
+                const isInterested = d.status === 'interested' || d.status === 'tentative';
+                const statusDotClass = d.status === 'signed_up' ? 'green' : 'yellow';
+                const statusLabel = d.status === 'signed_up' ? "AVAILABLE" : 'INTERESTED';
 
-                        // Check if driver is already placed in a team
-                        let assignedTeamName = null;
-                        if (window._adminBuilderCars) {
-                            window._adminBuilderCars.forEach(c => {
-                                if (c.drivers && c.drivers.some(dn => dn && dn.trim().toLowerCase() === driverName.toLowerCase())) {
-                                    assignedTeamName = c.name || c.teamName || `Car #${c.carNumber}`;
-                                }
-                            });
-                        }
-                        
-                        // Check eligibility & preferred car
-                        const driverClass = d.preferredClass || 'Unknown';
-                        const driverChassis = d.preferredChassis || d.preferredCar || d.chassis || d.selectedCar || d.car || '';
-                        const isEligible = eligibleClasses.some(ec => ec.toLowerCase() === driverClass.toLowerCase() || (ec === 'Supercars' && driverClass.toLowerCase().includes('supercar')));
-                        
-                        // Lookup driver iRating
-                        const irating = getDriverIRating(d.id, eligibleClasses[0] || 'GT3') || getDriverIRating(driverName, eligibleClasses[0] || 'GT3');
-                        const iratingBadge = irating
-                            ? `<span style="background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.35); color: #60a5fa; font-size: 0.68rem; font-weight: 800; padding: 2px 7px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;" title="Driver iRating for this discipline"><i class="fas fa-chart-line" style="font-size: 0.6rem;"></i> ${irating.toLocaleString()} iR</span>`
-                            : `<span style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); color: var(--text-muted); font-size: 0.65rem; padding: 2px 6px; border-radius: 4px;" title="No iRating on file">No iR</span>`;
+                // Check assigned team
+                let assignedTeamName = null;
+                let assignedCarIdx = -1;
+                (window._adminBuilderCars || []).forEach((c, idx) => {
+                    if (c.drivers && c.drivers.some(dn => dn && dn.trim().toLowerCase() === driverName.toLowerCase())) {
+                        assignedTeamName = c.name || c.teamName || `Car #${c.carNumber}`;
+                        assignedCarIdx = idx;
+                    }
+                });
 
-                        let eligibilityBadge = '';
-                        if (!isEligible) {
-                            eligibilityBadge = `
-                                <span style="background: rgba(239,68,68,0.2); border: 1px solid #ef4444; color: #f87171; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">
-                                    <i class="fas fa-exclamation-triangle"></i> Ineligible [${driverClass}]
-                                    <button type="button" onclick="adminQuickFixDriverClass('${activeId}', '${d.id}', '${eligibleClasses[0]}')" style="background: rgba(251,191,36,0.25); border: 1px solid #fbbf24; color: #fbbf24; cursor: pointer; font-weight: 800; font-size: 0.65rem; padding: 1px 5px; border-radius: 3px;">Fix to ${eligibleClasses[0]}</button>
-                                </span>
-                            `;
-                        } else {
-                            eligibilityBadge = `<span style="background: rgba(0,207,255,0.1); border: 1px solid rgba(0,207,255,0.25); color: var(--primary); font-size: 0.65rem; font-weight: 700; padding: 2px 6px; border-radius: 4px;">${driverClass}</span>`;
-                        }
+                // iRating lookup
+                const irating = getDriverIRating(d.id, eligibleClasses[0] || 'GT3') || getDriverIRating(driverName, eligibleClasses[0] || 'GT3');
+                const driverClass = d.preferredClass || 'GT3';
+                const driverChassis = d.preferredChassis || d.preferredCar || d.chassis || d.selectedCar || d.car || '';
+                const isEligible = !driverClass || eligibleClasses.some(ec => ec.toLowerCase() === driverClass.toLowerCase() || (ec === 'Supercars' && driverClass.toLowerCase().includes('supercar')));
+                const escapedName = driverName.replace(/'/g, "\\'");
 
-                        let carBadge = '';
-                        if (driverChassis) {
-                            carBadge = `
-                                <span style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14); color: #f1f5f9; font-size: 0.68rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 5px;">
-                                    <i class="fas fa-car-side" style="color: var(--primary); font-size: 0.65rem;"></i> ${driverChassis}
-                                </span>
-                            `;
-                        } else {
-                            carBadge = `
-                                <span style="background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); color: var(--text-muted); font-size: 0.65rem; font-style: italic; padding: 2px 6px; border-radius: 4px;">
-                                    No car selected
-                                </span>
-                            `;
-                        }
-
-                        const assignedBadge = assignedTeamName
-                            ? `<span style="background: rgba(16,185,129,0.18); border: 1px solid rgba(16,185,129,0.35); color: #34d399; font-size: 0.66rem; font-weight: 800; padding: 2px 7px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;" title="Assigned to ${assignedTeamName}"><i class="fas fa-check"></i> In: ${assignedTeamName}</span>`
-                            : '';
-
-                        const escapedName = driverName.replace(/'/g, "\\'");
-
-                        return `
-                            <div class="driver-pool-card ${assignedTeamName ? 'is-assigned' : ''}"
-                                 draggable="true"
-                                 ondragstart="adminOnDriverDragStart(event, '${escapedName}')"
-                                 title="Drag onto a team tile below to assign">
-                                <i class="fas fa-grip-vertical" style="color: rgba(255,255,255,0.3);"></i>
-                                <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${statusColor}; flex-shrink: 0;"></span>
-                                <strong style="color: #fff;">${driverName}</strong>
-                                <span style="color: ${statusColor}; font-size: 0.7rem; font-weight: 700;">(${statusLabel})</span>
-                                ${iratingBadge}
-                                ${eligibilityBadge}
-                                ${carBadge}
-                                ${assignedBadge}
+                return `
+                    <div class="driver-pool-card ${assignedTeamName ? 'is-assigned' : ''}"
+                         draggable="true"
+                         ondragstart="adminOnDriverDragStart(event, '${escapedName}', '${assignedTeamName ? 'assigned' : 'pool'}', ${assignedCarIdx})"
+                         ondragend="adminOnDriverDragEnd(event)"
+                         title="Drag onto any team card on the right to assign">
+                        <div class="driver-card-top">
+                            <div class="driver-name-status">
+                                <span class="status-dot ${assignedTeamName ? 'purple' : statusDotClass}"></span>
+                                <strong class="driver-name">${driverName}</strong>
                             </div>
-                        `;
-                    }).join('');
-                }
-            }
+                            <div class="driver-irating-badge">
+                                <i class="fas fa-chart-line" style="font-size:0.6rem;"></i>
+                                <span class="irating-number">${irating ? irating.toLocaleString() + ' iR' : 'No iR'}</span>
+                            </div>
+                        </div>
+
+                        <div class="driver-card-mid">
+                            <div class="driver-preferred-car">
+                                <span class="pref-label">Preferred Car:</span>
+                                <span class="pref-value"><i class="fas fa-car-side" style="color:var(--primary); font-size:0.65rem;"></i> ${driverChassis || 'Not set'}</span>
+                            </div>
+                            <div>
+                                ${assignedTeamName 
+                                    ? `<span class="assigned-squad-tag"><i class="fas fa-check"></i> In: ${assignedTeamName}</span>`
+                                    : `<span style="font-size:0.65rem; font-weight:800; color:${d.status === 'signed_up' ? '#34d399' : '#fbbf24'};">${statusLabel}</span>`
+                                }
+                            </div>
+                        </div>
+
+                        <div class="driver-card-footer">
+                            <span class="drag-handle-hint"><i class="fas fa-grip-lines"></i> DRAG TO TEAM</span>
+                            ${!isEligible ? `<span style="color:#f87171; font-size:0.62rem; font-weight:800;">⚠️ ${driverClass}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
+        // Render Team Grid (2-Column x 3-Row Workspace)
         function renderAdminBuilderCars(currentEvent, eligibleClasses, responses, durationHours) {
             const canvas = document.getElementById('builder-cars-canvas');
             if (!canvas) return;
 
             let carsHtml = '';
-            window._adminBuilderCars.forEach((car, cIdx) => {
-                // Ensure car class is eligible; if not, auto-correct to first eligible class
+            (window._adminBuilderCars || []).forEach((car, cIdx) => {
                 if (!eligibleClasses.includes(car.car_class)) {
-                    car.car_class = eligibleClasses[0];
+                    car.car_class = eligibleClasses[0] || 'GT3';
                     const validModels = EVENT_CAR_CATALOG[car.car_class] || [];
                     car.carModel = validModels[0] || `${car.car_class} Chassis`;
                 }
@@ -3560,7 +5070,7 @@
 
                 const theme = getTeamTheme(currentTeamName);
 
-                // Calculate Team SOF from assigned drivers
+                // SOF Calculation (Preserved exact formula)
                 const driverRatings = carDriversList.map(name => {
                     const resp = responses.find(r => (r.driverName || '').trim().toLowerCase() === name.trim().toLowerCase());
                     return getDriverIRating(resp ? resp.id : null, car.car_class) || getDriverIRating(name, car.car_class);
@@ -3569,33 +5079,41 @@
                 const teamSOF = driverRatings.length > 0 ? Math.round(driverRatings.reduce((sum, v) => sum + v, 0) / driverRatings.length) : null;
                 car.teamSOF = teamSOF;
 
-                // Ensure captain is valid or defaulted
                 if (carDriversList.length > 0 && (!car.captain || !carDriversList.includes(car.captain))) {
                     car.captain = carDriversList[0];
                 }
 
-                // Class Options (STRICTLY FROM ELIGIBLE CLASSES)
+                // Team Status Pill
+                let statusBadgeHtml = '';
+                const hasCarModel = !!(car.carModel && car.carModel.trim() && !car.carModel.includes('Select Car'));
+                if (carDriversList.length >= 2 && hasCarModel) {
+                    statusBadgeHtml = `<span class="team-status-pill status-ready"><span class="status-dot green"></span> READY</span>`;
+                } else if (carDriversList.length < 2) {
+                    statusBadgeHtml = `<span class="team-status-pill status-needed"><span class="status-dot yellow"></span> NEEDS DRIVERS (${carDriversList.length}/2)</span>`;
+                } else {
+                    statusBadgeHtml = `<span class="team-status-pill status-missing-car"><span class="status-dot red"></span> SELECT CAR</span>`;
+                }
+
+                // Class Options
                 const classOptionsHtml = eligibleClasses.map(c => `
                     <option value="${c}" ${car.car_class === c ? 'selected' : ''}>${c}</option>
                 `).join('');
 
-                // Model Options (STRICTLY FOR CHOSEN CLASS)
+                // Model Options
                 const modelsForClass = EVENT_CAR_CATALOG[car.car_class] || [car.carModel || `${car.car_class} Chassis`];
                 const modelOptionsHtml = modelsForClass.map(m => `
                     <option value="${m}" ${car.carModel === m ? 'selected' : ''}>${m}</option>
                 `).join('');
 
-                // Team Options Dropdown
+                // Team Options
                 let teamList = [...DEFAULT_GRIDUP_TEAMS];
-                if (!teamList.includes(currentTeamName)) {
-                    teamList.push(currentTeamName);
-                }
+                if (!teamList.includes(currentTeamName)) teamList.push(currentTeamName);
                 const teamOptionsHtml = teamList.map(t => `
                     <option value="${t}" ${t === currentTeamName ? 'selected' : ''}>${t}</option>
-                `).join('') + `<option value="__custom__">+ Custom Team Name...</option>`;
+                `).join('') + `<option value="__custom__">+ Custom Team...</option>`;
 
-                // Captain Options Dropdown
-                let captainOptionsHtml = `<option value="">-- No Captain --</option>`;
+                // Captain Options
+                let captainOptionsHtml = `<option value="">-- Not Set --</option>`;
                 if (car.captain && !carDriversList.includes(car.captain)) {
                     captainOptionsHtml += `<option value="${car.captain}" selected>👑 ${car.captain}</option>`;
                 }
@@ -3603,44 +5121,51 @@
                     captainOptionsHtml += `<option value="${name}" ${car.captain === name ? 'selected' : ''}>👑 ${name}</option>`;
                 });
 
-                // Drivers in Drop Zone
+                // Drivers List HTML
                 let driversListHtml = '';
                 if (carDriversList.length === 0) {
                     driversListHtml = `
-                        <div style="text-align: center; padding: 0.5rem 0.5rem; border: 1px dashed rgba(255,255,255,0.08); border-radius: 6px; background: rgba(0,0,0,0.16); display: flex; align-items: center; justify-content: center; gap: 6px;">
-                            <i class="fas fa-hand-holding" style="color: ${theme.color}; font-size: 0.8rem; opacity: 0.7;"></i>
-                            <span style="color: rgba(255,255,255,0.45); font-size: 0.68rem;">Drop drivers here for <strong>${currentTeamName}</strong></span>
+                        <div class="empty-drop-area">
+                            <div class="drop-pulse-ring"><i class="fas fa-arrows-up-down"></i></div>
+                            <div class="drop-prompt-text">DROP DRIVER HERE</div>
+                            <div class="drop-sub-text">Build this squad</div>
                         </div>
                     `;
                 } else {
                     driversListHtml = `
-                        <div style="display: flex; flex-direction: column; gap: 4px;">
-                            ${carDriversList.map((driverName) => {
+                        <div class="roster-drivers-list">
+                            ${carDriversList.map(driverName => {
                                 const resp = responses.find(r => (r.driverName || '').trim().toLowerCase() === driverName.trim().toLowerCase());
                                 const ir = getDriverIRating(resp ? resp.id : null, car.car_class) || getDriverIRating(driverName, car.car_class);
-                                const driverClass = resp ? (resp.preferredClass || '') : '';
                                 const driverChassis = resp ? (resp.preferredChassis || resp.preferredCar || resp.chassis || resp.selectedCar || resp.car || '') : '';
-                                const isEligible = !driverClass || eligibleClasses.some(ec => ec.toLowerCase() === driverClass.toLowerCase() || (ec === 'Supercars' && driverClass.toLowerCase().includes('supercar')));
                                 const isCaptain = car.captain && car.captain.trim().toLowerCase() === driverName.trim().toLowerCase();
                                 const escapedName = driverName.replace(/'/g, "\\'");
 
                                 return `
-                                    <div class="team-driver-item" style="border-left: 3px solid ${isCaptain ? '#fbbf24' : theme.color};">
-                                        <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                                            <i class="fas fa-grip-vertical" style="color: rgba(255,255,255,0.2); font-size: 0.65rem;"></i>
-                                            <strong style="color: #fff; font-size: 0.76rem;">${driverName}</strong>
-                                            ${isCaptain ? `<span style="background: rgba(251,191,36,0.18); border: 1px solid #fbbf24; color: #fbbf24; font-size: 0.6rem; font-weight: 800; padding: 1px 5px; border-radius: 3px;"><i class="fas fa-crown"></i> Captain</span>` : ''}
-                                            ${ir ? `<span style="background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); color: #60a5fa; font-size: 0.64rem; font-weight: 800; padding: 1px 5px; border-radius: 3px;">${ir.toLocaleString()} iR</span>` : ''}
-                                            ${driverChassis ? `<span style="background: rgba(255,255,255,0.06); color: #cbd5e1; font-size: 0.64rem; padding: 1px 5px; border-radius: 3px;">${driverChassis}</span>` : ''}
-                                            ${!isEligible ? `<span style="background: rgba(239,68,68,0.2); color: #f87171; font-size: 0.6rem; padding: 1px 4px; border-radius: 3px; font-weight: 700;">⚠️ ${driverClass}</span>` : ''}
+                                    <div class="roster-driver-row ${isCaptain ? 'is-captain-row' : ''}"
+                                         draggable="true"
+                                         ondragstart="adminOnDriverDragStart(event, '${escapedName}', 'team', ${cIdx})"
+                                         ondragend="adminOnDriverDragEnd(event)">
+                                        <div class="driver-row-identity">
+                                            <i class="fas fa-grip-vertical grip-handle"></i>
+                                            <span class="status-dot green"></span>
+                                            <span class="driver-row-name">
+                                                ${isCaptain ? '<span style="color:#fbbf24; margin-right:3px;">👑</span>' : ''}
+                                                <strong>${driverName}</strong>
+                                            </span>
+                                            ${isCaptain ? '<span class="captain-badge">CAPTAIN</span>' : ''}
                                         </div>
-                                        <div style="display: flex; align-items: center; gap: 4px;">
+                                        <div class="driver-row-details">
+                                            <span class="driver-row-ir">${ir ? ir.toLocaleString() + ' iR' : '--'}</span>
+                                            ${driverChassis ? `<span class="driver-row-car" title="Preferred Car"><i class="fas fa-car-side" style="color:var(--primary); font-size:0.6rem;"></i> ${driverChassis.split(' ')[0]}</span>` : ''}
+                                        </div>
+                                        <div class="driver-row-actions">
                                             ${!isCaptain ? `
-                                                <button type="button" onclick="setAdminTeamCaptain(${cIdx}, '${escapedName}')" class="btn btn-outline" style="padding: 1px 5px; font-size: 0.62rem; border-color: rgba(251,191,36,0.35); color: #fbbf24; border-radius: 3px;" title="Set as Team Captain">
-                                                    👑 Captain
+                                                <button type="button" onclick="setAdminTeamCaptain(${cIdx}, '${escapedName}')" class="btn-set-captain" title="Make Team Captain">
+                                                    👑
                                                 </button>
                                             ` : ''}
-                                            <button type="button" onclick="removeDriverFromAdminTeam(${cIdx}, '${escapedName}')" class="btn btn-outline" style="padding: 1px 5px; font-size: 0.65rem; border-color: rgba(239,68,68,0.3); color: #ef4444; border-radius: 3px;" title="Remove driver from this team">
+                                            <button type="button" onclick="removeDriverFromAdminTeam(${cIdx}, '${escapedName}')" class="btn-remove-driver" title="Remove from squad">
                                                 <i class="fas fa-times"></i>
                                             </button>
                                         </div>
@@ -3653,75 +5178,78 @@
 
                 carsHtml += `
                     <div class="builder-car-card" style="border-color: ${theme.border}; background: ${theme.bg}; box-shadow: ${theme.glow};">
-                        <!-- Top Row: Car # Plate, Team Selector, Team SOF, Stints Button, Delete Button -->
-                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;">
-                            <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 170px;">
-                                <div class="racing-number-plate" style="border-color: ${theme.color}; box-shadow: 0 2px 10px ${theme.border};">
+                        <!-- Top Bar: Car #, Team Name, Status, SOF -->
+                        <div class="team-card-top-bar">
+                            <div class="team-card-identity">
+                                <div class="racing-number-plate" style="border-color: ${theme.color};">
                                     <span class="number-plate-label" style="color: ${theme.color};">CAR #</span>
                                     <input type="text" class="number-plate-input" value="${car.carNumber || theme.number}" oninput="updateAdminCarField(${cIdx}, 'carNumber', this.value)">
                                 </div>
-                                <div style="flex: 1;">
-                                    <select class="studio-team-select" style="border-color: ${theme.border};" onchange="onAdminCarTeamSelect(${cIdx}, this.value)">
+                                <div class="team-name-wrap">
+                                    <h4 class="team-title-text" style="color: #fff;">${currentTeamName}</h4>
+                                    <select class="studio-team-select-mini" onchange="onAdminCarTeamSelect(${cIdx}, this.value)">
                                         ${teamOptionsHtml}
                                     </select>
                                 </div>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 6px;">
-                                <div style="background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.3); padding: 3px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 5px;" title="Team Strength of Field (Average Driver iRating)">
-                                    <i class="fas fa-chart-line" style="color: #60a5fa; font-size: 0.7rem;"></i>
-                                    <span style="font-size: 0.62rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase;">SOF:</span>
-                                    <strong style="color: #60a5fa; font-size: 0.78rem; font-weight: 900;">${teamSOF ? teamSOF.toLocaleString() + ' iR' : '---'}</strong>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                ${statusBadgeHtml}
+                                <div class="team-sof-box">
+                                    <span class="sof-label"><i class="fas fa-chart-line"></i> TEAM SOF</span>
+                                    <span class="sof-val ${teamSOF ? '' : 'empty'}">${teamSOF ? teamSOF.toLocaleString() + ' <small>iR</small>' : '—'}</span>
                                 </div>
-                                <button type="button" onclick="viewLiveStintsFromAdmin(${cIdx})" class="btn btn-outline" style="font-size: 0.68rem; padding: 0.3rem 0.55rem; border-radius: 6px; border-color: rgba(0,207,255,0.35); color: var(--primary); font-weight: 700; display: inline-flex; align-items: center; gap: 4px;" title="Open Stint Planner for this team">
-                                    <i class="fas fa-stopwatch"></i> Stints &rarr;
-                                </button>
-                                <button type="button" onclick="openTeamTelemetryFromAdmin(${cIdx})" class="btn btn-outline" style="font-size: 0.68rem; padding: 0.3rem 0.55rem; border-radius: 6px; border-color: rgba(251,191,36,0.35); color: #fbbf24; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;" title="View team driver sessions and setup suggestions">
-                                    <i class="fas fa-microchip"></i> Setup & Intel
-                                </button>
-                                <button type="button" onclick="removeAdminBuilderCar(${cIdx})" title="Delete Car Entry" class="btn btn-outline" style="color: #ef4444; border-color: rgba(239,68,68,0.3); padding: 0.3rem 0.55rem; font-size: 0.72rem; border-radius: 6px;">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
                             </div>
                         </div>
 
-                        <!-- Sub Row: Class + Chassis + Captain in one tight bar -->
-                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; background: rgba(0,0,0,0.22); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05);">
-                            <div style="display: flex; align-items: center; gap: 4px;">
-                                <span style="font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Class:</span>
-                                <select onchange="updateAdminCarClass(${cIdx}, this.value)" class="studio-mini-select" style="color: var(--primary); font-weight: 800;">
+                        <!-- Sub Controls Bar: Car Chassis & Captain & Quick Actions -->
+                        <div class="team-card-sub-bar">
+                            <div class="team-car-box">
+                                <span class="car-tag-title"><i class="fas fa-car-side" style="color:var(--primary);"></i> CHASSIS:</span>
+                                <select onchange="updateAdminCarClass(${cIdx}, this.value)" class="studio-class-select">
                                     ${classOptionsHtml}
                                 </select>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 4px; flex: 1; min-width: 110px;">
-                                <span style="font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Car:</span>
-                                <select onchange="updateAdminCarField(${cIdx}, 'carModel', this.value)" class="studio-mini-select" style="width: 100%;">
+                                <select onchange="updateAdminCarField(${cIdx}, 'carModel', this.value)" class="studio-model-select">
                                     ${modelOptionsHtml}
                                 </select>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 4px;">
-                                <span style="font-size: 0.65rem; font-weight: 800; color: #fbbf24; text-transform: uppercase;">👑 Captain:</span>
-                                <select onchange="setAdminTeamCaptain(${cIdx}, this.value)" class="studio-mini-select" style="color: #fbbf24; font-weight: 800; max-width: 120px;">
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <span style="font-size:0.65rem; font-weight:800; color:#fbbf24;">👑</span>
+                                <select onchange="setAdminTeamCaptain(${cIdx}, this.value)" class="studio-captain-select">
                                     ${captainOptionsHtml}
                                 </select>
                             </div>
+                            <div class="team-quick-actions">
+                                <button type="button" onclick="viewLiveStintsFromAdmin(${cIdx})" class="btn-quick-tool" title="Open Stint Planner">
+                                    <i class="fas fa-stopwatch" style="color:var(--primary);"></i> STINTS
+                                </button>
+                                <button type="button" onclick="openTeamTelemetryFromAdmin(${cIdx})" class="btn-quick-tool" title="Telemetry & Setup Intel">
+                                    <i class="fas fa-microchip" style="color:#fbbf24;"></i> INTEL
+                                </button>
+                                ${cIdx >= 6 ? `
+                                    <button type="button" onclick="removeAdminBuilderCar(${cIdx})" class="btn-quick-tool btn-tool-delete" title="Delete custom car">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
                         </div>
 
-                        <!-- Drop Zone Body -->
-                        <div class="team-drop-zone"
-                             style="border-color: ${theme.border};"
-                             ondragover="adminOnTeamDragOver(event)"
-                             ondragleave="adminOnTeamDragLeave(event)"
-                             ondrop="adminOnTeamDrop(event, ${cIdx})">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem; gap: 6px;">
-                                <span style="font-size: 0.68rem; font-weight: 800; color: ${theme.color}; text-transform: uppercase; letter-spacing: 0.5px;">
-                                    <i class="fas fa-users" style="margin-right: 3px;"></i> Team Roster (${carDriversList.length})
-                                    ${car.captain ? `<span style="color: #fbbf24; margin-left: 6px; font-weight: 700;">(👑 ${car.captain})</span>` : ''}
+                        <!-- Drop Zone & Team Roster -->
+                        <div class="team-roster-section">
+                            <div class="roster-header">
+                                <span class="roster-title">
+                                    <i class="fas fa-users" style="color:${theme.color}; margin-right:4px;"></i> TEAM ROSTER
                                 </span>
-                                <span style="font-size: 0.62rem; color: var(--text-muted);">
-                                    Drop drivers here
+                                <span class="roster-count ${carDriversList.length >= 2 ? 'count-ready' : 'count-needed'}">
+                                    ${carDriversList.length} / 2
                                 </span>
                             </div>
-                            ${driversListHtml}
+                            <div class="team-drop-zone ${carDriversList.length === 0 ? 'is-empty' : ''}"
+                                 style="border-color: ${theme.border};"
+                                 ondragover="adminOnTeamDragOver(event)"
+                                 ondragleave="adminOnTeamDragLeave(event)"
+                                 ondrop="adminOnTeamDrop(event, ${cIdx})">
+                                ${driversListHtml}
+                            </div>
                         </div>
                     </div>
                 `;
@@ -3730,10 +5258,23 @@
             canvas.innerHTML = carsHtml;
         }
 
-        // --- Drag and Drop Handlers for Admin Team Builder ---
-        window.adminOnDriverDragStart = function(e, driverName) {
+        // Drag & Drop Handlers
+        window.adminOnDriverDragStart = function(e, driverName, source = 'pool', originCarIdx = -1) {
             e.dataTransfer.setData("text/plain", driverName);
+            e.dataTransfer.setData("source", source);
+            e.dataTransfer.setData("originCarIdx", String(originCarIdx));
             e.dataTransfer.effectAllowed = "move";
+
+            const unassignZone = document.getElementById('pool-unassign-dropzone');
+            if (unassignZone && source === 'team') {
+                unassignZone.classList.add('active');
+            }
+        };
+
+        window.adminOnDriverDragEnd = function(e) {
+            document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+            const unassignZone = document.getElementById('pool-unassign-dropzone');
+            if (unassignZone) unassignZone.classList.remove('active');
         };
 
         window.adminOnTeamDragOver = function(e) {
@@ -3752,13 +5293,19 @@
             e.preventDefault();
             const zone = e.currentTarget;
             if (zone) zone.classList.remove('drag-over');
+            document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+            const unassignZone = document.getElementById('pool-unassign-dropzone');
+            if (unassignZone) unassignZone.classList.remove('active');
+
             const driverName = e.dataTransfer.getData("text/plain");
             if (!driverName || !window._adminBuilderCars || !window._adminBuilderCars[carIdx]) return;
             const car = window._adminBuilderCars[carIdx];
             car.drivers = car.drivers || [];
             if (car.drivers.includes(driverName)) return;
 
-            // Remove from any other car in this event
+            saveBuilderHistoryState();
+
+            // Remove driver from any other squad in this race
             window._adminBuilderCars.forEach((otherCar, oIdx) => {
                 if (oIdx !== carIdx && otherCar.drivers) {
                     otherCar.drivers = otherCar.drivers.filter(d => d !== driverName);
@@ -3775,9 +5322,52 @@
             refreshAdminBuilderUI();
         };
 
+        // Drop on Driver Pool to Unassign
+        window.adminOnPoolDragOver = function(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "move";
+            const panel = document.getElementById('builder-driver-pool-panel');
+            if (panel && !panel.classList.contains('drag-over')) panel.classList.add('drag-over');
+        };
+
+        window.adminOnPoolDragLeave = function(e) {
+            const panel = document.getElementById('builder-driver-pool-panel');
+            if (panel) panel.classList.remove('drag-over');
+        };
+
+        window.adminOnPoolDrop = function(e) {
+            e.preventDefault();
+            const panel = document.getElementById('builder-driver-pool-panel');
+            if (panel) panel.classList.remove('drag-over');
+            const unassignZone = document.getElementById('pool-unassign-dropzone');
+            if (unassignZone) unassignZone.classList.remove('active');
+
+            const driverName = e.dataTransfer.getData("text/plain");
+            if (!driverName || !window._adminBuilderCars) return;
+
+            let removed = false;
+            window._adminBuilderCars.forEach(car => {
+                if (car.drivers && car.drivers.includes(driverName)) {
+                    if (!removed) {
+                        saveBuilderHistoryState();
+                        removed = true;
+                    }
+                    car.drivers = car.drivers.filter(d => d !== driverName);
+                    if (car.captain === driverName) {
+                        car.captain = car.drivers[0] || '';
+                    }
+                }
+            });
+
+            if (removed) {
+                refreshAdminBuilderUI();
+            }
+        };
+
         window.removeDriverFromAdminTeam = function(carIdx, driverName) {
             const car = window._adminBuilderCars && window._adminBuilderCars[carIdx];
             if (car && car.drivers) {
+                saveBuilderHistoryState();
                 car.drivers = car.drivers.filter(d => d !== driverName);
                 if (car.captain === driverName) {
                     car.captain = car.drivers[0] || '';
@@ -3789,6 +5379,7 @@
         window.setAdminTeamCaptain = function(carIdx, driverName) {
             const car = window._adminBuilderCars && window._adminBuilderCars[carIdx];
             if (car) {
+                saveBuilderHistoryState();
                 car.captain = driverName || '';
                 refreshAdminBuilderUI();
             }
@@ -3808,6 +5399,7 @@
                 }
             }
             if (window._adminBuilderCars && window._adminBuilderCars[carIdx]) {
+                saveBuilderHistoryState();
                 window._adminBuilderCars[carIdx].name = val;
                 window._adminBuilderCars[carIdx].teamName = val;
                 refreshAdminBuilderUI();
@@ -3822,6 +5414,7 @@
 
         window.updateAdminCarClass = function(carIdx, newClass) {
             if (window._adminBuilderCars && window._adminBuilderCars[carIdx]) {
+                saveBuilderHistoryState();
                 const car = window._adminBuilderCars[carIdx];
                 car.car_class = newClass;
                 const models = EVENT_CAR_CATALOG[newClass] || [];
@@ -3835,14 +5428,15 @@
         };
 
         window.addBuilderCar = function() {
+            saveBuilderHistoryState();
             const eligibleClasses = window._adminBuilderEligibleClasses || ['GT3'];
             const duration = window._adminBuilderDurationHours || 6;
-            const nextNum = 140 + window._adminBuilderCars.length;
+            const nextNum = 140 + (window._adminBuilderCars || []).length;
             const primaryClass = eligibleClasses[0] || 'GT3';
             const defaultModel = (EVENT_CAR_CATALOG[primaryClass] && EVENT_CAR_CATALOG[primaryClass][0]) || `${primaryClass} Chassis`;
             const defaultStint = primaryClass === 'Supercars' ? 45 : (primaryClass === 'GTP' || primaryClass === 'LMP2') ? 45 : 60;
 
-            const usedNames = window._adminBuilderCars.map(c => c.name || c.teamName);
+            const usedNames = (window._adminBuilderCars || []).map(c => c.name || c.teamName);
             const availableTeam = DYNAMIC_GRIDUP_TEAMS.find(t => !usedNames.includes(t)) || `GRiD UP Team #${nextNum}`;
 
             window._adminBuilderCars.push({
@@ -3861,9 +5455,129 @@
 
         window.removeAdminBuilderCar = function(carIdx) {
             if (confirm("Remove this car entry?")) {
+                saveBuilderHistoryState();
                 window._adminBuilderCars.splice(carIdx, 1);
                 refreshAdminBuilderUI();
             }
+        };
+
+        // Auto Balance Lineups
+        window.openAutoBalanceModal = function() {
+            const responses = window._adminBuilderResponses || [];
+            const available = responses.filter(r => r.status === 'signed_up' || r.status === 'interested' || r.status === 'tentative');
+            if (available.length === 0) {
+                alert("No available or interested drivers found in the pool to balance.");
+                return;
+            }
+
+            const primaryClass = (window._adminBuilderEligibleClasses && window._adminBuilderEligibleClasses[0]) || 'GT3';
+
+            const rankedDrivers = available.map(d => {
+                const dName = (d.driverName || 'Driver').trim();
+                const ir = getDriverIRating(d.id, primaryClass) || getDriverIRating(dName, primaryClass) || 1600;
+                const chassis = d.preferredChassis || d.preferredCar || '';
+                return { id: d.id, name: dName, irating: ir, chassis, status: d.status };
+            });
+
+            rankedDrivers.sort((a, b) => b.irating - a.irating);
+
+            ensureAllDefaultTeamsPresent(window._adminBuilderEligibleClasses, window._adminBuilderDurationHours);
+            const cars = (window._adminBuilderCars || []).slice(0, 6);
+
+            const assignments = cars.map(c => ({
+                name: c.name || c.teamName,
+                carNumber: c.carNumber,
+                carModel: c.carModel,
+                car_class: c.car_class,
+                drivers: []
+            }));
+
+            // Snake Draft Round 1
+            for (let i = 0; i < Math.min(6, rankedDrivers.length); i++) {
+                assignments[i].drivers.push(rankedDrivers[i]);
+            }
+
+            // Snake Draft Round 2 (Reverse)
+            for (let i = 6; i < Math.min(12, rankedDrivers.length); i++) {
+                const teamIdx = 5 - (i - 6);
+                assignments[teamIdx].drivers.push(rankedDrivers[i]);
+            }
+
+            // Round 3+ (Assign remaining to lowest SOF)
+            for (let i = 12; i < rankedDrivers.length; i++) {
+                let lowestIdx = 0;
+                let lowestSOF = Infinity;
+                assignments.forEach((tm, idx) => {
+                    const sum = tm.drivers.reduce((s, d) => s + d.irating, 0);
+                    const sof = tm.drivers.length > 0 ? (sum / tm.drivers.length) : 0;
+                    if (sof < lowestSOF && tm.drivers.length < 4) {
+                        lowestSOF = sof;
+                        lowestIdx = idx;
+                    }
+                });
+                assignments[lowestIdx].drivers.push(rankedDrivers[i]);
+            }
+
+            assignments.forEach(tm => {
+                const validIRs = tm.drivers.map(d => d.irating).filter(v => v > 0);
+                tm.predictedSOF = validIRs.length > 0 ? Math.round(validIRs.reduce((a, b) => a + b, 0) / validIRs.length) : null;
+            });
+
+            window._pendingAutoBalance = assignments;
+
+            const modal = document.getElementById('auto-balance-modal');
+            const container = document.getElementById('auto-balance-cards-grid');
+            if (modal && container) {
+                container.innerHTML = assignments.map(tm => {
+                    const theme = getTeamTheme(tm.name);
+                    return `
+                        <div class="balance-team-card" style="border: 1px solid ${theme.border}; background: ${theme.bg};">
+                            <div class="balance-card-head">
+                                <div>
+                                    <span class="balance-car-num" style="color:${theme.color};">#${tm.carNumber}</span>
+                                    <strong style="color:#fff; font-size:0.95rem; margin-left:6px;">${tm.name}</strong>
+                                </div>
+                                <div class="balance-sof-badge">
+                                    <span style="font-size:0.65rem; color:var(--text-muted);">PREDICTED SOF:</span>
+                                    <strong style="color:#60a5fa; font-size:0.95rem; margin-left:4px;">${tm.predictedSOF ? tm.predictedSOF.toLocaleString() + ' iR' : '—'}</strong>
+                                </div>
+                            </div>
+                            <div class="balance-drivers-list">
+                                ${tm.drivers.map((d, dIdx) => `
+                                    <div class="balance-driver-item">
+                                        <span>${dIdx === 0 ? '👑' : '🏎️'} <strong>${d.name}</strong></span>
+                                        <span class="balance-ir">${d.irating.toLocaleString()} iR</span>
+                                    </div>
+                                `).join('')}
+                                ${tm.drivers.length === 0 ? '<div style="color:var(--text-muted); font-size:0.75rem; font-style:italic;">No drivers assigned</div>' : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                modal.style.display = 'flex';
+            }
+        };
+
+        window.closeAutoBalanceModal = function() {
+            const modal = document.getElementById('auto-balance-modal');
+            if (modal) modal.style.display = 'none';
+            window._pendingAutoBalance = null;
+        };
+
+        window.applyAutoBalance = function() {
+            if (!window._pendingAutoBalance) return;
+            saveBuilderHistoryState();
+
+            window._pendingAutoBalance.forEach((pTeam, idx) => {
+                if (window._adminBuilderCars[idx]) {
+                    window._adminBuilderCars[idx].drivers = pTeam.drivers.map(d => d.name);
+                    window._adminBuilderCars[idx].captain = pTeam.drivers.length > 0 ? pTeam.drivers[0].name : '';
+                }
+            });
+
+            closeAutoBalanceModal();
+            refreshAdminBuilderUI();
         };
 
         window.adminQuickFixDriverClass = async function(eventId, uid, targetClass) {
@@ -3889,7 +5603,6 @@
                 const allEvts = (typeof ALL_EVENTS !== 'undefined' && ALL_EVENTS.length) ? ALL_EVENTS : UPCOMING_EVENTS;
                 const currentEvent = allEvts.find(e => e.id === activeId);
 
-                // Ensure each car has valid structure and base stints for Stint Planner
                 const durationHours = window._adminBuilderDurationHours || 6;
                 window._adminBuilderCars.forEach(car => {
                     car.drivers = car.drivers || [];
@@ -3930,6 +5643,7 @@
             const carParam = (typeof carIdx === 'number') ? `&car=${carIdx}` : '';
             window.open(`team-telemetry.html${activeId ? `?event=${encodeURIComponent(activeId)}${carParam}` : ''}`, '_blank');
         };
+
 
         function toggleLapSync() {
             const area = document.getElementById('lap-sync-area');
