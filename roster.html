@@ -62,56 +62,106 @@
             background-color: var(--primary) !important;
             border-color: var(--primary) !important;
         }
-        /* Driver Card Ratings Compact */
+        /* Driver Grid & Card Sizing */
+        .driver-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+            gap: 1.25rem;
+            margin-top: 2rem;
+        }
+        .driver-card {
+            padding: 1.35rem;
+        }
+
+        /* Driver Card Ratings - Modern Stat Tiles */
         .driver-ratings-compact {
-            margin-top: 1.25rem;
+            margin-top: 1.15rem;
             padding-top: 0.9rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 0.35rem 1rem;
+            gap: 0.45rem;
         }
-        .d-rating-row {
+        .d-stat-tile {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            padding: 0.4rem 0.55rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+            min-width: 0;
+            transition: all 0.2s ease;
+        }
+        .d-stat-tile:hover {
+            background: rgba(255, 255, 255, 0.045);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        .d-stat-tile.is-sports {
+            background: rgba(0, 207, 255, 0.035);
+            border-color: rgba(0, 207, 255, 0.2);
+        }
+        .d-stat-tile-top {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 0.72rem;
+            gap: 4px;
         }
-        .d-rating-lbl {
+        .d-stat-label {
+            font-size: 0.63rem;
             color: var(--text-muted);
-            font-weight: 500;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
             white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-        .d-rating-val {
-            font-family: monospace;
+        .d-stat-tile.is-sports .d-stat-label {
+            color: #cbd5e1;
             font-weight: 700;
-            color: rgba(255, 255, 255, 0.35);
         }
-        .d-rating-val.highlight {
-            color: var(--primary);
+        .d-stat-tile-bottom {
+            display: flex;
+            align-items: baseline;
+            gap: 3px;
+        }
+        .d-stat-ir {
+            font-family: monospace, sans-serif;
+            font-size: 0.9rem;
             font-weight: 800;
+            color: rgba(255, 255, 255, 0.4);
+            line-height: 1;
         }
-        .d-rating-val-wrap {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
+        .d-stat-ir.highlight {
+            color: #ffffff;
         }
-        .d-rating-sr {
-            font-size: 0.62rem;
+        .d-stat-tile.is-sports .d-stat-ir.highlight {
+            color: var(--primary);
+        }
+        .d-stat-unit {
+            font-size: 0.58rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: 0.4px;
+        }
+        .d-stat-sr {
+            font-size: 0.58rem;
             font-weight: 800;
             font-family: monospace, sans-serif;
-            padding: 1px 5px;
+            padding: 1px 4px;
             border-radius: 3px;
             line-height: 1.1;
             letter-spacing: 0.3px;
-            display: inline-block;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
-        .d-rating-sr.lic-p { background: rgba(0, 207, 255, 0.2); color: #38bdf8; border: 1px solid rgba(0, 207, 255, 0.4); }
-        .d-rating-sr.lic-a { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); }
-        .d-rating-sr.lic-b { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
-        .d-rating-sr.lic-c { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
-        .d-rating-sr.lic-d { background: rgba(249, 115, 22, 0.2); color: #fb923c; border: 1px solid rgba(249, 115, 22, 0.4); }
-        .d-rating-sr.lic-r { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
+        .d-stat-sr.lic-p { background: rgba(0, 207, 255, 0.2); color: #38bdf8; border: 1px solid rgba(0, 207, 255, 0.4); }
+        .d-stat-sr.lic-a { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); }
+        .d-stat-sr.lic-b { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+        .d-stat-sr.lic-c { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+        .d-stat-sr.lic-d { background: rgba(249, 115, 22, 0.2); color: #fb923c; border: 1px solid rgba(249, 115, 22, 0.4); }
+        .d-stat-sr.lic-r { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
     </style>
 </head>
 <body class="roster-page">
@@ -421,23 +471,26 @@
                     };
 
                     const disciplines = [
-                        { label: 'Sports Car', info: getDiscInfo('Sports Car', 'sportsCar', 'SPORTS') },
-                        { label: 'Formula', info: getDiscInfo('Formula Car', 'formulaCar', 'FORMULA') },
-                        { label: 'Oval', info: getDiscInfo('Oval', 'oval', 'OVAL') },
-                        { label: 'Dirt Road', info: getDiscInfo('Dirt Road', 'dirtRoad', 'DIRT_ROAD') },
-                        { label: 'Dirt Oval', info: getDiscInfo('Dirt Oval', 'dirtOval', 'DIRT_OVAL') },
-                        { label: 'Road', info: getDiscInfo('Road', 'road', 'ROAD') }
+                        { label: 'Sports Car', isSports: true, info: getDiscInfo('Sports Car', 'sportsCar', 'SPORTS') },
+                        { label: 'Formula', isSports: false, info: getDiscInfo('Formula Car', 'formulaCar', 'FORMULA') },
+                        { label: 'Oval', isSports: false, info: getDiscInfo('Oval', 'oval', 'OVAL') },
+                        { label: 'Dirt Road', isSports: false, info: getDiscInfo('Dirt Road', 'dirtRoad', 'DIRT_ROAD') },
+                        { label: 'Dirt Oval', isSports: false, info: getDiscInfo('Dirt Oval', 'dirtOval', 'DIRT_OVAL') },
+                        { label: 'Road', isSports: false, info: getDiscInfo('Road', 'road', 'ROAD') }
                     ];
 
                     return `
                         <div class="driver-ratings-compact">
                             ${disciplines.map(disc => `
-                                <div class="d-rating-row">
-                                    <span class="d-rating-lbl">${disc.label}</span>
-                                    <span class="d-rating-val-wrap">
-                                        <span class="d-rating-val ${disc.info.hasIr ? 'highlight' : ''}">${disc.info.irText}</span>
-                                        ${disc.info.sr ? `<span class="d-rating-sr ${disc.info.srClass}" title="Safety Rating: ${disc.info.sr}">${disc.info.sr}</span>` : ''}
-                                    </span>
+                                <div class="d-stat-tile ${disc.isSports ? 'is-sports' : ''}">
+                                    <div class="d-stat-tile-top">
+                                        <span class="d-stat-label">${disc.label}</span>
+                                        ${disc.info.sr ? `<span class="d-stat-sr ${disc.info.srClass}" title="Safety Rating: ${disc.info.sr}">${disc.info.sr}</span>` : ''}
+                                    </div>
+                                    <div class="d-stat-tile-bottom">
+                                        <span class="d-stat-ir ${disc.info.hasIr ? 'highlight' : ''}">${disc.info.irText}</span>
+                                        ${disc.info.hasIr ? `<span class="d-stat-unit">iR</span>` : ''}
+                                    </div>
                                 </div>
                             `).join('')}
                         </div>
