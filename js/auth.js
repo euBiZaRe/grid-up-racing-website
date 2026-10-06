@@ -177,38 +177,36 @@ async function enrichAuthData(user) {
     // Check for Admin status (Master + Firestore)
     const MASTER_ADMIN = 'B0t4f4nqqpZIQKpT8Ed97xka5gM2';
     IS_ADMIN = (user.uid === MASTER_ADMIN);
+    let finalAvatar = user.photoURL;
     
-    if (!IS_ADMIN && db) {
+    if (db) {
         try {
-            const adminDoc = await db.collection("settings").doc("admins").get();
-            if (adminDoc.exists) {
+            // Concurrently fetch settings, claims, and user profile in a single network round-trip
+            const [adminDoc, claimSnapshot, userDoc] = await Promise.all([
+                !IS_ADMIN ? db.collection("settings").doc("admins").get().catch(() => null) : Promise.resolve(null),
+                db.collection("claims").where("discordId", "==", user.uid).get().catch(() => null),
+                db.collection("users").doc(user.uid).get().catch(() => null)
+            ]);
+
+            // Check Admin via settings/admins
+            if (!IS_ADMIN && adminDoc && adminDoc.exists) {
                 const admins = adminDoc.data().uids || [];
                 IS_ADMIN = admins.includes(user.uid);
             }
-            if (!IS_ADMIN) {
-                const uDoc = await db.collection("users").doc(user.uid).get();
-                if (uDoc.exists) {
-                    const ud = uDoc.data();
-                    if (ud.isAdmin === true || ud.role === 'admin') IS_ADMIN = true;
-                }
+
+            // Fallback Check Admin via users collection
+            if (!IS_ADMIN && userDoc && userDoc.exists) {
+                const ud = userDoc.data();
+                if (ud.isAdmin === true || ud.role === 'admin') IS_ADMIN = true;
             }
-        } catch (e) { console.warn("Admin Check Error:", e); }
-    }
 
-    // Check for Verification
-    try {
-        const claimSnapshot = await db.collection("claims").where("discordId", "==", user.uid).get();
-        if (!claimSnapshot.empty && claimSnapshot.docs[0].data().status === 'verified') {
-            IS_VERIFIED = true;
-        }
-    } catch (e) { console.warn("Verification Check Error:", e); }
+            // Check Verification
+            if (claimSnapshot && !claimSnapshot.empty && claimSnapshot.docs[0].data().status === 'verified') {
+                IS_VERIFIED = true;
+            }
 
-    // Check for Custom Avatar / Profile Picture in Firestore users collection
-    let finalAvatar = user.photoURL;
-    if (db) {
-        try {
-            const userDoc = await db.collection("users").doc(user.uid).get();
-            if (userDoc.exists) {
+            // Check Custom Avatar
+            if (userDoc && userDoc.exists) {
                 const userData = userDoc.data();
                 if (userData.customAvatarUrl) {
                     finalAvatar = userData.customAvatarUrl;
@@ -216,7 +214,9 @@ async function enrichAuthData(user) {
                     finalAvatar = userData.photoURL;
                 }
             }
-        } catch (e) { console.warn("Avatar Check Error:", e); }
+        } catch (e) {
+            console.warn("Auth Enrichment Error:", e);
+        }
     }
 
     // Update user object's photoURL with custom avatar so updateAuthUI and cache use it

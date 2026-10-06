@@ -1967,6 +1967,21 @@ body.meeting-mode-active .team-status-pill {
             <a href="index.html" class="btn btn-primary" style="margin-top: 2rem;">Return Home</a>
         </div>
 
+        <!-- Fast-Path Instant Dashboard Hydration (Eliminates Blank Screen Lag) -->
+        <script>
+            (function fastHydrateAdmin() {
+                try {
+                    const cached = JSON.parse(localStorage.getItem('gridup_auth_cache') || '{}');
+                    if (cached && cached.isAdmin) {
+                        const style = document.createElement('style');
+                        style.id = 'admin-fastpath-style';
+                        style.textContent = '#admin-hub { display: block !important; } .admin-access-denied { display: none !important; }';
+                        document.head.appendChild(style);
+                    }
+                } catch(e) {}
+            })();
+        </script>
+
         <!-- Admin Content -->
         <div id="admin-hub" class="admin-content" style="position: relative; overflow: visible; padding-bottom: 2rem;">
             <div class="tread-overlay" style="opacity: 0.05;"></div>
@@ -1978,15 +1993,20 @@ body.meeting-mode-active .team-status-pill {
                     </div>
                     <h1 class="admin-hero-title" id="admin-title">Team Applications</h1>
                 </div>
-                <div class="admin-profile-pill">
-                    <div class="admin-avatar-icon">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <div>
-                        <div id="admin-user-info" style="color: #ffffff; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.3px;">Checking privileges...</div>
-                        <div class="admin-session-status">
-                            <span class="status-dot"></span>
-                            <span>Active Admin Session</span>
+                <div style="display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap;">
+                    <button onclick="refreshCurrentTab()" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.5rem 1rem; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; border-color: rgba(0, 207, 255, 0.3); color: var(--primary); cursor: pointer;" title="Force reload data from database">
+                        <i class="fas fa-sync-alt"></i> <span>Refresh Data</span>
+                    </button>
+                    <div class="admin-profile-pill">
+                        <div class="admin-avatar-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div>
+                            <div id="admin-user-info" style="color: #ffffff; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.3px;">Checking privileges...</div>
+                            <div class="admin-session-status">
+                                <span class="status-dot"></span>
+                                <span>Active Admin Session</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -3589,7 +3609,29 @@ body.meeting-mode-active .team-status-pill {
                 alert("Failed to update: " + error.message);
             }
         }
-        function switchTab(tab) {
+        const _adminTabLoadedTime = {};
+        function shouldReloadAdminTab(tab, force = false, ttlMs = 45000) {
+            if (force) {
+                _adminTabLoadedTime[tab] = Date.now();
+                return true;
+            }
+            const last = _adminTabLoadedTime[tab];
+            const now = Date.now();
+            if (!last || (now - last > ttlMs)) {
+                _adminTabLoadedTime[tab] = now;
+                return true;
+            }
+            return false;
+        }
+
+        window.refreshCurrentTab = function() {
+            const currentHash = (window.location.hash ? window.location.hash.replace('#', '').trim() : '');
+            const tab = currentHash || (localStorage.getItem('admin_default_tab') || 'applications');
+            delete _adminTabLoadedTime[tab];
+            switchTab(tab, true);
+        };
+
+        function switchTab(tab, forceReload = false) {
             const sections = ['applications', 'claims', 'races', 'admins', 'availability', 'roster', 'events', 'leagues', 'race-results', 'reports', 'streams', 'm2rc-schedule', 'm2rc-results', 'm2rc-stewarding', 'm2rc-drivers', 'telemetry-teams'];
             sections.forEach(s => {
                 const el = document.getElementById(`section-${s}`);
@@ -3632,28 +3674,32 @@ body.meeting-mode-active .team-status-pill {
                 if (window.location.hash.replace('#', '') !== tab) {
                     history.replaceState(null, null, '#' + tab);
                 }
+                localStorage.setItem('admin_default_tab', tab);
             } catch (e) {}
 
-            if (tab === 'claims') loadClaims();
-            if (tab === 'races') loadAdminBuilderData(true);
-            if (tab === 'applications') loadApplications();
-            if (tab === 'roster') loadRoster();
+            const needsFetch = shouldReloadAdminTab(tab, forceReload);
+            if (needsFetch) {
+                if (tab === 'claims') loadClaims();
+                if (tab === 'races') loadAdminBuilderData(forceReload);
+                if (tab === 'applications') loadApplications();
+                if (tab === 'roster') loadRoster();
 
-            if (tab === 'admins') {
-                loadAdmins();
-                loadVerifiedDriversForAdmin();
+                if (tab === 'admins') {
+                    loadAdmins();
+                    loadVerifiedDriversForAdmin();
+                }
+                if (tab === 'availability') loadAvailability();
+                if (tab === 'events') loadEvents();
+                if (tab === 'leagues') loadLeaguesAdmin();
+                if (tab === 'race-results') loadEventResults();
+                if (tab === 'streams') loadStreams();
+                if (tab === 'reports') loadAdminReports();
+                if (tab === 'm2rc-schedule') loadM2RCSchedule();
+                if (tab === 'm2rc-results') loadM2RCResultsAdmin();
+                if (tab === 'm2rc-stewarding') loadM2RCStewardingAdmin();
+                if (tab === 'm2rc-drivers') loadM2RCDriversAdmin();
+                if (tab === 'telemetry-teams') loadTelemetryTeamsAdmin();
             }
-            if (tab === 'availability') loadAvailability();
-            if (tab === 'events') loadEvents();
-            if (tab === 'leagues') loadLeaguesAdmin();
-            if (tab === 'race-results') loadEventResults();
-            if (tab === 'streams') loadStreams();
-            if (tab === 'reports') loadAdminReports();
-            if (tab === 'm2rc-schedule') loadM2RCSchedule();
-            if (tab === 'm2rc-results') loadM2RCResultsAdmin();
-            if (tab === 'm2rc-stewarding') loadM2RCStewardingAdmin();
-            if (tab === 'm2rc-drivers') loadM2RCDriversAdmin();
-            if (tab === 'telemetry-teams') loadTelemetryTeamsAdmin();
         }
 
         function isEventUpcoming(event, now = new Date()) {
@@ -5073,47 +5119,46 @@ body.meeting-mode-active .team-status-pill {
 
         // Load Admin Builder Data from Firestore
         async function loadAdminBuilderData(forceReload = false) {
-            await loadDynamicTeamsList();
-            const selector = document.getElementById('lineup-event-selector');
-            if (!selector) return;
+            const promises = [loadDynamicTeamsList()];
 
             // Ensure driver roster is loaded for iRating lookups
             if (forceReload || !window._adminDriverRosterMap || Object.keys(window._adminDriverRosterMap).length === 0) {
-                window._adminDriverRosterMap = {};
-                try {
-                    const dSnap = await db.collection("drivers").get();
-                    dSnap.forEach(doc => {
-                        const d = doc.data();
-                        const id = doc.id;
-                        window._adminDriverRosterMap[id] = d;
-                        if (d.linkedUid) window._adminDriverRosterMap[d.linkedUid] = d;
-                        if (d.uid) window._adminDriverRosterMap[d.uid] = d;
-                        if (d.name) {
-                            const raw = d.name.trim().toLowerCase();
-                            window._adminDriverRosterMap[raw] = d;
-                            const norm = normalizeDriverName(d.name);
-                            if (norm) window._adminDriverRosterMap[norm] = d;
-                            const parts = raw.split(/\s+/);
-                            if (parts.length >= 2) {
-                                window._adminDriverRosterMap[`${parts[0]}_${parts[parts.length - 1]}`] = d;
+                promises.push(
+                    db.collection("drivers").get().then(dSnap => {
+                        window._adminDriverRosterMap = {};
+                        dSnap.forEach(doc => {
+                            const d = doc.data();
+                            const id = doc.id;
+                            window._adminDriverRosterMap[id] = d;
+                            if (d.linkedUid) window._adminDriverRosterMap[d.linkedUid] = d;
+                            if (d.uid) window._adminDriverRosterMap[d.uid] = d;
+                            if (d.name) {
+                                const raw = d.name.trim().toLowerCase();
+                                window._adminDriverRosterMap[raw] = d;
+                                const norm = normalizeDriverName(d.name);
+                                if (norm) window._adminDriverRosterMap[norm] = d;
+                                const parts = raw.split(/\s+/);
+                                if (parts.length >= 2) {
+                                    window._adminDriverRosterMap[`${parts[0]}_${parts[parts.length - 1]}`] = d;
+                                }
                             }
-                        }
-                    });
-                } catch (e) {
-                    console.warn("Could not load drivers for Team Builder iRating:", e);
-                }
-
-                if (forceReload || !window._localDriverStatsCache) {
-                    try {
-                        const r = await fetch('driver_stats_2.json?v=' + Date.now());
-                        if (r.ok) {
-                            window._localDriverStatsCache = await r.json();
-                        }
-                    } catch (e) {
-                        console.warn("Could not load driver_stats_2.json cache:", e);
-                    }
-                }
+                        });
+                    }).catch(e => console.warn("Could not load drivers for Team Builder iRating:", e))
+                );
             }
+
+            if (forceReload || !window._localDriverStatsCache) {
+                promises.push(
+                    fetch('driver_stats_2.json?v=' + Date.now())
+                        .then(r => r.ok ? r.json() : null)
+                        .then(data => { if (data) window._localDriverStatsCache = data; })
+                        .catch(e => console.warn("Could not load driver_stats_2.json cache:", e))
+                );
+            }
+
+            await Promise.all(promises);
+            const selector = document.getElementById('lineup-event-selector');
+            if (!selector) return;
 
             if (!UPCOMING_EVENTS || UPCOMING_EVENTS.length === 0) {
                 try {

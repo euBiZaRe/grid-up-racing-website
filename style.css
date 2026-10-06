@@ -1696,3 +1696,86 @@ body[data-theme="theme-saturday"]::before {
         padding: 4rem 0;
     }
 }
+
+/* ===================================================
+   ESPORTS DISCORD HERO CTA
+   =================================================== */
+.discord-hero-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 0.85rem 2.2rem;
+    background: linear-gradient(135deg, rgba(88, 101, 242, 0.16) 0%, rgba(14, 20, 35, 0.85) 100%);
+    border: 1px solid rgba(88, 101, 242, 0.4);
+    border-radius: 999px;
+    color: #ffffff;
+    text-decoration: none;
+    box-shadow: 0 4px 25px rgba(88, 101, 242, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: pointer;
+}
+.discord-hero-btn:hover {
+    transform: translateY(-2px) scale(1.02);
+    border-color: #5865F2;
+    background: linear-gradient(135deg, rgba(88, 101, 242, 0.28) 0%, rgba(18, 26, 46, 0.95) 100%);
+    box-shadow: 0 8px 35px rgba(88, 101, 242, 0.45), 0 0 20px rgba(0, 210, 255, 0.25);
+}
+.discord-hero-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #5865F2;
+    color: #ffffff;
+    box-shadow: 0 0 15px rgba(88, 101, 242, 0.6);
+    flex-shrink: 0;
+}
+.discord-hero-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+}
+.discord-hero-tag {
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--primary);
+    line-height: 1.2;
+}
+.discord-hero-link {
+    font-family: var(--font-heading);
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: 1px;
+    line-height: 1.2;
+}
+.discord-hero-arrow {
+    display: flex;
+    align-items: center;
+    color: var(--primary);
+    margin-left: 0.5rem;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+.discord-hero-btn:hover .discord-hero-arrow {
+    transform: translateX(5px);
+    color: #ffffff;
+}
+@media (max-width: 500px) {
+    .discord-hero-btn {
+        padding: 0.75rem 1.4rem;
+        gap: 0.85rem;
+        width: 100%;
+        max-width: 320px;
+        justify-content: space-between;
+    }
+    .discord-hero-link {
+        font-size: 1.15rem;
+    }
+}
