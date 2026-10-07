@@ -1871,42 +1871,172 @@ body.meeting-mode-active .admin-container {
     padding: 0.5rem 1.5rem !important;
 }
 
+/* Hide clutter buttons during meeting / screenshare */
+body.meeting-mode-active .grid-panel-actions {
+    display: none !important;
+}
+
+/* High-Readability Screenshare Optimizations (1080p/1440p) */
 body.meeting-mode-active .team-builder-workspace {
-    gap: 1.75rem;
+    gap: 2rem !important;
+}
+
+body.meeting-mode-active .grid-panel-title {
+    font-size: 1.35rem !important;
+    letter-spacing: 0.8px;
+}
+
+body.meeting-mode-active .grid-panel-subtitle {
+    font-size: 0.82rem !important;
+    color: #94a3b8 !important;
+}
+
+body.meeting-mode-active .builder-canvas-grid {
+    gap: 1.4rem !important;
+}
+
+body.meeting-mode-active .builder-car-card {
+    padding: 1.35rem 1.45rem !important;
+    border-width: 1.5px !important;
+    background: rgba(10, 15, 26, 0.92) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6) !important;
+}
+
+body.meeting-mode-active .racing-number-plate {
+    min-width: 52px !important;
+    padding: 4px 8px !important;
+    border-width: 2.5px !important;
+}
+
+body.meeting-mode-active .number-plate-input {
+    font-size: 1.25rem !important;
+    font-weight: 900 !important;
 }
 
 body.meeting-mode-active .team-title-text {
-    font-size: 1.25rem !important;
+    font-size: 1.35rem !important;
+    font-weight: 900 !important;
+    letter-spacing: 0.5px !important;
+}
+
+body.meeting-mode-active .team-sof-box {
+    padding: 6px 12px !important;
+    min-width: 95px !important;
+    border-width: 1.5px !important;
+    background: rgba(0, 0, 0, 0.65) !important;
 }
 
 body.meeting-mode-active .team-sof-box .sof-val {
     font-size: 1.35rem !important;
-}
-
-body.meeting-mode-active .driver-row-name {
-    font-size: 0.95rem !important;
-}
-
-body.meeting-mode-active .driver-row-ir {
-    font-size: 0.82rem !important;
-}
-
-body.meeting-mode-active .driver-pool-card .driver-name {
-    font-size: 0.96rem !important;
-}
-
-body.meeting-mode-active .driver-irating-badge {
-    font-size: 0.85rem !important;
-}
-
-body.meeting-mode-active .driver-sr-pill {
-    font-size: 0.78rem !important;
-    padding: 3px 8px !important;
+    font-weight: 900 !important;
+    color: #38bdf8 !important;
 }
 
 body.meeting-mode-active .team-status-pill {
+    font-size: 0.88rem !important;
+    padding: 5px 12px !important;
+    font-weight: 900 !important;
+}
+
+body.meeting-mode-active .team-card-sub-bar {
+    padding: 8px 12px !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+body.meeting-mode-active .studio-class-select,
+body.meeting-mode-active .studio-model-select {
     font-size: 0.85rem !important;
-    padding: 4px 10px !important;
+    padding: 0.35rem 0.65rem !important;
+    font-weight: 800 !important;
+}
+
+body.meeting-mode-active .studio-captain-select {
+    font-size: 0.85rem !important;
+    padding: 0.35rem 0.65rem !important;
+    font-weight: 800 !important;
+}
+
+body.meeting-mode-active .roster-title {
+    font-size: 0.82rem !important;
+    letter-spacing: 0.8px !important;
+}
+
+body.meeting-mode-active .roster-count {
+    font-size: 0.82rem !important;
+    padding: 2px 9px !important;
+}
+
+body.meeting-mode-active .roster-driver-row {
+    padding: 0.65rem 0.85rem !important;
+    border-radius: 9px !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+body.meeting-mode-active .driver-row-name {
+    font-size: 1.05rem !important;
+    font-weight: 800 !important;
+    color: #ffffff !important;
+}
+
+body.meeting-mode-active .driver-row-ir {
+    font-size: 0.88rem !important;
+    padding: 2px 8px !important;
+    font-weight: 900 !important;
+    color: #38bdf8 !important;
+}
+
+body.meeting-mode-active .driver-row-car {
+    font-size: 0.78rem !important;
+    padding: 2px 8px !important;
+}
+
+body.meeting-mode-active .captain-badge {
+    font-size: 0.72rem !important;
+    padding: 2px 7px !important;
+}
+
+body.meeting-mode-active .drop-prompt-text {
+    font-size: 0.9rem !important;
+    font-weight: 800 !important;
+}
+
+body.meeting-mode-active .drop-sub-text {
+    font-size: 0.78rem !important;
+}
+
+body.meeting-mode-active .driver-pool-card .driver-name {
+    font-size: 1.02rem !important;
+    font-weight: 800 !important;
+}
+
+body.meeting-mode-active .driver-irating-badge {
+    font-size: 0.9rem !important;
+    padding: 3px 9px !important;
+}
+
+body.meeting-mode-active .driver-sr-pill {
+    font-size: 0.82rem !important;
+    padding: 3px 8px !important;
+}
+
+body.meeting-mode-active .tb-sticky-summary-bar {
+    padding: 0.9rem 2.5rem !important;
+    background: rgba(8, 12, 22, 0.97) !important;
+}
+
+body.meeting-mode-active .summary-stat-group {
+    font-size: 0.88rem !important;
+    gap: 12px !important;
+}
+
+body.meeting-mode-active .summary-stat-group strong {
+    font-size: 1rem !important;
+}
+
+body.meeting-mode-active .summary-readiness-indicator {
+    font-size: 0.88rem !important;
 }
 
 /* ===================================================
