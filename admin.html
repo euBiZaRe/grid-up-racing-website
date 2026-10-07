@@ -1858,8 +1858,12 @@ body.meeting-mode-active .admin-hero-header,
 body.meeting-mode-active .admin-nav-bar,
 body.meeting-mode-active .tb-event-meta-banner,
 body.meeting-mode-active .lap-sync-area,
-body.meeting-mode-active .admin-layout > :not(#section-races) {
+body.meeting-mode-active .tab-content:not(#section-races) {
     display: none !important;
+}
+
+body.meeting-mode-active #section-races {
+    display: block !important;
 }
 
 body.meeting-mode-active .admin-container {
