@@ -63,15 +63,25 @@
             padding: 8rem 1.5rem 4rem !important;
         }
 
+        /* Dynamic Squad Theme Colors (Updated in JS per squad) */
+        #portal-view {
+            --team-color: #00cfff;
+            --team-glow: rgba(0, 207, 255, 0.4);
+            --team-border: rgba(0, 207, 255, 0.3);
+            --team-bg-tint: rgba(0, 207, 255, 0.08);
+            --team-banner-grad: linear-gradient(135deg, rgba(14, 20, 32, 0.95) 0%, rgba(8, 12, 20, 0.98) 100%);
+        }
+
         .event-hero-banner {
             margin-bottom: 2rem;
             padding: 2.2rem 2.5rem;
             border-radius: 18px;
-            border: 1px solid rgba(0, 207, 255, 0.25);
-            background: linear-gradient(135deg, rgba(14, 20, 32, 0.95) 0%, rgba(8, 12, 20, 0.98) 100%);
+            border: 1px solid var(--team-border);
+            background: var(--team-banner-grad);
             position: relative;
             overflow: hidden;
-            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.45);
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.45), 0 0 30px var(--team-glow);
+            transition: border-color 0.4s ease, box-shadow 0.4s ease;
         }
 
         .hero-metric-card {
@@ -86,22 +96,23 @@
             transition: all 0.2s ease;
         }
         .hero-metric-card:hover {
-            border-color: rgba(0, 207, 255, 0.35);
-            background: rgba(0, 207, 255, 0.04);
+            border-color: var(--team-border);
+            background: var(--team-bg-tint);
             transform: translateY(-2px);
         }
         .hero-metric-icon {
             width: 38px;
             height: 38px;
             border-radius: 10px;
-            background: rgba(0, 207, 255, 0.1);
-            border: 1px solid rgba(0, 207, 255, 0.25);
+            background: var(--team-bg-tint);
+            border: 1px solid var(--team-border);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--primary);
+            color: var(--team-color);
             font-size: 1rem;
             flex-shrink: 0;
+            transition: all 0.3s ease;
         }
         .hero-metric-label {
             font-size: 0.65rem;
@@ -150,16 +161,16 @@
             text-transform: uppercase;
         }
         .portal-nav-tab:hover {
-            background: rgba(0, 207, 255, 0.08);
-            border-color: rgba(0, 207, 255, 0.35);
+            background: var(--team-bg-tint);
+            border-color: var(--team-border);
             color: #fff;
             transform: translateY(-2px);
         }
         .portal-nav-tab.active {
-            background: rgba(0, 207, 255, 0.15);
-            border-color: var(--primary);
-            color: #00cfff;
-            box-shadow: 0 0 15px rgba(0, 207, 255, 0.25);
+            background: var(--team-bg-tint);
+            border-color: var(--team-color);
+            color: var(--team-color);
+            box-shadow: 0 0 15px var(--team-glow);
         }
 
         .portal-grid {
@@ -181,9 +192,10 @@
             height: 520px;
             border-radius: 16px;
             overflow: hidden;
-            border: 1px solid rgba(0, 207, 255, 0.2);
+            border: 1px solid var(--team-border);
             background: rgba(10, 14, 22, 0.85);
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            transition: border-color 0.4s ease;
         }
         .chat-header {
             padding: 1.1rem 1.5rem;
@@ -194,8 +206,8 @@
             align-items: center;
         }
         .chat-broadcast-notice {
-            background: rgba(0, 207, 255, 0.04);
-            border-bottom: 1px solid rgba(0, 207, 255, 0.1);
+            background: var(--team-bg-tint);
+            border-bottom: 1px solid var(--team-border);
             padding: 0.45rem 1.25rem;
             font-size: 0.72rem;
             color: var(--text-muted);
@@ -224,8 +236,8 @@
             background: rgba(255, 255, 255, 0.045);
         }
         .chat-bubble.chat-me {
-            border-left: 3px solid var(--primary);
-            background: rgba(0, 207, 255, 0.04);
+            border-left: 3px solid var(--team-color);
+            background: var(--team-bg-tint);
         }
         .chat-bubble.chat-other {
             border-left: 3px solid rgba(255, 255, 255, 0.15);
@@ -241,9 +253,9 @@
             width: 22px;
             height: 22px;
             border-radius: 50%;
-            background: rgba(0, 207, 255, 0.15);
-            border: 1px solid var(--primary);
-            color: #00cfff;
+            background: var(--team-bg-tint);
+            border: 1px solid var(--team-color);
+            color: var(--team-color);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -253,7 +265,7 @@
         .chat-author {
             font-weight: 800;
             font-size: 0.82rem;
-            color: #00cfff;
+            color: var(--team-color);
             letter-spacing: 0.3px;
         }
         .chat-time {
@@ -307,8 +319,8 @@
             transition: all 0.2s ease;
         }
         .chat-input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 10px rgba(0, 207, 255, 0.25);
+            border-color: var(--team-color);
+            box-shadow: 0 0 10px var(--team-glow);
         }
         .chat-send-btn {
             padding: 0.8rem 1.6rem;
@@ -326,9 +338,10 @@
         .lineup-sidebar-card {
             padding: 1.6rem;
             border-radius: 16px;
-            border: 1px solid rgba(0, 207, 255, 0.2);
-            background: rgba(10, 14, 22, 0.8);
+            border: 1px solid var(--team-border);
+            background: rgba(10, 14, 22, 0.85);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+            transition: border-color 0.4s ease;
         }
         .sidebar-header {
             margin-bottom: 1.25rem;
@@ -361,13 +374,14 @@
             gap: 6px;
         }
         .lineup-pill {
-            background: rgba(0, 207, 255, 0.15);
-            border: 1px solid var(--primary);
-            color: #00cfff;
+            background: var(--team-bg-tint);
+            border: 1px solid var(--team-color);
+            color: var(--team-color);
             font-size: 0.65rem;
             font-weight: 800;
             padding: 2px 7px;
             border-radius: 4px;
+            box-shadow: 0 0 8px var(--team-glow);
         }
         .lineup-drivers-list {
             display: flex;
@@ -386,21 +400,22 @@
             transition: all 0.2s ease;
         }
         .lineup-driver-item:hover {
-            border-color: rgba(0, 207, 255, 0.25);
-            background: rgba(0, 207, 255, 0.03);
+            border-color: var(--team-border);
+            background: var(--team-bg-tint);
         }
         .driver-helmet-dot {
             width: 26px;
             height: 26px;
             border-radius: 50%;
-            background: rgba(0, 207, 255, 0.1);
-            border: 1px solid rgba(0, 207, 255, 0.3);
+            background: var(--team-bg-tint);
+            border: 1px solid var(--team-border);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 0.72rem;
-            color: var(--primary);
+            color: var(--team-color);
             flex-shrink: 0;
+            transition: all 0.3s ease;
         }
         .driver-name-text {
             font-weight: 700;
@@ -700,13 +715,13 @@
                         </div>
                         <h1 id="event-title" class="glow-text" style="font-size: 2.6rem; margin-bottom: 0.4rem; line-height: 1.15; font-family: var(--font-heading);">Event Name</h1>
                         <div id="hero-track-info" style="display: flex; align-items: center; gap: 8px; color: #94a3b8; font-size: 0.95rem; font-weight: 600;">
-                            <i class="fas fa-location-dot" style="color: var(--primary);"></i>
+                            <i class="fas fa-location-dot" style="color: var(--team-color); transition: color 0.3s ease;"></i>
                             <span id="hero-track-name">Indianapolis Motor Speedway - Road Course</span>
                         </div>
                     </div>
                     <div style="text-align: right;">
                         <span style="font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 800;">Assigned Squad</span>
-                        <div id="team-title" style="color: #00cfff; font-size: 1.4rem; font-weight: 900; letter-spacing: 1.5px; margin-top: 2px; font-family: var(--font-heading);">GRiD UP</div>
+                        <div id="team-title" style="color: var(--team-color); font-size: 1.4rem; font-weight: 900; letter-spacing: 1.5px; margin-top: 2px; font-family: var(--font-heading); transition: color 0.3s ease;">GRiD UP</div>
                     </div>
                 </div>
 
@@ -1096,12 +1111,128 @@
             return firstKey ? data[firstKey] : null;
         }
 
+        function getTeamColorTheme(teamName = '') {
+            const name = (teamName || '').toLowerCase().trim();
+
+            // 1. GRiD UP Purple
+            if (name.includes('purple')) {
+                return {
+                    color: '#c084fc', // Vibrant esports violet/purple
+                    glow: 'rgba(192, 132, 252, 0.45)',
+                    border: 'rgba(192, 132, 252, 0.35)',
+                    bgTint: 'rgba(192, 132, 252, 0.1)',
+                    bannerGrad: 'linear-gradient(135deg, rgba(28, 14, 45, 0.96) 0%, rgba(12, 8, 22, 0.98) 100%)'
+                };
+            }
+
+            // 2. GRiD UP Black (Ultra-clean stealth carbon look: silver platinum accents, dark carbon tint, high usability)
+            if (name.includes('black')) {
+                return {
+                    color: '#e2e8f0', // Crisp silver / platinum white
+                    glow: 'rgba(255, 255, 255, 0.18)',
+                    border: 'rgba(255, 255, 255, 0.22)',
+                    bgTint: 'rgba(255, 255, 255, 0.06)',
+                    bannerGrad: 'linear-gradient(135deg, rgba(24, 25, 30, 0.98) 0%, rgba(10, 11, 14, 0.99) 100%)'
+                };
+            }
+
+            // 3. GRiD UP Sim Racing (Flagship Main Esports team: Premium cyan-blue pro telemetry aura)
+            if (name === 'grid up sim racing' || name.includes('sim racing') || name === 'grid up') {
+                return {
+                    color: '#00e5ff', // Electric competition cyan
+                    glow: 'rgba(0, 229, 255, 0.45)',
+                    border: 'rgba(0, 229, 255, 0.35)',
+                    bgTint: 'rgba(0, 229, 255, 0.09)',
+                    bannerGrad: 'linear-gradient(135deg, rgba(10, 26, 46, 0.96) 0%, rgba(6, 14, 26, 0.98) 100%)'
+                };
+            }
+
+            // 4. Red
+            if (name.includes('red')) {
+                return {
+                    color: '#ff4d6d',
+                    glow: 'rgba(255, 77, 109, 0.45)',
+                    border: 'rgba(255, 77, 109, 0.35)',
+                    bgTint: 'rgba(255, 77, 109, 0.1)',
+                    bannerGrad: 'linear-gradient(135deg, rgba(46, 12, 20, 0.96) 0%, rgba(18, 6, 10, 0.98) 100%)'
+                };
+            }
+
+            // 5. Blue
+            if (name.includes('blue')) {
+                return {
+                    color: '#38bdf8',
+                    glow: 'rgba(56, 189, 248, 0.45)',
+                    border: 'rgba(56, 189, 248, 0.35)',
+                    bgTint: 'rgba(56, 189, 248, 0.1)',
+                    bannerGrad: 'linear-gradient(135deg, rgba(12, 28, 48, 0.96) 0%, rgba(8, 14, 24, 0.98) 100%)'
+                };
+            }
+
+            // 6. Orange / Gold / Yellow
+            if (name.includes('orange') || name.includes('gold') || name.includes('yellow')) {
+                return {
+                    color: '#fbbf24',
+                    glow: 'rgba(251, 191, 36, 0.45)',
+                    border: 'rgba(251, 191, 36, 0.35)',
+                    bgTint: 'rgba(251, 191, 36, 0.1)',
+                    bannerGrad: 'linear-gradient(135deg, rgba(40, 26, 10, 0.96) 0%, rgba(18, 12, 6, 0.98) 100%)'
+                };
+            }
+
+            // 7. Green
+            if (name.includes('green')) {
+                return {
+                    color: '#10b981',
+                    glow: 'rgba(16, 185, 129, 0.45)',
+                    border: 'rgba(16, 185, 129, 0.35)',
+                    bgTint: 'rgba(16, 185, 129, 0.1)',
+                    bannerGrad: 'linear-gradient(135deg, rgba(10, 36, 24, 0.96) 0%, rgba(6, 16, 12, 0.98) 100%)'
+                };
+            }
+
+            // 8. White / Silver
+            if (name.includes('white') || name.includes('silver')) {
+                return {
+                    color: '#f8fafc',
+                    glow: 'rgba(255, 255, 255, 0.3)',
+                    border: 'rgba(255, 255, 255, 0.28)',
+                    bgTint: 'rgba(255, 255, 255, 0.08)',
+                    bannerGrad: 'linear-gradient(135deg, rgba(28, 30, 38, 0.96) 0%, rgba(14, 15, 20, 0.98) 100%)'
+                };
+            }
+
+            // Default Esports fallback
+            return {
+                color: '#00cfff',
+                glow: 'rgba(0, 207, 255, 0.4)',
+                border: 'rgba(0, 207, 255, 0.3)',
+                bgTint: 'rgba(0, 207, 255, 0.08)',
+                bannerGrad: 'linear-gradient(135deg, rgba(14, 20, 32, 0.95) 0%, rgba(8, 12, 20, 0.98) 100%)'
+            };
+        }
+
+        function applyTeamPortalTheme(teamName) {
+            const theme = getTeamColorTheme(teamName);
+            const portalElem = document.getElementById('portal-view');
+            if (portalElem) {
+                portalElem.style.setProperty('--team-color', theme.color);
+                portalElem.style.setProperty('--team-glow', theme.glow);
+                portalElem.style.setProperty('--team-border', theme.border);
+                portalElem.style.setProperty('--team-bg-tint', theme.bgTint);
+                portalElem.style.setProperty('--team-banner-grad', theme.bannerGrad);
+            }
+        }
+
         async function loadTeamPortal(team) {
             currentEvent = team.eventSlug;
             currentTeam = team.teamName;
             
             document.getElementById('selection-view').style.display = 'none';
             document.getElementById('portal-view').style.display = 'block';
+
+            // Apply squad color theme immediately
+            applyTeamPortalTheme(team.teamName);
             
             const eventObj = UPCOMING_EVENTS.find(e => e.id === team.eventSlug) || {};
 
@@ -1182,7 +1313,7 @@
                         <div class="hero-metric-icon"><i class="fas fa-user-shield"></i></div>
                         <div>
                             <div class="hero-metric-label">Team Captain</div>
-                            <div class="hero-metric-value" style="font-size: 0.95rem; color: #00cfff;">${captain}</div>
+                            <div class="hero-metric-value" style="font-size: 0.95rem; color: var(--team-color);">${captain}</div>
                             <div class="hero-metric-sub">Squad Lead</div>
                         </div>
                     </div>
@@ -1192,7 +1323,7 @@
             let html = `
                 <!-- Car Box -->
                 <div class="lineup-section-box">
-                    <span class="lineup-label"><i class="fas fa-car" style="color: var(--primary); margin-right: 5px;"></i> Assigned Chassis</span>
+                    <span class="lineup-label"><i class="fas fa-car" style="color: var(--team-color); margin-right: 5px;"></i> Assigned Chassis</span>
                     <div class="lineup-value-highlight">
                         <span>${carName}</span>
                         ${carClass && carClass !== carName ? `<span class="lineup-pill">${carClass}</span>` : ''}
@@ -1203,7 +1334,7 @@
                 <div class="lineup-section-box">
                     <span class="lineup-label"><i class="fas fa-crown" style="color: #f59e0b; margin-right: 5px;"></i> Team Captain</span>
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
-                        <span style="font-weight: 800; color: #00cfff; font-size: 0.95rem;">${captain}</span>
+                        <span style="font-weight: 800; color: var(--team-color); font-size: 0.95rem;">${captain}</span>
                         ${captain !== 'None' ? '<span class="captain-badge"><i class="fas fa-crown"></i> CPT</span>' : ''}
                     </div>
                 </div>
