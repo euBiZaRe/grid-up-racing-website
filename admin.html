@@ -4707,7 +4707,13 @@ body.meeting-mode-active .btn-summary-confirm {
                 'Audi RS3 LMS Gen2 TCR'
             ],
             'Porsche Cup': [
-                'Porsche 911 Cup (992.2)'
+                'Porsche 911 GT3 Cup (992)'
+            ],
+            'Super Formula Lights': [
+                'Super Formula Lights 324'
+            ],
+            'FF1600': [
+                'Ray FF1600'
             ],
             'IndyCar': [
                 'Dallara IR-18 IndyCar'
@@ -4717,6 +4723,39 @@ body.meeting-mode-active .btn-summary-confirm {
                 'Ford Mustang Next Gen',
                 'Toyota Camry Next Gen'
             ],
+            '1987 NASCAR': [
+                'NASCAR Cup Series Buick LeSabre - 1987',
+                'NASCAR Cup Series Chevrolet Monte Carlo - 1987',
+                'NASCAR Cup Series Ford Thunderbird - 1987'
+            ],
+            'Dirt Midget': [
+                'Dirt Midget'
+            ],
+            'Super Late Model': [
+                'Super Late Model'
+            ],
+            'Sprint Car': [
+                'Dirt 410 Winged Sprint Car',
+                'Dirt 360 Sprint Car'
+            ],
+            'Off-Road Trucks': [
+                'Pro 4 Off-Road Truck',
+                'Pro 2 Lite Off-Road Truck'
+            ],
+            'Production Car Challenge': [
+                'Toyota GR86',
+                'Global Mazda MX-5 Cup',
+                'Renault Clio R.S. V',
+                'Ford Mustang FR500S'
+            ],
+            'SCCA Runoffs': [
+                'Spec Racer Ford Gen 3',
+                'Formula Vee',
+                'Global Mazda MX-5 Cup'
+            ],
+            'BMW M2 CS': [
+                'BMW M2 CS Racing'
+            ],
             'Classic GTO / GTP': [
                 'Audi 90 GTO',
                 'Nissan GTP ZX-T'
@@ -4725,38 +4764,120 @@ body.meeting-mode-active .btn-summary-confirm {
 
         function getEventEligibleClasses(event) {
             if (!event) return ['GT3'];
+            const lowId = (event.id || '').toLowerCase();
+            const lowName = (event.name || '').toLowerCase();
+            const classStr = (event.classStr || event.carClass || '').toLowerCase();
+
+            // 1. Direct ID & Name matching for standard and special events
+            if (lowId.includes('sfl') || lowName.includes('sfl') || lowName.includes('super formula')) {
+                return ['Super Formula Lights'];
+            }
+            if (lowId.includes('ff1600') || lowName.includes('ff1600') || lowName.includes('formula ford')) {
+                return ['FF1600'];
+            }
+            if (lowId.includes('992') || lowName.includes('992') || lowName.includes('porsche cup')) {
+                return ['Porsche Cup'];
+            }
+            if (lowId.includes('firecracker') || lowName.includes('1987')) {
+                return ['1987 NASCAR'];
+            }
+            if (lowId.includes('homestead') || lowId.includes('southern-500') || lowId.includes('brickyard') || lowId.includes('world-600') || lowName.includes('homestead') || lowName.includes('nascar')) {
+                return ['NASCAR Next Gen'];
+            }
+            if (lowId.includes('chili-bowl') || lowName.includes('chili bowl') || lowName.includes('midget')) {
+                return ['Dirt Midget'];
+            }
+            if (lowId.includes('winter-derby') || lowName.includes('winter derby') || lowName.includes('late model')) {
+                return ['Super Late Model'];
+            }
+            if (lowId.includes('knoxville') || lowName.includes('knoxville') || lowName.includes('sprint car')) {
+                return ['Sprint Car'];
+            }
+            if (lowId.includes('crandon') || lowName.includes('crandon') || lowName.includes('off-road') || lowName.includes('pro 4')) {
+                return ['Off-Road Trucks'];
+            }
+            if (lowId.includes('production') || lowName.includes('production car')) {
+                return ['Production Car Challenge'];
+            }
+            if (lowId.includes('scca') || lowName.includes('scca')) {
+                return ['SCCA Runoffs'];
+            }
+            if (lowId.includes('indy-500') || lowName.includes('indy 500')) {
+                return ['IndyCar'];
+            }
+            if (lowId.includes('bathurst-1000') || lowName.includes('bathurst 1000') || lowName.includes('supercars')) {
+                return ['Supercars'];
+            }
+            if (lowId.includes('nurburgring')) {
+                return ['GT3', 'Porsche Cup', 'GT4', 'TCR', 'BMW M2 CS'];
+            }
+            if (lowId.includes('watkins-glen') || lowId.includes('daytona-24') || lowId.includes('sebring') || lowId.includes('petit-le-mans') || lowId.includes('road-america') || lowId.includes('roar')) {
+                return ['GTP', 'LMP2', 'GT3'];
+            }
+            if (lowId.includes('britcar')) {
+                return ['GT3', 'GT4'];
+            }
+            if (lowId.includes('thruxton')) {
+                return ['GT3', 'TCR'];
+            }
+            if (lowId.includes('imsa-classic') || lowId.includes('classic')) {
+                return ['Classic GTO / GTP'];
+            }
+            if (lowId.includes('spa-24') || lowId.includes('bathurst-12') || lowId.includes('suzuka') || lowId.includes('indy-8h') || lowId.includes('indianapolis-8h') || lowName.includes('8 hours of indianapolis') || lowName.includes('indianapolis 8')) {
+                return ['GT3'];
+            }
+
+            // 2. Class string fallback from database
+            if (classStr) {
+                if (classStr.includes('super formula') || classStr.includes('sfl')) return ['Super Formula Lights'];
+                if (classStr.includes('ff1600')) return ['FF1600'];
+                if (classStr.includes('midget')) return ['Dirt Midget'];
+                if (classStr.includes('late model')) return ['Super Late Model'];
+                if (classStr.includes('sprint car')) return ['Sprint Car'];
+                if (classStr.includes('pro 4') || classStr.includes('truck')) return ['Off-Road Trucks'];
+                if (classStr.includes('production')) return ['Production Car Challenge'];
+                if (classStr.includes('scca') || classStr.includes('multiclass')) return ['SCCA Runoffs'];
+                if (classStr.includes('1987')) return ['1987 NASCAR'];
+                if (classStr.includes('nascar')) return ['NASCAR Next Gen'];
+                if (classStr.includes('supercar')) return ['Supercars'];
+                if (classStr.includes('cup') || classStr.includes('992')) return ['Porsche Cup'];
+                if (classStr.includes('indy')) return ['IndyCar'];
+                if (classStr.includes('gt3')) return ['GT3'];
+                if (classStr.includes('gt4')) return ['GT4'];
+                if (classStr.includes('tcr')) return ['TCR'];
+                if (classStr.includes('gtp')) return ['GTP', 'LMP2', 'GT3'];
+            }
+
+            // 3. Array of classes if present
             if (event.classes && Array.isArray(event.classes) && event.classes.length > 0) {
                 const mapped = event.classes.map(c => {
-                    const low = (c || '').toLowerCase();
-                    if (low.includes('supercar')) return 'Supercars';
-                    if (low.includes('gtp') && !low.includes('classic')) return 'GTP';
-                    if (low.includes('lmp2')) return 'LMP2';
-                    if (low.includes('gt3')) return 'GT3';
-                    if (low.includes('gt4')) return 'GT4';
-                    if (low.includes('tcr')) return 'TCR';
-                    if (low.includes('cup') || low === 'pc') return 'Porsche Cup';
-                    if (low.includes('indy')) return 'IndyCar';
-                    if (low.includes('nascar') || low.includes('next gen')) return 'NASCAR Next Gen';
-                    if (low.includes('gto') || low.includes('classic')) return 'Classic GTO / GTP';
+                    const l = (c || '').toLowerCase();
+                    if (l.includes('super formula') || l.includes('sfl')) return 'Super Formula Lights';
+                    if (l.includes('ff1600')) return 'FF1600';
+                    if (l.includes('supercar')) return 'Supercars';
+                    if (l.includes('gtp')) return 'GTP';
+                    if (l.includes('lmp2')) return 'LMP2';
+                    if (l.includes('gt3')) return 'GT3';
+                    if (l.includes('gt4')) return 'GT4';
+                    if (l.includes('tcr')) return 'TCR';
+                    if (l.includes('cup') || l.includes('992')) return 'Porsche Cup';
+                    if (l.includes('indy')) return 'IndyCar';
+                    if (l.includes('nascar')) return 'NASCAR Next Gen';
                     return c;
                 });
                 return [...new Set(mapped)];
             }
-            const lowId = (event.id || '').toLowerCase();
-            const lowName = (event.name || '').toLowerCase();
-            if (lowId.includes('bathurst-1000') || lowName.includes('bathurst 1000')) return ['Supercars'];
-            if (lowId.includes('spa-24') || lowId.includes('bathurst-12') || lowId.includes('suzuka') || lowId.includes('indy-8h')) return ['GT3'];
-            if (lowId.includes('daytona-24') || lowId.includes('sebring') || lowId.includes('watkins-glen') || lowId.includes('petit-le-mans') || lowId.includes('road-america')) return ['GTP', 'LMP2', 'GT3'];
-            if (lowId.includes('nurburgring')) return ['GT3', 'GT4', 'TCR', 'Porsche Cup'];
-            if (lowId.includes('indy-500')) return ['IndyCar'];
-            if (lowId.includes('world-600') || lowId.includes('firecracker') || lowId.includes('brickyard')) return ['NASCAR Next Gen'];
-            if (lowId.includes('thruxton')) return ['TCR', 'GT3'];
+
             return ['GT3'];
         }
 
         function getEventDurationHours(event) {
             if (!event) return 6;
             if (event.durationHours) return parseFloat(event.durationHours);
+            if (event.duration) {
+                const match = String(event.duration).match(/(\d+)\s*(?:hour|hr|h)/i);
+                if (match) return parseInt(match[1]);
+            }
             if (event.distance) {
                 const match = event.distance.match(/(\d+)\s*(?:hour|hr|h)/i);
                 if (match) return parseInt(match[1]);
@@ -4769,7 +4890,7 @@ body.meeting-mode-active .btn-summary-confirm {
                 if (event.name.includes('1000')) return 6;
                 if (event.name.includes('500')) return 4;
             }
-            return 6;
+            return 2;
         }
 
         const DEFAULT_TEAM_CONFIG = [
@@ -4831,6 +4952,10 @@ body.meeting-mode-active .btn-summary-confirm {
                     if (!existing.carNumber) existing.carNumber = cfg.number;
                     if (!existing.name) existing.name = cfg.name;
                     if (!existing.teamName) existing.teamName = cfg.name;
+                    if (!eligibleClasses || !eligibleClasses.includes(existing.car_class)) {
+                        existing.car_class = primaryClass;
+                        existing.carModel = defaultModel;
+                    }
                 }
             });
 
@@ -5581,39 +5706,11 @@ body.meeting-mode-active .btn-summary-confirm {
             const currentEvent = eventsList.find(e => e.id === activeId);
             window._adminBuilderCurrentEvent = currentEvent;
 
-            // Determine Eligible Classes
-            let eligibleClasses = ['GT3'];
-            if (currentEvent) {
-                if (currentEvent.carClass) {
-                    eligibleClasses = [currentEvent.carClass];
-                } else if (currentEvent.carClasses && Array.isArray(currentEvent.carClasses) && currentEvent.carClasses.length > 0) {
-                    eligibleClasses = currentEvent.carClasses;
-                } else if (currentEvent.name) {
-                    const nameLower = currentEvent.name.toLowerCase();
-                    if (nameLower.includes('supercars') || nameLower.includes('bathurst 1000')) {
-                        eligibleClasses = ['Supercars'];
-                    } else if (nameLower.includes('roar') || nameLower.includes('daytona 24') || nameLower.includes('sebring') || nameLower.includes('petit')) {
-                        eligibleClasses = ['GTP', 'LMP2', 'GT3'];
-                    } else if (nameLower.includes('spa 24') || nameLower.includes('nurburgring') || nameLower.includes('bathurst 12') || nameLower.includes('suzuka')) {
-                        eligibleClasses = ['GT3'];
-                    }
-                }
-            }
+            // Determine Eligible Classes & Duration using master event catalog
+            const eligibleClasses = getEventEligibleClasses(currentEvent);
             window._adminBuilderEligibleClasses = eligibleClasses;
 
-            // Determine Duration in Hours
-            let durationHours = 6;
-            if (currentEvent) {
-                if (currentEvent.duration) {
-                    durationHours = parseFloat(currentEvent.duration) || 6;
-                } else if (currentEvent.name) {
-                    const n = currentEvent.name.toLowerCase();
-                    if (n.includes('24h') || n.includes('24 hour') || n.includes('24hr')) durationHours = 24;
-                    else if (n.includes('12h') || n.includes('12 hour') || n.includes('12hr')) durationHours = 12;
-                    else if (n.includes('10h') || n.includes('10 hour') || n.includes('petit')) durationHours = 10;
-                    else if (n.includes('6h') || n.includes('6 hour')) durationHours = 6;
-                }
-            }
+            const durationHours = getEventDurationHours(currentEvent);
             window._adminBuilderDurationHours = durationHours;
 
             // Render Banner
@@ -5826,6 +5923,9 @@ body.meeting-mode-active .btn-summary-confirm {
 
                 // Model Options
                 const modelsForClass = EVENT_CAR_CATALOG[car.car_class] || [car.carModel || `${car.car_class} Chassis`];
+                if (!modelsForClass.includes(car.carModel)) {
+                    car.carModel = modelsForClass[0] || `${car.car_class} Chassis`;
+                }
                 const modelOptionsHtml = modelsForClass.map(m => `
                     <option value="${m}" ${car.carModel === m ? 'selected' : ''}>${m}</option>
                 `).join('');
