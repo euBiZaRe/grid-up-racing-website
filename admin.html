@@ -924,19 +924,21 @@
     background: rgba(0, 207, 255, 0.7);
 }
 
-/* Individual Driver Pool Card */
+/* Individual Driver Pool Card - Compact & Clean */
 .driver-pool-card {
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.09);
-    border-radius: 9px;
-    padding: 0.7rem 0.85rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 0.5rem 0.65rem;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
     cursor: grab;
     user-select: none;
     transition: all 0.2s ease;
     position: relative;
+    box-sizing: border-box;
+    width: 100%;
 }
 
 .driver-pool-card:active {
@@ -946,107 +948,49 @@
 
 .driver-pool-card:hover {
     border-color: var(--tb-cyan);
-    background: rgba(0, 207, 255, 0.05);
-    transform: translateX(3px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    background: rgba(0, 207, 255, 0.06);
+    transform: translateX(2px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
 }
 
 .driver-pool-card.is-assigned {
     border-color: rgba(168, 85, 247, 0.35);
-    background: rgba(168, 85, 247, 0.04);
+    background: rgba(168, 85, 247, 0.05);
 }
 
 .driver-card-top {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 6px;
+    min-width: 0;
 }
 
 .driver-name-status {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 7px;
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
 }
 
 .driver-pool-card .driver-name {
     color: #ffffff;
-    font-size: 0.86rem;
+    font-size: 0.88rem;
     font-weight: 800;
-}
-
-.driver-irating-badge {
-    background: rgba(59, 130, 246, 0.15);
-    border: 1px solid rgba(59, 130, 246, 0.35);
-    color: #60a5fa;
-    font-size: 0.74rem;
-    font-weight: 900;
-    font-family: monospace, sans-serif;
-    padding: 2px 7px;
-    border-radius: 5px;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.driver-stats-badges {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.driver-sr-pill {
-    font-size: 0.65rem;
-    font-weight: 800;
-    font-family: monospace, sans-serif;
-    padding: 2px 6px;
-    border-radius: 4px;
-    line-height: 1.1;
-    letter-spacing: 0.3px;
-    display: inline-flex;
-    align-items: center;
-}
-
-.driver-sr-pill.license-p {
-    background: rgba(0, 207, 255, 0.2);
-    border: 1px solid rgba(0, 207, 255, 0.45);
-    color: #38bdf8;
-}
-
-.driver-sr-pill.license-a {
-    background: rgba(59, 130, 246, 0.2);
-    border: 1px solid rgba(59, 130, 246, 0.45);
-    color: #60a5fa;
-}
-
-.driver-sr-pill.license-b {
-    background: rgba(16, 185, 129, 0.2);
-    border: 1px solid rgba(16, 185, 129, 0.45);
-    color: #34d399;
-}
-
-.driver-sr-pill.license-c {
-    background: rgba(245, 158, 11, 0.2);
-    border: 1px solid rgba(245, 158, 11, 0.45);
-    color: #fbbf24;
-}
-
-.driver-sr-pill.license-d {
-    background: rgba(249, 115, 22, 0.2);
-    border: 1px solid rgba(249, 115, 22, 0.45);
-    color: #fb923c;
-}
-
-.driver-sr-pill.license-r {
-    background: rgba(239, 68, 68, 0.2);
-    border: 1px solid rgba(239, 68, 68, 0.45);
-    color: #f87171;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .driver-card-mid {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 6px;
     font-size: 0.7rem;
+    min-width: 0;
 }
 
 .driver-preferred-car {
@@ -1054,20 +998,20 @@
     display: inline-flex;
     align-items: center;
     gap: 5px;
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 0.68rem;
 }
 
 .driver-preferred-car .pref-value {
-    color: #e2e8f0;
+    color: #cbd5e1;
     font-weight: 700;
-}
-
-.driver-card-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 2px;
-    padding-top: 4px;
-    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .drag-handle-hint {
@@ -1077,20 +1021,52 @@
     color: rgba(0, 207, 255, 0.7);
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: 3px;
+    flex-shrink: 0;
 }
 
 .assigned-squad-tag {
-    font-size: 0.65rem;
+    font-size: 0.64rem;
     font-weight: 800;
     color: #c084fc;
-    background: rgba(168, 85, 247, 0.15);
+    background: rgba(168, 85, 247, 0.18);
     border: 1px solid rgba(168, 85, 247, 0.35);
     padding: 1px 6px;
     border-radius: 4px;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: 3px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    max-width: 105px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.driver-status-badge {
+    font-size: 0.62rem;
+    font-weight: 800;
+    padding: 1px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    letter-spacing: 0.3px;
+}
+.driver-status-badge.status-avail {
+    color: #34d399;
+    background: rgba(16, 185, 129, 0.14);
+    border: 1px solid rgba(16, 185, 129, 0.35);
+}
+.driver-status-badge.status-int {
+    color: #fbbf24;
+    background: rgba(245, 158, 11, 0.14);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.driver-stats-badges,
+.driver-irating-badge,
+.driver-sr-pill {
+    display: none !important;
 }
 
 /* Status Dots */
@@ -1968,26 +1944,26 @@ body.meeting-mode-active .tb-driver-pool-panel {
 }
 
 body.meeting-mode-active .driver-pool-card {
-    padding: 0.55rem 0.65rem !important;
-    gap: 4px !important;
+    padding: 0.45rem 0.6rem !important;
+    gap: 3px !important;
 }
 
 body.meeting-mode-active .driver-pool-card .driver-name {
-    font-size: 0.92rem !important;
+    font-size: 0.88rem !important;
     font-weight: 800 !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
 }
 
-body.meeting-mode-active .driver-irating-badge {
-    font-size: 0.78rem !important;
-    padding: 2px 6px !important;
+body.meeting-mode-active .driver-preferred-car {
+    font-size: 0.66rem !important;
 }
 
-body.meeting-mode-active .driver-sr-pill {
-    font-size: 0.72rem !important;
-    padding: 2px 5px !important;
+body.meeting-mode-active .assigned-squad-tag,
+body.meeting-mode-active .driver-status-badge {
+    font-size: 0.62rem !important;
+    padding: 1px 5px !important;
 }
 
 /* Teams Grid Panel: Full-Width Auto-Fitting Canvas */
@@ -5745,14 +5721,11 @@ body.meeting-mode-active .btn-summary-confirm {
                     }
                 });
 
-                // iRating & SR lookup
-                const irating = getDriverIRating(d.id, eligibleClasses[0] || 'GT3') || getDriverIRating(driverName, eligibleClasses[0] || 'GT3');
-                const safetyRating = getDriverSafetyRating(d.id, eligibleClasses[0] || 'GT3') || getDriverSafetyRating(driverName, eligibleClasses[0] || 'GT3');
-                const srHtml = getDriverSrBadgeHtml(safetyRating);
                 const driverClass = d.preferredClass || 'GT3';
                 const driverChassis = d.preferredChassis || d.preferredCar || d.chassis || d.selectedCar || d.car || '';
                 const isEligible = !driverClass || eligibleClasses.some(ec => ec.toLowerCase() === driverClass.toLowerCase() || (ec === 'Supercars' && driverClass.toLowerCase().includes('supercar')));
                 const escapedName = driverName.replace(/'/g, "\\'");
+                const squadShort = assignedTeamName ? assignedTeamName.replace(/^GRiD UP\s*/i, '') : '';
 
                 return `
                     <div class="driver-pool-card ${assignedTeamName ? 'is-assigned' : ''}"
@@ -5763,33 +5736,25 @@ body.meeting-mode-active .btn-summary-confirm {
                         <div class="driver-card-top">
                             <div class="driver-name-status">
                                 <span class="status-dot ${assignedTeamName ? 'purple' : statusDotClass}"></span>
-                                <strong class="driver-name">${driverName}</strong>
-                            </div>
-                            <div class="driver-stats-badges">
-                                <div class="driver-irating-badge">
-                                    <i class="fas fa-chart-line" style="font-size:0.6rem;"></i>
-                                    <span class="irating-number">${irating ? irating.toLocaleString() + ' iR' : 'No iR'}</span>
-                                </div>
-                                ${srHtml}
-                            </div>
-                        </div>
-
-                        <div class="driver-card-mid">
-                            <div class="driver-preferred-car">
-                                <span class="pref-label">Preferred Car:</span>
-                                <span class="pref-value"><i class="fas fa-car-side" style="color:var(--primary); font-size:0.65rem;"></i> ${driverChassis || 'Not set'}</span>
+                                <strong class="driver-name" title="${driverName}">${driverName}</strong>
                             </div>
                             <div>
                                 ${assignedTeamName 
-                                    ? `<span class="assigned-squad-tag"><i class="fas fa-check"></i> In: ${assignedTeamName}</span>`
-                                    : `<span style="font-size:0.65rem; font-weight:800; color:${d.status === 'signed_up' ? '#34d399' : '#fbbf24'};">${statusLabel}</span>`
+                                    ? `<span class="assigned-squad-tag" title="Assigned to ${assignedTeamName}"><i class="fas fa-check"></i> ${squadShort}</span>`
+                                    : `<span class="driver-status-badge ${d.status === 'signed_up' ? 'status-avail' : 'status-int'}">${statusLabel}</span>`
                                 }
                             </div>
                         </div>
 
-                        <div class="driver-card-footer">
-                            <span class="drag-handle-hint"><i class="fas fa-grip-lines"></i> DRAG TO TEAM</span>
-                            ${!isEligible ? `<span style="color:#f87171; font-size:0.62rem; font-weight:800;">⚠️ ${driverClass}</span>` : ''}
+                        <div class="driver-card-mid">
+                            <div class="driver-preferred-car" title="Preferred: ${driverChassis || 'Any Car'}">
+                                <i class="fas fa-car-side" style="color:var(--primary); font-size:0.65rem;"></i>
+                                <span class="pref-value">${driverChassis || 'Any Car'}</span>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:4px; flex-shrink:0;">
+                                <span class="drag-handle-hint"><i class="fas fa-grip-lines"></i> DRAG</span>
+                                ${!isEligible ? `<span style="color:#f87171; font-size:0.62rem; font-weight:800;" title="Class: ${driverClass}">⚠️ ${driverClass}</span>` : ''}
+                            </div>
                         </div>
                     </div>
                 `;
