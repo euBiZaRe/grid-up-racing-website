@@ -2529,7 +2529,7 @@ body.meeting-mode-active .btn-summary-confirm {
                             </button>
                             <div class="tb-event-selector-wrap">
                                 <label for="lineup-event-selector"><i class="fas fa-trophy"></i> RACE:</label>
-                                <select id="lineup-event-selector" class="studio-event-select" onchange="loadAdminBuilderData(true)">
+                                <select id="lineup-event-selector" class="studio-event-select" onchange="loadAdminBuilderData(true, this.value)">
                                     <option value="">Loading upcoming races...</option>
                                 </select>
                             </div>
@@ -5491,7 +5491,10 @@ body.meeting-mode-active .btn-summary-confirm {
         }
 
         // Load Admin Builder Data from Firestore
-        async function loadAdminBuilderData(forceReload = false) {
+        async function loadAdminBuilderData(forceReload = false, targetEventId = null) {
+            const selectorEl = document.getElementById('lineup-event-selector');
+            const userTargetId = targetEventId || (selectorEl ? selectorEl.value : null) || window._lastLoadedLineupEventId;
+
             const promises = [loadDynamicTeamsList()];
 
             // Ensure driver roster is loaded for iRating lookups
@@ -5554,15 +5557,26 @@ body.meeting-mode-active .btn-summary-confirm {
 
             const eventsList = (UPCOMING_EVENTS && UPCOMING_EVENTS.length > 0) ? UPCOMING_EVENTS : ALL_EVENTS;
 
-            // Update Event Selector dropdown
-            selector.innerHTML = eventsList.map(ev => {
-                const trackName = (ev.track || '').split(' - ')[0];
-                return `<option value="${ev.id}">${ev.name} ${trackName ? `(${trackName})` : ''}</option>`;
-            }).join('');
+            // Determine target active event ID
+            const activeId = (userTargetId && eventsList.some(e => e.id === userTargetId))
+                ? userTargetId
+                : (selector.value && eventsList.some(e => e.id === selector.value)
+                    ? selector.value
+                    : (eventsList.length > 0 ? eventsList[0].id : null));
 
-            const activeId = selector.value || (eventsList.length > 0 ? eventsList[0].id : null);
             if (!activeId) return;
 
+            // Update selector dropdown options only if empty, placeholder, or length mismatch
+            const hasExistingOptions = selector.options.length > 1 && selector.options[0].value !== '';
+            if (!hasExistingOptions || selector.options.length !== eventsList.length) {
+                selector.innerHTML = eventsList.map(ev => {
+                    const trackName = (ev.track || '').split(' - ')[0];
+                    const isSel = (ev.id === activeId) ? 'selected' : '';
+                    return `<option value="${ev.id}" ${isSel}>${ev.name} ${trackName ? `(${trackName})` : ''}</option>`;
+                }).join('');
+            }
+
+            // Always sync the selector value to the active event
             selector.value = activeId;
             const currentEvent = eventsList.find(e => e.id === activeId);
             window._adminBuilderCurrentEvent = currentEvent;
