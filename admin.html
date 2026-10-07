@@ -2878,6 +2878,10 @@ body.meeting-mode-active .btn-summary-confirm {
                     <div>
                         <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">RACE TYPE</label>
                         <input type="text" id="edit-event-type" class="btn btn-outline" style="width:100%; text-align:left;" placeholder="e.g. Team Event (Multi-Class)">
+                        <label style="display:flex; align-items:center; gap:8px; margin-top:8px; cursor:pointer; font-size:0.8rem; color:#cbd5e1;">
+                            <input type="checkbox" id="edit-event-is-solo" style="cursor:pointer; width:16px; height:16px; accent-color:var(--primary);">
+                            <span>Solo Event (1 Driver per entry / car)</span>
+                        </label>
                     </div>
                     <div>
                         <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">RACE DISTANCE</label>
@@ -4300,6 +4304,8 @@ body.meeting-mode-active .btn-summary-confirm {
             document.getElementById('edit-event-classes').value = event && event.classes ? event.classes.join(', ') : 'GT3, GTP, LMP2';
             document.getElementById('edit-event-type').value = event ? (event.type || '') : '';
             document.getElementById('edit-event-distance').value = event ? (event.distance || '') : '';
+            const isSoloEl = document.getElementById('edit-event-is-solo');
+            if (isSoloEl) isSoloEl.checked = event ? isSoloEvent(event) : false;
             
             document.getElementById('modal-title').textContent = event ? 'Edit Event' : 'Create New Event';
             document.getElementById('event-modal').style.display = 'block';
@@ -4323,6 +4329,7 @@ body.meeting-mode-active .btn-summary-confirm {
             const distance = document.getElementById('edit-event-distance').value.trim();
             const description = document.getElementById('edit-event-description').value.trim();
             const broadcastUrl = document.getElementById('edit-event-broadcast').value.trim();
+            const isSoloCheck = document.getElementById('edit-event-is-solo') ? document.getElementById('edit-event-is-solo').checked : false;
 
             if (!id || !name || !dateStr || !startStr) return alert("Please fill all required fields.");
 
@@ -4340,7 +4347,9 @@ body.meeting-mode-active .btn-summary-confirm {
                 startDate: new Date(startStr).toISOString(),
                 endDate: endStr ? new Date(endStr).toISOString() : null,
                 classes: classesRaw.split(',').map(c => c.trim()).filter(c => c),
-                type: type,
+                type: type || (isSoloCheck ? 'Solo Event' : 'Team Event'),
+                isSolo: isSoloCheck,
+                minDrivers: isSoloCheck ? 1 : 2,
                 distance: distance,
                 description: description,
                 broadcastUrl: broadcastUrl,
@@ -4891,6 +4900,48 @@ body.meeting-mode-active .btn-summary-confirm {
                 if (event.name.includes('500')) return 4;
             }
             return 2;
+        }
+
+        // Helper: Check if an event can be run solo (1 driver per car)
+        function isSoloEvent(eventOrId) {
+            if (!eventOrId) return false;
+            let eventObj = typeof eventOrId === 'object' ? eventOrId : null;
+            let eventId = (typeof eventOrId === 'string' ? eventOrId : (eventObj ? eventObj.id : '')).toLowerCase();
+            let eventName = (eventObj && eventObj.name ? eventObj.name : '').toLowerCase();
+            let eventType = (eventObj && (eventObj.type || eventObj.format) ? (eventObj.type || eventObj.format) : '').toLowerCase();
+
+            // Direct event object flags
+            if (eventObj) {
+                if (eventObj.isSolo === true || eventObj.minDrivers === 1 || eventObj.maxDrivers === 1 || eventObj.solo === true) {
+                    return true;
+                }
+                if (eventType.includes('solo') || eventType.includes('single') || eventType.includes('super session')) {
+                    return true;
+                }
+            }
+
+            // Keyword match across canonical iRacing solo special events
+            const soloKeywords = [
+                'ff1600',
+                'formula ford',
+                'homestead',
+                'sfl',
+                'super formula',
+                'scca',
+                'winter-derby',
+                'winter derby',
+                'chili-bowl',
+                'chili bowl',
+                'firecracker',
+                'brickyard',
+                'knoxville',
+                'crandon',
+                'southern-500',
+                'southern 500',
+                'derby'
+            ];
+
+            return soloKeywords.some(kw => eventId.includes(kw) || eventName.includes(kw) || eventType.includes(kw));
         }
 
         const DEFAULT_TEAM_CONFIG = [
@@ -5540,6 +5591,13 @@ body.meeting-mode-active .btn-summary-confirm {
             const availablePool = responses.filter(r => r.status === 'signed_up' || r.status === 'interested' || r.status === 'tentative');
             const unassignedCount = availablePool.filter(r => !allAssigned.some(a => a.toLowerCase() === (r.driverName || '').toLowerCase())).length;
 
+            const selector = document.getElementById('lineup-event-selector');
+            const activeEventId = selector ? selector.value : null;
+            const allEvts = (typeof ALL_EVENTS !== 'undefined' && ALL_EVENTS.length) ? ALL_EVENTS : (typeof UPCOMING_EVENTS !== 'undefined' ? UPCOMING_EVENTS : []);
+            const currentEvent = allEvts.find(e => e.id === activeEventId) || window._adminBuilderCurrentEvent;
+            const isSolo = isSoloEvent(currentEvent || activeEventId);
+            const reqDrivers = isSolo ? 1 : 2;
+
             let readyTeamsCount = 0;
             let missingDriversCount = 0;
             let missingCarCount = 0;
@@ -5548,10 +5606,10 @@ body.meeting-mode-active .btn-summary-confirm {
             cars.forEach(c => {
                 const dCount = (c.drivers || []).length;
                 const hasCar = !!(c.carModel && c.carModel.trim() && !c.carModel.includes('Select Car'));
-                if (dCount >= 2 && hasCar) {
+                if (dCount >= reqDrivers && hasCar) {
                     readyTeamsCount++;
                 }
-                if (dCount < 2) missingDriversCount++;
+                if (dCount < reqDrivers) missingDriversCount++;
                 if (!hasCar) missingCarCount++;
                 if (typeof c.teamSOF === 'number' && c.teamSOF > 0) {
                     teamSOFs.push(c.teamSOF);
@@ -5559,7 +5617,7 @@ body.meeting-mode-active .btn-summary-confirm {
             });
 
             const avgSOF = teamSOFs.length > 0 ? Math.round(teamSOFs.reduce((a, b) => a + b, 0) / teamSOFs.length) : null;
-            const openSeats = Math.max(0, (totalTeams * 2) - assignedCount);
+            const openSeats = Math.max(0, (totalTeams * reqDrivers) - assignedCount);
 
             // Top Header Counters
             const statTeams = document.getElementById('stat-total-teams');
@@ -5716,12 +5774,14 @@ body.meeting-mode-active .btn-summary-confirm {
             // Render Banner
             const summaryEl = document.getElementById('builder-event-summary');
             if (summaryEl && currentEvent) {
+                const isSolo = isSoloEvent(currentEvent);
                 const dateStr = currentEvent.startDate ? new Date(currentEvent.startDate.seconds ? currentEvent.startDate.seconds * 1000 : currentEvent.startDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Upcoming';
                 summaryEl.innerHTML = `
                     <strong style="color: #fff; font-size: 0.95rem;">${currentEvent.name}</strong> &bull; 
                     <span style="color: var(--primary);"><i class="fas fa-map-marker-alt"></i> ${currentEvent.track || 'Circuit'}</span> &bull; 
                     <span><i class="fas fa-calendar-alt"></i> ${dateStr}</span> &bull; 
-                    <span style="color: #60a5fa;"><i class="fas fa-clock"></i> ${durationHours} Hours</span>
+                    <span style="color: #60a5fa;"><i class="fas fa-clock"></i> ${durationHours} Hours</span> &bull; 
+                    <span style="color: ${isSolo ? '#38bdf8' : '#34d399'}; font-weight:700;"><i class="fas ${isSolo ? 'fa-user' : 'fa-users'}"></i> ${isSolo ? 'Solo Event (1 Driver / Car)' : 'Team Event (2+ Drivers / Car)'}</span>
                 `;
             }
 
@@ -5877,6 +5937,9 @@ body.meeting-mode-active .btn-summary-confirm {
             const canvas = document.getElementById('builder-cars-canvas');
             if (!canvas) return;
 
+            const isSolo = isSoloEvent(currentEvent || window._lastLoadedLineupEventId);
+            const reqDrivers = isSolo ? 1 : 2;
+
             let carsHtml = '';
             (window._adminBuilderCars || []).forEach((car, cIdx) => {
                 if (!eligibleClasses.includes(car.car_class)) {
@@ -5908,10 +5971,10 @@ body.meeting-mode-active .btn-summary-confirm {
                 // Team Status Pill
                 let statusBadgeHtml = '';
                 const hasCarModel = !!(car.carModel && car.carModel.trim() && !car.carModel.includes('Select Car'));
-                if (carDriversList.length >= 2 && hasCarModel) {
+                if (carDriversList.length >= reqDrivers && hasCarModel) {
                     statusBadgeHtml = `<span class="team-status-pill status-ready"><span class="status-dot green"></span> READY</span>`;
-                } else if (carDriversList.length < 2) {
-                    statusBadgeHtml = `<span class="team-status-pill status-needed"><span class="status-dot yellow"></span> NEEDS DRIVERS (${carDriversList.length}/2)</span>`;
+                } else if (carDriversList.length < reqDrivers) {
+                    statusBadgeHtml = `<span class="team-status-pill status-needed"><span class="status-dot yellow"></span> NEEDS DRIVERS (${carDriversList.length}/${reqDrivers})</span>`;
                 } else {
                     statusBadgeHtml = `<span class="team-status-pill status-missing-car"><span class="status-dot red"></span> SELECT CAR</span>`;
                 }
@@ -6067,8 +6130,8 @@ body.meeting-mode-active .btn-summary-confirm {
                                 <span class="roster-title">
                                     <i class="fas fa-users" style="color:${theme.color}; margin-right:4px;"></i> TEAM ROSTER
                                 </span>
-                                <span class="roster-count ${carDriversList.length >= 2 ? 'count-ready' : 'count-needed'}">
-                                    ${carDriversList.length} / 2
+                                <span class="roster-count ${carDriversList.length >= reqDrivers ? 'count-ready' : 'count-needed'}">
+                                    ${carDriversList.length} / ${reqDrivers}
                                 </span>
                             </div>
                             <div class="team-drop-zone ${carDriversList.length === 0 ? 'is-empty' : ''}"
@@ -6346,30 +6409,34 @@ body.meeting-mode-active .btn-summary-confirm {
                 drivers: []
             }));
 
-            // Snake Draft Round 1
-            for (let i = 0; i < Math.min(6, rankedDrivers.length); i++) {
+            const isSolo = isSoloEvent(window._adminBuilderCurrentEvent || window._adminBuilderActiveEventId);
+
+            // Snake Draft Round 1 (1 driver per car)
+            for (let i = 0; i < Math.min(cars.length, rankedDrivers.length); i++) {
                 assignments[i].drivers.push(rankedDrivers[i]);
             }
 
-            // Snake Draft Round 2 (Reverse)
-            for (let i = 6; i < Math.min(12, rankedDrivers.length); i++) {
-                const teamIdx = 5 - (i - 6);
-                assignments[teamIdx].drivers.push(rankedDrivers[i]);
-            }
+            if (!isSolo) {
+                // Snake Draft Round 2 (Reverse)
+                for (let i = 6; i < Math.min(12, rankedDrivers.length); i++) {
+                    const teamIdx = 5 - (i - 6);
+                    if (assignments[teamIdx]) assignments[teamIdx].drivers.push(rankedDrivers[i]);
+                }
 
-            // Round 3+ (Assign remaining to lowest SOF)
-            for (let i = 12; i < rankedDrivers.length; i++) {
-                let lowestIdx = 0;
-                let lowestSOF = Infinity;
-                assignments.forEach((tm, idx) => {
-                    const sum = tm.drivers.reduce((s, d) => s + d.irating, 0);
-                    const sof = tm.drivers.length > 0 ? (sum / tm.drivers.length) : 0;
-                    if (sof < lowestSOF && tm.drivers.length < 4) {
-                        lowestSOF = sof;
-                        lowestIdx = idx;
-                    }
-                });
-                assignments[lowestIdx].drivers.push(rankedDrivers[i]);
+                // Round 3+ (Assign remaining to lowest SOF)
+                for (let i = 12; i < rankedDrivers.length; i++) {
+                    let lowestIdx = 0;
+                    let lowestSOF = Infinity;
+                    assignments.forEach((tm, idx) => {
+                        const sum = tm.drivers.reduce((s, d) => s + d.irating, 0);
+                        const sof = tm.drivers.length > 0 ? (sum / tm.drivers.length) : 0;
+                        if (sof < lowestSOF && tm.drivers.length < 4) {
+                            lowestSOF = sof;
+                            lowestIdx = idx;
+                        }
+                    });
+                    if (assignments[lowestIdx]) assignments[lowestIdx].drivers.push(rankedDrivers[i]);
+                }
             }
 
             assignments.forEach(tm => {
