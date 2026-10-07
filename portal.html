@@ -58,6 +58,72 @@
         /* ========================================================== */
         /* TEAM PORTAL MODERN DASHBOARD REDESIGN                     */
         /* ========================================================== */
+        .portal-container {
+            max-width: 1420px !important;
+            padding: 8rem 1.5rem 4rem !important;
+        }
+
+        .event-hero-banner {
+            margin-bottom: 2rem;
+            padding: 2.2rem 2.5rem;
+            border-radius: 18px;
+            border: 1px solid rgba(0, 207, 255, 0.25);
+            background: linear-gradient(135deg, rgba(14, 20, 32, 0.95) 0%, rgba(8, 12, 20, 0.98) 100%);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.45);
+        }
+
+        .hero-metric-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 0.85rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 170px;
+            transition: all 0.2s ease;
+        }
+        .hero-metric-card:hover {
+            border-color: rgba(0, 207, 255, 0.35);
+            background: rgba(0, 207, 255, 0.04);
+            transform: translateY(-2px);
+        }
+        .hero-metric-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: rgba(0, 207, 255, 0.1);
+            border: 1px solid rgba(0, 207, 255, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+        .hero-metric-label {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 800;
+            letter-spacing: 0.8px;
+        }
+        .hero-metric-value {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #fff;
+            margin-top: 1px;
+            font-family: var(--font-heading);
+            letter-spacing: 0.5px;
+        }
+        .hero-metric-sub {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            margin-top: 1px;
+        }
+
         .portal-tabs-nav {
             display: flex;
             gap: 0.6rem;
@@ -98,11 +164,11 @@
 
         .portal-grid {
             display: grid;
-            grid-template-columns: minmax(0, 1fr) 340px;
+            grid-template-columns: minmax(0, 1fr) 360px;
             gap: 2rem;
             align-items: start;
         }
-        @media (max-width: 992px) {
+        @media (max-width: 1050px) {
             .portal-grid {
                 grid-template-columns: 1fr;
             }
@@ -112,7 +178,7 @@
         .chat-wall {
             display: flex;
             flex-direction: column;
-            height: 600px;
+            height: 520px;
             border-radius: 16px;
             overflow: hidden;
             border: 1px solid rgba(0, 207, 255, 0.2);
@@ -126,6 +192,16 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+        .chat-broadcast-notice {
+            background: rgba(0, 207, 255, 0.04);
+            border-bottom: 1px solid rgba(0, 207, 255, 0.1);
+            padding: 0.45rem 1.25rem;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         .chat-messages {
             flex: 1;
@@ -251,7 +327,7 @@
             padding: 1.6rem;
             border-radius: 16px;
             border: 1px solid rgba(0, 207, 255, 0.2);
-            background: rgba(10, 14, 22, 0.75);
+            background: rgba(10, 14, 22, 0.8);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
         }
         .sidebar-header {
@@ -296,34 +372,65 @@
         .lineup-drivers-list {
             display: flex;
             flex-direction: column;
-            gap: 0.45rem;
+            gap: 0.55rem;
             margin-top: 0.4rem;
         }
         .lineup-driver-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0.5rem 0.7rem;
+            padding: 0.6rem 0.8rem;
             background: rgba(0, 0, 0, 0.25);
             border: 1px solid rgba(255, 255, 255, 0.04);
-            border-radius: 6px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+        .lineup-driver-item:hover {
+            border-color: rgba(0, 207, 255, 0.25);
+            background: rgba(0, 207, 255, 0.03);
         }
         .driver-helmet-dot {
-            width: 22px;
-            height: 22px;
+            width: 26px;
+            height: 26px;
             border-radius: 50%;
             background: rgba(0, 207, 255, 0.1);
             border: 1px solid rgba(0, 207, 255, 0.3);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.65rem;
+            font-size: 0.72rem;
             color: var(--primary);
+            flex-shrink: 0;
         }
         .driver-name-text {
             font-weight: 700;
             font-size: 0.85rem;
             color: #fff;
+        }
+        .driver-ir-pill {
+            font-size: 0.68rem;
+            color: #f59e0b;
+            font-weight: 700;
+            font-family: monospace;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 2px;
+        }
+        .captain-badge {
+            font-size: 0.65rem;
+            color: #f59e0b;
+            font-weight: 800;
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            padding: 2px 7px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+        .lineup-strategy-note {
+            margin-top: 1.25rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
         }
     </style>
 
@@ -531,7 +638,7 @@
 
 
 
-    <main class="container" style="padding: 10rem 0 4rem;">
+    <main class="container portal-container">
 
         <div class="tread-overlay"></div>
 
@@ -563,15 +670,49 @@
 
         <div id="portal-view" style="display: none;">
 
-            <div class="portal-welcome" style="margin-bottom: 2rem;">
-                <a href="portal.html" class="back-btn" style="margin-bottom: 1.25rem; display: inline-flex; align-items: center; gap: 8px;">
-                    <i class="fas fa-arrow-left"></i> <span>Switch Event / Dashboard</span>
+            <!-- Quick Action Bar -->
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem;">
+                <a href="portal.html" class="back-btn" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.82rem;">
+                    <i class="fas fa-arrow-left"></i> <span>All Events & Switch Portal</span>
                 </a>
-                <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                    <a href="https://discord.gg/gridup" target="_blank" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.45rem 1rem; border-radius: 8px; border-color: rgba(0, 207, 255, 0.4); color: #00cfff; display: inline-flex; align-items: center; gap: 6px;">
+                        <i class="fab fa-discord"></i> <span>Team Voice Channel</span>
+                    </a>
+                    <a href="telemetry.html" target="_blank" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.45rem 1rem; border-radius: 8px; border-color: rgba(255, 255, 255, 0.15); display: inline-flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-chart-line"></i> <span>Live Telemetry Hub</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Event & Telemetry Hero Mission-Control Banner -->
+            <div class="event-hero-banner">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1.5rem; margin-bottom: 1.5rem; position: relative; z-index: 2;">
                     <div>
-                        <h1 id="event-title" class="glow-text" style="font-size: 2.8rem; margin-bottom: 0.25rem; line-height: 1.2;">Event Name</h1>
-                        <p id="team-title" style="color: var(--primary); font-size: 1.1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 3px; margin: 0;">Team Name</p>
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.6rem; flex-wrap: wrap;">
+                            <span id="hero-team-badge" class="lineup-pill" style="font-size: 0.75rem; padding: 4px 10px; letter-spacing: 1px; font-weight: 900;">TEAM PORTAL</span>
+                            <span style="font-size: 0.75rem; color: #10b981; font-weight: 800; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); padding: 3px 10px; border-radius: 4px; display: inline-flex; align-items: center; gap: 5px;">
+                                <i class="fas fa-circle-check"></i> Confirmed Entry
+                            </span>
+                            <span id="hero-series-tag" style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700;">
+                                iRacing Official Special Event
+                            </span>
+                        </div>
+                        <h1 id="event-title" class="glow-text" style="font-size: 2.6rem; margin-bottom: 0.4rem; line-height: 1.15; font-family: var(--font-heading);">Event Name</h1>
+                        <div id="hero-track-info" style="display: flex; align-items: center; gap: 8px; color: #94a3b8; font-size: 0.95rem; font-weight: 600;">
+                            <i class="fas fa-location-dot" style="color: var(--primary);"></i>
+                            <span id="hero-track-name">Indianapolis Motor Speedway - Road Course</span>
+                        </div>
                     </div>
+                    <div style="text-align: right;">
+                        <span style="font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 800;">Assigned Squad</span>
+                        <div id="team-title" style="color: #00cfff; font-size: 1.4rem; font-weight: 900; letter-spacing: 1.5px; margin-top: 2px; font-family: var(--font-heading);">GRiD UP</div>
+                    </div>
+                </div>
+
+                <!-- Telemetry & Event Metrics Bar -->
+                <div id="hero-telemetry-metrics" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1rem; position: relative; z-index: 2;">
+                    <!-- Injected dynamically via loadTeamPortal() -->
                 </div>
             </div>
 
@@ -598,6 +739,11 @@
                                 <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981;"></span>
                                 <span>LIVE</span>
                             </div>
+                        </div>
+
+                        <div class="chat-broadcast-notice">
+                            <i class="fas fa-bullhorn" style="color: var(--primary);"></i>
+                            <span>Team Channel: Coordinate run plans, weather updates, driver swaps, and fuel windows.</span>
                         </div>
 
                         <div id="chat-messages" class="chat-messages">
@@ -914,6 +1060,42 @@
             if (tabId === 'stints') initPortalStintView();
         }
 
+        let _driverStatsCache = null;
+
+        async function ensureDriverStatsCache() {
+            if (_driverStatsCache) return _driverStatsCache;
+            try {
+                const res = await fetch('driver_stats_2.json?v=' + Date.now());
+                if (res.ok) {
+                    _driverStatsCache = await res.json();
+                } else {
+                    _driverStatsCache = {};
+                }
+            } catch (e) {
+                console.warn("Could not fetch driver_stats_2.json:", e);
+                _driverStatsCache = {};
+            }
+            return _driverStatsCache;
+        }
+
+        function getDriverStats(name, preferredCategory = 'Sports Car') {
+            if (!_driverStatsCache || !name) return null;
+            const cleanTarget = name.trim().toLowerCase();
+            const foundKey = Object.keys(_driverStatsCache).find(k => k.trim().toLowerCase() === cleanTarget);
+            if (!foundKey) return null;
+            const data = _driverStatsCache[foundKey];
+            if (!data) return null;
+
+            if (data[preferredCategory]) return data[preferredCategory];
+            if (data['Sports Car']) return data['Sports Car'];
+            if (data['Formula Car']) return data['Formula Car'];
+            if (data['Road']) return data['Road'];
+            if (data['Oval']) return data['Oval'];
+
+            const firstKey = Object.keys(data)[0];
+            return firstKey ? data[firstKey] : null;
+        }
+
         async function loadTeamPortal(team) {
             currentEvent = team.eventSlug;
             currentTeam = team.teamName;
@@ -921,15 +1103,26 @@
             document.getElementById('selection-view').style.display = 'none';
             document.getElementById('portal-view').style.display = 'block';
             
-            document.getElementById('event-title').textContent = team.eventName;
+            const eventObj = UPCOMING_EVENTS.find(e => e.id === team.eventSlug) || {};
+
+            document.getElementById('event-title').textContent = team.eventName || eventObj.title || 'Special Event';
             document.getElementById('team-title').textContent = team.teamName;
-            
-            loadLineup(team.teamData);
+
+            const badgeElem = document.getElementById('hero-team-badge');
+            if (badgeElem) badgeElem.textContent = team.teamName.toUpperCase();
+
+            const trackElem = document.getElementById('hero-track-name');
+            if (trackElem) {
+                trackElem.textContent = eventObj.track || 'Road Course';
+            }
+
+            await ensureDriverStatsCache();
+            await loadLineup(team.teamData, eventObj);
             loadMessages();
             switchTab('wall');
         }
 
-        function loadLineup(data) {
+        async function loadLineup(data, eventObj = {}) {
             const list = document.getElementById('lineup-list');
             if (!list || !data) return;
             
@@ -937,6 +1130,64 @@
             const carClass = data.car_class || data.class || '';
             const captain = data.captain || 'None';
             const drivers = Array.isArray(data.drivers) ? data.drivers : [];
+
+            // Calculate Driver ratings & team average
+            const driverStatsMap = {};
+            let totalIR = 0;
+            let countedIR = 0;
+
+            drivers.forEach(d => {
+                const stats = getDriverStats(d, 'Sports Car');
+                if (stats && stats.irating) {
+                    driverStatsMap[d] = stats;
+                    totalIR += Number(stats.irating);
+                    countedIR++;
+                } else {
+                    driverStatsMap[d] = null;
+                }
+            });
+
+            const avgIR = countedIR > 0 ? Math.round(totalIR / countedIR) : null;
+            const duration = (eventObj && eventObj.duration) ? eventObj.duration : (data.duration || 'Special Event');
+
+            // Populate Hero Telemetry Metric Bar
+            const heroMetrics = document.getElementById('hero-telemetry-metrics');
+            if (heroMetrics) {
+                heroMetrics.innerHTML = `
+                    <div class="hero-metric-card">
+                        <div class="hero-metric-icon"><i class="fas fa-car-side"></i></div>
+                        <div>
+                            <div class="hero-metric-label">Confirmed Chassis</div>
+                            <div class="hero-metric-value" style="font-size: 0.95rem;">${carName}</div>
+                            <div class="hero-metric-sub">${carClass || 'Competition Class'}</div>
+                        </div>
+                    </div>
+                    <div class="hero-metric-card">
+                        <div class="hero-metric-icon" style="color: #10b981; border-color: rgba(16,185,129,0.3); background: rgba(16,185,129,0.1);"><i class="fas fa-stopwatch"></i></div>
+                        <div>
+                            <div class="hero-metric-label">Event Duration</div>
+                            <div class="hero-metric-value">${duration}</div>
+                            <div class="hero-metric-sub">Endurance Stint Plan</div>
+                        </div>
+                    </div>
+                    <div class="hero-metric-card">
+                        <div class="hero-metric-icon" style="color: #f59e0b; border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.1);"><i class="fas fa-chart-line"></i></div>
+                        <div>
+                            <div class="hero-metric-label">Team Avg iRating</div>
+                            <div class="hero-metric-value" style="color: #f59e0b;">${avgIR ? avgIR.toLocaleString() + ' iR' : 'Unrated'}</div>
+                            <div class="hero-metric-sub">${countedIR} of ${drivers.length} Synced</div>
+                        </div>
+                    </div>
+                    <div class="hero-metric-card">
+                        <div class="hero-metric-icon"><i class="fas fa-user-shield"></i></div>
+                        <div>
+                            <div class="hero-metric-label">Team Captain</div>
+                            <div class="hero-metric-value" style="font-size: 0.95rem; color: #00cfff;">${captain}</div>
+                            <div class="hero-metric-sub">Squad Lead</div>
+                        </div>
+                    </div>
+                `;
+            }
 
             let html = `
                 <!-- Car Box -->
@@ -951,7 +1202,10 @@
                 <!-- Captain Box -->
                 <div class="lineup-section-box">
                     <span class="lineup-label"><i class="fas fa-crown" style="color: #f59e0b; margin-right: 5px;"></i> Team Captain</span>
-                    <div style="font-weight: 700; color: #00cfff; font-size: 0.95rem; margin-top: 2px;">${captain}</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+                        <span style="font-weight: 800; color: #00cfff; font-size: 0.95rem;">${captain}</span>
+                        ${captain !== 'None' ? '<span class="captain-badge"><i class="fas fa-crown"></i> CPT</span>' : ''}
+                    </div>
                 </div>
 
                 <!-- Drivers Box -->
@@ -962,20 +1216,40 @@
                     </div>
                     <div class="lineup-drivers-list">
                         ${drivers.length > 0 
-                            ? drivers.map(d => `
+                            ? drivers.map(d => {
+                                const st = driverStatsMap[d];
+                                const isCpt = (d === captain);
+                                return `
                                 <div class="lineup-driver-item">
-                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
                                         <div class="driver-helmet-dot">
                                             <i class="fas fa-helmet-safety"></i>
                                         </div>
-                                        <span class="driver-name-text">${d}</span>
+                                        <div style="min-width: 0;">
+                                            <div style="display: flex; align-items: center; gap: 6px;">
+                                                <span class="driver-name-text" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${d}</span>
+                                                ${isCpt ? '<span class="captain-badge"><i class="fas fa-crown"></i></span>' : ''}
+                                            </div>
+                                            ${st ? `<div class="driver-ir-pill"><i class="fas fa-signal" style="font-size: 0.6rem;"></i> ${st.irating ? Number(st.irating).toLocaleString() + ' iR' : ''} ${st.sr ? '• ' + st.sr : ''}</div>` : '<div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 1px;">Roster Driver</div>'}
+                                        </div>
                                     </div>
-                                    ${d === captain ? '<span style="font-size: 0.65rem; color: #f59e0b; font-weight: 800;"><i class="fas fa-crown"></i> CPT</span>' : ''}
+                                    <span style="font-size: 0.65rem; color: #10b981; font-weight: 800; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); padding: 2px 6px; border-radius: 4px; white-space: nowrap;">ACTIVE</span>
                                 </div>
-                            `).join('')
+                                `;
+                            }).join('')
                             : '<div style="color: var(--text-muted); font-size: 0.8rem; padding: 0.5rem 0;">No drivers assigned to this seat.</div>'
                         }
                     </div>
+                </div>
+
+                <!-- Briefing & Protocol Box -->
+                <div class="lineup-strategy-note">
+                    <div style="display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.4rem;">
+                        <i class="fas fa-circle-info" style="color: var(--primary);"></i> Race Briefing
+                    </div>
+                    <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0; line-height: 1.45;">
+                        Mandatory driver check-in on Discord voice 30 mins prior to race server launch. Keep telemetry streaming enabled.
+                    </p>
                 </div>
             `;
 
