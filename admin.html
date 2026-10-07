@@ -1851,8 +1851,15 @@
 
 /* ===================================================
    MEETING MODE ACTIVE OVERRIDES
-   Optimized for Discord Screenshare at 1080p / 1440p
+   Optimized for Discord Screenshare at 1080p / 1440p / Auto-Fit
    =================================================== */
+html:has(body.meeting-mode-active),
+body.meeting-mode-active {
+    overflow-x: hidden !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+}
+
 body.meeting-mode-active #navbar,
 body.meeting-mode-active .admin-hero-header,
 body.meeting-mode-active .admin-nav-bar,
@@ -1868,7 +1875,18 @@ body.meeting-mode-active #section-races {
 
 body.meeting-mode-active .admin-container {
     max-width: 100% !important;
-    padding: 0.5rem 1.5rem !important;
+    width: 100% !important;
+    margin-top: 0.5rem !important;
+    padding: 0.5rem 1rem 4.5rem 1rem !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+}
+
+body.meeting-mode-active #admin-hub {
+    max-width: 100% !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    padding-bottom: 2rem !important;
 }
 
 /* Hide clutter buttons during meeting / screenshare */
@@ -1876,167 +1894,412 @@ body.meeting-mode-active .grid-panel-actions {
     display: none !important;
 }
 
-/* High-Readability Screenshare Optimizations (1080p/1440p) */
+/* Compact, Clean Top Header in Meeting Mode */
+body.meeting-mode-active .tb-header-card {
+    padding: 0.6rem 1rem !important;
+    margin-bottom: 0.75rem !important;
+    border-radius: 10px !important;
+    box-sizing: border-box !important;
+}
+
+body.meeting-mode-active .tb-header-top-row {
+    margin-bottom: 0.4rem !important;
+    padding-bottom: 0.4rem !important;
+    gap: 0.75rem !important;
+}
+
+body.meeting-mode-active .tb-logo-badge {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 0.85rem !important;
+}
+
+body.meeting-mode-active .tb-title-eyebrow {
+    font-size: 0.6rem !important;
+}
+
+body.meeting-mode-active .tb-main-title {
+    font-size: 1.15rem !important;
+}
+
+body.meeting-mode-active .tb-progress-stepper {
+    display: none !important;
+}
+
+body.meeting-mode-active .tb-header-bottom-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    flex-wrap: wrap !important;
+}
+
+body.meeting-mode-active .tb-stats-strip {
+    gap: 6px !important;
+}
+
+body.meeting-mode-active .tb-stat-pill {
+    padding: 3px 8px !important;
+    font-size: 0.74rem !important;
+}
+
+/* High-Readability & Auto-Fit Screenshare Workspace Layout */
 body.meeting-mode-active .team-builder-workspace {
-    gap: 2rem !important;
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 1rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    align-items: flex-start !important;
+    margin-bottom: 2rem !important;
+}
+
+/* Driver Pool Panel: Compact & Streamlined */
+body.meeting-mode-active .tb-driver-pool-panel {
+    flex: 0 0 250px !important;
+    width: 250px !important;
+    max-width: 270px !important;
+    min-width: 210px !important;
+    box-sizing: border-box !important;
+    padding: 0.75rem 0.85rem !important;
+    top: 10px !important;
+    max-height: calc(100vh - 80px) !important;
+}
+
+body.meeting-mode-active .driver-pool-card {
+    padding: 0.55rem 0.65rem !important;
+    gap: 4px !important;
+}
+
+body.meeting-mode-active .driver-pool-card .driver-name {
+    font-size: 0.92rem !important;
+    font-weight: 800 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+body.meeting-mode-active .driver-irating-badge {
+    font-size: 0.78rem !important;
+    padding: 2px 6px !important;
+}
+
+body.meeting-mode-active .driver-sr-pill {
+    font-size: 0.72rem !important;
+    padding: 2px 5px !important;
+}
+
+/* Teams Grid Panel: Full-Width Auto-Fitting Canvas */
+body.meeting-mode-active .tb-teams-grid-panel {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    max-width: calc(100% - 265px) !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+body.meeting-mode-active .grid-panel-header {
+    margin-bottom: 0.65rem !important;
 }
 
 body.meeting-mode-active .grid-panel-title {
-    font-size: 1.35rem !important;
-    letter-spacing: 0.8px;
-}
-
-body.meeting-mode-active .grid-panel-subtitle {
-    font-size: 0.82rem !important;
-    color: #94a3b8 !important;
-}
-
-body.meeting-mode-active .builder-canvas-grid {
-    gap: 1.4rem !important;
-}
-
-body.meeting-mode-active .builder-car-card {
-    padding: 1.35rem 1.45rem !important;
-    border-width: 1.5px !important;
-    background: rgba(10, 15, 26, 0.92) !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6) !important;
-}
-
-body.meeting-mode-active .racing-number-plate {
-    min-width: 52px !important;
-    padding: 4px 8px !important;
-    border-width: 2.5px !important;
-}
-
-body.meeting-mode-active .number-plate-input {
-    font-size: 1.25rem !important;
-    font-weight: 900 !important;
-}
-
-body.meeting-mode-active .team-title-text {
-    font-size: 1.35rem !important;
-    font-weight: 900 !important;
+    font-size: 1.15rem !important;
     letter-spacing: 0.5px !important;
 }
 
-body.meeting-mode-active .team-sof-box {
-    padding: 6px 12px !important;
-    min-width: 95px !important;
-    border-width: 1.5px !important;
-    background: rgba(0, 0, 0, 0.65) !important;
+body.meeting-mode-active .grid-panel-subtitle {
+    font-size: 0.75rem !important;
+    color: #94a3b8 !important;
 }
 
-body.meeting-mode-active .team-sof-box .sof-val {
-    font-size: 1.35rem !important;
+/* 2-Column Responsive Grid that NEVER overflows */
+body.meeting-mode-active .builder-canvas-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.85rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Individual Team Card */
+body.meeting-mode-active .builder-car-card {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 0.85rem 1rem !important;
+    gap: 0.65rem !important;
+    border-width: 1.5px !important;
+    background: rgba(10, 15, 26, 0.94) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55) !important;
+    overflow: hidden !important;
+}
+
+/* Card Top Bar */
+body.meeting-mode-active .team-card-top-bar {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 6px !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    flex-wrap: wrap !important;
+}
+
+body.meeting-mode-active .team-card-identity {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+}
+
+body.meeting-mode-active .racing-number-plate {
+    min-width: 44px !important;
+    padding: 3px 6px !important;
+    border-width: 2px !important;
+    flex-shrink: 0 !important;
+}
+
+body.meeting-mode-active .number-plate-input {
+    font-size: 1.15rem !important;
     font-weight: 900 !important;
-    color: #38bdf8 !important;
+    width: 34px !important;
+}
+
+body.meeting-mode-active .team-name-wrap {
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+    overflow: hidden !important;
+}
+
+body.meeting-mode-active .team-title-text {
+    font-size: 1.15rem !important;
+    font-weight: 900 !important;
+    letter-spacing: 0.4px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    margin: 0 !important;
 }
 
 body.meeting-mode-active .team-status-pill {
-    font-size: 0.88rem !important;
-    padding: 5px 12px !important;
-    font-weight: 900 !important;
+    font-size: 0.76rem !important;
+    padding: 4px 8px !important;
+    font-weight: 800 !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
 }
 
+body.meeting-mode-active .team-sof-box {
+    padding: 4px 8px !important;
+    min-width: 72px !important;
+    border-width: 1.5px !important;
+    background: rgba(0, 0, 0, 0.65) !important;
+    flex-shrink: 0 !important;
+    text-align: right !important;
+}
+
+body.meeting-mode-active .team-sof-box .sof-val {
+    font-size: 1.15rem !important;
+    font-weight: 900 !important;
+    color: #38bdf8 !important;
+    line-height: 1.1 !important;
+}
+
+/* Card Controls Bar */
 body.meeting-mode-active .team-card-sub-bar {
-    padding: 8px 12px !important;
+    padding: 6px 8px !important;
     background: rgba(0, 0, 0, 0.5) !important;
     border-color: rgba(255, 255, 255, 0.1) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 6px !important;
+    flex-wrap: wrap !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    min-width: 0 !important;
+}
+
+body.meeting-mode-active .team-car-box {
+    display: flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+    flex-wrap: wrap !important;
 }
 
 body.meeting-mode-active .studio-class-select,
 body.meeting-mode-active .studio-model-select {
-    font-size: 0.85rem !important;
-    padding: 0.35rem 0.65rem !important;
+    font-size: 0.78rem !important;
+    padding: 0.28rem 0.48rem !important;
     font-weight: 800 !important;
+    max-width: 130px !important;
 }
 
 body.meeting-mode-active .studio-captain-select {
-    font-size: 0.85rem !important;
-    padding: 0.35rem 0.65rem !important;
+    font-size: 0.78rem !important;
+    padding: 0.28rem 0.48rem !important;
     font-weight: 800 !important;
+    max-width: 130px !important;
 }
 
+body.meeting-mode-active .team-quick-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    flex-shrink: 0 !important;
+}
+
+body.meeting-mode-active .btn-quick-tool {
+    font-size: 0.68rem !important;
+    padding: 0.28rem 0.5rem !important;
+}
+
+/* Roster Rows & Drop Target */
 body.meeting-mode-active .roster-title {
-    font-size: 0.82rem !important;
-    letter-spacing: 0.8px !important;
+    font-size: 0.78rem !important;
+    letter-spacing: 0.6px !important;
 }
 
 body.meeting-mode-active .roster-count {
-    font-size: 0.82rem !important;
-    padding: 2px 9px !important;
+    font-size: 0.76rem !important;
+    padding: 2px 7px !important;
 }
 
 body.meeting-mode-active .roster-driver-row {
-    padding: 0.65rem 0.85rem !important;
-    border-radius: 9px !important;
+    padding: 0.48rem 0.65rem !important;
+    border-radius: 7px !important;
     background: rgba(255, 255, 255, 0.05) !important;
     border-color: rgba(255, 255, 255, 0.12) !important;
+    gap: 6px !important;
+    min-width: 0 !important;
+}
+
+body.meeting-mode-active .driver-row-identity {
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+    overflow: hidden !important;
 }
 
 body.meeting-mode-active .driver-row-name {
-    font-size: 1.05rem !important;
+    font-size: 0.95rem !important;
     font-weight: 800 !important;
     color: #ffffff !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+body.meeting-mode-active .driver-row-details {
+    flex-shrink: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 5px !important;
 }
 
 body.meeting-mode-active .driver-row-ir {
-    font-size: 0.88rem !important;
-    padding: 2px 8px !important;
+    font-size: 0.82rem !important;
+    padding: 2px 6px !important;
     font-weight: 900 !important;
     color: #38bdf8 !important;
 }
 
 body.meeting-mode-active .driver-row-car {
-    font-size: 0.78rem !important;
-    padding: 2px 8px !important;
+    font-size: 0.74rem !important;
+    padding: 2px 6px !important;
 }
 
 body.meeting-mode-active .captain-badge {
-    font-size: 0.72rem !important;
-    padding: 2px 7px !important;
+    font-size: 0.68rem !important;
+    padding: 2px 6px !important;
+}
+
+body.meeting-mode-active .driver-roster-dropzone {
+    min-height: 58px !important;
+    padding: 0.55rem !important;
 }
 
 body.meeting-mode-active .drop-prompt-text {
-    font-size: 0.9rem !important;
+    font-size: 0.82rem !important;
     font-weight: 800 !important;
 }
 
 body.meeting-mode-active .drop-sub-text {
-    font-size: 0.78rem !important;
+    font-size: 0.72rem !important;
 }
 
-body.meeting-mode-active .driver-pool-card .driver-name {
-    font-size: 1.02rem !important;
-    font-weight: 800 !important;
-}
-
-body.meeting-mode-active .driver-irating-badge {
-    font-size: 0.9rem !important;
-    padding: 3px 9px !important;
-}
-
-body.meeting-mode-active .driver-sr-pill {
-    font-size: 0.82rem !important;
-    padding: 3px 8px !important;
-}
-
+/* Bottom Summary Bar */
 body.meeting-mode-active .tb-sticky-summary-bar {
-    padding: 0.9rem 2.5rem !important;
-    background: rgba(8, 12, 22, 0.97) !important;
+    padding: 0.55rem 1.5rem !important;
+    background: rgba(8, 12, 22, 0.98) !important;
+    gap: 0.75rem !important;
+}
+
+body.meeting-mode-active .summary-left {
+    gap: 10px !important;
+}
+
+body.meeting-mode-active .summary-right {
+    gap: 10px !important;
+}
+
+body.meeting-mode-active .summary-title {
+    font-size: 0.75rem !important;
 }
 
 body.meeting-mode-active .summary-stat-group {
-    font-size: 0.88rem !important;
-    gap: 12px !important;
+    font-size: 0.78rem !important;
+    gap: 6px !important;
 }
 
 body.meeting-mode-active .summary-stat-group strong {
-    font-size: 1rem !important;
+    font-size: 0.88rem !important;
 }
 
 body.meeting-mode-active .summary-readiness-indicator {
-    font-size: 0.88rem !important;
+    font-size: 0.78rem !important;
+}
+
+body.meeting-mode-active .btn-summary-confirm {
+    padding: 0.45rem 1rem !important;
+    font-size: 0.78rem !important;
+}
+
+/* Auto-Fit Breakpoints */
+@media (max-width: 1080px) {
+    body.meeting-mode-active .tb-driver-pool-panel {
+        flex: 0 0 220px !important;
+        width: 220px !important;
+        min-width: 190px !important;
+        padding: 0.65rem !important;
+    }
+    body.meeting-mode-active .tb-teams-grid-panel {
+        max-width: calc(100% - 235px) !important;
+    }
+}
+
+@media (max-width: 900px) {
+    body.meeting-mode-active .team-builder-workspace {
+        flex-direction: column !important;
+    }
+    body.meeting-mode-active .tb-driver-pool-panel {
+        flex: 1 1 100% !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        max-height: 320px !important;
+        position: static !important;
+    }
+    body.meeting-mode-active .tb-teams-grid-panel {
+        max-width: 100% !important;
+    }
+    body.meeting-mode-active .builder-canvas-grid {
+        grid-template-columns: 1fr !important;
+    }
 }
 
 /* ===================================================
