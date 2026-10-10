@@ -505,10 +505,10 @@
         }
         .avail-block-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(65px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
             gap: 6px;
             margin-top: 0.75rem;
-            max-height: 190px;
+            max-height: 200px;
             overflow-y: auto;
             padding-right: 4px;
         }
@@ -523,6 +523,22 @@
             cursor: pointer;
             user-select: none;
             transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 52px;
+        }
+        .avail-block-hour {
+            font-size: 0.6rem;
+            opacity: 0.7;
+            margin-bottom: 2px;
+        }
+        .avail-block-label {
+            font-size: 0.62rem;
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -0.2px;
         }
         .avail-block.pref {
             background: rgba(16, 185, 129, 0.2);
@@ -2787,12 +2803,12 @@
                 // Hourly Availability Blocks HTML
                 let hourBlocksHtml = '';
                 for (let h = 0; h < eventHours; h++) {
-                    const blockState = draft.hourly[h] || 'avail'; // 'pref' | 'avail' | 'unavail'
-                    const stateLabel = blockState === 'pref' ? '★ PREF' : blockState === 'avail' ? 'OPEN' : 'BLOCKED';
+                    const blockState = draft.hourly[h] || (currentStatus === 'interested' ? 'avail' : 'pref'); // 'pref' (Green: Available) | 'avail' (Orange: Maybe) | 'unavail' (Red: Not Available)
+                    const stateLabel = blockState === 'pref' ? 'AVAILABLE' : blockState === 'avail' ? 'MAYBE' : 'NOT AVAILABLE';
                     hourBlocksHtml += `
-                        <div class="avail-block ${blockState}" onclick="toggleHourBlockState('${event.id}', ${h}, this)" title="Click to toggle availability: Preferred > Available > Blocked">
-                            <div style="font-size: 0.6rem; opacity: 0.7;">H${h+1}</div>
-                            <div>${stateLabel}</div>
+                        <div class="avail-block ${blockState}" onclick="toggleHourBlockState('${event.id}', ${h}, this)" title="Click to toggle availability: Available > Maybe > Not Available">
+                            <div class="avail-block-hour">H${h+1}</div>
+                            <div class="avail-block-label">${stateLabel}</div>
                         </div>
                     `;
                 }
@@ -2875,7 +2891,7 @@
 
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
                             <label style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Availability Matrix (${eventHours} Hours)</label>
-                            <span style="font-size: 0.65rem; color: var(--primary);">🟢 Preferred &bull; 🟡 Open &bull; 🔴 Blocked</span>
+                            <span style="font-size: 0.65rem; color: var(--primary);">🟢 Available &bull; 🟠 Maybe &bull; 🔴 Not Available</span>
                         </div>
                         <div class="avail-block-grid">
                             ${hourBlocksHtml}
@@ -2913,7 +2929,7 @@
         window.toggleHourBlockState = function(eventId, hourIdx, element) {
             const draft = window._driverAvailabilityDrafts[eventId];
             if (!draft) return;
-            const current = draft.hourly[hourIdx] || 'avail';
+            const current = draft.hourly[hourIdx] || 'pref';
             let next = 'pref';
             if (current === 'pref') next = 'avail';
             else if (current === 'avail') next = 'unavail';
@@ -2921,7 +2937,10 @@
 
             draft.hourly[hourIdx] = next;
             element.className = `avail-block ${next}`;
-            element.querySelector('div:last-child').textContent = next === 'pref' ? '★ PREF' : next === 'avail' ? 'OPEN' : 'BLOCKED';
+            const labelEl = element.querySelector('.avail-block-label') || element.querySelector('div:last-child');
+            if (labelEl) {
+                labelEl.textContent = next === 'pref' ? 'AVAILABLE' : next === 'avail' ? 'MAYBE' : 'NOT AVAILABLE';
+            }
         };
 
         window.updateDraftField = function(eventId, field, value) {
