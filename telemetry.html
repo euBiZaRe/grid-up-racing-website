@@ -32,7 +32,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" media="print" onload="this.media='all'"><noscript><link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet"></noscript>
-    <link rel="stylesheet" href="style.css?v=24">
+    <link rel="stylesheet" href="style.css?v=25">
     <link rel="icon" type="image/png" href="assets/G_2.png">
     
     <!-- Lucide Icons Library -->
@@ -196,16 +196,46 @@
             padding-bottom: 0.5rem;
         }
 
+        .telemetry-driver-card,
         .driver-card {
-            background: rgba(20, 20, 20, 0.45);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 24px;
-            padding: 1.5rem;
-            backdrop-filter: blur(20px);
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            background: rgba(20, 20, 20, 0.45) !important;
+            border: 1px solid rgba(255, 255, 255, 0.05) !important;
+            border-radius: 24px !important;
+            padding: 1.25rem !important;
+            backdrop-filter: blur(20px) !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 1rem !important;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4) !important;
+            transform: none !important;
+            transition: none !important;
+            position: relative;
+        }
+
+        .telemetry-driver-card::before,
+        .telemetry-driver-card:hover::before,
+        .driver-card::before,
+        .driver-card:hover::before {
+            display: none !important;
+            content: none !important;
+            opacity: 0 !important;
+            width: 0 !important;
+        }
+
+        .telemetry-driver-card:hover,
+        .driver-card:hover {
+            transform: none !important;
+            border-color: rgba(255, 255, 255, 0.05) !important;
+            background: rgba(20, 20, 20, 0.45) !important;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4) !important;
+        }
+
+        .telemetry-driver-card h3,
+        .telemetry-driver-card:hover h3,
+        .driver-card h3,
+        .driver-card:hover h3 {
+            color: #ffffff !important;
+            transition: none !important;
         }
 
         .card-header {
@@ -797,6 +827,7 @@
         }
 
         /* Compact Driver Card Styles */
+        .telemetry-driver-card,
         .driver-card {
             padding: 1.25rem !important;
             gap: 1rem !important;
@@ -1810,7 +1841,7 @@
                     }
 
                     driversHtml += `
-                        <div class="driver-card" id="card-${mid}">
+                        <div class="telemetry-driver-card" id="card-${mid}">
                             <!-- Card Header -->
                             <div class="card-header">
                                 <div class="driver-info-block">
