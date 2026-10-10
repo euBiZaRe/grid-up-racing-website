@@ -2769,7 +2769,7 @@ body.meeting-mode-active .btn-summary-confirm {
             </div>
 
 
-            <div ection-admins" class="tab-content" style="display: none;">
+            <div id="section-admins" class="tab-content" style="display: none;">
                 <div class="grid" style="grid-template-columns: 1fr 2fr; gap: 2rem; align-items: start;">
                     <!-- Add Admin Form -->
                     <div class="glass" style="padding: 2.5rem; border: 1px solid var(--glass-border);">
@@ -6574,7 +6574,7 @@ body.meeting-mode-active .btn-summary-confirm {
         }
 
         async function processLapData() {
-            const eventId = document.getElementById('event-selector').value;
+            const eventId = document.getElementById('lineup-event-selector')?.value;
             const pasteData = document.getElementById('lap-paste-data').value.trim();
             const resultsDiv = document.getElementById('sync-results');
             
@@ -6706,7 +6706,7 @@ body.meeting-mode-active .btn-summary-confirm {
         }
 
         async function fetchIRacingData() {
-            const eventId = document.getElementById('event-selector').value;
+            const eventId = document.getElementById('lineup-event-selector')?.value;
             const seriesName = document.getElementById('iracing-series-name').value.trim();
             const resultsDiv = document.getElementById('sync-results');
 
