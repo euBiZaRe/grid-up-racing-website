@@ -294,7 +294,13 @@
 
         @media (min-width: 480px) {
             .metrics-grid {
-                grid-template-columns: repeat(4, 1fr);
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (min-width: 768px) {
+            .metrics-grid {
+                grid-template-columns: repeat(5, 1fr);
             }
         }
 
@@ -306,7 +312,93 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            min-height: 82px;
         }
+
+        .metric-delta {
+            position: relative;
+            border-color: rgba(59, 130, 246, 0.15);
+        }
+
+        .metric-delta .metric-val {
+            font-size: 1.25rem;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .metric-delta-sub {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-top: 0.2rem;
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .delta-negative {
+            color: #10b981 !important; /* Green - faster than best lap */
+        }
+
+        .delta-positive {
+            color: #ef4444 !important; /* Red - slower than best lap */
+        }
+
+        .delta-neutral {
+            color: #9ca3af !important; /* Neutral gray */
+        }
+
+        .delta-pb {
+            color: #34d399 !important; /* Personal best lap */
+        }
+
+        .standings-row-clickable {
+            cursor: pointer;
+            transition: background 0.15s ease, border-left 0.15s ease;
+        }
+
+        .standings-row-clickable:hover {
+            background: rgba(255, 255, 255, 0.06) !important;
+        }
+
+        .standings-row-selected {
+            background: rgba(59, 130, 246, 0.22) !important;
+            border-left: 3px solid #3b82f6 !important;
+        }
+
+        .spectating-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.62rem;
+            font-weight: 700;
+            color: #38bdf8;
+            background: rgba(56, 189, 248, 0.14);
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            border-radius: 4px;
+            padding: 2px 6px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .reset-spectate-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #cbd5e1;
+            font-size: 0.6rem;
+            font-weight: 600;
+            border-radius: 4px;
+            padding: 2px 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .reset-spectate-btn:hover {
+            background: rgba(59, 130, 246, 0.25);
+            border-color: #3b82f6;
+            color: #ffffff;
+        }
+
 
         .metric-title {
             font-size: 0.65rem;
@@ -1031,8 +1123,34 @@
         let showPosOnMap = localStorage.getItem('show_pos_on_map') === 'true';
         let traceHistory = {};
 
+        // Interactive Spectate / Selected Driver State
+        let selectedSpectateCarNum = null;
+        let selectedSpectateDriverName = null;
 
-        // Load track map data
+        window.selectSpectateDriver = function(carNum, driverName) {
+            if (!carNum) return;
+            if (selectedSpectateCarNum === String(carNum)) {
+                // Clicking same driver resets to player / auto-camera
+                selectedSpectateCarNum = null;
+                selectedSpectateDriverName = null;
+            } else {
+                selectedSpectateCarNum = String(carNum);
+                selectedSpectateDriverName = driverName || null;
+            }
+            if (typeof window.forceRenderDashboard === 'function') {
+                window.forceRenderDashboard();
+            }
+        };
+
+        window.resetSpectateToPlayer = function(e) {
+            if (e && e.stopPropagation) e.stopPropagation();
+            selectedSpectateCarNum = null;
+            selectedSpectateDriverName = null;
+            if (typeof window.forceRenderDashboard === 'function') {
+                window.forceRenderDashboard();
+            }
+        };
+
         fetch('js/track-maps.json')
             .then(r => r.json())
             .then(data => {
@@ -1624,24 +1742,107 @@
                     const tel = streamData.telemetry || {};
                     const session = streamData.session || {};
                     const presence = currentDrivers[mid] || {};
-                    const driverName = presence.name || tel.drivers?.[tel.playerIdx]?.name || "Active Driver";
+
+                    // Target Driver Resolution (Manual selection -> Bridge Spectating -> Active Camera -> Player)
+                    let targetDriver = null;
+                    let isDriverSpectating = false;
+
+                    if (selectedSpectateCarNum && tel.drivers) {
+                        targetDriver = Object.values(tel.drivers).find(d => d && String(d.carNum) === String(selectedSpectateCarNum));
+                        isDriverSpectating = true;
+                    } else if (tel.isSpectating && tel.drivers) {
+                        if (tel.spectatingCarNum) {
+                            targetDriver = Object.values(tel.drivers).find(d => d && String(d.carNum) === String(tel.spectatingCarNum));
+                        }
+                        if (!targetDriver && tel.spectatingDriverName) {
+                            targetDriver = Object.values(tel.drivers).find(d => d && d.name === tel.spectatingDriverName);
+                        }
+                        if (!targetDriver && tel.spectatingCarIdx !== undefined && tel.drivers[tel.spectatingCarIdx]) {
+                            targetDriver = tel.drivers[tel.spectatingCarIdx];
+                        }
+                        isDriverSpectating = true;
+                    } else if (tel.camCarIdx !== undefined && tel.drivers && tel.drivers[tel.camCarIdx] && tel.camCarIdx !== tel.playerIdx) {
+                        targetDriver = tel.drivers[tel.camCarIdx];
+                        isDriverSpectating = true;
+                    }
+
+                    if (!targetDriver && tel.drivers) {
+                        targetDriver = Object.values(tel.drivers).find(d => d && d.isPlayer);
+                        if (!targetDriver && tel.playerIdx !== undefined && tel.drivers[tel.playerIdx]) {
+                            targetDriver = tel.drivers[tel.playerIdx];
+                        }
+                    }
+
+                    const driverName = targetDriver?.name || (isDriverSpectating && tel.spectatingDriverName) || presence.name || tel.drivers?.[tel.playerIdx]?.name || "Active Driver";
+                    const carNum = targetDriver?.carNum || (isDriverSpectating && tel.spectatingCarNum) || presence.carNum || tel.carNum || "-";
 
                     let speedVal = 0;
                     let speedUnit = "km/h";
+                    let rawSpeed = 0;
+                    if (isDriverSpectating && targetDriver && typeof targetDriver.speed === 'number' && targetDriver.speed > 0) {
+                        rawSpeed = targetDriver.speed;
+                    } else if (typeof tel.speed === 'number') {
+                        rawSpeed = tel.speed;
+                    }
+
                     if (useImperial) {
-                        speedVal = Math.round((tel.speed || 0) * 2.23694);
+                        speedVal = Math.round(rawSpeed * 2.23694);
                         speedUnit = "mph";
                     } else {
-                        speedVal = Math.round((tel.speed || 0) * 3.6);
+                        speedVal = Math.round(rawSpeed * 3.6);
                         speedUnit = "km/h";
                     }
 
-                    const gearText = tel.gear === 0 ? "N" : tel.gear === -1 ? "R" : tel.gear;
-                    const progressPct = Math.min(Math.max((tel.progress || 0) * 100, 0), 100);
+                    let gearRaw = (isDriverSpectating && targetDriver && targetDriver.gear !== undefined) ? targetDriver.gear : tel.gear;
+                    let gearText = gearRaw === 0 ? "N" : gearRaw === -1 ? "R" : (gearRaw !== undefined && gearRaw !== null ? gearRaw : "N");
+                    let displayRpm = (isDriverSpectating && targetDriver && targetDriver.rpm !== undefined) ? Math.round(targetDriver.rpm) : (tel.rpm || 0);
+
+                    let displayFuel = (isDriverSpectating && targetDriver && targetDriver.fuel !== undefined) ? targetDriver.fuel : (tel.fuel || 0);
+                    let fuelFormatted = useImperial ? ((displayFuel * 0.264172).toFixed(1)) : displayFuel.toFixed(1);
+                    let fuelUnit = useImperial ? "gal" : "L";
+
+                    let displayPos = "P-";
+                    if (targetDriver) {
+                        displayPos = targetDriver.classPos ? `P${targetDriver.classPos}` : (targetDriver.pos ? `P${targetDriver.pos}` : "P-");
+                    } else if (tel.position) {
+                        displayPos = `P${tel.position}`;
+                    }
+
+                    // Delta Timing to Selected Driver's Fastest Lap
+                    const targetBestLap = (targetDriver && targetDriver.bestLap > 15) ? targetDriver.bestLap : (tel.bestLap > 15 ? tel.bestLap : 0);
+                    const targetLastLap = (targetDriver && targetDriver.lastLap > 15) ? targetDriver.lastLap : (tel.lastLap > 15 ? tel.lastLap : 0);
+
+                    let deltaVal = null;
+                    let deltaDisplay = "--";
+                    let deltaColorClass = "delta-neutral";
+                    let deltaSubText = "No Best Lap";
+
+                    if (typeof tel.delta === 'number' && Math.abs(tel.delta) < 300 && (!selectedSpectateCarNum || (targetDriver && String(selectedSpectateCarNum) === String(targetDriver.carNum)))) {
+                        deltaVal = tel.delta;
+                    } else if (targetBestLap > 15 && targetLastLap > 15) {
+                        deltaVal = targetLastLap - targetBestLap;
+                    }
+
+                    if (targetBestLap > 15) {
+                        deltaSubText = `Best: ${formatLapTime(targetBestLap)}`;
+                    }
+
+                    if (deltaVal !== null) {
+                        if (Math.abs(deltaVal) < 0.0005) {
+                            deltaDisplay = "0.000s";
+                            deltaColorClass = "delta-pb";
+                        } else if (deltaVal < 0) {
+                            deltaDisplay = `${deltaVal.toFixed(3)}s`;
+                            deltaColorClass = "delta-negative";
+                        } else {
+                            deltaDisplay = `+${deltaVal.toFixed(3)}s`;
+                            deltaColorClass = "delta-positive";
+                        }
+                    }
 
                     // Pedals
-                    const throttleVal = tel.throttle || 0;
-                    const brakeVal = tel.brake || 0;
+                    const throttleVal = (!isDriverSpectating || (targetDriver && targetDriver.isPlayer)) ? (tel.throttle || 0) : (targetDriver?.throttle || 0);
+                    const brakeVal = (!isDriverSpectating || (targetDriver && targetDriver.isPlayer)) ? (tel.brake || 0) : (targetDriver?.brake || 0);
                     const absActive = tel.abs === true;
 
                     // Accumulate trace history with exponential smoothing
@@ -1673,13 +1874,21 @@
                             <!-- Card Header -->
                             <div class="card-header">
                                 <div class="driver-info-block">
-                                    <div class="driver-avatar">
-                                        <i data-lucide="user" style="width: 20px; height: 20px;"></i>
+                                    <div class="driver-avatar" style="${isDriverSpectating ? 'background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.4);' : ''}">
+                                        <i data-lucide="${isDriverSpectating ? 'eye' : 'user'}" style="width: 20px; height: 20px; color: ${isDriverSpectating ? '#38bdf8' : '#e5e7eb'};"></i>
                                     </div>
                                     <div>
-                                        <h3 class="driver-name">${driverName}</h3>
+                                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                            <h3 class="driver-name">${driverName}</h3>
+                                            ${isDriverSpectating ? `
+                                                <span class="spectating-badge"><i data-lucide="eye" style="width: 10px; height: 10px;"></i> Spectating</span>
+                                            ` : ''}
+                                            ${selectedSpectateCarNum ? `
+                                                <button class="reset-spectate-btn" onclick="resetSpectateToPlayer(event)" title="Reset to your car / auto-camera">Reset to Me</button>
+                                            ` : ''}
+                                        </div>
                                         <div class="driver-metadata">
-                                            <span class="car-num-tag">Car #${presence.carNum || tel.carNum || "-"}</span>
+                                            <span class="car-num-tag">Car #${carNum}</span>
                                             <span style="font-size: 0.65rem; color: #10b981; font-weight: bold; display: flex; align-items: center; gap: 4px;">
                                                 <span class="live-dot" style="margin-right: 0;"></span> Live
                                             </span>
@@ -1697,7 +1906,7 @@
 
                             <div class="driver-card-body">
                                 <div class="driver-main-specs">
-                                    <!-- Metrics Core -->
+                                    <!-- Metrics Core (5 cards) -->
                                     <div class="metrics-grid">
                                         <div class="metric-card">
                                             <span class="metric-title"><i data-lucide="gauge" style="width: 12px; height: 12px;"></i> Speed</span>
@@ -1705,15 +1914,20 @@
                                         </div>
                                         <div class="metric-card">
                                             <span class="metric-title"><i data-lucide="zap" style="width: 12px; height: 12px;"></i> Gear</span>
-                                            <div class="metric-val" style="color: #34d399;">${gearText} <span style="font-size: 0.65rem; font-weight: 500;">(${tel.rpm || 0} RPM)</span></div>
+                                            <div class="metric-val" style="color: #34d399;">${gearText} <span style="font-size: 0.65rem; font-weight: 500;">(${displayRpm} RPM)</span></div>
                                         </div>
                                         <div class="metric-card">
                                             <span class="metric-title"><i data-lucide="droplet" style="width: 12px; height: 12px;"></i> Fuel</span>
-                                            <div class="metric-val">${useImperial ? ((tel.fuel || 0) * 0.264172).toFixed(1) : (tel.fuel || 0).toFixed(1)}<span>${useImperial ? "gal" : "L"}</span></div>
+                                            <div class="metric-val">${fuelFormatted}<span>${fuelUnit}</span></div>
                                         </div>
                                         <div class="metric-card">
                                             <span class="metric-title"><i data-lucide="check-circle-2" style="width: 12px; height: 12px;"></i> Position</span>
-                                            <div class="metric-val">${tel.position || "P-"}<span>Class</span></div>
+                                            <div class="metric-val">${displayPos}<span>Class</span></div>
+                                        </div>
+                                        <div class="metric-card metric-delta">
+                                            <span class="metric-title"><i data-lucide="timer" style="width: 12px; height: 12px;"></i> Delta (Fastest)</span>
+                                            <div class="metric-val ${deltaColorClass}">${deltaDisplay}</div>
+                                            <span class="metric-delta-sub">${deltaSubText}</span>
                                         </div>
                                     </div>
 
@@ -1781,17 +1995,21 @@
 
                 // Build Standings Rows
                 let standingsRows = '';
+                const activeSpectateCarNum = selectedSpectateCarNum || (primaryTel.isSpectating && (primaryTel.spectatingCarNum || primaryTel.drivers?.[primaryTel.camCarIdx]?.carNum));
+
                 if (primaryTel.drivers) {
                     const sortedDrivers = Object.values(primaryTel.drivers)
                         .filter(d => d && d.pos > 0)
                         .sort((a, b) => a.pos - b.pos);
                     
                     sortedDrivers.forEach(d => {
-                        const isPlayerRow = d.isPlayer ? 'class="standings-row-player"' : '';
+                        const isThisSelected = activeSpectateCarNum && String(activeSpectateCarNum) === String(d.carNum);
+                        const rowClass = `standings-row-clickable ${d.isPlayer ? 'standings-row-player' : ''} ${isThisSelected ? 'standings-row-selected' : ''}`.trim();
                         const classIndicator = d.classColor ? `<span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#${d.classColor}; margin-right:4px;"></span>` : '';
+                        const safeName = (d.name || '').replace(/'/g, "\\'");
                         
                         standingsRows += `
-                            <tr ${isPlayerRow}>
+                            <tr class="${rowClass}" onclick="selectSpectateDriver('${d.carNum}', '${safeName}')" title="Click to view telemetry for #${d.carNum} ${safeName}">
                                 <td style="text-align: center; font-weight: bold;">${d.classPos || d.pos}</td>
                                 <td><span class="car-num-tag">${d.carNum}</span></td>
                                 <td><div style="display:flex; align-items:center; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${classIndicator}${d.name}</div></td>
@@ -1921,8 +2139,10 @@
                     // Render rows
                     mappedDrivers.forEach(m => {
                         const d = m.driver;
-                        const isPlayerRow = m.isPlayer ? 'class="standings-row-player"' : '';
+                        const isThisSelected = activeSpectateCarNum && String(activeSpectateCarNum) === String(d.carNum);
+                        const rowClass = `standings-row-clickable ${m.isPlayer ? 'standings-row-player' : ''} ${isThisSelected ? 'standings-row-selected' : ''}`.trim();
                         const classIndicator = d.classColor ? `<span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#${d.classColor}; margin-right:4px;"></span>` : '';
+                        const safeName = (d.name || '').replace(/'/g, "\\'");
 
                         // In pit indicator
                         const inPit = d.surface === 2 || d.surface === 1 || d.inPit === true || d.in_pit === true;
@@ -1962,7 +2182,7 @@
                         const displayPos = (d.classPos > 0 ? d.classPos : (d.pos > 0 ? d.pos : '-'));
 
                         relativeRows += `
-                            <tr ${isPlayerRow}>
+                            <tr class="${rowClass}" onclick="selectSpectateDriver('${d.carNum || ''}', '${safeName}')" title="Click to view telemetry for #${d.carNum || ''} ${safeName}">
                                 <td style="text-align: center; font-weight: bold;">${displayPos}</td>
                                 <td><span class="car-num-tag">${d.carNum || '-'}</span></td>
                                 <td><div style="display:flex; align-items:center; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:${driverNameColor}; font-weight:${m.isPlayer ? '800' : '500'};">${classIndicator}${d.name}${pitBadge}</div></td>
@@ -2136,6 +2356,7 @@
 
                 if (driversContainer) {
                     driversContainer.innerHTML = driversHtml;
+                    if (window.lucide) lucide.createIcons();
                 }
                 if (standingsBody) {
                     standingsBody.innerHTML = standingsRows;
