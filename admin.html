@@ -5594,8 +5594,8 @@ body.meeting-mode-active .btn-summary-confirm {
             const selector = document.getElementById('lineup-event-selector');
             const activeEventId = selector ? selector.value : null;
             const allEvts = (typeof ALL_EVENTS !== 'undefined' && ALL_EVENTS.length) ? ALL_EVENTS : (typeof UPCOMING_EVENTS !== 'undefined' ? UPCOMING_EVENTS : []);
-            const currentEvent = allEvts.find(e => e.id === activeEventId) || window._adminBuilderCurrentEvent;
-            const isSolo = isSoloEvent(currentEvent || activeEventId);
+            const resolvedEvent = currentEvent || allEvts.find(e => e.id === activeEventId) || window._adminBuilderCurrentEvent;
+            const isSolo = isSoloEvent(resolvedEvent || activeEventId);
             const reqDrivers = isSolo ? 1 : 2;
 
             let readyTeamsCount = 0;
