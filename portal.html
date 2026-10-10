@@ -2631,6 +2631,12 @@
         // ENHANCED EVENT SIGNUP & DRIVER AVAILABILITY
         // ==========================================
         const EVENT_CAR_CATALOG = {
+            'TBC': [
+                'TBC'
+            ],
+            'SCCA Runoffs': [
+                'TBC'
+            ],
             'Supercars': [
                 'Supercars Chevrolet Camaro Gen 3',
                 'Supercars Ford Mustang Gen 3'
@@ -2690,9 +2696,13 @@
 
         function getEventEligibleClasses(event) {
             if (!event) return ['GT3'];
+            const id = (event.id || '').toLowerCase();
             const name = (event.name || '').toLowerCase();
             const series = (event.series || '').toLowerCase();
 
+            if (name.includes('scca') || id.includes('scca') || name.includes('runoffs') || id.includes('runoffs') || series.includes('scca')) {
+                return ['TBC'];
+            }
             if (name.includes('bathurst 1000') || name.includes('supercars') || series.includes('supercars')) {
                 return ['Supercars'];
             }

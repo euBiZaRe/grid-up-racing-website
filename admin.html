@@ -4253,7 +4253,7 @@ body.meeting-mode-active .btn-summary-confirm {
                 { id: '992-endurance-cup', name: '992 Endurance Cup', track: 'Silverstone', date: 'Oct 18', startDate: '2026-10-18T12:00:00Z', endDate: '2026-10-19T04:00:00Z', slots: IMSA_SLOTS, classes: ['992 Cup'] },
                 { id: 'ff1600-festival', name: 'iRacing FF1600 Festival', track: 'Brands Hatch', date: 'Nov 8-10', startDate: '2026-11-08T12:00:00Z', endDate: '2026-11-11T04:00:00Z', slots: IMSA_SLOTS, classes: ['FF1600'] },
                 { id: 'homestead-championship', name: 'Homestead Championship', track: 'Homestead', date: 'Oct 10-12', startDate: '2026-10-10T18:00:00Z', endDate: '2026-10-13T04:00:00Z', slots: IMSA_SLOTS, classes: ['NASCAR'] },
-                { id: 'scca-runoffs', name: 'SCCA Runoffs', track: 'Road America', date: 'Oct 2-5', startDate: '2026-10-02T12:00:00Z', endDate: '2026-10-06T04:00:00Z', slots: IMSA_SLOTS, classes: ['SRF3', 'Spec Miata'] },
+                { id: 'scca-runoffs', name: 'SCCA Runoffs', track: 'Road America', date: 'Oct 2-5', startDate: '2026-10-02T12:00:00Z', endDate: '2026-10-06T04:00:00Z', slots: IMSA_SLOTS, classes: ['TBC'] },
                 { id: 'sfl-mountain-showdown', name: 'SFL Mountain Showdown', track: 'Mount Panorama', date: 'Oct 20-22', startDate: '2026-10-20T12:00:00Z', endDate: '2026-10-23T04:00:00Z', slots: IMSA_SLOTS, classes: ['SFL'] },
                 { id: 'winter-derby', name: 'Winter Derby', track: 'Five Flags', date: 'Dec 5-7', startDate: '2026-12-05T20:00:00Z', endDate: '2026-12-08T04:00:00Z', slots: IMSA_SLOTS, classes: ['Super Late Model'] },
                 { id: 'chili-bowl', name: 'Chili Bowl', track: 'Knoxville', date: 'Jan 13-18', startDate: '2027-01-13T18:00:00Z', endDate: '2027-01-19T04:00:00Z', slots: IMSA_SLOTS, classes: ['Midget'] },
@@ -4757,10 +4757,11 @@ body.meeting-mode-active .btn-summary-confirm {
                 'Renault Clio R.S. V',
                 'Ford Mustang FR500S'
             ],
+            'TBC': [
+                'TBC'
+            ],
             'SCCA Runoffs': [
-                'Spec Racer Ford Gen 3',
-                'Formula Vee',
-                'Global Mazda MX-5 Cup'
+                'TBC'
             ],
             'BMW M2 CS': [
                 'BMW M2 CS Racing'
@@ -4808,8 +4809,8 @@ body.meeting-mode-active .btn-summary-confirm {
             if (lowId.includes('production') || lowName.includes('production car')) {
                 return ['Production Car Challenge'];
             }
-            if (lowId.includes('scca') || lowName.includes('scca')) {
-                return ['SCCA Runoffs'];
+            if (lowId.includes('scca') || lowName.includes('scca') || lowId.includes('runoffs') || lowName.includes('runoffs')) {
+                return ['TBC'];
             }
             if (lowId.includes('indy-500') || lowName.includes('indy 500')) {
                 return ['IndyCar'];
@@ -4845,7 +4846,7 @@ body.meeting-mode-active .btn-summary-confirm {
                 if (classStr.includes('sprint car')) return ['Sprint Car'];
                 if (classStr.includes('pro 4') || classStr.includes('truck')) return ['Off-Road Trucks'];
                 if (classStr.includes('production')) return ['Production Car Challenge'];
-                if (classStr.includes('scca') || classStr.includes('multiclass')) return ['SCCA Runoffs'];
+                if (classStr.includes('scca') || classStr.includes('runoffs')) return ['TBC'];
                 if (classStr.includes('1987')) return ['1987 NASCAR'];
                 if (classStr.includes('nascar')) return ['NASCAR Next Gen'];
                 if (classStr.includes('supercar')) return ['Supercars'];
