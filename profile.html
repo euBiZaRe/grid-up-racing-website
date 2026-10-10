@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 
@@ -458,7 +458,50 @@
             <div id="claim-verification-status" class="glass" style="margin-top: 2rem; padding: 2rem; text-align: center; display: none;">
                 <!-- Filled via JS if they have a pending claim -->
             </div>
+
+            <!-- Telemetry Recorder Download for Endurance Team & Owners -->
+            <div id="telemetry-download-section" class="glass" style="margin-top: 2rem; padding: 2.2rem; display: none; border: 1px solid rgba(0, 207, 255, 0.35); background: radial-gradient(circle at top right, rgba(0, 207, 255, 0.08), transparent 70%), rgba(20, 20, 22, 0.6); border-radius: 16px;">
+                <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1.5rem;">
+                    <div style="flex: 1; min-width: 280px;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.6rem;">
+                            <span style="font-size: 0.7rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; background: rgba(0, 207, 255, 0.15); color: var(--primary); padding: 0.3rem 0.6rem; border-radius: 4px; border: 1px solid rgba(0, 207, 255, 0.4);">
+                                EXCLUSIVE ACCESS
+                            </span>
+                            <span id="telemetry-access-badge" style="font-size: 0.7rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #00ff88; background: rgba(0, 255, 136, 0.1); padding: 0.3rem 0.6rem; border-radius: 4px; border: 1px solid rgba(0, 255, 136, 0.25);">
+                                ENDURANCE TEAM / OWNER
+                            </span>
+                        </div>
+                        <h2 style="font-size: 1.5rem; font-weight: 800; color: #fff; margin: 0 0 0.5rem 0; letter-spacing: 1px; display: flex; align-items: center; gap: 10px;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                            GRiD UP Telemetry Recorder
+                        </h2>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0 0 0.75rem 0; line-height: 1.5;">
+                            Broadcast live in-car and spectated iRacing telemetry directly to the team pit wall. Standalone launcher features seamless Over-The-Air auto-updates — always runs the latest software without needing manual reinstalls.
+                        </p>
+                        <div style="display: flex; flex-wrap: wrap; gap: 1.25rem; font-size: 0.75rem; color: rgba(255,255,255,0.7);">
+                            <span>✓ Spectator &amp; Cockpit Auto-Tracking</span>
+                            <span>✓ Delta Timing &amp; Lap Telemetry</span>
+                            <span>✓ Live Team Pitwall Sync</span>
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.6rem;">
+                        <a href="telemetry-app/GridUpTelemetryRecorder.exe" 
+                           download="GridUpTelemetryRecorder.exe" 
+                           class="btn btn-primary" 
+                           style="padding: 0.9rem 1.8rem; font-size: 0.95rem; font-weight: 800; letter-spacing: 1px; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 0 25px rgba(0, 207, 255, 0.35); text-decoration: none;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                            DOWNLOAD RECORDER (.EXE)
+                        </a>
+                        <div style="display: flex; gap: 0.75rem; align-items: center; font-size: 0.72rem; color: var(--text-muted); font-family: monospace;">
+                            <span>Windows 10/11 64-bit</span>
+                            <span>•</span>
+                            <a href="https://raw.githubusercontent.com/euBiZaRe/grid-up-racing-website/master/telemetry-app/GridUpTelemetryRecorder.exe" target="_blank" style="color: var(--primary); text-decoration: underline;">GitHub Mirror</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+    </main>
     <!-- Cinematic Card Modal (Expansion Overlay) -->
     <div id="card-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 10000; padding: 2rem; align-items: center; justify-content: center; backdrop-filter: blur(15px); transition: all 0.3s ease;">
         <div style="position: relative; max-width: 1100px; width: 100%; aspect-ratio: 16/9; transform: scale(0.9); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);" id="modal-container">
@@ -571,6 +614,13 @@
                         claimStatusDiv.innerHTML = `<h3 style="color: #fff;">CLAIM PENDING VERIFICATION</h3><p style="color: var(--text-muted); font-size: 0.8rem; margin-top:0.5rem;">Request for: ${claims.docs[0].id}</p>`;
                     }
                 }
+                // Check Telemetry Recorder Access (Endurance Team / Owner)
+                try {
+                    await checkTelemetryRecorderAccess(user, doc.exists ? doc.data() : null, (!claims.empty) ? claims.docs[0] : null);
+                } catch (recErr) {
+                    console.warn("Profile: Telemetry recorder check error:", recErr);
+                }
+
                 console.log("Profile: Data loaded successfully.");
  
                 // Load Driver Cards
@@ -582,6 +632,126 @@
  
             loading.style.display = 'none';
             content.style.display = 'block';
+        }
+
+        async function checkTelemetryRecorderAccess(user, userData, claimDoc) {
+            const downloadSection = document.getElementById('telemetry-download-section');
+            const badgeEl = document.getElementById('telemetry-access-badge');
+            if (!downloadSection) return;
+
+            let hasAccess = false;
+            let accessRole = 'ENDURANCE TEAM / OWNER';
+
+            const claimData = claimDoc ? claimDoc.data() : null;
+            const verifiedDriverName = (claimDoc && claimData && claimData.status === 'verified') ? claimDoc.id : null;
+
+            // Helper to match target keywords (Endurance Team or Owner)
+            function matchesTarget(val) {
+                if (!val) return false;
+                if (Array.isArray(val)) {
+                    return val.some(v => matchesTarget(v));
+                }
+                if (typeof val === 'string') {
+                    const s = val.toLowerCase().trim();
+                    if (s === 'owner' || s.includes('owner')) return true;
+                    if (s.includes('endurance') || s.includes('endurance team') || s === 'grid up endurance') return true;
+                }
+                return false;
+            }
+
+            // 1. Owner / Admin check
+            const MASTER_ADMIN = 'B0t4f4nqqpZIQKpT8Ed97xka5gM2';
+            if ((typeof IS_ADMIN !== 'undefined' && IS_ADMIN) || (user && user.uid === MASTER_ADMIN) || (userData && (userData.isOwner || userData.isAdmin))) {
+                hasAccess = true;
+                accessRole = 'TEAM OWNER / ADMIN';
+            }
+
+            // 2. Check Firestore "drivers" collection
+            if (!hasAccess && db) {
+                let matchedDriver = null;
+                try {
+                    // Try by linkedUid
+                    const snapByUid = await db.collection("drivers").where("linkedUid", "==", user.uid).get();
+                    if (!snapByUid.empty) {
+                        matchedDriver = snapByUid.docs[0].data();
+                    }
+                } catch (e) {
+                    console.warn("Telemetry access check: driver by linkedUid error", e);
+                }
+
+                if (!matchedDriver && verifiedDriverName) {
+                    try {
+                        // Try by document ID
+                        const docDirect = await db.collection("drivers").doc(verifiedDriverName).get();
+                        if (docDirect.exists) {
+                            matchedDriver = docDirect.data();
+                        } else {
+                            // Try by name field
+                            const snapByName = await db.collection("drivers").where("name", "==", verifiedDriverName).get();
+                            if (!snapByName.empty) {
+                                matchedDriver = snapByName.docs[0].data();
+                            }
+                        }
+                    } catch (e) {
+                        console.warn("Telemetry access check: driver by name error", e);
+                    }
+                }
+
+                if (!matchedDriver) {
+                    const fallbackNames = [
+                        userData && userData.driverName,
+                        user.displayName
+                    ].filter(Boolean);
+
+                    for (const candidate of fallbackNames) {
+                        try {
+                            const snapCand = await db.collection("drivers").where("name", "==", candidate).get();
+                            if (!snapCand.empty) {
+                                matchedDriver = snapCand.docs[0].data();
+                                break;
+                            }
+                        } catch (e) {}
+                    }
+                }
+
+                if (matchedDriver) {
+                    if (matchesTarget(matchedDriver.tags) || matchesTarget(matchedDriver.tag)) {
+                        hasAccess = true;
+                        accessRole = Array.isArray(matchedDriver.tags) ? matchedDriver.tags.join(' / ') : (matchedDriver.tag || 'Endurance Team');
+                    } else if (matchesTarget(matchedDriver.category)) {
+                        hasAccess = true;
+                        accessRole = matchedDriver.category;
+                    } else if (matchesTarget(matchedDriver.role)) {
+                        hasAccess = true;
+                        accessRole = matchedDriver.role;
+                    }
+                }
+            }
+
+            // 3. Check Claims document
+            if (!hasAccess && claimData) {
+                if (matchesTarget(claimData.tags) || matchesTarget(claimData.tag) || matchesTarget(claimData.category) || matchesTarget(claimData.role)) {
+                    hasAccess = true;
+                    accessRole = claimData.role || claimData.category || 'Endurance Team';
+                }
+            }
+
+            // 4. Check User document fields
+            if (!hasAccess && userData) {
+                if (matchesTarget(userData.tags) || matchesTarget(userData.tag) || matchesTarget(userData.category) || matchesTarget(userData.role) || userData.isOwner) {
+                    hasAccess = true;
+                    accessRole = userData.role || userData.category || 'Owner / Endurance Team';
+                }
+            }
+
+            if (hasAccess) {
+                downloadSection.style.display = 'block';
+                if (badgeEl) {
+                    badgeEl.textContent = accessRole.toUpperCase();
+                }
+            } else {
+                downloadSection.style.display = 'none';
+            }
         }
  
         async function saveProfile() {
