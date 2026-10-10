@@ -206,12 +206,6 @@
             flex-direction: column;
             gap: 1.5rem;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .driver-card:hover {
-            border-color: rgba(255, 255, 255, 0.1);
-            transform: translateY(-2px);
         }
 
         .card-header {
@@ -352,20 +346,6 @@
             color: #34d399 !important; /* Personal best lap */
         }
 
-        .standings-row-clickable {
-            cursor: pointer;
-            transition: background 0.15s ease, border-left 0.15s ease;
-        }
-
-        .standings-row-clickable:hover {
-            background: rgba(255, 255, 255, 0.06) !important;
-        }
-
-        .standings-row-selected {
-            background: rgba(59, 130, 246, 0.22) !important;
-            border-left: 3px solid #3b82f6 !important;
-        }
-
         .spectating-badge {
             display: inline-flex;
             align-items: center;
@@ -381,22 +361,9 @@
             text-transform: uppercase;
         }
 
-        .reset-spectate-btn {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: #cbd5e1;
-            font-size: 0.6rem;
-            font-weight: 600;
-            border-radius: 4px;
-            padding: 2px 6px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .reset-spectate-btn:hover {
-            background: rgba(59, 130, 246, 0.25);
-            border-color: #3b82f6;
-            color: #ffffff;
+        .standings-row-spectated {
+            background: rgba(56, 189, 248, 0.12) !important;
+            border-left: 3px solid #38bdf8 !important;
         }
 
 
@@ -1123,33 +1090,6 @@
         let showPosOnMap = localStorage.getItem('show_pos_on_map') === 'true';
         let traceHistory = {};
 
-        // Interactive Spectate / Selected Driver State
-        let selectedSpectateCarNum = null;
-        let selectedSpectateDriverName = null;
-
-        window.selectSpectateDriver = function(carNum, driverName) {
-            if (!carNum) return;
-            if (selectedSpectateCarNum === String(carNum)) {
-                // Clicking same driver resets to player / auto-camera
-                selectedSpectateCarNum = null;
-                selectedSpectateDriverName = null;
-            } else {
-                selectedSpectateCarNum = String(carNum);
-                selectedSpectateDriverName = driverName || null;
-            }
-            if (typeof window.forceRenderDashboard === 'function') {
-                window.forceRenderDashboard();
-            }
-        };
-
-        window.resetSpectateToPlayer = function(e) {
-            if (e && e.stopPropagation) e.stopPropagation();
-            selectedSpectateCarNum = null;
-            selectedSpectateDriverName = null;
-            if (typeof window.forceRenderDashboard === 'function') {
-                window.forceRenderDashboard();
-            }
-        };
 
         fetch('js/track-maps.json')
             .then(r => r.json())
@@ -1743,14 +1683,11 @@
                     const session = streamData.session || {};
                     const presence = currentDrivers[mid] || {};
 
-                    // Target Driver Resolution (Manual selection -> Bridge Spectating -> Active Camera -> Player)
+                    // Target Driver Resolution (Always show driver currently spectated by the recorder user, or player if not spectating)
                     let targetDriver = null;
                     let isDriverSpectating = false;
 
-                    if (selectedSpectateCarNum && tel.drivers) {
-                        targetDriver = Object.values(tel.drivers).find(d => d && String(d.carNum) === String(selectedSpectateCarNum));
-                        isDriverSpectating = true;
-                    } else if (tel.isSpectating && tel.drivers) {
+                    if (tel.isSpectating && tel.drivers) {
                         if (tel.spectatingCarNum) {
                             targetDriver = Object.values(tel.drivers).find(d => d && String(d.carNum) === String(tel.spectatingCarNum));
                         }
@@ -1759,6 +1696,9 @@
                         }
                         if (!targetDriver && tel.spectatingCarIdx !== undefined && tel.drivers[tel.spectatingCarIdx]) {
                             targetDriver = tel.drivers[tel.spectatingCarIdx];
+                        }
+                        if (!targetDriver && tel.camCarIdx !== undefined && tel.drivers[tel.camCarIdx]) {
+                            targetDriver = tel.drivers[tel.camCarIdx];
                         }
                         isDriverSpectating = true;
                     } else if (tel.camCarIdx !== undefined && tel.drivers && tel.drivers[tel.camCarIdx] && tel.camCarIdx !== tel.playerIdx) {
@@ -1817,7 +1757,7 @@
                     let deltaColorClass = "delta-neutral";
                     let deltaSubText = "No Best Lap";
 
-                    if (typeof tel.delta === 'number' && Math.abs(tel.delta) < 300 && (!selectedSpectateCarNum || (targetDriver && String(selectedSpectateCarNum) === String(targetDriver.carNum)))) {
+                    if (typeof tel.delta === 'number' && Math.abs(tel.delta) < 300) {
                         deltaVal = tel.delta;
                     } else if (targetBestLap > 15 && targetLastLap > 15) {
                         deltaVal = targetLastLap - targetBestLap;
@@ -1882,9 +1822,6 @@
                                             <h3 class="driver-name">${driverName}</h3>
                                             ${isDriverSpectating ? `
                                                 <span class="spectating-badge"><i data-lucide="eye" style="width: 10px; height: 10px;"></i> Spectating</span>
-                                            ` : ''}
-                                            ${selectedSpectateCarNum ? `
-                                                <button class="reset-spectate-btn" onclick="resetSpectateToPlayer(event)" title="Reset to your car / auto-camera">Reset to Me</button>
                                             ` : ''}
                                         </div>
                                         <div class="driver-metadata">
@@ -1995,7 +1932,7 @@
 
                 // Build Standings Rows
                 let standingsRows = '';
-                const activeSpectateCarNum = selectedSpectateCarNum || (primaryTel.isSpectating && (primaryTel.spectatingCarNum || primaryTel.drivers?.[primaryTel.camCarIdx]?.carNum));
+                const activeSpectateCarNum = (primaryTel.isSpectating && (primaryTel.spectatingCarNum || primaryTel.drivers?.[primaryTel.camCarIdx]?.carNum)) || (primaryTel.camCarIdx !== undefined && primaryTel.camCarIdx !== primaryTel.playerIdx && primaryTel.drivers?.[primaryTel.camCarIdx]?.carNum);
 
                 if (primaryTel.drivers) {
                     const sortedDrivers = Object.values(primaryTel.drivers)
@@ -2003,13 +1940,12 @@
                         .sort((a, b) => a.pos - b.pos);
                     
                     sortedDrivers.forEach(d => {
-                        const isThisSelected = activeSpectateCarNum && String(activeSpectateCarNum) === String(d.carNum);
-                        const rowClass = `standings-row-clickable ${d.isPlayer ? 'standings-row-player' : ''} ${isThisSelected ? 'standings-row-selected' : ''}`.trim();
+                        const isThisSpectated = activeSpectateCarNum && String(activeSpectateCarNum) === String(d.carNum);
+                        const rowClass = `${d.isPlayer ? 'standings-row-player' : ''} ${isThisSpectated ? 'standings-row-spectated' : ''}`.trim();
                         const classIndicator = d.classColor ? `<span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#${d.classColor}; margin-right:4px;"></span>` : '';
-                        const safeName = (d.name || '').replace(/'/g, "\\'");
                         
                         standingsRows += `
-                            <tr class="${rowClass}" onclick="selectSpectateDriver('${d.carNum}', '${safeName}')" title="Click to view telemetry for #${d.carNum} ${safeName}">
+                            <tr class="${rowClass}">
                                 <td style="text-align: center; font-weight: bold;">${d.classPos || d.pos}</td>
                                 <td><span class="car-num-tag">${d.carNum}</span></td>
                                 <td><div style="display:flex; align-items:center; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${classIndicator}${d.name}</div></td>
@@ -2139,10 +2075,9 @@
                     // Render rows
                     mappedDrivers.forEach(m => {
                         const d = m.driver;
-                        const isThisSelected = activeSpectateCarNum && String(activeSpectateCarNum) === String(d.carNum);
-                        const rowClass = `standings-row-clickable ${m.isPlayer ? 'standings-row-player' : ''} ${isThisSelected ? 'standings-row-selected' : ''}`.trim();
+                        const isThisSpectated = activeSpectateCarNum && String(activeSpectateCarNum) === String(d.carNum);
+                        const rowClass = `${m.isPlayer ? 'standings-row-player' : ''} ${isThisSpectated ? 'standings-row-spectated' : ''}`.trim();
                         const classIndicator = d.classColor ? `<span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#${d.classColor}; margin-right:4px;"></span>` : '';
-                        const safeName = (d.name || '').replace(/'/g, "\\'");
 
                         // In pit indicator
                         const inPit = d.surface === 2 || d.surface === 1 || d.inPit === true || d.in_pit === true;
@@ -2182,7 +2117,7 @@
                         const displayPos = (d.classPos > 0 ? d.classPos : (d.pos > 0 ? d.pos : '-'));
 
                         relativeRows += `
-                            <tr class="${rowClass}" onclick="selectSpectateDriver('${d.carNum || ''}', '${safeName}')" title="Click to view telemetry for #${d.carNum || ''} ${safeName}">
+                            <tr class="${rowClass}">
                                 <td style="text-align: center; font-weight: bold;">${displayPos}</td>
                                 <td><span class="car-num-tag">${d.carNum || '-'}</span></td>
                                 <td><div style="display:flex; align-items:center; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:${driverNameColor}; font-weight:${m.isPlayer ? '800' : '500'};">${classIndicator}${d.name}${pitBadge}</div></td>
