@@ -739,9 +739,9 @@
 
             <!-- Quick Action Bar -->
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem;">
-                <a href="portal.html" class="back-btn" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.82rem;">
-                    <i class="fas fa-arrow-left"></i> <span>All Events & Switch Portal</span>
-                </a>
+                <button type="button" onclick="returnToPortalDashboard()" class="back-btn" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.82rem; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border-bright); padding: 0.5rem 1.15rem; border-radius: 8px; color: var(--primary); cursor: pointer; transition: all 0.2s;">
+                    <i class="fas fa-arrow-left"></i> <span>All Events & Portal Dashboard</span>
+                </button>
                 <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
                     <a href="https://discord.gg/gridup" target="_blank" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.45rem 1rem; border-radius: 8px; border-color: rgba(0, 207, 255, 0.4); color: #00cfff; display: inline-flex; align-items: center; gap: 6px;">
                         <i class="fab fa-discord"></i> <span>Team Voice Channel</span>
@@ -1279,9 +1279,16 @@
         async function loadTeamPortal(team) {
             currentEvent = team.eventSlug;
             currentTeam = team.teamName;
+
+            if (team.eventSlug) {
+                try {
+                    history.replaceState(null, document.title, window.location.pathname + window.location.search + '#team-' + team.eventSlug);
+                } catch (_) {}
+            }
             
             document.getElementById('selection-view').style.display = 'none';
             document.getElementById('portal-view').style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
 
             // Apply squad color theme immediately
             applyTeamPortalTheme(team.teamName);
@@ -1304,6 +1311,21 @@
             loadMessages();
             switchTab('wall');
         }
+
+        window.returnToPortalDashboard = function() {
+            try {
+                history.pushState("", document.title, window.location.pathname + window.location.search);
+            } catch (_) {
+                window.location.hash = '';
+            }
+            const portalView = document.getElementById('portal-view');
+            const selectionView = document.getElementById('selection-view');
+            if (portalView) portalView.style.display = 'none';
+            if (selectionView) {
+                selectionView.style.display = 'block';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        };
 
         async function loadLineup(data, eventObj = {}) {
             const list = document.getElementById('lineup-list');
@@ -2391,14 +2413,19 @@
                     !myTeams.some(m => m.eventSlug === t.eventSlug && m.teamName === t.teamName)
                 );
 
-                if (isAdminUser) {
-                    await showSelection(myTeams, true, otherTeams, allTeamAssignments);
-                } else if (myTeams.length === 0) {
-                    await showSelection([], false); // Still show sign-ups
-                } else if (myTeams.length === 1 && !window.location.hash) {
-                    await loadTeamPortal(myTeams[0]);
-                } else {
-                    await showSelection(myTeams, false);
+                // Always render the full portal dashboard so drivers can view/enter their assigned team AND participate in other upcoming races
+                await showSelection(myTeams, isAdminUser, otherTeams, allTeamAssignments);
+
+                // Deep-link to specific team portal only if hash explicitly targets one (e.g. #team-NEC-4HR)
+                if (window.location.hash && window.location.hash.startsWith('#team-')) {
+                    const targetSlug = window.location.hash.replace('#team-', '').toLowerCase();
+                    const matchedTeam = allTeamAssignments.find(t => 
+                        (t.eventSlug && t.eventSlug.toLowerCase() === targetSlug) || 
+                        (`${t.eventSlug}-${t.teamName}`.toLowerCase() === targetSlug)
+                    );
+                    if (matchedTeam) {
+                        await loadTeamPortal(matchedTeam);
+                    }
                 }
 
                 if (loading) loading.style.display = 'none';
