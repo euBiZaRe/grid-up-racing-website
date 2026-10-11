@@ -110,15 +110,45 @@
     <script>
         const btn = document.getElementById('discord-login-btn');
         if (btn) {
-            btn.addEventListener('click', () => {
-                if (typeof loginWithDiscord === 'function') {
-                    loginWithDiscord();
-                } else {
-                    console.error('loginWithDiscord function not loaded yet');
+            let isLoggingIn = false;
+            const originalHtml = btn.innerHTML;
+            btn.addEventListener('click', async () => {
+                if (isLoggingIn) return;
+                isLoggingIn = true;
+                btn.disabled = true;
+                btn.style.opacity = '0.65';
+                btn.style.cursor = 'wait';
+                btn.innerHTML = `
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="fa-spin" style="animation: spin 1s linear infinite;">
+                        <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
+                        <path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"></path>
+                    </svg>
+                    <span>Connecting to Discord...</span>
+                `;
+                
+                try {
+                    if (typeof loginWithDiscord === 'function') {
+                        await loginWithDiscord();
+                    } else {
+                        console.error('loginWithDiscord function not loaded yet');
+                    }
+                } catch (e) {
+                    console.warn("Sign-in process completed or cancelled:", e);
+                } finally {
+                    setTimeout(() => {
+                        isLoggingIn = false;
+                        btn.disabled = false;
+                        btn.style.opacity = '1';
+                        btn.style.cursor = 'pointer';
+                        btn.innerHTML = originalHtml;
+                    }, 1200);
                 }
             });
         }
     </script>
+    <style>
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
 </body>
 </html>
 
