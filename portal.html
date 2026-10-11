@@ -1295,7 +1295,8 @@
                 <button type="button" class="portal-nav-tab active" onclick="switchTab('wall')"><i class="fas fa-comments"></i> <span>Communications</span></button>
                 <button type="button" class="portal-nav-tab" onclick="switchTab('setups')"><i class="fas fa-sliders-h"></i> <span>Setup Library</span></button>
                 <button type="button" class="portal-nav-tab" onclick="switchTab('telemetry')"><i class="fas fa-stopwatch"></i> <span>Lap Times</span></button>
-                <button type="button" class="portal-nav-tab" onclick="switchTab('stints')"><i class="fas fa-flag-checkered"></i> <span>Stint Strategy</span></button>
+                <!-- Stint Strategy (temporarily hidden) -->
+                <!-- <button type="button" class="portal-nav-tab" onclick="switchTab('stints')"><i class="fas fa-flag-checkered"></i> <span>Stint Strategy</span></button> -->
             </div>
 
             <div class="portal-grid">
@@ -2083,6 +2084,7 @@
 
 
         function switchTab(tabId) {
+            if (tabId === 'stints') tabId = 'wall';
             document.querySelectorAll('.tab-content').forEach(t => {
                 t.style.display = 'none';
                 t.classList.remove('animate-fade-in');
@@ -2437,7 +2439,8 @@
             }
 
             const urlParams = new URLSearchParams(window.location.search);
-            const activeTab = preferredTab || urlParams.get('tab') || localStorage.getItem('gridup_active_tab') || sessionStorage.getItem('gridup_active_tab') || 'wall';
+            let activeTab = preferredTab || urlParams.get('tab') || localStorage.getItem('gridup_active_tab') || sessionStorage.getItem('gridup_active_tab') || 'wall';
+            if (activeTab === 'stints') activeTab = 'wall';
 
             try {
                 sessionStorage.removeItem('gridup_manual_dashboard');
@@ -5674,6 +5677,7 @@
                 let targetEvent = '';
                 let targetTeamName = '';
                 let targetTab = urlParams.get('tab') || 'wall';
+                if (targetTab === 'stints') targetTab = 'wall';
 
                 if (hasExplicitTarget) {
                     targetEvent = urlParams.get('event') || '';
@@ -5888,7 +5892,7 @@
                                     </div>
                                 </div>
                                 <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 1rem; border-top: 1px solid rgba(255, 255, 255, 0.06); font-size: 0.8rem;">
-                                    <span style="color: var(--text-muted);">Launch Stints & Strategy</span>
+                                    <span style="color: var(--text-muted);">Comms, Setups & Lap Times</span>
                                     <span style="color: ${squadTheme.color}; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
                                         <span>Enter Portal</span>
                                         <i class="fas fa-arrow-right"></i>
