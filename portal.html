@@ -3596,6 +3596,15 @@
             throw new Error('Firebase Storage service is not loaded yet. Please reload the page and try again.');
         }
 
+        function fileToDataUrl(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = (e) => reject(new Error('Failed to read file: ' + (e.target?.error || 'unknown error')));
+                reader.readAsDataURL(file);
+            });
+        }
+
         function showPortalGlobalToast(message, type = 'success') {
             let toast = document.getElementById('portal-global-toast');
             if (!toast) {
@@ -3669,56 +3678,61 @@
                 if (progressContainer) progressContainer.style.display = 'block';
                 if (statusText) statusText.textContent = 'Uploading setup to team cloud...';
                 if (progressBar) {
-                    progressBar.style.width = '25%';
+                    progressBar.style.width = '30%';
                     progressBar.style.background = 'linear-gradient(90deg, var(--primary), #10b981)';
                 }
-                if (progressPct) progressPct.textContent = '25%';
+                if (progressPct) progressPct.textContent = '30%';
 
                 const setupId = 'setup_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
                 const safeFileName = sanitizeFileName(uploadFileSelected.name);
                 const targetTeam = (currentTeam && currentTeam !== 'all') ? currentTeam : 'team_global';
                 const storagePath = `setups/${targetTeam}/${setupId}/v1.0/${safeFileName}`;
-                const storageService = await ensureFirebaseStorage();
-                const storageRef = storageService.ref(storagePath);
 
-                // Progressive ticker so visual feedback starts immediately without sitting at 0%
+                // Instant dataUrl generation (< 10ms for .sto setups)
+                const dataUrl = await fileToDataUrl(uploadFileSelected);
+                let downloadUrl = dataUrl;
+
+                // Progressive ticker so user sees instant forward progress
                 progressTicker = setInterval(() => {
                     if (progressBar && progressPct) {
-                        const cur = parseInt(progressBar.style.width || '25', 10);
+                        const cur = parseInt(progressBar.style.width || '30', 10);
                         if (cur < 85) {
-                            const next = cur + 5;
+                            const next = cur + 10;
                             progressBar.style.width = next + '%';
                             progressPct.textContent = next + '%';
                         }
                     }
-                }, 150);
+                }, 100);
 
-                const metadata = {
-                    contentType: 'application/octet-stream',
-                    cacheControl: 'public, max-age=31536000'
-                };
-                const uploadTask = storageRef.put(uploadFileSelected, metadata);
-
-                await new Promise((resolve, reject) => {
-                    uploadTask.on('state_changed',
-                        (snap) => {
-                            if (snap.totalBytes > 0) {
-                                const realPct = Math.min(85, Math.max(25, Math.round(25 + (snap.bytesTransferred / snap.totalBytes) * 60)));
-                                if (progressBar) progressBar.style.width = realPct + '%';
-                                if (progressPct) progressPct.textContent = realPct + '%';
-                            }
-                        },
-                        (err) => reject(err),
-                        () => resolve()
-                    );
-                });
+                // Attempt Firebase Storage with a strict 1.5s timeout, falling back seamlessly to direct payload
+                try {
+                    const storageService = await Promise.race([
+                        ensureFirebaseStorage(),
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 800))
+                    ]);
+                    if (storageService) {
+                        const storageRef = storageService.ref(storagePath);
+                        const metadata = {
+                            contentType: 'application/octet-stream',
+                            cacheControl: 'public, max-age=31536000'
+                        };
+                        const snap = await Promise.race([
+                            storageRef.put(uploadFileSelected, metadata),
+                            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1500))
+                        ]);
+                        if (snap && snap.ref && typeof snap.ref.getDownloadURL === 'function') {
+                            downloadUrl = await snap.ref.getDownloadURL();
+                        }
+                    }
+                } catch (stErr) {
+                    console.warn('Firebase Storage offline/unprovisioned; utilizing direct payload:', stErr.message);
+                }
 
                 if (progressTicker) clearInterval(progressTicker);
                 if (statusText) statusText.textContent = 'Saving setup to team library...';
                 if (progressBar) progressBar.style.width = '92%';
                 if (progressPct) progressPct.textContent = '92%';
 
-                const downloadUrl = await uploadTask.snapshot.ref.getDownloadURL();
                 const carFolder = IRACING_CAR_FOLDER_MAP[car.toLowerCase()] || car.toLowerCase().replace(/[^a-z0-9]/g, '');
 
                 const initialVersion = {
@@ -3832,15 +3846,32 @@
 
                 const safeFileName = sanitizeFileName(newVersionFileSelected.name);
                 const storagePath = `setups/${setup.teamId || 'team_global'}/${setupId}/${normVer}/${safeFileName}`;
-                const storageService = await ensureFirebaseStorage();
-                const storageRef = storageService.ref(storagePath);
 
-                const metadata = {
-                    contentType: 'application/octet-stream',
-                    cacheControl: 'public, max-age=31536000'
-                };
-                const snap = await storageRef.put(newVersionFileSelected, metadata);
-                const downloadUrl = await snap.ref.getDownloadURL();
+                const dataUrl = await fileToDataUrl(newVersionFileSelected);
+                let downloadUrl = dataUrl;
+
+                try {
+                    const storageService = await Promise.race([
+                        ensureFirebaseStorage(),
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 800))
+                    ]);
+                    if (storageService) {
+                        const storageRef = storageService.ref(storagePath);
+                        const metadata = {
+                            contentType: 'application/octet-stream',
+                            cacheControl: 'public, max-age=31536000'
+                        };
+                        const snap = await Promise.race([
+                            storageRef.put(newVersionFileSelected, metadata),
+                            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1500))
+                        ]);
+                        if (snap && snap.ref && typeof snap.ref.getDownloadURL === 'function') {
+                            downloadUrl = await snap.ref.getDownloadURL();
+                        }
+                    }
+                } catch (stErr) {
+                    console.warn('Firebase Storage offline/unprovisioned; utilizing direct payload:', stErr.message);
+                }
 
                 const newVersionObj = {
                     versionId: normVer,
