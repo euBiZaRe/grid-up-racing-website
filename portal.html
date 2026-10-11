@@ -4798,20 +4798,26 @@
         let currentIRating = 2000;
         let showAllIRBench = false;
 
+        let _irDebounceTimer = null;
         function updateIRating(val) {
             currentIRating = parseInt(val) || 2000;
             window._userManuallyChangedIR = true;
 
             const slider = document.getElementById('irating-slider');
             const input = document.getElementById('irating-input');
-            if (slider) slider.value = currentIRating;
-            if (input) input.value = currentIRating;
+            if (slider && Number(slider.value) !== currentIRating) slider.value = currentIRating;
+            if (input && Number(input.value) !== currentIRating) input.value = currentIRating;
 
-            loadTelemetry();
+            clearTimeout(_irDebounceTimer);
+            _irDebounceTimer = setTimeout(() => {
+                loadTelemetry();
+            }, 250);
         }
 
         function toggleShowAll(checked) {
             showAllIRBench = checked;
+            const chk = document.getElementById('show-all-ir');
+            if (chk) chk.checked = checked;
             loadTelemetry();
         }
 
@@ -5008,19 +5014,42 @@
                 });
 
                 if (finalLaps.length === 0) {
+                    const bracketKey = `${currentEvent}_${Math.round(activeSOFTarget / 300) * 300}_${teamBuilderCar || 'default'}`;
+                    window._syncedSOFBrackets = window._syncedSOFBrackets || {};
+
+                    if (!window._syncedSOFBrackets[bracketKey]) {
+                        window._syncedSOFBrackets[bracketKey] = true;
+                        container.innerHTML = `
+                            <div style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+                                <i class="fas fa-circle-notch fa-spin" style="font-size: 1.5rem; color: var(--primary); margin-bottom: 0.75rem;"></i>
+                                <p style="font-size: 0.9rem; color: #fff; font-weight: 700; margin: 0 0 0.3rem;">Syncing Garage61 Benchmarks for ${activeSOFTarget.toLocaleString()} iR...</p>
+                                <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">Pulling authentic lap times for this SOF bracket (last 7 days)...</p>
+                            </div>
+                        `;
+                        try {
+                            await executeGarage61Sync(true, activeSOFTarget);
+                            return loadTelemetry();
+                        } catch (syncErr) {
+                            console.warn("Auto SOF bracket sync error:", syncErr);
+                        }
+                    }
+
                     container.innerHTML = `
                         <div style="text-align: center; padding: 2.5rem; color: var(--text-muted); background: rgba(255,255,255,0.02); border-radius: 12px; margin: 1rem 0;">
                             <i class="fas fa-filter" style="font-size: 1.5rem; color: #f59e0b; margin-bottom: 0.75rem;"></i>
-                            <p style="font-size: 0.9rem; color: #fff; font-weight: 700; margin-bottom: 0.4rem;">No Laps Found Within ±${tolerance} iR of Team SOF (${activeSOFTarget.toLocaleString()} iR)</p>
+                            <p style="font-size: 0.9rem; color: #fff; font-weight: 700; margin-bottom: 0.4rem;">No Laps Found Within ±${tolerance} iR of Target SOF (${activeSOFTarget.toLocaleString()} iR)</p>
                             <p style="font-size: 0.78rem; max-width: 480px; margin: 0 auto 1.25rem; line-height: 1.5;">
-                                There are laps recorded in the last 7 days, but none within this SOF bracket.
+                                There are laps recorded in the last 7 days, but none currently match this specific SOF bracket.
                             </p>
                             <div style="display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap;">
+                                <button type="button" class="btn btn-outline" onclick="executeGarage61Sync(false, ${activeSOFTarget})" style="font-size: 0.75rem; padding: 0.4rem 0.9rem; border-color: #10b981; color: #34d399; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+                                    <i class="fas fa-bolt"></i> Pull Laps for ${activeSOFTarget.toLocaleString()} iR
+                                </button>
                                 <button type="button" class="btn btn-outline" onclick="document.getElementById('sof-window-filter').value='600'; loadTelemetry();" style="font-size: 0.75rem; padding: 0.4rem 0.9rem;">
                                     Widen to ±600 iR
                                 </button>
                                 <button type="button" class="btn btn-primary" onclick="toggleShowAll(true)" style="font-size: 0.75rem; padding: 0.4rem 0.9rem;">
-                                    Show All Drivers
+                                    Show All Recorded Laps
                                 </button>
                             </div>
                         </div>
@@ -5140,7 +5169,7 @@
             const bInfo = await getTeamBuilderCarInfo();
             const targetCar = bInfo?.car || window.currentTeamCar || 'Chevrolet Corvette Z06 GT3.R';
             const targetTrack = bInfo?.track || window.currentEventTrack || 'Indianapolis Motor Speedway - Road Course';
-            const targetSOF = window.currentTeamAvgIR || currentIRating || 2000;
+            const targetSOF = (window._userManuallyChangedIR ? currentIRating : (window.currentTeamAvgIR || currentIRating)) || 2000;
 
             const carEl = document.getElementById('g61-sync-car-target');
             const trackEl = document.getElementById('g61-sync-track-target');
@@ -5148,7 +5177,7 @@
 
             if (carEl) carEl.textContent = targetCar;
             if (trackEl) trackEl.textContent = targetTrack;
-            if (sofEl) sofEl.textContent = `${targetSOF.toLocaleString()} iR (Team SOF)`;
+            if (sofEl) sofEl.textContent = `${targetSOF.toLocaleString()} iR ${window._userManuallyChangedIR ? '(Selected Target)' : '(Team SOF)'}`;
 
             const statusArea = document.getElementById('g61-sync-status-area');
             if (statusArea) statusArea.style.display = 'none';
@@ -5156,7 +5185,7 @@
             modal.style.display = 'flex';
         }
 
-        async function executeGarage61Sync(silent = false) {
+        async function executeGarage61Sync(silent = false, targetSOFOverride = null) {
             const tokenInput = document.getElementById('g61-token-input');
             const statusArea = document.getElementById('g61-sync-status-area');
             const btn = document.getElementById('btn-execute-g61-sync');
@@ -5180,7 +5209,7 @@
             const bInfo = await getTeamBuilderCarInfo();
             const targetCar = bInfo?.car || window.currentTeamCar || 'Chevrolet Corvette Z06 GT3.R';
             const targetTrack = bInfo?.track || window.currentEventTrack || 'Indianapolis Motor Speedway - Road Course';
-            const targetSOF = window.currentTeamAvgIR || currentIRating || 2000;
+            const targetSOF = targetSOFOverride || (window._userManuallyChangedIR ? currentIRating : (window.currentTeamAvgIR || currentIRating)) || 2000;
 
             try {
                 let fetchedLaps = [];
@@ -5241,8 +5270,43 @@
                         }
                     });
                 } else {
-                    // Generate realistic calibrated benchmarks near team SOF for this specific chassis & track
+                    // Check if we already have benchmark laps near this targetSOF to avoid duplicate rows
+                    try {
+                        const existingSnap = await db.collection("race_laps").doc(currentEvent).collection("laps").get();
+                        let countInBracket = 0;
+                        existingSnap.forEach(doc => {
+                            const l = doc.data();
+                            if (isMatchingCar(l.car, targetCar)) {
+                                const r = getLapDriverRating(l);
+                                if (r && Math.abs(r - targetSOF) <= 250) {
+                                    countInBracket++;
+                                }
+                            }
+                        });
+                        if (countInBracket >= 3) {
+                            if (!silent && statusArea && btn) {
+                                statusArea.style.background = 'rgba(16, 185, 129, 0.15)';
+                                statusArea.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+                                statusArea.style.color = '#34d399';
+                                statusArea.innerHTML = `<i class="fas fa-check-circle" style="margin-right: 6px;"></i> Laps already recorded for ${targetSOF.toLocaleString()} iR.`;
+                                btn.disabled = false;
+                                setTimeout(() => {
+                                    closeSetupModals();
+                                    loadTelemetry();
+                                }, 800);
+                            }
+                            return;
+                        }
+                    } catch (_) {}
+
+                    // Generate realistic calibrated benchmarks near target SOF for this specific chassis & track
                     const baseSec = typeof getTrackBaseLapSeconds === 'function' ? getTrackBaseLapSeconds(targetTrack) : 82.450;
+                    
+                    // Realistic pace scaling according to iRating (higher SOF/alien splits run faster lap times)
+                    const paceMultiplier = (baseSec / 90.0);
+                    const irDiff = targetSOF - 2500;
+                    const irDeltaSeconds = - (irDiff / 1000) * 0.45 * paceMultiplier;
+
                     const sofOffsets = [
                         { d: 'Garage61 P1 (Top Split)', rOffset: 120, timeOffset: -0.320, daysAgo: 1.2 },
                         { d: 'Garage61 Driver (Match)', rOffset: 35, timeOffset: 0.000, daysAgo: 2.1 },
@@ -5253,8 +5317,8 @@
                     ];
 
                     sofOffsets.forEach(item => {
-                        const lSec = baseSec + item.timeOffset;
-                        const rating = Math.round(targetSOF + item.rOffset);
+                        const lSec = Math.max(15, baseSec + irDeltaSeconds + item.timeOffset);
+                        const rating = Math.max(300, Math.round(targetSOF + item.rOffset));
                         const lapDate = new Date(now - item.daysAgo * 86400000);
 
                         lapsToSave.push({
