@@ -2168,14 +2168,111 @@
             }
         }
 
+        function resolveEventTrackName(eventObj = {}, team = {}) {
+            const rawTrack = (eventObj.track || (team && team.track) || '').trim();
+            const eventName = ((team && team.eventName) || eventObj.name || eventObj.title || '').toLowerCase();
+            const slug = ((team && team.eventSlug) || eventObj.id || '').toLowerCase();
+
+            // Indianapolis Endurance & Special Events
+            if (slug.includes('indy-8') || slug.includes('indianapolis-8') || eventName.includes('8 hours of indianapolis') || eventName.includes('indianapolis 8') || eventName.includes('indy 8')) {
+                return 'Indianapolis Motor Speedway - Road Course';
+            }
+            if (slug.includes('indy-500') || eventName.includes('indy 500')) {
+                return 'Indianapolis Motor Speedway - Open Wheel Oval';
+            }
+            if (slug.includes('brickyard') || eventName.includes('brickyard')) {
+                return 'Indianapolis Motor Speedway - NASCAR Oval';
+            }
+            if (slug.includes('spa-24') || eventName.includes('spa 24')) {
+                return 'Circuit de Spa-Francorchamps';
+            }
+            if (slug.includes('nurburgring-24') || eventName.includes('nurburgring 24') || eventName.includes('nürburgring 24')) {
+                return 'Nürburgring Combined (Gesamtstrecke 24h)';
+            }
+            if (slug.includes('bathurst') || eventName.includes('bathurst')) {
+                return 'Mount Panorama Circuit (Bathurst)';
+            }
+            if (slug.includes('watkins-glen') || eventName.includes('watkins glen')) {
+                return 'Watkins Glen International - Boot';
+            }
+            if (slug.includes('sebring') || eventName.includes('sebring')) {
+                return 'Sebring International Raceway - Full Course';
+            }
+            if (slug.includes('daytona') || eventName.includes('daytona')) {
+                return 'Daytona International Speedway - Road Course';
+            }
+            if (slug.includes('road-america') || eventName.includes('road america')) {
+                return 'Road America - Full Course';
+            }
+            if (slug.includes('petit-le-mans') || eventName.includes('petit le mans')) {
+                return 'Road Atlanta - Full Course';
+            }
+            if (slug.includes('thruxton') || eventName.includes('thruxton')) {
+                return 'Thruxton Circuit';
+            }
+            if (slug.includes('suzuka') || eventName.includes('suzuka')) {
+                return 'Suzuka International Racing Course - Grand Prix';
+            }
+
+            if (rawTrack && rawTrack.toLowerCase() !== 'road course') {
+                return rawTrack;
+            }
+            if (eventName.includes('indianapolis') || slug.includes('indy')) {
+                return 'Indianapolis Motor Speedway - Road Course';
+            }
+            return rawTrack || 'Road Course';
+        }
+
+        function isMatchingTrack(trackA, trackB) {
+            if (!trackA || !trackB) return false;
+            if (trackA === 'all' || trackB === 'all') return true;
+            const clean = str => String(str).toLowerCase().replace(/[^a-z0-9]/g, '');
+            const a = clean(trackA);
+            const b = clean(trackB);
+            if (a === b) return true;
+            if (a.includes(b) || b.includes(a)) return true;
+
+            const majorKeywords = ['indianapolis', 'spa', 'nurburgring', 'nordschleife', 'bathurst', 'watkins', 'sebring', 'daytona', 'thruxton', 'suzuka', 'roadamerica', 'roadatlanta', 'silverstone', 'monza', 'lemans'];
+            for (const kw of majorKeywords) {
+                if (a.includes(kw) && b.includes(kw)) return true;
+            }
+            return false;
+        }
+
+        function isMatchingCar(carA, carB) {
+            if (!carA || !carB) return false;
+            if (carA === 'all' || carB === 'all') return true;
+            const clean = str => String(str).toLowerCase().replace(/[^a-z0-9]/g, '');
+            const a = clean(carA);
+            const b = clean(carB);
+            if (a === b) return true;
+            if (a.includes(b) || b.includes(a)) return true;
+
+            const carKeywords = ['corvette', 'ferrari296', 'porsche911', 'bmwm4', 'mustang', 'mclaren720', 'astonmartin', 'audi', 'lamborghini', 'mercedes', 'dallara'];
+            for (const kw of carKeywords) {
+                if (a.includes(kw) && b.includes(kw)) return true;
+            }
+            return false;
+        }
+
         async function loadTeamPortal(team) {
             currentEvent = team.eventSlug;
             currentTeam = team.teamName;
             window.currentTeamData = team.teamData || null;
             const eventObj = UPCOMING_EVENTS.find(e => e.id === team.eventSlug) || {};
-            window.currentEventTrack = eventObj.track || null;
+            const resolvedTrack = resolveEventTrackName(eventObj, team);
+            window.currentEventTrack = resolvedTrack;
+            eventObj.track = resolvedTrack;
             window.currentTeamCar = (team.teamData && (team.teamData.carModel || team.teamData.car || team.teamData.car_class)) || null;
             window._userManuallyClearedCarFilter = false;
+            window._userManuallyClearedTrackFilter = false;
+
+            // Heal Firestore if event track was generic or unset
+            if (eventObj.id && (!eventObj.track || eventObj.track.toLowerCase() === 'road course')) {
+                try {
+                    db.collection("events").doc(eventObj.id).update({ track: resolvedTrack }).catch(() => {});
+                } catch (_) {}
+            }
 
             if (team.eventSlug) {
                 try {
@@ -2198,7 +2295,7 @@
 
             const trackElem = document.getElementById('hero-track-name');
             if (trackElem) {
-                trackElem.textContent = eventObj.track || 'Road Course';
+                trackElem.textContent = resolvedTrack;
             }
 
             await ensureDriverStatsCache();
@@ -2248,7 +2345,8 @@
             });
 
             const avgIR = countedIR > 0 ? Math.round(totalIR / countedIR) : null;
-            const duration = (eventObj && eventObj.duration) ? eventObj.duration : (data.duration || 'Special Event');
+            const durationHours = getEventDurationHours(eventObj);
+            const duration = (eventObj && eventObj.duration) ? eventObj.duration : (data.duration || (durationHours ? `${durationHours} Hours` : 'Special Event'));
 
             // Populate Hero Telemetry Metric Bar
             const heroMetrics = document.getElementById('hero-telemetry-metrics');
@@ -2728,7 +2826,10 @@
             'Suzuka International Racing Course',
             'Silverstone Circuit',
             'Circuit des 24 Heures du Mans',
+            'Indianapolis Motor Speedway - Road Course',
             'Indianapolis Motor Speedway',
+            'Indianapolis Motor Speedway - Open Wheel Oval',
+            'Indianapolis Motor Speedway - NASCAR Oval',
             'Circuit de Barcelona-Catalunya',
             'Red Bull Ring',
             'Virginia International Raceway (VIR)',
@@ -3012,7 +3113,7 @@
 
             if (eventSlug && !track) {
                 const ev = UPCOMING_EVENTS.find(e => e.id === eventSlug);
-                if (ev && ev.track) track = ev.track;
+                if (ev) track = resolveEventTrackName(ev, { eventSlug, eventName: ev.name });
             }
 
             if (!car && window._userMyTeams && window._userMyTeams.length > 0) {
@@ -3023,7 +3124,7 @@
                 car = d.carModel || d.car || d.car_class || null;
                 if (!track && eventSlug) {
                     const ev = UPCOMING_EVENTS.find(e => e.id === eventSlug);
-                    if (ev && ev.track) track = ev.track;
+                    if (ev) track = resolveEventTrackName(ev, { eventSlug, eventName: ev.name });
                 }
             }
 
@@ -3053,6 +3154,12 @@
                 }
             }
 
+            if (!track && window.currentEventTrack) {
+                track = window.currentEventTrack;
+            } else if (track) {
+                track = resolveEventTrackName({ track, id: eventSlug }, { eventSlug, teamName });
+            }
+
             return {
                 teamName: teamName,
                 car: car,
@@ -3066,41 +3173,52 @@
             const banner = document.getElementById('team-builder-car-banner');
             if (!banner) return;
 
-            if (!builderInfo || !builderInfo.car) {
+            const activeCar = builderInfo?.car || window.currentTeamCar;
+            const activeTrack = builderInfo?.track || window.currentEventTrack;
+            const squadName = builderInfo?.teamName || currentTeam;
+
+            if (!activeCar && !activeTrack) {
                 banner.style.display = 'none';
                 banner.innerHTML = '';
                 return;
             }
 
-            const activeCar = builderInfo.car;
-            const teamLabel = builderInfo.teamName ? `(${escapeHtml(builderInfo.teamName)})` : '';
-            const trackLabel = builderInfo.track ? `&bull; ${escapeHtml(builderInfo.track)}` : '';
+            const carFilter = document.getElementById('setup-filter-car');
+            const trackFilter = document.getElementById('setup-filter-track');
+            const isCurrentlyEventFiltered = (carFilter && carFilter.value !== 'all') && (trackFilter && trackFilter.value !== 'all');
 
             banner.style.display = 'block';
             banner.innerHTML = `
                 <div class="setup-team-car-banner">
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <div style="width: 42px; height: 42px; border-radius: 10px; background: rgba(0, 207, 255, 0.15); border: 1px solid rgba(0, 207, 255, 0.35); display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 1.15rem;">
-                            <i class="fas fa-car-side"></i>
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(0, 207, 255, 0.15); border: 1px solid rgba(0, 207, 255, 0.35); display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 1.25rem;">
+                            <i class="fas fa-flag-checkered"></i>
                         </div>
                         <div>
                             <div style="font-size: 0.68rem; color: var(--primary); text-transform: uppercase; font-weight: 800; letter-spacing: 1.5px; display: flex; align-items: center; gap: 6px;">
-                                <i class="fas fa-layer-group"></i> Team Builder Selection
+                                <i class="fas fa-shield-halved"></i> Confirmed Event Setup Filter
+                                <span style="background: ${isCurrentlyEventFiltered ? 'rgba(16,185,129,0.2)' : 'rgba(255,255,255,0.08)'}; color: ${isCurrentlyEventFiltered ? '#10b981' : 'var(--text-muted)'}; font-size: 0.62rem; padding: 1px 6px; border-radius: 4px; font-weight: 800;">
+                                    ${isCurrentlyEventFiltered ? 'ACTIVE' : 'EXPANDED'}
+                                </span>
                             </div>
-                            <div style="font-size: 1.1rem; font-weight: 800; color: #fff; margin-top: 2px;">
-                                ${escapeHtml(activeCar)} <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">${teamLabel} ${trackLabel}</span>
+                            <div style="font-size: 1.15rem; font-weight: 800; color: #fff; margin-top: 2px;">
+                                ${escapeHtml(activeCar || 'Assigned Chassis')} 
+                                <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: normal;">
+                                    ${activeTrack ? `&bull; 📍 ${escapeHtml(activeTrack)}` : ''} 
+                                    ${squadName ? `&bull; ${escapeHtml(squadName)}` : ''}
+                                </span>
                             </div>
                         </div>
                     </div>
                     <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-                        <button type="button" onclick="setCarFilter('${escapeHtml(activeCar)}')" class="btn btn-primary" style="font-size: 0.75rem; padding: 0.45rem 1rem;">
-                            <i class="fas fa-check"></i> Filter to ${escapeHtml(activeCar)}
+                        <button type="button" onclick="resetToEventSetupFilters()" class="btn ${isCurrentlyEventFiltered ? 'btn-primary' : 'btn-outline'}" style="font-size: 0.75rem; padding: 0.45rem 1rem;">
+                            <i class="fas fa-filter"></i> Only Event Setups
                         </button>
-                        <button type="button" onclick="setCarFilter('all')" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.45rem 0.85rem;">
-                            Show All Chassis
+                        <button type="button" onclick="clearEventSetupFilters()" class="btn ${!isCurrentlyEventFiltered ? 'btn-primary' : 'btn-outline'}" style="font-size: 0.75rem; padding: 0.45rem 0.85rem;">
+                            Show All Setups
                         </button>
                         <button type="button" onclick="openUploadSetupModal()" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.45rem 0.85rem; border-color: var(--primary); color: var(--primary);">
-                            <i class="fas fa-cloud-arrow-up"></i> Upload for this Car
+                            <i class="fas fa-cloud-arrow-up"></i> Upload for this Event
                         </button>
                     </div>
                 </div>
@@ -3110,14 +3228,37 @@
         window.setCarFilter = function(carName) {
             const carFilter = document.getElementById('setup-filter-car');
             if (carFilter) {
-                if (carName === 'all') {
-                    window._userManuallyClearedCarFilter = true;
-                } else {
-                    window._userManuallyClearedCarFilter = false;
-                }
+                window._userManuallyClearedCarFilter = (carName === 'all');
                 carFilter.value = carName;
                 filterAndRenderSetups();
             }
+        };
+
+        window.setTrackFilter = function(trackName) {
+            const trackFilter = document.getElementById('setup-filter-track');
+            if (trackFilter) {
+                window._userManuallyClearedTrackFilter = (trackName === 'all');
+                trackFilter.value = trackName;
+                filterAndRenderSetups();
+            }
+        };
+
+        window.clearEventSetupFilters = function() {
+            window._userManuallyClearedCarFilter = true;
+            window._userManuallyClearedTrackFilter = true;
+            const carFilter = document.getElementById('setup-filter-car');
+            if (carFilter) carFilter.value = 'all';
+            const trackFilter = document.getElementById('setup-filter-track');
+            if (trackFilter) trackFilter.value = 'all';
+            const builderInfo = { car: window.currentTeamCar, track: window.currentEventTrack, teamName: currentTeam };
+            renderTeamBuilderBanner(builderInfo);
+            filterAndRenderSetups();
+        };
+
+        window.resetToEventSetupFilters = function() {
+            window._userManuallyClearedCarFilter = false;
+            window._userManuallyClearedTrackFilter = false;
+            loadSetups();
         };
 
         async function openUploadSetupModal() {
@@ -3152,15 +3293,20 @@
             // Auto-select car and circuit configured in Team Builder
             try {
                 const builderInfo = await getTeamBuilderCarInfo();
-                if (builderInfo) {
-                    if (builderInfo.car) {
-                        const carSelect = document.getElementById('upload-car-select');
-                        if (carSelect) carSelect.value = builderInfo.car;
-                    }
-                    if (builderInfo.track) {
-                        const trackInput = document.getElementById('upload-track-input');
-                        if (trackInput && !trackInput.value) trackInput.value = builderInfo.track;
-                    }
+                const targetCar = builderInfo?.car || window.currentTeamCar;
+                const targetTrack = builderInfo?.track || window.currentEventTrack;
+
+                if (targetCar) {
+                    const carSelect = document.getElementById('upload-car-select');
+                    if (carSelect) carSelect.value = targetCar;
+                }
+                if (targetTrack) {
+                    const trackInput = document.getElementById('upload-track-input');
+                    if (trackInput) trackInput.value = targetTrack;
+                }
+                const nameInput = document.getElementById('upload-name-input');
+                if (nameInput && targetTrack && !nameInput.value) {
+                    nameInput.placeholder = `${targetTrack} - Race Baseline`;
                 }
             } catch (e) {
                 console.warn("Could not prefill from team builder:", e);
@@ -3931,8 +4077,8 @@
                     if ((s.category || '').toLowerCase() !== ACTIVE_CATEGORY_FILTER.toLowerCase()) return false;
                 }
 
-                if (carVal !== 'all' && s.car !== carVal) return false;
-                if (trackVal !== 'all' && s.track !== trackVal) return false;
+                if (carVal !== 'all' && !isMatchingCar(s.car, carVal)) return false;
+                if (trackVal !== 'all' && !isMatchingTrack(s.track, trackVal)) return false;
 
                 if (searchVal) {
                     const haystack = `${s.name} ${s.car} ${s.track} ${s.author} ${s.description} ${s.conditions}`.toLowerCase();
@@ -3950,16 +4096,33 @@
             });
 
             if (filtered.length === 0) {
+                const isFilteredByCarOrTrack = (carVal !== 'all' || trackVal !== 'all');
+                const targetCarText = carVal !== 'all' ? escapeHtml(carVal) : (window.currentTeamCar ? escapeHtml(window.currentTeamCar) : 'Selected Car');
+                const targetTrackText = trackVal !== 'all' ? escapeHtml(trackVal) : (window.currentEventTrack ? escapeHtml(window.currentEventTrack) : 'Selected Circuit');
+
                 grid.innerHTML = `
-                    <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem; color: var(--text-muted); background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.08); border-radius: 12px;">
-                        <i class="fas fa-sliders-h" style="font-size: 2rem; color: var(--primary); margin-bottom: 0.8rem; opacity: 0.5;"></i>
-                        <h3 style="color: #fff; font-size: 1.1rem; margin-bottom: 0.4rem;">No setups match the selected filters</h3>
-                        <p style="font-size: 0.85rem; margin: 0;">Try clearing your search term, switching categories, or uploading a new team setup.</p>
-                        ${canUserUploadSetups() ? `
-                            <button type="button" onclick="openUploadSetupModal()" class="btn btn-primary" style="margin-top: 1.25rem; font-size: 0.8rem; padding: 0.5rem 1.25rem;">
-                                <i class="fas fa-cloud-arrow-up"></i> Upload New Setup (.sto)
-                            </button>
-                        ` : ''}
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 1.5rem; color: var(--text-muted); background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); border-radius: 14px;">
+                        <div style="width: 56px; height: 56px; border-radius: 12px; background: rgba(0, 207, 255, 0.1); border: 1px solid rgba(0, 207, 255, 0.3); display: inline-flex; align-items: center; justify-content: center; color: var(--primary); font-size: 1.5rem; margin-bottom: 1rem;">
+                            <i class="fas fa-flag-checkered"></i>
+                        </div>
+                        <h3 style="color: #fff; font-size: 1.25rem; margin-bottom: 0.5rem; font-family: var(--font-heading);">
+                            ${isFilteredByCarOrTrack ? `No Setups Uploaded for ${targetCarText} at ${targetTrackText}` : 'No setups match the selected filters'}
+                        </h3>
+                        <p style="font-size: 0.85rem; max-width: 540px; margin: 0 auto 1.5rem auto; line-height: 1.6;">
+                            ${isFilteredByCarOrTrack ? `Be the first to upload an iRacing .sto setup file calibrated for your squad's confirmed car and track.` : 'Try clearing your search term, switching categories, or uploading a new team setup.'}
+                        </p>
+                        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                            ${canUserUploadSetups() ? `
+                                <button type="button" onclick="openUploadSetupModal()" class="btn btn-primary" style="font-size: 0.85rem; padding: 0.6rem 1.4rem;">
+                                    <i class="fas fa-cloud-arrow-up"></i> Upload Setup (.sto) for this Event
+                                </button>
+                            ` : ''}
+                            ${isFilteredByCarOrTrack ? `
+                                <button type="button" onclick="clearEventSetupFilters()" class="btn btn-outline" style="font-size: 0.85rem; padding: 0.6rem 1.2rem;">
+                                    <i class="fas fa-layer-group"></i> Show All Chassis & Circuits
+                                </button>
+                            ` : ''}
+                        </div>
                     </div>
                 `;
                 return;
@@ -4167,31 +4330,59 @@
 
                 // Populate track filter
                 const trackFilter = document.getElementById('setup-filter-track');
+                const eventTrack = builderInfo?.track || window.currentEventTrack || null;
                 if (trackFilter) {
-                    const uniqueTracks = Array.from(new Set([
-                        ...(builderInfo?.track ? [builderInfo.track] : []),
-                        ...ALL_SETUPS.map(s => s.track)
-                    ].filter(Boolean))).sort();
                     const cur = trackFilter.value;
                     trackFilter.innerHTML = '<option value="all">All Circuits</option>';
-                    uniqueTracks.forEach(t => {
+
+                    if (eventTrack) {
+                        const optgroupEvent = document.createElement('optgroup');
+                        optgroupEvent.label = '📍 Active Event Circuit';
                         const opt = document.createElement('option');
-                        opt.value = t;
-                        opt.textContent = `${t}${t === builderInfo?.track ? ' ★ (Event Circuit)' : ''}`;
-                        trackFilter.appendChild(opt);
-                    });
-                    if (cur) trackFilter.value = cur;
+                        opt.value = eventTrack;
+                        opt.textContent = `${eventTrack} ★ (Event Circuit)`;
+                        optgroupEvent.appendChild(opt);
+                        trackFilter.appendChild(optgroupEvent);
+                    }
+
+                    const uniqueTracks = Array.from(new Set([
+                        ...ALL_SETUPS.map(s => s.track)
+                    ].filter(Boolean))).filter(t => !eventTrack || !isMatchingTrack(t, eventTrack)).sort();
+
+                    if (uniqueTracks.length > 0) {
+                        const optgroupOther = document.createElement('optgroup');
+                        optgroupOther.label = 'Other Circuits';
+                        uniqueTracks.forEach(t => {
+                            const opt = document.createElement('option');
+                            opt.value = t;
+                            opt.textContent = t;
+                            optgroupOther.appendChild(opt);
+                        });
+                        trackFilter.appendChild(optgroupOther);
+                    }
+
+                    // Auto-select event circuit if not manually cleared
+                    if ((!cur || cur === 'all' || !window._userManuallyClearedTrackFilter) && eventTrack) {
+                        trackFilter.value = eventTrack;
+                    } else if (cur) {
+                        trackFilter.value = cur;
+                    }
                 }
 
-                // Update KPI Cards: If teamBuilderCar is known, Active Chassis card displays it directly!
+                // Update KPI Cards: Show active setups for this event chassis & circuit!
                 const activeSetups = ALL_SETUPS.filter(s => !s.isArchived);
+                const eventSetups = activeSetups.filter(s => 
+                    (!teamBuilderCar || isMatchingCar(s.car, teamBuilderCar)) && 
+                    (!eventTrack || isMatchingTrack(s.track, eventTrack))
+                );
+
                 const statTotal = document.getElementById('stat-total-setups');
-                if (statTotal) statTotal.textContent = activeSetups.length;
+                if (statTotal) statTotal.textContent = eventSetups.length;
 
                 const statCars = document.getElementById('stat-total-cars');
                 if (statCars) {
                     if (teamBuilderCar) {
-                        statCars.innerHTML = `<span style="font-size: 0.95rem; color: var(--primary);" title="Team Builder Assigned Chassis">${escapeHtml(teamBuilderCar)}</span>`;
+                        statCars.innerHTML = `<span style="font-size: 0.95rem; color: var(--primary);" title="Confirmed Chassis">${escapeHtml(teamBuilderCar)}</span>`;
                     } else {
                         const carCount = new Set(activeSetups.map(s => s.car)).size;
                         statCars.textContent = carCount;
@@ -4561,9 +4752,8 @@
                     // Filter: Only include events where endDate is in the future
 
                     if (eventEndDate >= now) {
-
-                        UPCOMING_EVENTS.push({ id: doc.id, ...data });
-
+                        const trackName = resolveEventTrackName(data, { eventSlug: doc.id, eventName: data.name });
+                        UPCOMING_EVENTS.push({ id: doc.id, ...data, track: trackName });
                     }
 
                 });
