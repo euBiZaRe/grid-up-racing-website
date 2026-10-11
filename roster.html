@@ -394,17 +394,16 @@
                     console.warn("Failed to load claims:", err);
                 }
 
-                const snap = await db.collection("drivers").orderBy("name").get();
-                
-                leadershipGrid.innerHTML = '';
-                enduranceGrid.innerHTML = '';
-                rosterGrid.innerHTML = '';
+                const renderDrivers = (snap) => {
+                    leadershipGrid.innerHTML = '';
+                    enduranceGrid.innerHTML = '';
+                    rosterGrid.innerHTML = '';
 
-                let activeDrivers = [];
-                snap.forEach(doc => {
-                    const d = doc.data();
-                    if (d.active !== false) activeDrivers.push(d);
-                });
+                    let activeDrivers = [];
+                    snap.forEach(doc => {
+                        const d = doc.data();
+                        if (d.active !== false) activeDrivers.push(d);
+                    });
 
                 // Update the verified count pill for admins
                 const countPill = document.getElementById('roster-verified-count');
@@ -550,8 +549,17 @@
                     }
                 });
 
-                // Default active category
-                switchCategory(activeCategory);
+                    // Default active category
+                    switchCategory(activeCategory);
+                };
+
+                // Real-time listener so roster updates live when changes occur in Firestore
+                db.collection("drivers").orderBy("name").onSnapshot(snap => {
+                    renderDrivers(snap);
+                }, err => {
+                    console.warn("Realtime listener fallback to one-time get:", err);
+                    db.collection("drivers").orderBy("name").get().then(renderDrivers);
+                });
 
             } catch (e) {
                 console.error("Error loading roster:", e);
