@@ -5192,9 +5192,15 @@
             const modal = document.getElementById('modal-garage61-sync');
             if (!modal) return;
 
-            // Load stored token or default team PAT
-            const defaultToken = 'ZTLHNDQWYZATNMJHMC0ZOWQ5LTLKOTUTYTZJYZG0ZGJKOGU5';
-            const storedToken = localStorage.getItem('gridup_g61_token') || defaultToken;
+            // Load stored user-supplied token (no shared team credential is shipped in client code)
+            // One-time purge of tokens stored by earlier builds, which silently saved a shared team PAT for every visitor
+            try {
+                if (!localStorage.getItem('gridup_g61_token_purged_v1')) {
+                    localStorage.removeItem('gridup_g61_token');
+                    localStorage.setItem('gridup_g61_token_purged_v1', '1');
+                }
+            } catch (_) {}
+            const storedToken = localStorage.getItem('gridup_g61_token') || '';
             const input = document.getElementById('g61-token-input');
             if (input) input.value = storedToken;
 
@@ -5222,8 +5228,24 @@
             const tokenInput = document.getElementById('g61-token-input');
             const statusArea = document.getElementById('g61-sync-status-area');
             const btn = document.getElementById('btn-execute-g61-sync');
-            const defaultToken = 'ZTLHNDQWYZATNMJHMC0ZOWQ5LTLKOTUTYTZJYZG0ZGJKOGU5'; // Official GRiD UP Team PAT
-            const token = (tokenInput && tokenInput.value.trim()) || localStorage.getItem('gridup_g61_token') || defaultToken;
+            try {
+                if (!localStorage.getItem('gridup_g61_token_purged_v1')) {
+                    localStorage.removeItem('gridup_g61_token');
+                    localStorage.setItem('gridup_g61_token_purged_v1', '1');
+                }
+            } catch (_) {}
+            const token = (tokenInput && tokenInput.value.trim()) || localStorage.getItem('gridup_g61_token') || '';
+
+            if (!token) {
+                if (!silent && statusArea) {
+                    statusArea.style.display = 'block';
+                    statusArea.style.background = 'rgba(255, 71, 87, 0.1)';
+                    statusArea.style.border = '1px solid rgba(255, 71, 87, 0.3)';
+                    statusArea.style.color = '#ff6b6b';
+                    statusArea.textContent = 'Enter your Garage61 personal access token to sync.';
+                }
+                return;
+            }
 
             // Save token locally
             try {

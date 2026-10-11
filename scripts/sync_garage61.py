@@ -5,7 +5,9 @@ import sys
 from collections import defaultdict
 from datetime import datetime
 
-TOKEN = os.environ.get('GARAGE61_TOKEN') or os.environ.get('G61_PAT') or 'ZTLHNDQWYZATNMJHMC0ZOWQ5LTLKOTUTYTZJYZG0ZGJKOGU5'
+TOKEN = os.environ.get('GARAGE61_TOKEN') or os.environ.get('G61_PAT')
+if not TOKEN:
+    raise SystemExit('Set GARAGE61_TOKEN or G61_PAT in the environment (never hardcode it).')
 HEADERS = {'Authorization': f'Bearer {TOKEN}', 'User-Agent': 'GRiD-UP-Telemetry/1.0'}
 TEAM_ID = '01J4FHVP9N8APEV93B13HS16R8' # Grid Up Sim Racing
 

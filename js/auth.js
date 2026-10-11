@@ -223,6 +223,7 @@ async function enrichAuthData(user) {
     // 1. Static whitelist failsafe (zero chance of lockout)
     IS_ADMIN = KNOWN_ADMIN_UIDS.includes(user.uid);
     let finalAvatar = user.photoURL;
+    let verifiedDriverName = null;
     
     if (db) {
         try {
@@ -261,7 +262,6 @@ async function enrichAuthData(user) {
             }
 
             // Check Verification
-            let verifiedDriverName = null;
             if (claimSnapshot && !claimSnapshot.empty && claimSnapshot.docs[0].data().status === 'verified') {
                 IS_VERIFIED = true;
                 verifiedDriverName = claimSnapshot.docs[0].id;
