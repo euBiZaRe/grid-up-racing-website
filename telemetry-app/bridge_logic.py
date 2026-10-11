@@ -22,7 +22,7 @@ else:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 CONFIG_FILE = os.path.join(BASE_DIR, "config.json")
-BRIDGE_VERSION = "1.5.1"
+BRIDGE_VERSION = "1.6.0"
 LOCAL_DASH_TOKEN = "9f88a761189d76af3351166d3cc820e6e4c9e5b901f5fb0261c8d24eac694f4b"
 
 class TelemetryBridge:
@@ -689,6 +689,8 @@ class TelemetryBridge:
     def loop(self):
         self.running = True
         self.start_websocket_server()
+        if self.has_firebase:
+            self.start_setup_installer_worker()
         
         def sampler():
             while self.running:
@@ -1261,7 +1263,260 @@ class TelemetryBridge:
 
     def stop(self):
         self.running = False
+        self.setup_installer_running = False
         self.save_race_log()
         self.ir.shutdown()
         self.send_local_post("/api/bridge/end_session", {})
         self.log("Telemetry Recorder Bridge Stopped")
+
+    # ==========================================
+    # iRACING SETUP INSTALLATION ENGINE
+    # ==========================================
+
+    IRACING_CAR_FOLDER_MAP = {
+        'supercars chevrolet camaro gen 3': 'supercarscamaro',
+        'supercars ford mustang gen 3': 'supercarsmustang',
+        'supercars camaro': 'supercarscamaro',
+        'supercars mustang': 'supercarsmustang',
+        'cadillac v-series.r gtp': 'cadillacvseriesrgtp',
+        'porsche 963 gtp': 'porsche963gtp',
+        'acura arx-06 gtp': 'acuraarx06gtp',
+        'bmw m hybrid v8 (evo)': 'bmwmhybridv8',
+        'bmw m hybrid v8': 'bmwmhybridv8',
+        'ferrari 499p': 'ferrari499p',
+        'dallara p217': 'dallarap217',
+        'dallara p217 lmp2': 'dallarap217',
+        'ferrari 296 gt3': 'ferrari296gt3',
+        'porsche 911 gt3 r (992)': 'porsche992gt3r',
+        'bmw m4 gt3 evo': 'bmwm4gt3evo',
+        'bmw m4 gt3': 'bmwm4gt3',
+        'mercedes-amg gt3 2020': 'mercedesamggt32020',
+        'mercedes-amg gt3': 'mercedesamggt32020',
+        'ford mustang gt3': 'fordmustanggt3',
+        'mclaren 720s gt3 evo': 'mclaren720sgt3evo',
+        'mclaren 720s gt3': 'mclaren720sgt3evo',
+        'aston martin vantage gt3 evo': 'astonmartinvantagegt3evo',
+        'aston martin vantage gt3': 'astonmartinvantagegt3evo',
+        'chevrolet corvette z06 gt3.r': 'corvettez06gt3r',
+        'corvette z06 gt3.r': 'corvettez06gt3r',
+        'acura nsx gt3 evo 22': 'acuransxgt3evo22',
+        'acura nsx gt3': 'acuransxgt3evo22',
+        'audi r8 lms evo ii gt3': 'audir8gt3evo2',
+        'audi r8 lms evo ii': 'audir8gt3evo2',
+        'lamborghini huracán gt3 evo': 'lamborghinihuracangt3evo',
+        'lamborghini huracan gt3 evo': 'lamborghinihuracangt3evo',
+        'bmw m4 g82 gt4 evo': 'bmwm4gt4evo',
+        'porsche 718 cayman gt4 clubsport mr': 'porsche718gt4',
+        'porsche 718 cayman gt4': 'porsche718gt4',
+        'aston martin vantage gt4': 'astonmartinvantagegt4',
+        'mercedes-amg gt4': 'mercedesamggt4',
+        'mclaren 570s gt4': 'mclaren570sgt4',
+        'ford mustang gt4': 'fordmustanggt4',
+        'hyundai elantra n tcr': 'hyundaielantrantcr',
+        'honda civic type r tcr': 'hondacivictypertcr',
+        'audi rs3 lms gen2 tcr': 'audirs3lmsgen2tcr',
+        'bmw m2 cs racing': 'bmwm2cs',
+        'bmw m2': 'bmwm2cs',
+        'porsche 911 gt3 cup (992)': 'porsche992cup',
+        'porsche cup': 'porsche992cup',
+        'super formula lights 324': 'superformalights324',
+        'ray ff1600': 'rayff1600',
+        'dallara ir-18 indycar': 'dallarair18',
+        'dallara ir-18': 'dallarair18',
+        'chevrolet camaro zl1 next gen': 'nascarchevynextgen',
+        'ford mustang next gen': 'nascarfordnextgen',
+        'toyota camry next gen': 'nascartoyotanextgen'
+    }
+
+    def get_iracing_setups_directory(self):
+        docs_path = None
+        try:
+            import ctypes.wintypes
+            CSIDL_PERSONAL = 5
+            SHGFP_TYPE_CURRENT = 0
+            buf = ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
+            ctypes.windll.shell32.SHGetFolderPathW(None, CSIDL_PERSONAL, None, SHGFP_TYPE_CURRENT, buf)
+            docs_path = buf.value
+        except Exception:
+            pass
+        if not docs_path or not os.path.exists(docs_path):
+            docs_path = os.path.join(os.path.expanduser('~'), 'Documents')
+        
+        iracing_setups = os.path.join(docs_path, 'iRacing', 'setups')
+        try:
+            os.makedirs(iracing_setups, exist_ok=True)
+        except Exception as e:
+            self.log(f"Warning: Could not create iRacing setups directory: {e}")
+        return iracing_setups
+
+    def resolve_car_folder(self, car_name, suggested_folder=None):
+        if suggested_folder:
+            clean_sug = re.sub(r'[^a-zA-Z0-9_\-]', '', str(suggested_folder)).strip().lower()
+            if clean_sug:
+                return clean_sug
+
+        if not car_name:
+            return "custom_car"
+
+        raw = str(car_name).strip().lower()
+        if raw in self.IRACING_CAR_FOLDER_MAP:
+            return self.IRACING_CAR_FOLDER_MAP[raw]
+
+        for key, folder in self.IRACING_CAR_FOLDER_MAP.items():
+            if key in raw or raw in key:
+                return folder
+
+        try:
+            setups_dir = self.get_iracing_setups_directory()
+            if os.path.exists(setups_dir):
+                norm_target = re.sub(r'[^a-z0-9]', '', raw)
+                for existing in os.listdir(setups_dir):
+                    if os.path.isdir(os.path.join(setups_dir, existing)):
+                        norm_exist = re.sub(r'[^a-z0-9]', '', existing.lower())
+                        if norm_exist == norm_target or (len(norm_target) > 5 and norm_target in norm_exist):
+                            return existing
+        except Exception:
+            pass
+
+        clean_slug = re.sub(r'[^a-z0-9]', '', raw)
+        return clean_slug or "custom_car"
+
+    def sanitize_setup_filename(self, filename):
+        if not filename:
+            return f"setup_{int(time.time())}.sto"
+        base = os.path.basename(str(filename)).strip()
+        clean = re.sub(r'[\\/*?:"<>|]', '_', base)
+        clean = clean.replace('..', '_')
+        if not clean.lower().endswith('.sto'):
+            clean += '.sto'
+        return clean or f"setup_{int(time.time())}.sto"
+
+    def update_job_status(self, job_id, status, message, installed_path=None):
+        mid = self.config.get('machineId')
+        update_data = {
+            'status': status,
+            'statusMessage': message,
+            'updatedAt': int(time.time() * 1000)
+        }
+        if installed_path:
+            update_data['installedPath'] = str(installed_path)
+            update_data['installedAt'] = int(time.time() * 1000)
+
+        if self.has_firebase:
+            try:
+                db.reference(f"setup_jobs/{mid}/{job_id}").update(update_data)
+            except Exception as e:
+                self.log(f"RTDB job update error: {e}")
+
+        if self.db_fs:
+            try:
+                self.db_fs.collection("setup_jobs").document(job_id).set(update_data, merge=True)
+            except Exception as e:
+                self.log(f"Firestore job update error: {e}")
+
+    def process_setup_job(self, job_id, job):
+        try:
+            download_url = job.get('downloadUrl')
+            expected_checksum = str(job.get('checksum') or '').strip().lower()
+            car_name = job.get('carName') or job.get('car') or ''
+            suggested_folder = job.get('carFolder') or job.get('carId')
+            raw_filename = job.get('fileName') or job.get('filename') or job.get('setupName') or 'setup.sto'
+
+            if not download_url:
+                raise ValueError("Job payload missing downloadUrl.")
+
+            self.update_job_status(job_id, 'downloading', f"Downloading setup for {car_name or 'car'}...")
+            self.log(f"[Setup Installer] Downloading job {job_id} from {download_url[:60]}...")
+
+            req = urllib.request.Request(download_url, headers={'User-Agent': 'GRiD-UP-Telemetry-SetupInstaller/1.0'})
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                data = resp.read()
+
+            if not data:
+                raise ValueError("Downloaded file is empty (0 bytes).")
+
+            if len(data) > 3 * 1024 * 1024:
+                raise ValueError(f"Setup file exceeds 3MB limit ({len(data)} bytes).")
+
+            computed_checksum = hashlib.sha256(data).hexdigest().lower()
+            if expected_checksum and computed_checksum != expected_checksum:
+                raise ValueError(f"SHA-256 Checksum mismatch! Expected {expected_checksum[:12]}..., got {computed_checksum[:12]}...")
+
+            if len(data) < 16:
+                raise ValueError("File is too small to be a valid iRacing .sto setup.")
+
+            setups_dir = self.get_iracing_setups_directory()
+            car_folder = self.resolve_car_folder(car_name, suggested_folder)
+            target_car_dir = os.path.join(setups_dir, car_folder)
+            os.makedirs(target_car_dir, exist_ok=True)
+
+            safe_filename = self.sanitize_setup_filename(raw_filename)
+            target_path = os.path.join(target_car_dir, safe_filename)
+
+            temp_path = target_path + f".tmp_{int(time.time())}"
+            with open(temp_path, "wb") as f:
+                f.write(data)
+
+            if os.path.exists(target_path):
+                os.replace(temp_path, target_path)
+            else:
+                os.rename(temp_path, target_path)
+
+            success_msg = f"Successfully installed to iRacing ({car_folder}/{safe_filename})"
+            self.update_job_status(job_id, 'installed', success_msg, installed_path=target_path)
+            self.log(f"[Setup Installer] SUCCESS: {success_msg}")
+
+            if self.status_callback:
+                self.status_callback("setup_installed", {
+                    "jobId": job_id,
+                    "carFolder": car_folder,
+                    "fileName": safe_filename,
+                    "targetPath": target_path
+                })
+
+        except Exception as e:
+            err_msg = str(e)
+            self.log(f"[Setup Installer] FAILED job {job_id}: {err_msg}")
+            self.update_job_status(job_id, 'failed', f"Installation failed: {err_msg}")
+
+    def start_setup_installer_worker(self):
+        if getattr(self, 'setup_installer_running', False):
+            return
+        self.setup_installer_running = True
+
+        def worker():
+            mid = self.config.get('machineId')
+            self.log(f"[Setup Installer] Background worker started for machineId: {mid}")
+            processed_jobs = set()
+
+            while self.running and getattr(self, 'setup_installer_running', False):
+                if self.has_firebase:
+                    try:
+                        # 1. Announce presence to driver_registry
+                        db.reference(f"driver_registry/{mid}").update({
+                            "online": True,
+                            "last_seen": int(time.time() * 1000),
+                            "installer_active": True,
+                            "name": self.config.get("driverName", "GRiD UP Driver"),
+                            "machineId": mid
+                        })
+
+                        # 2. Check pending jobs for this machine
+                        jobs_ref = db.reference(f"setup_jobs/{mid}")
+                        jobs_snap = jobs_ref.get()
+
+                        if jobs_snap and isinstance(jobs_snap, dict):
+                            for jid, jdata in jobs_snap.items():
+                                if isinstance(jdata, dict):
+                                    status = jdata.get('status')
+                                    if status == 'queued' and jid not in processed_jobs:
+                                        processed_jobs.add(jid)
+                                        self.process_setup_job(jid, jdata)
+
+                    except Exception as e:
+                        pass
+
+                time.sleep(2.0)
+
+        t = threading.Thread(target=worker, daemon=True)
+        t.start()
