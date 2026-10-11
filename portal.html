@@ -1496,6 +1496,10 @@
 
                                     <input type="number" id="irating-input" value="2300" min="500" max="8000" step="50" class="btn btn-outline" style="width: 70px; font-size: 0.8rem; padding: 0.3rem 0.5rem; text-align: center; border-radius: 6px;" onchange="updateIRating(this.value)">
 
+                                    <button type="button" id="btn-reset-team-sof" onclick="resetToTeamSOF()" class="btn btn-outline" style="font-size: 0.72rem; padding: 0.35rem 0.65rem; border-radius: 6px; color: #f59e0b; border-color: rgba(245, 158, 11, 0.4); display: inline-flex; align-items: center; gap: 5px; font-weight: 700; white-space: nowrap; transition: all 0.2s;" title="Reset target SOF to your team's exact SOF">
+                                        <i class="fas fa-undo" style="font-size: 0.65rem;"></i> <span>Team SOF</span>
+                                    </button>
+
                                     <select id="sof-window-filter" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.35rem 0.65rem; border-radius: 6px;" onchange="loadTelemetry()" title="Filter lap times around team SOF">
                                         <option value="400">±400 iR (Same SOF)</option>
                                         <option value="250">±250 iR (Tight SOF)</option>
@@ -4808,10 +4812,36 @@
             if (slider && Number(slider.value) !== currentIRating) slider.value = currentIRating;
             if (input && Number(input.value) !== currentIRating) input.value = currentIRating;
 
+            const sofIndicator = document.getElementById('team-sof-indicator');
+            if (sofIndicator) {
+                sofIndicator.textContent = window.currentTeamAvgIR 
+                    ? `Team SOF: ${window.currentTeamAvgIR.toLocaleString()} iR` 
+                    : `Target SOF: ${currentIRating.toLocaleString()} iR`;
+            }
+
             clearTimeout(_irDebounceTimer);
             _irDebounceTimer = setTimeout(() => {
                 loadTelemetry();
             }, 250);
+        }
+
+        function resetToTeamSOF() {
+            window._userManuallyChangedIR = false;
+            const teamSOF = window.currentTeamAvgIR || 2000;
+            currentIRating = Math.round(teamSOF / 50) * 50;
+
+            const slider = document.getElementById('irating-slider');
+            const input = document.getElementById('irating-input');
+            if (slider) slider.value = currentIRating;
+            if (input) input.value = currentIRating;
+
+            const sofIndicator = document.getElementById('team-sof-indicator');
+            if (sofIndicator) {
+                sofIndicator.textContent = `Team SOF: ${teamSOF.toLocaleString()} iR`;
+            }
+
+            clearTimeout(_irDebounceTimer);
+            loadTelemetry();
         }
 
         function toggleShowAll(checked) {
@@ -5634,11 +5664,32 @@
                     !myTeams.some(m => m.eventSlug === t.eventSlug && m.teamName === t.teamName)
                 );
 
-                // Check for persisted active team or deep-link from URL search params, localStorage, sessionStorage, or hash
+                // Check for explicit deep-link from URL search params (or URL hash)
                 const urlParams = new URLSearchParams(window.location.search);
-                const targetEvent = urlParams.get('event') || localStorage.getItem('gridup_active_event') || sessionStorage.getItem('gridup_active_event') || '';
-                const targetTeamName = urlParams.get('team') || localStorage.getItem('gridup_active_team') || sessionStorage.getItem('gridup_active_team') || '';
-                const targetTab = urlParams.get('tab') || localStorage.getItem('gridup_active_tab') || sessionStorage.getItem('gridup_active_tab') || 'wall';
+                const hasUrlEvent = Boolean(urlParams.get('event'));
+                const hasUrlTeam = Boolean(urlParams.get('team'));
+                const hasUrlHash = Boolean(window.location.hash && window.location.hash.startsWith('#team-'));
+                const hasExplicitTarget = hasUrlEvent || hasUrlTeam || hasUrlHash;
+
+                let targetEvent = '';
+                let targetTeamName = '';
+                let targetTab = urlParams.get('tab') || 'wall';
+
+                if (hasExplicitTarget) {
+                    targetEvent = urlParams.get('event') || '';
+                    targetTeamName = urlParams.get('team') || '';
+                } else {
+                    // Clean navigation to portal.html (e.g. clicking "Portal" in navigation)
+                    // Always land on the main Team Portal Dashboard (Image 2) and clear any stale active team keys
+                    try {
+                        sessionStorage.removeItem('gridup_active_event');
+                        sessionStorage.removeItem('gridup_active_team');
+                        sessionStorage.removeItem('gridup_active_tab');
+                        localStorage.removeItem('gridup_active_event');
+                        localStorage.removeItem('gridup_active_team');
+                        localStorage.removeItem('gridup_active_tab');
+                    } catch (_) {}
+                }
 
                 const normalizeSquad = (str) => {
                     if (!str) return '';
@@ -5701,13 +5752,7 @@
                     );
                 }
 
-                // 5. If user has exactly one assigned upcoming team and didn't manually navigate to dashboard, auto-open their team portal
-                const manualDashboard = (sessionStorage.getItem('gridup_manual_dashboard') === 'true') || (localStorage.getItem('gridup_manual_dashboard') === 'true');
-                if (!matchedTeam && !manualDashboard && myUpcomingTeams.length === 1) {
-                    matchedTeam = myUpcomingTeams[0];
-                }
-
-                // Render selection dashboard in background if matchedTeam exists, or show directly if not
+                // Render selection dashboard (Image 2)
                 await showSelection(myUpcomingTeams, isAdminUser, otherTeams, allTeamAssignments, !matchedTeam, myPastTeams);
 
                 if (matchedTeam) {
@@ -5734,6 +5779,15 @@
                 }
             }
         }
+
+        // Ensure clicking navbar "Portal" button always returns to the main dashboard
+        document.addEventListener('click', (e) => {
+            const portalBtn = e.target.closest('#navbar-portal-btn');
+            if (portalBtn) {
+                e.preventDefault();
+                window.returnToPortalDashboard();
+            }
+        });
 
         window.openSelectedAdminPortal = function() {
             const sel = document.getElementById('admin-portal-dropdown');
