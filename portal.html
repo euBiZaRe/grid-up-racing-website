@@ -1838,11 +1838,11 @@
                     <!-- Progress Bar -->
                     <div id="upload-progress-bar-container" style="display: none; margin-bottom: 1.25rem;">
                         <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">
-                            <span>Uploading and encrypting checksum...</span>
-                            <span id="upload-progress-pct">0%</span>
+                            <span id="upload-progress-status-text">Uploading setup file...</span>
+                            <span id="upload-progress-pct" style="color: var(--primary); font-weight: 700;">0%</span>
                         </div>
                         <div style="height: 6px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden;">
-                            <div id="upload-progress-bar" style="width: 0%; height: 100%; background: var(--primary); transition: width 0.2s;"></div>
+                            <div id="upload-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--primary), #10b981); transition: width 0.25s ease;"></div>
                         </div>
                     </div>
 
@@ -3596,6 +3596,42 @@
             throw new Error('Firebase Storage service is not loaded yet. Please reload the page and try again.');
         }
 
+        function showPortalGlobalToast(message, type = 'success') {
+            let toast = document.getElementById('portal-global-toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'portal-global-toast';
+                toast.style.position = 'fixed';
+                toast.style.bottom = '2rem';
+                toast.style.right = '2rem';
+                toast.style.zIndex = '99999';
+                toast.style.padding = '0.9rem 1.4rem';
+                toast.style.borderRadius = '10px';
+                toast.style.fontSize = '0.88rem';
+                toast.style.fontWeight = '700';
+                toast.style.display = 'flex';
+                toast.style.alignItems = 'center';
+                toast.style.gap = '10px';
+                toast.style.boxShadow = '0 12px 30px rgba(0,0,0,0.5)';
+                toast.style.transition = 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
+                toast.style.backdropFilter = 'blur(10px)';
+                document.body.appendChild(toast);
+            }
+            const isSuccess = type === 'success';
+            toast.style.background = isSuccess ? 'rgba(16, 185, 129, 0.95)' : 'rgba(239, 68, 68, 0.95)';
+            toast.style.color = '#fff';
+            toast.style.border = isSuccess ? '1px solid #34d399' : '1px solid #f87171';
+            toast.innerHTML = `<i class="fas ${isSuccess ? 'fa-check-circle' : 'fa-exclamation-triangle'}"></i> <span>${escapeHtml(message)}</span>`;
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateY(0) scale(1)';
+
+            clearTimeout(toast._timer);
+            toast._timer = setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(15px) scale(0.95)';
+            }, 4000);
+        }
+
         async function submitSetupUpload(event) {
             event.preventDefault();
             if (!uploadFileSelected || !uploadFileChecksum) {
@@ -3623,11 +3659,20 @@
             const progressBar = document.getElementById('upload-progress-bar');
             const progressPct = document.getElementById('upload-progress-pct');
             const progressContainer = document.getElementById('upload-progress-bar-container');
+            const statusText = document.getElementById('upload-progress-status-text');
+
+            let progressTicker = null;
 
             try {
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
                 if (progressContainer) progressContainer.style.display = 'block';
+                if (statusText) statusText.textContent = 'Uploading setup to team cloud...';
+                if (progressBar) {
+                    progressBar.style.width = '25%';
+                    progressBar.style.background = 'linear-gradient(90deg, var(--primary), #10b981)';
+                }
+                if (progressPct) progressPct.textContent = '25%';
 
                 const setupId = 'setup_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
                 const safeFileName = sanitizeFileName(uploadFileSelected.name);
@@ -3636,19 +3681,42 @@
                 const storageService = await ensureFirebaseStorage();
                 const storageRef = storageService.ref(storagePath);
 
-                const uploadTask = storageRef.put(uploadFileSelected);
+                // Progressive ticker so visual feedback starts immediately without sitting at 0%
+                progressTicker = setInterval(() => {
+                    if (progressBar && progressPct) {
+                        const cur = parseInt(progressBar.style.width || '25', 10);
+                        if (cur < 85) {
+                            const next = cur + 5;
+                            progressBar.style.width = next + '%';
+                            progressPct.textContent = next + '%';
+                        }
+                    }
+                }, 150);
+
+                const metadata = {
+                    contentType: 'application/octet-stream',
+                    cacheControl: 'public, max-age=31536000'
+                };
+                const uploadTask = storageRef.put(uploadFileSelected, metadata);
 
                 await new Promise((resolve, reject) => {
                     uploadTask.on('state_changed',
                         (snap) => {
-                            const pct = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
-                            if (progressBar) progressBar.style.width = pct + '%';
-                            if (progressPct) progressPct.textContent = pct + '%';
+                            if (snap.totalBytes > 0) {
+                                const realPct = Math.min(85, Math.max(25, Math.round(25 + (snap.bytesTransferred / snap.totalBytes) * 60)));
+                                if (progressBar) progressBar.style.width = realPct + '%';
+                                if (progressPct) progressPct.textContent = realPct + '%';
+                            }
                         },
                         (err) => reject(err),
                         () => resolve()
                     );
                 });
+
+                if (progressTicker) clearInterval(progressTicker);
+                if (statusText) statusText.textContent = 'Saving setup to team library...';
+                if (progressBar) progressBar.style.width = '92%';
+                if (progressPct) progressPct.textContent = '92%';
 
                 const downloadUrl = await uploadTask.snapshot.ref.getDownloadURL();
                 const carFolder = IRACING_CAR_FOLDER_MAP[car.toLowerCase()] || car.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -3696,13 +3764,33 @@
 
                 await db.collection('setups').doc(setupId).set(setupDoc);
 
+                if (progressBar) {
+                    progressBar.style.width = '100%';
+                    progressBar.style.background = '#10b981';
+                }
+                if (progressPct) progressPct.textContent = '100%';
+                if (statusText) statusText.textContent = 'Published!';
+
+                // Optimistic instant UI update with zero delay
+                const now = new Date();
+                ALL_SETUPS.unshift({
+                    ...setupDoc,
+                    updatedAtDate: now,
+                    updatedAtMillis: now.getTime()
+                });
+                filterAndRenderSetups();
+
                 closeSetupModals();
-                alert(`Setup "${name}" published successfully!`);
-                await loadSetups();
+                showPortalGlobalToast(`Setup "${name}" published successfully!`, 'success');
+
+                // Refresh silently in background
+                loadSetups(true).catch(() => {});
             } catch (err) {
+                if (progressTicker) clearInterval(progressTicker);
                 console.error('Setup upload error:', err);
                 alert('Upload failed: ' + err.message);
             } finally {
+                if (progressTicker) clearInterval(progressTicker);
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="fas fa-check" style="margin-right: 6px;"></i> Publish to Team';
                 if (progressContainer) progressContainer.style.display = 'none';
@@ -3747,7 +3835,11 @@
                 const storageService = await ensureFirebaseStorage();
                 const storageRef = storageService.ref(storagePath);
 
-                const snap = await storageRef.put(newVersionFileSelected);
+                const metadata = {
+                    contentType: 'application/octet-stream',
+                    cacheControl: 'public, max-age=31536000'
+                };
+                const snap = await storageRef.put(newVersionFileSelected, metadata);
                 const downloadUrl = await snap.ref.getDownloadURL();
 
                 const newVersionObj = {
@@ -3774,9 +3866,20 @@
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
+                // Optimistically update memory
+                if (!setup.versions) setup.versions = [];
+                setup.versions.push(newVersionObj);
+                setup.currentVersionId = normVer;
+                setup.currentVersion = newVersionObj;
+                setup.downloadUrl = downloadUrl;
+                setup.checksum = newVersionFileChecksum;
+                setup.fileName = safeFileName;
+                setup.fileSize = newVersionFileSelected.size;
+                filterAndRenderSetups();
+
                 closeSetupModals();
-                alert(`Version ${normVer} for "${setup.name}" uploaded successfully!`);
-                await loadSetups();
+                showPortalGlobalToast(`Version ${normVer} for "${setup.name}" uploaded successfully!`, 'success');
+                loadSetups(true).catch(() => {});
             } catch (err) {
                 console.error('New version error:', err);
                 alert('Failed to upload new version: ' + err.message);
@@ -4348,9 +4451,9 @@
             }).join('');
         }
 
-        async function loadSetups() {
+        async function loadSetups(silent = false) {
             const grid = document.getElementById('setup-library-grid');
-            if (grid) {
+            if (grid && !silent) {
                 grid.innerHTML = `
                     <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 3rem 1rem;">
                         <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 0.8rem; color: var(--primary);"></i>
