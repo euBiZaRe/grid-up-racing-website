@@ -1051,8 +1051,8 @@
 
                 console.log("Profile: Data loaded successfully.");
  
-                // Load Driver Cards
-                loadUserCards(user.uid);
+                // Load Driver Cards / Race Trophies
+                loadUserCards(user, doc.exists ? doc.data() : null, (!claims.empty) ? claims.docs[0] : null);
  
             } catch (error) {
                 console.error("Profile: Error loading user data:", error);
@@ -1295,104 +1295,411 @@
             }
         }
 
-        async function loadUserCards(uid) {
+        // --- HELPER FUNCTIONS FOR TROPHY MATCHING & POSTERS ---
+        function normalizeDriverName(str) {
+            if (!str) return '';
+            return str.toLowerCase().replace(/[^a-z0-9]/g, ' ').replace(/\s+/g, ' ').trim();
+        }
+
+        function extractDriverSurname(str) {
+            if (!str) return '';
+            const clean = str.replace(/"[^"]*"/g, '').replace(/\([^\)]*\)/g, '').trim();
+            const parts = clean.split(/\s+/).filter(Boolean);
+            return parts.length > 0 ? parts[parts.length - 1] : '';
+        }
+
+        function isDriverMatched(candidates, resultDrivers, userUid, resultUids) {
+            if (userUid && Array.isArray(resultUids) && resultUids.includes(userUid)) return true;
+            if (!resultDrivers) return false;
+            const rDrivers = Array.isArray(resultDrivers) ? resultDrivers : [resultDrivers];
+
+            for (const cand of candidates) {
+                if (!cand) continue;
+                const candNorm = normalizeDriverName(cand);
+                const candSurname = normalizeDriverName(extractDriverSurname(cand));
+                if (!candNorm) continue;
+
+                for (const rd of rDrivers) {
+                    if (!rd) continue;
+                    const rdNorm = normalizeDriverName(rd);
+                    const rdSurname = normalizeDriverName(extractDriverSurname(rd));
+                    if (!rdNorm) continue;
+
+                    // 1. Exact normalized match
+                    if (candNorm === rdNorm) return true;
+
+                    // 2. Substring match (e.g. "Alex Cortez" includes "Cortez", "Andrew B Fabian" includes "Andrew Fabian")
+                    if (candNorm.includes(rdNorm) || rdNorm.includes(candNorm)) return true;
+
+                    // 3. Surname match (ensure surname length >= 3 to avoid single initials)
+                    if (candSurname.length >= 3 && rdSurname.length >= 3) {
+                        if (candSurname === rdSurname || candSurname === rdNorm || rdSurname === candNorm) return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        function formatEventTrophyTitle(eventId, fallbackName) {
+            if (fallbackName && fallbackName.trim() && !fallbackName.toLowerCase().includes('result')) return fallbackName.trim();
+            const s = (eventId || '').toLowerCase();
+            if (s.includes('daytona-24')) return 'Daytona 24';
+            if (s.includes('daytona-6h')) return 'Daytona 6 Hour';
+            if (s.includes('daytona-500')) return 'Daytona 500';
+            if (s.includes('bathurst-12')) return 'Bathurst 12 Hour';
+            if (s.includes('bathurst-1000')) return 'Bathurst 1000';
+            if (s.includes('nurburgring-24h') || s.includes('nurburgring')) return '24 Hours of Nürburgring';
+            if (s.includes('sebring-12h') || s.includes('sebring-12hr')) return '12 Hours of Sebring';
+            if (s.includes('sebring-6h')) return 'Sebring 6 Hour';
+            if (s.includes('spa-24h') || s.includes('spa-24hr')) return '24 Hours of Spa';
+            if (s.includes('watkins-glen-6h') || s.includes('glen-6h')) return '6 Hours of the Glen';
+            if (s.includes('petit-le-mans')) return 'Petit Le Mans';
+            if (s.includes('portimao-1000')) return 'Portimão 1000km';
+            if (s.includes('suzuka-1000')) return 'Suzuka 1000km';
+            if (s.includes('drive-for-wishes')) return 'Drive for Wishes Charity';
+            if (s.includes('imsa-classic-500')) return 'IMSA Classic 500';
+            if (s.includes('production-car-challenge')) return 'Production Car Challenge';
+            if (s.includes('gtc-spa')) return 'GTC Spa 3 Hour';
+            if (s.includes('gtc-glen')) return 'GTC Watkins Glen';
+            if (s.includes('gtc-virginia')) return 'GTC Virginia 120';
+            if (s.includes('gtc-elkhart')) return 'GTC Elkhart Lake 120';
+            if (s.includes('road-america-6h')) return 'Road America 6 Hour';
+            if (s.includes('indy-500')) return 'Indianapolis 500';
+            if (s.includes('indy-8h') || s.includes('indy-6h')) return 'Indianapolis 8 Hour';
+            if (s.includes('24hrs-le-mans')) return '24 Hours of Le Mans';
+            if (s.includes('world-600')) return 'World 600';
+            if (s.includes('thruxton')) return 'Thruxton 4 Hour';
+
+            return (eventId || 'Special Event')
+                .replace(/-26$|-25$/, '')
+                .split('-')
+                .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+                .join(' ');
+        }
+
+        function resolveTrophyPoster(eventId, finish, teamName, drivers, rawUrl) {
+            if (rawUrl && typeof rawUrl === 'string' && rawUrl.trim()) return rawUrl.trim();
+            const e = (eventId || '').toLowerCase();
+            const drvStr = Array.isArray(drivers) ? drivers.join(' ').toLowerCase() : (drivers || '').toLowerCase();
+
+            // Watkins Glen multi-car specific posters
+            if (e.includes('watkins-glen-6h') && !e.includes('25')) {
+                if (drvStr.includes('cantwell') || drvStr.includes('wilmoth')) return 'assets/results/June2026_Cantwell_Wilmoth.jpg';
+                if (drvStr.includes('cook') || drvStr.includes('roberts')) return 'assets/results/June2026_Cook_Roberts.jpg';
+                if (drvStr.includes('cortez') || drvStr.includes('fabian') || drvStr.includes('ebrahim')) return 'assets/results/June2026_Cortez_Fabian_Ebrahim.jpg';
+                if (drvStr.includes('hayden') || drvStr.includes('wolfe')) return 'assets/results/June2026_Hayden_Wolfe.jpg';
+            }
+
+            // Event-specific official visual posters
+            if (e.includes('daytona-24')) return 'assets/results/Jan1726.png';
+            if (e.includes('daytona-6h')) return 'assets/results/Jan1026.png';
+            if (e.includes('bathurst-12h')) return 'assets/results/Feb2126.png';
+            if (e.includes('bathurst-1000')) return 'assets/results/Aug1625.png';
+            if (e.includes('drive-for-wishes')) return 'assets/results/Feb2826.png';
+            if (e.includes('sebring-12h')) return 'assets/results/Mar2826.png';
+            if (e.includes('sebring-6h')) return 'assets/results/Dec2725.png';
+            if (e.includes('imsa-classic-500')) return 'assets/results/Apr1226.png';
+            if (e.includes('nurburgring-24h') || e.includes('nurburgring')) return 'assets/results/May226(2).png';
+            if (e.includes('portimao-1000')) return 'assets/results/July2526(1).png';
+            if (e.includes('spa-24h') || e.includes('spa-24hr')) return 'assets/results/Oct2525.png';
+            if (e.includes('suzuka-1000km')) return 'assets/results/Nov1525.png';
+            if (e.includes('watkins-glen-6h-25')) return 'assets/results/Sep2025.png';
+            if (e.includes('petit-le-mans')) return 'assets/results/Sept2725.png';
+            if (e.includes('indy-8h') || e.includes('indy-6h')) return 'assets/results/Sep625.png';
+            if (e.includes('production-car-challenge')) return 'assets/results/Dec1925.png';
+
+            // Official trophy artwork for podium finishes
+            const cleanFinish = String(finish || '').toUpperCase().trim();
+            if (cleanFinish === 'P1' || cleanFinish === '1' || cleanFinish === '1ST') return 'assets/trophies/trophy-gold.jpg';
+            if (cleanFinish === 'P2' || cleanFinish === '2' || cleanFinish === '2ND') return 'assets/trophies/trophy-silver.jpg';
+            if (cleanFinish === 'P3' || cleanFinish === '3' || cleanFinish === '3RD') return 'assets/trophies/trophy-bronze.jpg';
+
+            return 'assets/motorsport_carbon_bg.png';
+        }
+
+        async function loadUserCards(userOrUid, userDataParam, claimDocParam) {
             const gallery = document.getElementById('trophy-gallery');
             const countPill = document.getElementById('trophy-count-pill');
             if (!gallery) return;
 
             try {
-                let identity = null;
-                const claimSnap = await db.collection("claims").where("discordId", "==", uid).get();
-                if (!claimSnap.empty) {
-                    const claimData = claimSnap.docs[0].data();
-                    if (claimData.status === 'verified') {
-                        identity = claimData.driverIdentity || claimData.discordName;
+                // Resolve UID & user objects
+                let uid = null;
+                let userObj = null;
+                if (typeof userOrUid === 'string') {
+                    uid = userOrUid;
+                } else if (userOrUid && userOrUid.uid) {
+                    uid = userOrUid.uid;
+                    userObj = userOrUid;
+                }
+
+                // Gather user profile & claims
+                let userData = userDataParam;
+                if (!userData && uid) {
+                    try {
+                        const uDoc = await db.collection("users").doc(uid).get();
+                        if (uDoc.exists) userData = uDoc.data();
+                    } catch (e) {}
+                }
+
+                let claimDoc = claimDocParam;
+                if (!claimDoc && uid) {
+                    try {
+                        const cSnap = await db.collection("claims").where("discordId", "==", uid).get();
+                        if (!cSnap.empty) claimDoc = cSnap.docs[0];
+                    } catch (e) {}
+                }
+
+                const claimData = claimDoc ? claimDoc.data() : null;
+
+                // Build candidate names set
+                const candidateSet = new Set();
+                if (userData) {
+                    if (userData.driverName) candidateSet.add(userData.driverName.trim());
+                    if (userData.name) candidateSet.add(userData.name.trim());
+                }
+                if (userObj && userObj.displayName) {
+                    candidateSet.add(userObj.displayName.trim());
+                }
+                if (claimDoc && claimDoc.id) {
+                    candidateSet.add(claimDoc.id.trim());
+                }
+                if (claimData) {
+                    if (claimData.driverIdentity && !claimData.driverIdentity.toLowerCase().includes('unknown') && !claimData.driverIdentity.toLowerCase().includes('discord user')) {
+                        candidateSet.add(claimData.driverIdentity.trim());
+                    }
+                    if (claimData.driverName) candidateSet.add(claimData.driverName.trim());
+                }
+
+                const nameHeaderEl = document.getElementById('user-name');
+                if (nameHeaderEl && nameHeaderEl.textContent) {
+                    const headerTxt = nameHeaderEl.textContent.trim();
+                    if (headerTxt && headerTxt.toLowerCase() !== 'driver profile') {
+                        candidateSet.add(headerTxt);
                     }
                 }
 
-                const queries = [
-                    db.collection("race_results").where("uids", "array-contains", uid).get()
-                ];
-                
-                if (identity) {
-                    queries.push(db.collection("race_results").where("drivers", "array-contains", identity).get());
-                }
+                const candidates = Array.from(candidateSet).filter(Boolean);
+                console.log("Profile Trophy Matcher: Driver candidates for", uid, ":", candidates);
 
-                const results = await Promise.all(queries);
-                const allDocs = new Map();
-                results.forEach(snap => {
-                    snap.forEach(doc => allDocs.set(doc.id, doc.data()));
+                // Fetch both event_results and race_results
+                const [eventSnap, posterSnap] = await Promise.all([
+                    db.collection("event_results").get().catch(err => { console.warn("event_results fetch:", err); return { docs: [] }; }),
+                    db.collection("race_results").get().catch(err => { console.warn("race_results fetch:", err); return { docs: [] }; })
+                ]);
+
+                const matchedTrophies = [];
+                const seenKeys = new Set();
+
+                // 1. Process event_results (primary rich results collection)
+                eventSnap.docs.forEach(doc => {
+                    const r = doc.data();
+                    const eid = r.eventId || '';
+                    const rDrivers = r.drivers || [];
+                    const rUids = r.uids || [];
+
+                    if (isDriverMatched(candidates, rDrivers, uid, rUids)) {
+                        const cleanPos = (r.finish || 'P?').toUpperCase().trim();
+                        const key = `${eid}_${(r.teamName || '').toLowerCase()}_${cleanPos}`;
+                        if (!seenKeys.has(key)) {
+                            seenKeys.add(key);
+
+                            // Determine timestamp for sorting
+                            let tsMs = 0;
+                            if (r.timestamp) {
+                                if (r.timestamp.toDate) tsMs = r.timestamp.toDate().getTime();
+                                else if (r.timestamp.seconds) tsMs = r.timestamp.seconds * 1000;
+                                else tsMs = new Date(r.timestamp).getTime();
+                            }
+
+                            // Format race date
+                            let dateStr = '';
+                            if (tsMs && !isNaN(tsMs)) {
+                                dateStr = new Date(tsMs).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                            }
+
+                            // Detect podium status
+                            let podiumType = null;
+                            if (cleanPos === 'P1' || cleanPos === '1' || cleanPos === '1ST') podiumType = 'gold';
+                            else if (cleanPos === 'P2' || cleanPos === '2' || cleanPos === '2ND') podiumType = 'silver';
+                            else if (cleanPos === 'P3' || cleanPos === '3' || cleanPos === '3RD') podiumType = 'bronze';
+
+                            const posterImg = resolveTrophyPoster(eid, r.finish, r.teamName, rDrivers, r.rawUrl);
+                            const evTitle = formatEventTrophyTitle(eid, r.eventName);
+
+                            matchedTrophies.push({
+                                id: doc.id,
+                                eventId: eid,
+                                eventName: evTitle,
+                                trackName: r.track || evTitle,
+                                carUsed: r.car || 'Official Entry',
+                                position: cleanPos.replace(/^P/, ''),
+                                positionRaw: cleanPos,
+                                startPos: r.qualy ? (r.qualy.startsWith('P') ? r.qualy : `P${r.qualy}`) : '-',
+                                raceDate: dateStr,
+                                timestampMs: tsMs || 0,
+                                teamName: r.teamName || 'GRiD UP Sim Racing',
+                                drivers: Array.isArray(rDrivers) ? rDrivers : [rDrivers],
+                                rawUrl: posterImg,
+                                teamAsset: posterImg,
+                                podiumType: podiumType,
+                                isLeague: (eid.toLowerCase().startsWith('gtc-'))
+                            });
+                        }
+                    }
                 });
 
+                // 2. Process race_results (standalone commemorative finish posters)
+                posterSnap.docs.forEach(doc => {
+                    const r = doc.data();
+                    const rDrivers = r.drivers || [];
+                    const rUids = r.uids || [];
+
+                    if (isDriverMatched(candidates, rDrivers, uid, rUids)) {
+                        const eid = r.eventId || doc.id;
+                        const cleanPos = (r.position || 'P?').toUpperCase().trim();
+                        const key = `${eid}_${cleanPos}`;
+
+                        if (!seenKeys.has(key)) {
+                            seenKeys.add(key);
+
+                            let tsMs = 0;
+                            if (r.timestamp) {
+                                if (r.timestamp.toDate) tsMs = r.timestamp.toDate().getTime();
+                                else if (r.timestamp.seconds) tsMs = r.timestamp.seconds * 1000;
+                                else tsMs = new Date(r.timestamp).getTime();
+                            }
+
+                            let dateStr = r.raceDate || '';
+                            if (!dateStr && tsMs && !isNaN(tsMs)) {
+                                dateStr = new Date(tsMs).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                            }
+
+                            let podiumType = null;
+                            if (cleanPos === 'P1' || cleanPos === '1' || cleanPos === '1ST') podiumType = 'gold';
+                            else if (cleanPos === 'P2' || cleanPos === '2' || cleanPos === '2ND') podiumType = 'silver';
+                            else if (cleanPos === 'P3' || cleanPos === '3' || cleanPos === '3RD') podiumType = 'bronze';
+
+                            const posterImg = r.rawUrl || r.teamAsset || resolveTrophyPoster(eid, cleanPos, r.teamName, rDrivers, null);
+                            const evTitle = formatEventTrophyTitle(eid, r.eventName || r.trackName);
+
+                            matchedTrophies.push({
+                                id: doc.id,
+                                eventId: eid,
+                                eventName: evTitle,
+                                trackName: r.trackName || evTitle,
+                                carUsed: r.carUsed || 'Official Entry',
+                                position: cleanPos.replace(/^P/, ''),
+                                positionRaw: cleanPos,
+                                startPos: r.startPos || '-',
+                                raceDate: dateStr,
+                                timestampMs: tsMs || 0,
+                                teamName: r.teamName || 'GRiD UP Sim Racing',
+                                drivers: Array.isArray(rDrivers) ? rDrivers : [rDrivers],
+                                rawUrl: posterImg,
+                                teamAsset: posterImg,
+                                podiumType: podiumType,
+                                isLeague: (eid.toLowerCase().startsWith('gtc-'))
+                            });
+                        }
+                    }
+                });
+
+                // Sort newest races first
+                matchedTrophies.sort((a, b) => b.timestampMs - a.timestampMs);
+
+                // Update tab count badge
                 if (countPill) {
-                    countPill.textContent = allDocs.size;
-                    countPill.style.display = allDocs.size > 0 ? 'inline-block' : 'none';
+                    countPill.textContent = matchedTrophies.length;
+                    countPill.style.display = matchedTrophies.length > 0 ? 'inline-block' : 'none';
                 }
 
-                if (allDocs.size === 0) {
+                if (matchedTrophies.length === 0) {
                     gallery.innerHTML = `
                         <div style="grid-column: 1/-1; text-align: center; padding: 2.5rem 1rem; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); border-radius: 10px;">
                             <div style="font-size: 1.8rem; margin-bottom: 0.4rem;">🏁</div>
                             <h3 style="color: #fff; font-size: 0.95rem; margin-bottom: 0.25rem;">No Race Trophies Logged Yet</h3>
-                            <p style="color: var(--text-muted); font-size: 0.78rem; margin: 0; max-width: 420px; margin: 0 auto;">Participate in GRiD UP special events to unlock your commemorative race cards!</p>
+                            <p style="color: var(--text-muted); font-size: 0.78rem; margin: 0; max-width: 420px; margin: 0 auto;">Participate in GRiD UP special events & league races to unlock your commemorative race cards!</p>
                         </div>
                     `;
                     return;
                 }
 
-                const profileName = (document.getElementById('user-name') ? document.getElementById('user-name').textContent : '').trim();
+                // Render Trophy Cards
                 gallery.innerHTML = '';
-                allDocs.forEach((d) => {
+                const primaryProfileName = candidates[0] || '';
+
+                matchedTrophies.forEach((d) => {
                     const driverList = (d.drivers || []).map(name => {
-                        if (name && profileName && name.toLowerCase() === profileName.toLowerCase()) {
-                            return `<span style="color: var(--primary); font-weight: 900;">${name.toUpperCase()}</span>`;
+                        const nStr = String(name || '');
+                        // Check if this is the logged-in user to highlight in cyan
+                        const isUser = isDriverMatched(candidates, [nStr], uid, null);
+                        if (isUser) {
+                            return `<span style="color: var(--primary); font-weight: 900; text-shadow: 0 0 10px rgba(0,207,255,0.4);">${nStr.toUpperCase()}</span>`;
                         }
-                        return (name || '').toUpperCase();
-                    }).join(' - ');
+                        return nStr.toUpperCase();
+                    }).join(' • ');
+
+                    // Build Podium or Standard Badge
+                    let posBadge = '';
+                    let cardBorder = 'border: 1px solid rgba(255,255,255,0.08);';
+                    if (d.podiumType === 'gold') {
+                        cardBorder = 'border: 1.5px solid rgba(255,215,0,0.6); box-shadow: 0 6px 25px rgba(255,215,0,0.18);';
+                        posBadge = `<div style="background: linear-gradient(135deg, #ffd700, #ff9900); color: #000; font-weight: 900; font-size: 0.8rem; padding: 0.2rem 0.6rem; border-radius: 4px; box-shadow: 0 0 14px rgba(255,215,0,0.6); display: inline-flex; align-items: center; gap: 4px;">🏆 P1 WIN</div>`;
+                    } else if (d.podiumType === 'silver') {
+                        cardBorder = 'border: 1.5px solid rgba(220,220,220,0.5); box-shadow: 0 6px 25px rgba(220,220,220,0.15);';
+                        posBadge = `<div style="background: linear-gradient(135deg, #f0f0f0, #9e9e9e); color: #000; font-weight: 900; font-size: 0.8rem; padding: 0.2rem 0.6rem; border-radius: 4px; box-shadow: 0 0 12px rgba(220,220,220,0.5); display: inline-flex; align-items: center; gap: 4px;">🥈 P2 PODIUM</div>`;
+                    } else if (d.podiumType === 'bronze') {
+                        cardBorder = 'border: 1.5px solid rgba(205,127,50,0.5); box-shadow: 0 6px 25px rgba(205,127,50,0.15);';
+                        posBadge = `<div style="background: linear-gradient(135deg, #e69138, #8b4513); color: #fff; font-weight: 900; font-size: 0.8rem; padding: 0.2rem 0.6rem; border-radius: 4px; box-shadow: 0 0 12px rgba(205,127,50,0.5); display: inline-flex; align-items: center; gap: 4px;">🥉 P3 PODIUM</div>`;
+                    } else {
+                        posBadge = `<div style="background: rgba(0,207,255,0.12); border: 1px solid rgba(0,207,255,0.4); color: var(--primary); font-weight: 900; font-size: 0.8rem; padding: 0.2rem 0.6rem; border-radius: 4px; display: inline-flex; align-items: center;">P${d.position}</div>`;
+                    }
+
+                    const categoryTag = d.isLeague ? 'LEAGUE CHAMPIONSHIP' : 'SPECIAL EVENT';
 
                     const card = document.createElement('div');
                     card.className = 'card cinematic-poster animate-fade-in';
-                    card.style.padding = '0';
-                    card.style.overflow = 'hidden';
-                    card.style.position = 'relative';
-                    card.style.background = '#000';
-                    card.style.aspectRatio = '16/9';
-                    card.style.borderRadius = '10px';
-                    card.style.boxShadow = '0 6px 20px rgba(0,0,0,0.45)';
-                    card.style.cursor = 'pointer';
-                    card.style.transition = 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                    card.style.cssText = `padding: 0; overflow: hidden; position: relative; background: #07080c; aspect-ratio: 16/9; border-radius: 10px; cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); ${cardBorder}`;
 
                     card.onclick = () => openCardModal(d);
 
                     card.innerHTML = `
-                        <img src="${d.rawUrl}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.72; transition: transform 0.6s;">
-                        <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, transparent 45%, rgba(0,0,0,0.35) 100%);"></div>
+                        <img src="${d.rawUrl}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.72; transition: transform 0.6s;" onerror="this.src='assets/motorsport_carbon_bg.png'">
+                        <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 45%, rgba(0,0,0,0.7) 100%);"></div>
                         
-                        <div style="position: absolute; top: 0.6rem; left: 0.8rem; text-align: left;">
-                            <div style="font-size: 0.5rem; color: var(--primary); font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase;">SPECIAL EVENT</div>
-                            <div style="font-size: 0.95rem; font-weight: 900; color: white; line-height: 1.1; margin-top: 0.15rem;">${(d.trackName || d.eventName || 'EVENT').toUpperCase()}</div>
+                        <!-- Top Left Metadata -->
+                        <div style="position: absolute; top: 0.7rem; left: 0.85rem; text-align: left; max-width: 65%;">
+                            <div style="font-size: 0.5rem; color: var(--primary); font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase;">${categoryTag}</div>
+                            <div style="font-size: 0.95rem; font-weight: 900; color: white; line-height: 1.15; margin-top: 0.15rem; text-shadow: 0 2px 8px rgba(0,0,0,0.9);">${d.eventName.toUpperCase()}</div>
                         </div>
 
-                        <div style="position: absolute; top: 0.6rem; right: 0.8rem; text-align: right;">
-                            <div style="font-size: 0.55rem; color: white; font-weight: 700; opacity: 0.9;">Car: ${d.carUsed || 'TBD'}</div>
-                            <div style="font-size: 0.85rem; color: var(--primary); font-weight: 900; margin-top: 0.1rem;">P${d.position || '?'}</div>
+                        <!-- Top Right Finish & Car -->
+                        <div style="position: absolute; top: 0.7rem; right: 0.85rem; text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem;">
+                            ${posBadge}
+                            <div style="font-size: 0.55rem; color: rgba(255,255,255,0.85); font-weight: 700; text-shadow: 0 1px 4px rgba(0,0,0,0.9);">${d.carUsed}</div>
+                            ${d.startPos && d.startPos !== '-' ? `<div style="font-size: 0.5rem; color: rgba(255,255,255,0.6);">Qualy: ${d.startPos}</div>` : ''}
                         </div>
 
-                        <div style="position: absolute; bottom: 0.65rem; left: 0; width: 100%; padding: 0 0.8rem; display: flex; justify-content: space-between; align-items: flex-end;">
+                        <!-- Bottom Footer Info -->
+                        <div style="position: absolute; bottom: 0.7rem; left: 0; width: 100%; padding: 0 0.85rem; display: flex; justify-content: space-between; align-items: flex-end;">
                             <div style="text-align: left; max-width: 80%;">
-                                <div style="font-size: 0.55rem; color: rgba(255,255,255,0.7); margin-bottom: 0.15rem;">${d.raceDate || ''}</div>
-                                <div style="font-size: 0.65rem; font-weight: 800; color: white; letter-spacing: 0.5px; line-height: 1.2;">${driverList}</div>
+                                <div style="font-size: 0.55rem; color: rgba(255,255,255,0.7); margin-bottom: 0.2rem; font-weight: 600;">
+                                    ${d.raceDate || ''} <span style="opacity: 0.5;">•</span> <span style="color: rgba(255,255,255,0.9); font-weight: 700;">${d.teamName}</span>
+                                </div>
+                                <div style="font-size: 0.65rem; font-weight: 800; color: white; letter-spacing: 0.5px; line-height: 1.25; text-shadow: 0 2px 6px rgba(0,0,0,0.9);">${driverList}</div>
                             </div>
-                            <div style="background: rgba(255,255,255,0.06); padding: 0.2rem 0.4rem; border-radius: 4px;">
-                                <img src="assets/GRiD UP Sim Endurance.png" style="height: 16px; object-fit: contain;" onerror="this.style.display='none'">
+                            <div style="background: rgba(255,255,255,0.06); padding: 0.25rem 0.45rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(4px);">
+                                <img src="assets/GRiD UP Sim Endurance.png" style="height: 15px; object-fit: contain;" onerror="this.src='assets/logo.png'">
                             </div>
                         </div>
 
+                        <!-- Hover Overlay -->
                         <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,207,255,0.12); opacity: 0; transition: opacity 0.25s;" class="hover-overlay">
-                             <div style="padding: 0.35rem 0.85rem; border: 1.5px solid var(--primary); color: var(--primary); font-weight: 800; font-size: 0.7rem; letter-spacing: 1.5px; border-radius: 4px; background: rgba(0,0,0,0.65);">EXPAND</div>
+                             <div style="padding: 0.4rem 0.9rem; border: 1.5px solid var(--primary); color: var(--primary); font-weight: 900; font-size: 0.7rem; letter-spacing: 1.5px; border-radius: 5px; background: rgba(0,0,0,0.75); box-shadow: 0 0 20px rgba(0,207,255,0.4);">EXPAND POSTER</div>
                         </div>
                     `;
-                    
+
                     card.onmouseenter = () => {
                         card.style.transform = 'scale(1.03) translateY(-3px)';
                         const img = card.querySelector('img');
@@ -1412,7 +1719,7 @@
                 });
             } catch (e) {
                 console.error("Error loading user cards:", e);
-                gallery.innerHTML = '<p style="color: #ef4444; font-size: 0.8rem;">Failed to load race cards.</p>';
+                gallery.innerHTML = '<p style="color: #ef4444; font-size: 0.8rem; text-align: center; grid-column: 1/-1;">Failed to load race cards.</p>';
             }
         }
 

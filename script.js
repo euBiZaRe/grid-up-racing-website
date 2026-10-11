@@ -1797,9 +1797,20 @@ async function downloadActiveCard() {
     btn.disabled = true;
 
     try {
-        // 1. Load All Assets with CORS support
-        const bgUrl = "assets/poster-placeholder.png"; // Hardcoded override as requested
-        const fgUrl = null; // Override to null to prevent export failures from broken external links
+        // Direct download if high-res visual poster file exists
+        if (d.rawUrl && typeof d.rawUrl === 'string' && (d.rawUrl.endsWith('.png') || d.rawUrl.endsWith('.jpg') || d.rawUrl.endsWith('.jpeg') || d.rawUrl.endsWith('.gif'))) {
+            const link = document.createElement('a');
+            link.download = `GRiDUP_${(d.eventName || 'Race').replace(/[^a-zA-Z0-9]/g, '_')}_Poster.png`;
+            link.href = d.rawUrl;
+            link.click();
+            btn.innerHTML = originalHTML;
+            btn.disabled = false;
+            return;
+        }
+
+        // 1. Load All Assets with CORS support for custom composite card
+        const bgUrl = d.teamAsset || d.rawUrl || "assets/poster-placeholder.png";
+        const fgUrl = null; 
         
         const [bgImg, fgImg, logo] = await Promise.all([
             loadImageWithCORS(bgUrl),
