@@ -652,7 +652,8 @@
                     userDriverName = user.displayName || 'Driver';
                 }
 
-                isUserAdmin = (typeof IS_ADMIN !== 'undefined' && IS_ADMIN) || (user.uid === 'B0t4f4nqqpZIQKpT8Ed97xka5gM2');
+                const KNOWN_ADMINS = ['B0t4f4nqqpZIQKpT8Ed97xka5gM2', 'uYUa2WYZ5TPg98v1e6jQzzrItR53', 'BnojTKUFKUUKDFFpnUGEdueLhkN2', '2TfuhZVILNQerQK9SYL1304jYp83'];
+                isUserAdmin = (typeof IS_ADMIN !== 'undefined' && IS_ADMIN) || (KNOWN_ADMINS.includes(user.uid)) || (user.uid === 'B0t4f4nqqpZIQKpT8Ed97xka5gM2');
 
                 // Update Captain banner
                 const callout = document.getElementById('captain-auth-action');

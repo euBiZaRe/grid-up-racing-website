@@ -36,15 +36,18 @@ let appNotificationUnsub = null;
         const cached = localStorage.getItem('gridup_auth_cache');
         if (cached) {
             const data = JSON.parse(cached);
+            const userUid = data.user ? data.user.uid : null;
+            const hardcodedAdmins = ['B0t4f4nqqpZIQKpT8Ed97xka5gM2', 'uYUa2WYZ5TPg98v1e6jQzzrItR53', 'BnojTKUFKUUKDFFpnUGEdueLhkN2', '2TfuhZVILNQerQK9SYL1304jYp83'];
+            const resolvedIsAdmin = (userUid && hardcodedAdmins.includes(userUid)) ? true : (data.isAdmin || false);
             // Wait for DOM to be ready to update UI safely
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', () => {
-                    IS_ADMIN = data.isAdmin;
+                    IS_ADMIN = resolvedIsAdmin;
                     IS_VERIFIED = data.isVerified;
                     updateAuthUI(data.user, true);
                 });
             } else {
-                IS_ADMIN = data.isAdmin;
+                IS_ADMIN = resolvedIsAdmin;
                 IS_VERIFIED = data.isVerified;
                 updateAuthUI(data.user, true);
             }
@@ -144,9 +147,11 @@ function initAuth() {
         if (user) {
             // Update cache with basic user info
             const cached = JSON.parse(localStorage.getItem('gridup_auth_cache') || '{}');
+            const isInitialAdmin = KNOWN_ADMIN_UIDS.includes(user.uid) || cached.isAdmin || false;
+            IS_ADMIN = isInitialAdmin;
             localStorage.setItem('gridup_auth_cache', JSON.stringify({
                 user: { uid: user.uid, photoURL: user.photoURL, displayName: user.displayName },
-                isAdmin: cached.isAdmin || false,
+                isAdmin: isInitialAdmin,
                 isVerified: cached.isVerified || false
             }));
 
@@ -176,17 +181,33 @@ function initAuth() {
     });
 }
 
+// Hardcoded Verified Admin UIDs failsafe (guarantees access even if Firestore rules or network restricts settings/admins)
+const MASTER_ADMIN = 'B0t4f4nqqpZIQKpT8Ed97xka5gM2'; // Matty Roberts (Protected Master)
+const KNOWN_ADMIN_UIDS = [
+    'B0t4f4nqqpZIQKpT8Ed97xka5gM2', // Matty Roberts (Master)
+    'uYUa2WYZ5TPg98v1e6jQzzrItR53', // Andrew Fabian (Team Admin)
+    'BnojTKUFKUUKDFFpnUGEdueLhkN2', // Martyn Cook (Team Admin)
+    '2TfuhZVILNQerQK9SYL1304jYp83'  // Adam Jones (Team Admin)
+];
+if (typeof window !== 'undefined') {
+    window.MASTER_ADMIN = MASTER_ADMIN;
+    window.KNOWN_ADMIN_UIDS = KNOWN_ADMIN_UIDS;
+}
+
 async function enrichAuthData(user) {
-    // Check for Admin status (Master + Firestore)
-    const MASTER_ADMIN = 'B0t4f4nqqpZIQKpT8Ed97xka5gM2';
-    IS_ADMIN = (user.uid === MASTER_ADMIN);
+    // Check for Admin status:
+    // 1. Static whitelist failsafe (zero chance of lockout)
+    IS_ADMIN = KNOWN_ADMIN_UIDS.includes(user.uid);
     let finalAvatar = user.photoURL;
     
     if (db) {
         try {
             // Concurrently fetch settings, claims, and user profile in a single network round-trip
             const [adminDoc, claimSnapshot, userDoc] = await Promise.all([
-                !IS_ADMIN ? db.collection("settings").doc("admins").get().catch(() => null) : Promise.resolve(null),
+                !IS_ADMIN ? db.collection("settings").doc("admins").get().catch(e => {
+                    console.warn("Could not read settings/admins doc (rules/permissions):", e);
+                    return null;
+                }) : Promise.resolve(null),
                 db.collection("claims").where("discordId", "==", user.uid).get().catch(() => null),
                 db.collection("users").doc(user.uid).get().catch(() => null)
             ]);
@@ -201,6 +222,18 @@ async function enrichAuthData(user) {
             if (!IS_ADMIN && userDoc && userDoc.exists) {
                 const ud = userDoc.data();
                 if (ud.isAdmin === true || ud.role === 'admin') IS_ADMIN = true;
+            }
+
+            // Self-healing auto-sync: If user is verified as admin, ensure their users/{uid} document has isAdmin: true
+            if (IS_ADMIN && userDoc) {
+                const ud = userDoc.exists ? userDoc.data() : {};
+                if (ud.isAdmin !== true || ud.role !== 'admin') {
+                    db.collection("users").doc(user.uid).set({
+                        isAdmin: true,
+                        role: 'admin',
+                        lastAdminVerified: firebase.firestore.FieldValue.serverTimestamp()
+                    }, { merge: true }).catch(e => console.warn("Auto-sync admin role to users doc error:", e));
+                }
             }
 
             // Check Verification

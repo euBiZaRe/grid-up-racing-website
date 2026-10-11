@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-5JMPYRH8H9"></script>
@@ -201,7 +201,8 @@
   firebase.auth().onAuthStateChanged(async(user)=>{
     if(user){
       const MASTER_ADMIN='B0t4f4nqqpZIQKpT8Ed97xka5gM2';
-      if(user.uid===MASTER_ADMIN){
+      const KNOWN_ADMINS=['B0t4f4nqqpZIQKpT8Ed97xka5gM2','uYUa2WYZ5TPg98v1e6jQzzrItR53','BnojTKUFKUUKDFFpnUGEdueLhkN2','2TfuhZVILNQerQK9SYL1304jYp83'];
+      if(user.uid===MASTER_ADMIN || KNOWN_ADMINS.includes(user.uid)){
         window.IS_ADMIN=true;
         const main=document.getElementById('admin-main');
         const denied=document.getElementById('access-denied');

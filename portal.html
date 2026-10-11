@@ -5478,25 +5478,20 @@
 
 
                 // 1. Check Admin Status
-
                 const MASTER_ADMIN = 'B0t4f4nqqpZIQKpT8Ed97xka5gM2';
-
-                isAdminUser = (user.uid === MASTER_ADMIN);
-
-                
+                const KNOWN_ADMINS = ['B0t4f4nqqpZIQKpT8Ed97xka5gM2', 'uYUa2WYZ5TPg98v1e6jQzzrItR53', 'BnojTKUFKUUKDFFpnUGEdueLhkN2', '2TfuhZVILNQerQK9SYL1304jYp83'];
+                isAdminUser = KNOWN_ADMINS.includes(user.uid) || (typeof IS_ADMIN !== 'undefined' && IS_ADMIN);
 
                 if (!isAdminUser) {
-
-                    const adminDoc = await db.collection("settings").doc("admins").get();
-
-                    if (adminDoc.exists) {
-
-                        const adminList = adminDoc.data().uids || [];
-
-                        isAdminUser = adminList.includes(user.uid);
-
+                    try {
+                        const adminDoc = await db.collection("settings").doc("admins").get();
+                        if (adminDoc.exists) {
+                            const adminList = adminDoc.data().uids || [];
+                            isAdminUser = adminList.includes(user.uid);
+                        }
+                    } catch (eAdmin) {
+                        console.warn("Could not read settings/admins in portal:", eAdmin);
                     }
-
                 }
 
 

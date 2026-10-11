@@ -2345,7 +2345,10 @@ body.meeting-mode-active .btn-summary-confirm {
             (function fastHydrateAdmin() {
                 try {
                     const cached = JSON.parse(localStorage.getItem('gridup_auth_cache') || '{}');
-                    if (cached && cached.isAdmin) {
+                    const knownAdmins = ['B0t4f4nqqpZIQKpT8Ed97xka5gM2', 'uYUa2WYZ5TPg98v1e6jQzzrItR53', 'BnojTKUFKUUKDFFpnUGEdueLhkN2', '2TfuhZVILNQerQK9SYL1304jYp83'];
+                    const userUid = cached.user ? cached.user.uid : null;
+                    const isKnownAdmin = userUid && knownAdmins.includes(userUid);
+                    if ((cached && cached.isAdmin) || isKnownAdmin) {
                         const style = document.createElement('style');
                         style.id = 'admin-fastpath-style';
                         style.textContent = '#admin-hub { display: block !important; } .admin-access-denied { display: none !important; }';
@@ -3957,6 +3960,11 @@ body.meeting-mode-active .btn-summary-confirm {
                 if (!uids.includes(uid)) {
                     uids.push(uid);
                     await docRef.set({ uids: uids }, { merge: true });
+                    try {
+                        await db.collection("users").doc(uid).set({ isAdmin: true, role: 'admin' }, { merge: true });
+                    } catch (errUser) {
+                        console.warn("Could not sync user profile role in Firestore:", errUser);
+                    }
                     alert(`SUCCESS: ${name} is now an Admin!`);
                     loadClaims(); // Refresh claims list so the "Promote" button immediately turns into the "ADMIN" badge
                     // If we're on the admins tab, reload the list
@@ -3964,6 +3972,9 @@ body.meeting-mode-active .btn-summary-confirm {
                         loadAdmins();
                     }
                 } else {
+                    try {
+                        await db.collection("users").doc(uid).set({ isAdmin: true, role: 'admin' }, { merge: true });
+                    } catch (errUser) {}
                     alert(`${name} is already an admin.`);
                 }
             } catch (e) {
@@ -6991,7 +7002,10 @@ body.meeting-mode-active .btn-summary-confirm {
             const accessDenied = document.getElementById('access-denied');
             const userInfo = document.getElementById('admin-user-info');
 
-            if (user && data.isAdmin) {
+            const hardcodedAdmins = (typeof KNOWN_ADMIN_UIDS !== 'undefined') ? KNOWN_ADMIN_UIDS : ['B0t4f4nqqpZIQKpT8Ed97xka5gM2', 'uYUa2WYZ5TPg98v1e6jQzzrItR53', 'BnojTKUFKUUKDFFpnUGEdueLhkN2', '2TfuhZVILNQerQK9SYL1304jYp83'];
+            const isAdmin = (user && hardcodedAdmins.includes(user.uid)) || (data && data.isAdmin) || (typeof IS_ADMIN !== 'undefined' && IS_ADMIN);
+
+            if (user && isAdmin) {
                 adminHub.style.display = 'block';
                 accessDenied.style.display = 'none';
                 const adminName = user.displayName || user.email || user.uid;

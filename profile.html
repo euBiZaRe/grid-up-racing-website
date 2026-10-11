@@ -1113,7 +1113,8 @@
 
             // 1. Owner / Admin check
             const MASTER_ADMIN = 'B0t4f4nqqpZIQKpT8Ed97xka5gM2';
-            if ((typeof IS_ADMIN !== 'undefined' && IS_ADMIN) || (user && user.uid === MASTER_ADMIN) || (userData && (userData.isOwner || userData.isAdmin))) {
+            const KNOWN_ADMINS = ['B0t4f4nqqpZIQKpT8Ed97xka5gM2', 'uYUa2WYZ5TPg98v1e6jQzzrItR53', 'BnojTKUFKUUKDFFpnUGEdueLhkN2', '2TfuhZVILNQerQK9SYL1304jYp83'];
+            if ((typeof IS_ADMIN !== 'undefined' && IS_ADMIN) || (user && (KNOWN_ADMINS.includes(user.uid) || user.uid === MASTER_ADMIN)) || (userData && (userData.isOwner || userData.isAdmin || userData.role === 'admin'))) {
                 hasAccess = true;
                 accessRole = 'TEAM OWNER / ADMIN';
             }
