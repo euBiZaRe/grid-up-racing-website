@@ -30,7 +30,8 @@
     <meta property="og:type" content="website">
     <meta property="og:image" content="https://raw.githubusercontent.com/gridup/gridup.github.io/main/assets/bg-banner.png">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Profile | GRiD UP Sim Racing</title>
         <!-- Preconnect & Asynchronous Google Fonts for PageSpeed optimization -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1114,7 +1115,7 @@
             // 1. Owner / Admin check
             const MASTER_ADMIN = 'B0t4f4nqqpZIQKpT8Ed97xka5gM2';
             const KNOWN_ADMINS = ['B0t4f4nqqpZIQKpT8Ed97xka5gM2', 'uYUa2WYZ5TPg98v1e6jQzzrItR53', 'BnojTKUFKUUKDFFpnUGEdueLhkN2', '2TfuhZVILNQerQK9SYL1304jYp83'];
-            if ((typeof IS_ADMIN !== 'undefined' && IS_ADMIN) || (user && (KNOWN_ADMINS.includes(user.uid) || user.uid === MASTER_ADMIN)) || (userData && (userData.isOwner || userData.isAdmin || userData.role === 'admin'))) {
+            if ((typeof IS_ADMIN !== 'undefined' && IS_ADMIN) || (user && (KNOWN_ADMINS.includes(user.uid) || user.uid === MASTER_ADMIN)) || (userData && userData.isOwner)) {
                 hasAccess = true;
                 accessRole = 'TEAM OWNER / ADMIN';
             }

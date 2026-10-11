@@ -23,7 +23,10 @@ else:
 
 CONFIG_FILE = os.path.join(BASE_DIR, "config.json")
 BRIDGE_VERSION = "1.6.0"
-LOCAL_DASH_TOKEN = "9f88a761189d76af3351166d3cc820e6e4c9e5b901f5fb0261c8d24eac694f4b"
+# Optional shared secret for the local dashboard gateway. Never hardcode it: set the DASH_TOKEN
+# environment variable (same value on the gateway) or "dashToken" in config.json.
+def get_local_dash_token(config=None):
+    return os.environ.get("DASH_TOKEN") or (config or {}).get("dashToken", "")
 
 class TelemetryBridge:
     def __init__(self, status_callback=None):
@@ -192,13 +195,14 @@ class TelemetryBridge:
             try:
                 url = f"http://localhost:3000{path}"
                 data = json.dumps(payload).encode('utf-8')
+                headers = {'Content-Type': 'application/json'}
+                token = get_local_dash_token(self.config)
+                if token:
+                    headers['Authorization'] = f'Bearer {token}'
                 req = urllib.request.Request(
                     url,
                     data=data,
-                    headers={
-                        'Content-Type': 'application/json',
-                        'Authorization': f'Bearer {LOCAL_DASH_TOKEN}'
-                    },
+                    headers=headers,
                     method='POST'
                 )
                 with urllib.request.urlopen(req, timeout=1.0) as response:

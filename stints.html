@@ -26,7 +26,8 @@
     </script>
 
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Live Stint Schedules | GRiD UP Sim Racing</title>
     <meta name="description" content="Official Live Stint Schedules, driver rotations, and run-sheets for GRiD UP endurance races.">
     <meta property="og:type" content="website">
@@ -614,6 +615,16 @@
     <script defer src="js/auth.js?v=12"></script>
 
     <script>
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
         // State
         let currentEventId = '';
         let currentLineupData = null;
@@ -910,11 +921,11 @@
                             let driverOptions = `<option value="">-- Open Slot / Unassigned --</option>`;
                             const carDrivers = (car.drivers && car.drivers.length > 0) ? car.drivers : [];
                             if (s.driverName && !isUncovered && !carDrivers.includes(s.driverName)) {
-                                driverOptions += `<option value="${s.driverName}" selected>${s.driverName} (Assigned)</option>`;
+                                driverOptions += `<option value="${escapeHtml(s.driverName)}" selected>${escapeHtml(s.driverName)} (Assigned)</option>`;
                             }
                             carDrivers.forEach(d => {
                                 const isCapt = captainName && captainName.toLowerCase() === d.toLowerCase();
-                                driverOptions += `<option value="${d}" ${s.driverName === d ? 'selected' : ''}>${isCapt ? '👑 ' : ''}${d}</option>`;
+                                driverOptions += `<option value="${escapeHtml(d)}" ${s.driverName === d ? 'selected' : ''}>${isCapt ? '👑 ' : ''}${escapeHtml(d)}</option>`;
                             });
 
                             stintRowsHtml += `
@@ -925,7 +936,7 @@
                                             ${driverOptions}
                                         </select>
                                         <div style="margin-top: 5px;">
-                                            <input type="text" value="${s.notes || ''}" placeholder="Stint notes (fuel, tires, pit strategy)..." onchange="updateStintNotes(${cIdx}, ${sIdx}, this.value)" style="background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.88); font-size: 0.72rem; padding: 3px 8px; border-radius: 4px; width: 100%; max-width: 260px;">
+                                            <input type="text" value="${escapeHtml(s.notes || '')}" placeholder="Stint notes (fuel, tires, pit strategy)..." onchange="updateStintNotes(${cIdx}, ${sIdx}, this.value)" style="background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.88); font-size: 0.72rem; padding: 3px 8px; border-radius: 4px; width: 100%; max-width: 260px;">
                                         </div>
                                     </td>
                                     <td style="font-family: monospace; color: rgba(255,255,255,0.75); font-size: 0.8rem;">
@@ -950,9 +961,9 @@
                                     <td style="font-weight: 800; color: var(--primary);">#${s.stintIndex}</td>
                                     <td>
                                         <strong style="color: ${isUncovered ? '#f87171' : '#ffffff'}; font-size: 0.9rem;">
-                                            ${isUncovered ? '<i class="fas fa-exclamation-triangle" style="margin-right: 4px;"></i> Open Slot' : s.driverName}
+                                            ${isUncovered ? '<i class="fas fa-exclamation-triangle" style="margin-right: 4px;"></i> Open Slot' : escapeHtml(s.driverName)}
                                         </strong>
-                                        ${s.notes ? `<div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 3px;"><i class="fas fa-info-circle" style="color: var(--primary); font-size: 0.65rem;"></i> ${s.notes}</div>` : ''}
+                                        ${s.notes ? `<div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 3px;"><i class="fas fa-info-circle" style="color: var(--primary); font-size: 0.65rem;"></i> ${escapeHtml(s.notes)}</div>` : ''}
                                     </td>
                                     <td style="font-family: monospace; color: rgba(255,255,255,0.75); font-size: 0.8rem;">
                                         ${s.plannedStartTimeStr || '00:00'} &rarr; ${s.plannedEndTimeStr || '01:00'}
@@ -975,7 +986,7 @@
                     return `
                         <span class="driver-stint-pill">
                             <i class="fas fa-helmet-safety" style="color: var(--primary); font-size: 0.7rem;"></i>
-                            ${d} <strong>(${hours}h)</strong>
+                            ${escapeHtml(d)} <strong>(${hours}h)</strong>
                         </span>
                     `;
                 }).join('');
@@ -986,12 +997,12 @@
                             <div class="car-identity-block">
                                 <div class="racing-plate">
                                     <span class="racing-plate-label">CAR</span>
-                                    <span class="racing-plate-num">#${carNumber}</span>
+                                    <span class="racing-plate-num">#${escapeHtml(carNumber)}</span>
                                 </div>
                                 <div class="schedule-title-area">
                                     <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                                         <h3 class="schedule-name-heading" id="team-name-display-${cIdx}">
-                                            ${teamName}
+                                            ${escapeHtml(teamName)}
                                         </h3>
                                         ${isCaptain ? `
                                             <button type="button" onclick="openRenameModal(${cIdx})" class="edit-schedule-btn" title="Edit this team's schedule name">
@@ -1011,13 +1022,13 @@
                                         </a>
                                     </div>
                                     <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 0.75rem; color: var(--text-muted);">
-                                        <span style="background: rgba(0,207,255,0.12); color: var(--primary); border: 1px solid rgba(0,207,255,0.3); padding: 2px 8px; border-radius: 4px; font-weight: 800;">${carClass}</span>
-                                        <span style="color: #cbd5e1;"><i class="fas fa-car-side" style="margin-right: 4px;"></i> ${carModel}</span>
+                                        <span style="background: rgba(0,207,255,0.12); color: var(--primary); border: 1px solid rgba(0,207,255,0.3); padding: 2px 8px; border-radius: 4px; font-weight: 800;">${escapeHtml(carClass)}</span>
+                                        <span style="color: #cbd5e1;"><i class="fas fa-car-side" style="margin-right: 4px;"></i> ${escapeHtml(carModel)}</span>
                                         <span>&bull;</span>
                                         <span><i class="fas fa-stopwatch" style="margin-right: 4px;"></i> ${stintMinutes}m Stints</span>
                                         ${captainName ? `
                                             <span class="captain-badge">
-                                                <i class="fas fa-crown"></i> Captain: ${captainName}
+                                                <i class="fas fa-crown"></i> Captain: ${escapeHtml(captainName)}
                                             </span>
                                         ` : ''}
                                     </div>

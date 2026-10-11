@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -6098,36 +6099,36 @@ body.meeting-mode-active .btn-summary-confirm {
                 const driverClass = d.preferredClass || 'GT3';
                 const driverChassis = d.preferredChassis || d.preferredCar || d.chassis || d.selectedCar || d.car || '';
                 const isEligible = !driverClass || eligibleClasses.some(ec => ec.toLowerCase() === driverClass.toLowerCase() || (ec === 'Supercars' && driverClass.toLowerCase().includes('supercar')));
-                const escapedName = driverName.replace(/'/g, "\\'");
+                const safeDriverArg = encodeURIComponent(driverName);
                 const squadShort = assignedTeamName ? assignedTeamName.replace(/^GRiD UP\s*/i, '') : '';
 
                 return `
                     <div class="driver-pool-card ${assignedTeamName ? 'is-assigned' : ''}"
                          draggable="true"
-                         ondragstart="adminOnDriverDragStart(event, '${escapedName}', '${assignedTeamName ? 'assigned' : 'pool'}', ${assignedCarIdx})"
+                         ondragstart="adminOnDriverDragStart(event, decodeURIComponent('${safeDriverArg}'), '${assignedTeamName ? 'assigned' : 'pool'}', ${assignedCarIdx})"
                          ondragend="adminOnDriverDragEnd(event)"
                          title="Drag onto any team card on the right to assign">
                         <div class="driver-card-top">
                             <div class="driver-name-status">
                                 <span class="status-dot ${assignedTeamName ? 'purple' : statusDotClass}"></span>
-                                <strong class="driver-name" title="${driverName}">${driverName}</strong>
+                                <strong class="driver-name" title="${escapeHtml(driverName)}">${escapeHtml(driverName)}</strong>
                             </div>
                             <div>
                                 ${assignedTeamName 
-                                    ? `<span class="assigned-squad-tag" title="Assigned to ${assignedTeamName}"><i class="fas fa-check"></i> ${squadShort}</span>`
+                                    ? `<span class="assigned-squad-tag" title="Assigned to ${escapeHtml(assignedTeamName)}"><i class="fas fa-check"></i> ${escapeHtml(squadShort)}</span>`
                                     : `<span class="driver-status-badge ${d.status === 'signed_up' ? 'status-avail' : 'status-int'}">${statusLabel}</span>`
                                 }
                             </div>
                         </div>
 
                         <div class="driver-card-mid">
-                            <div class="driver-preferred-car" title="Preferred: ${driverChassis || 'Any Car'}">
+                            <div class="driver-preferred-car" title="Preferred: ${escapeHtml(driverChassis || 'Any Car')}">
                                 <i class="fas fa-car-side" style="color:var(--primary); font-size:0.65rem;"></i>
-                                <span class="pref-value">${driverChassis || 'Any Car'}</span>
+                                <span class="pref-value">${escapeHtml(driverChassis || 'Any Car')}</span>
                             </div>
                             <div style="display:flex; align-items:center; gap:4px; flex-shrink:0;">
                                 <span class="drag-handle-hint"><i class="fas fa-grip-lines"></i> DRAG</span>
-                                ${!isEligible ? `<span style="color:#f87171; font-size:0.62rem; font-weight:800;" title="Class: ${driverClass}">⚠️ ${driverClass}</span>` : ''}
+                                ${!isEligible ? `<span style="color:#f87171; font-size:0.62rem; font-weight:800;" title="Class: ${escapeHtml(driverClass)}">⚠️ ${escapeHtml(driverClass)}</span>` : ''}
                             </div>
                         </div>
                     </div>
@@ -6232,34 +6233,34 @@ body.meeting-mode-active .btn-summary-confirm {
                                 const srHtml = getDriverSrBadgeHtml(sr);
                                 const driverChassis = resp ? (resp.preferredChassis || resp.preferredCar || resp.chassis || resp.selectedCar || resp.car || '') : '';
                                 const isCaptain = car.captain && car.captain.trim().toLowerCase() === driverName.trim().toLowerCase();
-                                const escapedName = driverName.replace(/'/g, "\\'");
+                                const safeDriverArg = encodeURIComponent(driverName);
 
                                 return `
                                     <div class="roster-driver-row ${isCaptain ? 'is-captain-row' : ''}"
                                          draggable="true"
-                                         ondragstart="adminOnDriverDragStart(event, '${escapedName}', 'team', ${cIdx})"
+                                         ondragstart="adminOnDriverDragStart(event, decodeURIComponent('${safeDriverArg}'), 'team', ${cIdx})"
                                          ondragend="adminOnDriverDragEnd(event)">
                                         <div class="driver-row-identity">
                                             <i class="fas fa-grip-vertical grip-handle"></i>
                                             <span class="status-dot green"></span>
                                             <span class="driver-row-name">
                                                 ${isCaptain ? '<span style="color:#fbbf24; margin-right:3px;">👑</span>' : ''}
-                                                <strong>${driverName}</strong>
+                                                <strong>${escapeHtml(driverName)}</strong>
                                             </span>
                                             ${isCaptain ? '<span class="captain-badge">CAPTAIN</span>' : ''}
                                         </div>
                                         <div class="driver-row-details">
                                             <span class="driver-row-ir">${ir ? ir.toLocaleString() + ' iR' : '--'}</span>
                                             ${srHtml}
-                                            ${driverChassis ? `<span class="driver-row-car" title="Preferred Car"><i class="fas fa-car-side" style="color:var(--primary); font-size:0.6rem;"></i> ${driverChassis.split(' ')[0]}</span>` : ''}
+                                            ${driverChassis ? `<span class="driver-row-car" title="Preferred Car"><i class="fas fa-car-side" style="color:var(--primary); font-size:0.6rem;"></i> ${escapeHtml(driverChassis.split(' ')[0])}</span>` : ''}
                                         </div>
                                         <div class="driver-row-actions">
                                             ${!isCaptain ? `
-                                                <button type="button" onclick="setAdminTeamCaptain(${cIdx}, '${escapedName}')" class="btn-set-captain" title="Make Team Captain">
+                                                <button type="button" onclick="setAdminTeamCaptain(${cIdx}, decodeURIComponent('${safeDriverArg}'))" class="btn-set-captain" title="Make Team Captain">
                                                     👑
                                                 </button>
                                             ` : ''}
-                                            <button type="button" onclick="removeDriverFromAdminTeam(${cIdx}, '${escapedName}')" class="btn-remove-driver" title="Remove from squad">
+                                            <button type="button" onclick="removeDriverFromAdminTeam(${cIdx}, decodeURIComponent('${safeDriverArg}'))" class="btn-remove-driver" title="Remove from squad">
                                                 <i class="fas fa-times"></i>
                                             </button>
                                         </div>
@@ -7172,17 +7173,19 @@ body.meeting-mode-active .btn-summary-confirm {
                                 <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${statusColor}; margin-right: 5px;"></span>
                                 ${statusText}
                             </div>
-                            <div style="font-size: 0.6rem; color: var(--text-muted); font-family: monospace;">${league.id}</div>
+                            <div style="font-size: 0.6rem; color: var(--text-muted); font-family: monospace;">${escapeHtml(league.id)}</div>
                         </div>
-                        <h4 style="margin-bottom: 0.5rem;">${league.name}</h4>
+                        <h4 style="margin-bottom: 0.5rem;">${escapeHtml(league.name)}</h4>
                         <div style="font-size: 0.65rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem;">
-                            Class: ${league.carClass || 'GT3'} // ${league.date || league.schedule || 'TBD'}
+                            Class: ${escapeHtml(league.carClass || 'GT3')} // ${escapeHtml(league.date || league.schedule || 'TBD')}
                         </div>
                         <div style="display: flex; gap: 10px;">
-                            <button onclick='showLeagueModal(${JSON.stringify(league).replace(/'/g, "&apos;")})' class="btn btn-outline" style="flex: 1; font-size: 0.7rem; padding: 0.5rem;">Edit</button>
-                            <button onclick="deleteLeague('${league.id}')" class="btn btn-outline" style="flex: 1; font-size: 0.7rem; padding: 0.5rem; border-color: #ff0055; color: #ff0055;">Delete</button>
+                            <button class="btn btn-outline btn-edit-league" style="flex: 1; font-size: 0.7rem; padding: 0.5rem;">Edit</button>
+                            <button class="btn btn-outline btn-delete-league" style="flex: 1; font-size: 0.7rem; padding: 0.5rem; border-color: #ff0055; color: #ff0055;">Delete</button>
                         </div>
                     `;
+                    card.querySelector('.btn-edit-league').addEventListener('click', () => showLeagueModal(league));
+                    card.querySelector('.btn-delete-league').addEventListener('click', () => deleteLeague(league.id));
                     list.appendChild(card);
                 });
 
@@ -9358,18 +9361,21 @@ body.meeting-mode-active .btn-summary-confirm {
                         </td>
                         <td style="text-align: right;">
                             <div style="display: flex; gap: 6px; justify-content: flex-end;">
-                                <button onclick="toggleTelemetryTeamStatus('${t.id}', ${!t.enabled})" class="btn btn-outline" style="font-size: 0.7rem; padding: 0.3rem 0.6rem; border-color: ${t.enabled ? '#ef4444' : '#10b981'}; color: ${t.enabled ? '#f87171' : '#34d399'};">
+                                <button class="btn btn-outline btn-toggle-team" style="font-size: 0.7rem; padding: 0.3rem 0.6rem; border-color: ${t.enabled ? '#ef4444' : '#10b981'}; color: ${t.enabled ? '#f87171' : '#34d399'};">
                                     ${t.enabled ? 'Disable' : 'Enable'}
                                 </button>
-                                <button onclick="editTelemetryTeam('${t.id}', '${escapeHtml(t.name)}', '${t.color}', ${t.order}, ${t.enabled}, ${t.adminOnly})" class="btn btn-outline" style="font-size: 0.7rem; padding: 0.3rem 0.6rem;">
+                                <button class="btn btn-outline btn-edit-team" style="font-size: 0.7rem; padding: 0.3rem 0.6rem;">
                                     Edit
                                 </button>
-                                <button onclick="deleteTelemetryTeam('${t.id}')" class="btn btn-outline" style="font-size: 0.7rem; padding: 0.3rem 0.6rem; border-color: #ef4444; color: #ef4444;">
+                                <button class="btn btn-outline btn-delete-team" style="font-size: 0.7rem; padding: 0.3rem 0.6rem; border-color: #ef4444; color: #ef4444;">
                                     Delete
                                 </button>
                             </div>
                         </td>
                     `;
+                    tr.querySelector('.btn-toggle-team').addEventListener('click', () => toggleTelemetryTeamStatus(t.id, !t.enabled));
+                    tr.querySelector('.btn-edit-team').addEventListener('click', () => editTelemetryTeam(t.id, t.name, t.color, t.order, t.enabled, t.adminOnly));
+                    tr.querySelector('.btn-delete-team').addEventListener('click', () => deleteTelemetryTeam(t.id));
                     list.appendChild(tr);
                 });
                 if (window.lucide && typeof lucide.createIcons === 'function') {
@@ -9467,9 +9473,14 @@ body.meeting-mode-active .btn-summary-confirm {
             }
         }
 
-        function escapeHtml(text) {
-            if (!text) return '';
-            return text.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
         }
 </script>
 <footer style="padding: 2rem 0; border-top: 1px solid rgba(255,255,255,0.05); text-align: center; margin-top: 2rem;">
@@ -9481,8 +9492,7 @@ body.meeting-mode-active .btn-summary-confirm {
             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="#ffffff" style="margin-top: -1px;"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
         </a>
     </div>
-    <p style="color: var(--text-muted); font-size: 0.8rem; margin: 0;">&copy; 2026 GRiD UP Sim Racing Admin Dashboard</p>
-<div style="display: none;"><a href="https://www.sigmatraffic.com?ref=328509">Free website hits</a></div></footer>
+    <p style="color: var(--text-muted); font-size: 0.8rem; margin: 0;">&copy; 2026 GRiD UP Sim Racing Admin Dashboard</p></footer>
 </body>
 </html>
 

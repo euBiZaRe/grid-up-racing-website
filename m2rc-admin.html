@@ -8,7 +8,8 @@
       gtag('js', new Date()); gtag('config', 'G-5JMPYRH8H9');
     </script>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>M2RC Admin Dashboard — GRiD UP Esports</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -91,10 +92,10 @@
 
 <div id="admin-main" class="container" style="display:none;">
   <div class="tab-bar">
-    <button class="tab-btn active" onclick="switchAdminTab('regs')">&#128221; Driver Registrations</button>
-    <button class="tab-btn" onclick="switchAdminTab('schedule')">&#128197; Schedule &amp; Weather</button>
-    <button class="tab-btn" onclick="switchAdminTab('results')">&#127942; Race Results Entry</button>
-    <button class="tab-btn" onclick="switchAdminTab('stewards')">&#9878; Stewarding Panel</button>
+    <button class="tab-btn active" onclick="switchAdminTab('regs', this)">&#128221; Driver Registrations</button>
+    <button class="tab-btn" onclick="switchAdminTab('schedule', this)">&#128197; Schedule &amp; Weather</button>
+    <button class="tab-btn" onclick="switchAdminTab('results', this)">&#127942; Race Results Entry</button>
+    <button class="tab-btn" onclick="switchAdminTab('stewards', this)">&#9878; Stewarding Panel</button>
   </div>
 
   <!-- REGISTRATIONS -->
@@ -165,10 +166,30 @@
 <script>
   let ADMIN_ROUNDS=[],ADMIN_REGS=[],ADMIN_RESULTS={};
 
-  function switchAdminTab(t){
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function sanitizeHttpUrl(url) {
+    if (!url || typeof url !== 'string') return '';
+    try {
+      const p = new URL(url.trim(), window.location.origin);
+      if (p.protocol === 'http:' || p.protocol === 'https:') return p.href;
+    } catch (_) {}
+    return '';
+  }
+
+  function switchAdminTab(t, btn){
     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
     document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-    event.target.classList.add('active');
+    const targetBtn = btn || (typeof event !== 'undefined' && event && event.target && event.target.closest ? event.target.closest('.tab-btn') : null) || document.querySelector(`.tab-btn[onclick*="'${t}'"]`);
+    if (targetBtn) targetBtn.classList.add('active');
     const p=document.getElementById('panel-'+t);if(p)p.classList.add('active');
   }
 
@@ -234,16 +255,16 @@
       count.textContent=`${ADMIN_REGS.filter(r=>r.status==='approved').length} Approved / ${ADMIN_REGS.length} Total`;
       body.innerHTML=ADMIN_REGS.map(r=>`
         <tr>
-          <td><strong style="font-family:var(--fh);color:var(--gold);font-size:0.95rem;">#${r.carNumber||'--'}</strong></td>
-          <td><strong style="color:#fff;">${r.driverName}</strong></td>
-          <td style="color:var(--sub);font-family:monospace;">${r.iracingId||'--'}</td>
-          <td style="color:var(--sub);">${r.teamName||'Privateer'}</td>
+          <td><strong style="font-family:var(--fh);color:var(--gold);font-size:0.95rem;">#${escapeHtml(r.carNumber||'--')}</strong></td>
+          <td><strong style="color:#fff;">${escapeHtml(r.driverName||'')}</strong></td>
+          <td style="color:var(--sub);font-family:monospace;">${escapeHtml(r.iracingId||'--')}</td>
+          <td style="color:var(--sub);">${escapeHtml(r.teamName||'Privateer')}</td>
           <td>${r.isRookie==='true'||r.isRookie===true?'<span style="color:#eab308;font-weight:800;font-size:0.7rem;">AM CLASS</span>':'<span style="color:var(--pl);font-weight:800;font-size:0.7rem;">PRO CLASS</span>'}</td>
           <td>${r.status==='approved'?'<span class="badge badge-approved">✓ APPROVED</span>':r.status==='rejected'?'<span class="badge badge-rejected">❌ REJECTED</span>':'<span class="badge badge-pending">⏳ PENDING</span>'}</td>
           <td>
             <div style="display:flex;gap:4px;">
-              ${r.status!=='approved'?`<button class="btn btn-green" onclick="updateRegStatus('${r.id}','approved')" style="padding:0.25rem 0.5rem;font-size:0.65rem;">Approve</button>`:''}
-              ${r.status!=='rejected'?`<button class="btn btn-red" onclick="updateRegStatus('${r.id}','rejected')" style="padding:0.25rem 0.5rem;font-size:0.65rem;">Reject</button>`:''}
+              ${r.status!=='approved'?`<button class="btn btn-green" onclick="updateRegStatus('${escapeHtml(r.id)}','approved')" style="padding:0.25rem 0.5rem;font-size:0.65rem;">Approve</button>`:''}
+              ${r.status!=='rejected'?`<button class="btn btn-red" onclick="updateRegStatus('${escapeHtml(r.id)}','rejected')" style="padding:0.25rem 0.5rem;font-size:0.65rem;">Reject</button>`:''}
             </div>
           </td>
         </tr>
@@ -377,25 +398,27 @@
       snap.forEach(doc=>{
         const p=doc.data();
         const div=document.createElement('div');div.className='card';
+        const safeVideoUrl = sanitizeHttpUrl(p.videoUrl);
+        const safeDocId = encodeURIComponent(doc.id);
         div.innerHTML=`
           <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.75rem;">
             <div>
-              <span style="font-family:var(--fh);font-size:0.65rem;color:var(--pl);font-weight:800;letter-spacing:1.5px;text-transform:uppercase;">Round ${p.roundNumber} &middot; Lap ${p.lap} &middot; Corner ${p.corner}</span>
-              <h3 style="font-family:var(--fh);color:#fff;font-size:1rem;margin-top:2px;">${p.protesterName} vs ${p.accusedName}</h3>
+              <span style="font-family:var(--fh);font-size:0.65rem;color:var(--pl);font-weight:800;letter-spacing:1.5px;text-transform:uppercase;">Round ${escapeHtml(p.roundNumber)} &middot; Lap ${escapeHtml(p.lap)} &middot; Corner ${escapeHtml(p.corner)}</span>
+              <h3 style="font-family:var(--fh);color:#fff;font-size:1rem;margin-top:2px;">${escapeHtml(p.protesterName)} vs ${escapeHtml(p.accusedName)}</h3>
             </div>
-            <select id="st-status-${doc.id}" style="width:auto;font-size:0.72rem;padding:0.3rem 0.6rem;" onchange="updateStewardStatus('${doc.id}',this.value)">
+            <select id="st-status-${escapeHtml(doc.id)}" style="width:auto;font-size:0.72rem;padding:0.3rem 0.6rem;" onchange="updateStewardStatus('${safeDocId}',this.value)">
               <option value="submitted" ${p.status==='submitted'?'selected':''}>Submitted</option>
               <option value="under-review" ${p.status==='under-review'?'selected':''}>⚖️ Under Review</option>
               <option value="resolved" ${p.status==='resolved'?'selected':''}>✓ Resolved</option>
             </select>
           </div>
-          <p style="color:var(--sub);font-size:0.88rem;margin-bottom:1rem;background:rgba(0,0,0,0.3);padding:0.75rem;border-radius:8px;border-left:2px solid var(--purple);">"${p.description}"</p>
-          ${p.videoUrl?`<p style="margin-bottom:1rem;"><a rel="noopener noreferrer" href="${p.videoUrl}" target="_blank" style="color:var(--pl);font-size:0.75rem;">▶ View Video Evidence</a></p>`:''}
+          <p style="color:var(--sub);font-size:0.88rem;margin-bottom:1rem;background:rgba(0,0,0,0.3);padding:0.75rem;border-radius:8px;border-left:2px solid var(--purple);">"${escapeHtml(p.description)}"</p>
+          ${safeVideoUrl?`<p style="margin-bottom:1rem;"><a rel="noopener noreferrer" href="${safeVideoUrl}" target="_blank" style="color:var(--pl);font-size:0.75rem;">▶ View Video Evidence</a></p>`:''}
           <div class="form-group" style="margin-bottom:0.5rem;">
             <label>Official Steward Decision / Ruling</label>
-            <textarea id="st-decision-${doc.id}" placeholder="Enter official penalty or ruling text...">${p.decision||''}</textarea>
+            <textarea id="st-decision-${escapeHtml(doc.id)}" placeholder="Enter official penalty or ruling text...">${escapeHtml(p.decision||'')}</textarea>
           </div>
-          <button class="btn btn-purple" onclick="saveStewardRuling('${doc.id}')" style="margin-top:0.5rem;">Publish Ruling</button>
+          <button class="btn btn-purple" onclick="saveStewardRuling('${safeDocId}')" style="margin-top:0.5rem;">Publish Ruling</button>
         `;
         container.appendChild(div);
       });
@@ -403,13 +426,16 @@
   }
 
   async function updateStewardStatus(id,status){
-    try{await db.collection('m2rc_stewarding').doc(id).update({status});}catch(e){alert(e.message);}
+    const cleanId = decodeURIComponent(id);
+    try{await db.collection('m2rc_stewarding').doc(cleanId).update({status});}catch(e){alert(e.message);}
   }
 
   async function saveStewardRuling(id){
-    const decision=document.getElementById('st-decision-'+id).value.trim();
+    const cleanId = decodeURIComponent(id);
+    const el = document.getElementById('st-decision-'+cleanId) || document.getElementById('st-decision-'+id);
+    const decision = el ? el.value.trim() : '';
     try{
-      await db.collection('m2rc_stewarding').doc(id).update({decision,status:'resolved'});
+      await db.collection('m2rc_stewarding').doc(cleanId).update({decision,status:'resolved'});
       alert('Steward ruling published!');
       loadAdminStewards();
     }catch(e){alert(e.message);}

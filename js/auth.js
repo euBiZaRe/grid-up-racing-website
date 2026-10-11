@@ -84,6 +84,11 @@ function sanitizeHttpUrl(url) {
     return '';
 }
 
+if (typeof window !== 'undefined') {
+    window.escapeHtml = escapeHtml;
+    window.sanitizeHttpUrl = sanitizeHttpUrl;
+}
+
 // --- GLOBAL STYLES FOR SOCIALS ---
 if (typeof document !== 'undefined' && !document.getElementById('social-styles')) {
     const style = document.createElement('style');
@@ -146,18 +151,7 @@ function initAuth() {
                     await db.collection("users").doc(user.uid).set({
                         discordName: user.displayName || null,
                         photoURL: user.photoURL || null,
-                        lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
-                        debugInfo: {
-                            displayName: user.displayName || null,
-                            photoURL: user.photoURL || null,
-                            providerData: user.providerData.map(p => ({
-                                providerId: p.providerId,
-                                uid: p.uid,
-                                displayName: p.displayName || null,
-                                photoURL: p.photoURL || null
-                            })),
-                            claims: tokenResult ? tokenResult.claims : null
-                        }
+                        lastSeen: firebase.firestore.FieldValue.serverTimestamp()
                     }, { merge: true });
                 }
             } catch (e) {
@@ -241,24 +235,6 @@ async function enrichAuthData(user) {
             if (!IS_ADMIN && adminDoc && adminDoc.exists) {
                 const admins = adminDoc.data().uids || [];
                 IS_ADMIN = admins.includes(user.uid);
-            }
-
-            // Fallback Check Admin via users collection
-            if (!IS_ADMIN && userDoc && userDoc.exists) {
-                const ud = userDoc.data();
-                if (ud.isAdmin === true || ud.role === 'admin') IS_ADMIN = true;
-            }
-
-            // Self-healing auto-sync: If user is verified as admin, ensure their users/{uid} document has isAdmin: true
-            if (IS_ADMIN && userDoc) {
-                const ud = userDoc.exists ? userDoc.data() : {};
-                if (ud.isAdmin !== true || ud.role !== 'admin') {
-                    db.collection("users").doc(user.uid).set({
-                        isAdmin: true,
-                        role: 'admin',
-                        lastAdminVerified: firebase.firestore.FieldValue.serverTimestamp()
-                    }, { merge: true }).catch(e => console.warn("Auto-sync admin role to users doc error:", e));
-                }
             }
 
             // Check Verification
