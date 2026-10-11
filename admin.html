@@ -2803,8 +2803,8 @@ body.meeting-mode-active .btn-summary-confirm {
                             <table class="claims-table mobile-table">
                                 <thead>
                                     <tr>
-                                        <th>User UID</th>
-                                        <th>Actions</th>
+                                        <th>Admin User</th>
+                                        <th style="text-align: right; width: 140px;">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="admins-list">
@@ -4629,28 +4629,131 @@ body.meeting-mode-active .btn-summary-confirm {
 
         async function loadAdmins() {
             const list = document.getElementById('admins-list');
-            list.innerHTML = '<tr><td colspan="2" style="text-align: center; color: var(--text-muted);">Loading admins...</td></tr>';
+            if (!list) return;
+            list.innerHTML = '<tr><td colspan="2" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Loading admins...</td></tr>';
             
             try {
+                // Ensure verified driver map is loaded for quick lookup
+                if (typeof loadVerifiedDriversForAdmin === 'function') {
+                    await loadVerifiedDriversForAdmin();
+                }
+
+                // Build a claims map across all claims (doc.id = driver name, discordId / userId = uid)
+                let claimsMap = {};
+                try {
+                    const claimsSnap = await db.collection("claims").get();
+                    claimsSnap.forEach(cd => {
+                        const cData = cd.data();
+                        const dName = cData.driverName || cd.id;
+                        if (cData.discordId) claimsMap[cData.discordId] = dName;
+                        if (cData.userId) claimsMap[cData.userId] = dName;
+                    });
+                } catch (errClaims) {
+                    console.warn("Could not load claims collection:", errClaims);
+                    if (typeof getVerifiedClaimsMap === 'function') {
+                        claimsMap = await getVerifiedClaimsMap();
+                    }
+                }
+
                 const doc = await db.collection("settings").doc("admins").get();
                 const uids = doc.exists ? (doc.data().uids || []) : [];
                 
+                const masterUid = 'B0t4f4nqqpZIQKpT8Ed97xka5gM2';
+                const allAdminUids = [masterUid, ...uids.filter(u => u !== masterUid)];
+
+                // Fetch user profiles for all admin UIDs concurrently
+                const userDocs = await Promise.all(
+                    allAdminUids.map(uid => db.collection("users").doc(uid).get().catch(e => {
+                        console.warn("Failed to fetch user doc for " + uid, e);
+                        return null;
+                    }))
+                );
+
+                const adminProfiles = {};
+                userDocs.forEach((uDoc, idx) => {
+                    const uid = allAdminUids[idx];
+                    if (uDoc && uDoc.exists) {
+                        adminProfiles[uid] = uDoc.data();
+                    } else {
+                        adminProfiles[uid] = {};
+                    }
+                });
+
                 list.innerHTML = '';
                 
-                list.innerHTML += `
-                    <tr>
-                        <td style="font-family: monospace; color: var(--primary);">B0t4f4nqqpZIQKpT8Ed97xka5gM2 <span style="font-size:0.7rem; color:var(--text-muted); margin-left: 10px;">(Master Admin)</span></td>
-                        <td><span style="font-size:0.8rem; color:var(--text-muted);">Cannot be removed</span></td>
-                    </tr>
-                `;
-                
-                uids.forEach(uid => {
-                    if (uid !== 'B0t4f4nqqpZIQKpT8Ed97xka5gM2') {
+                allAdminUids.forEach(uid => {
+                    const isMaster = (uid === masterUid);
+                    const userProfile = adminProfiles[uid] || {};
+
+                    // Resolve display name:
+                    let resolvedName = '';
+                    if (isMaster) {
+                        resolvedName = 'Matty Roberts';
+                    } else if (claimsMap[uid]) {
+                        resolvedName = claimsMap[uid];
+                    } else if (userProfile.driverName) {
+                        resolvedName = userProfile.driverName;
+                    } else if (userProfile.displayName && userProfile.displayName !== 'Discord User') {
+                        resolvedName = userProfile.displayName;
+                    } else if (userProfile.discordName) {
+                        resolvedName = userProfile.discordName;
+                    } else if (userProfile.discordUsername) {
+                        resolvedName = userProfile.discordUsername;
+                    } else {
+                        resolvedName = 'Team Admin';
+                    }
+
+                    const discordTag = userProfile.discordName || (userProfile.discordUsername ? `@${userProfile.discordUsername}` : '');
+                    const avatar = userProfile.photoURL || userProfile.avatar || '';
+                    const safeName = resolvedName.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+                    if (isMaster) {
                         list.innerHTML += `
                             <tr>
-                                <td data-label="User UID" style="font-family: monospace;">${uid}</td>
-                                <td data-label="Actions">
-                                    <button onclick="removeAdmin('${uid}')" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; border-color: #ff0099; color: #ff0099;">Remove</button>
+                                <td data-label="Admin User">
+                                    <div style="display: flex; align-items: center; gap: 0.85rem;">
+                                        <div style="width: 40px; height: 40px; border-radius: 50%; background: rgba(0, 242, 254, 0.1); border: 1.5px solid var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.15rem; flex-shrink: 0; box-shadow: 0 0 10px rgba(0, 242, 254, 0.2);">
+                                            👑
+                                        </div>
+                                        <div>
+                                            <div style="font-weight: 700; color: var(--primary); font-size: 0.95rem; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                                                <span>${resolvedName}</span>
+                                                <span style="font-size: 0.65rem; background: rgba(0, 242, 254, 0.15); color: var(--primary); padding: 0.15rem 0.5rem; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px; border: 1px solid rgba(0, 242, 254, 0.3); font-weight: 600;">Master Admin</span>
+                                            </div>
+                                            <div style="font-size: 0.73rem; color: var(--text-muted); font-family: monospace; margin-top: 3px;">
+                                                ${uid} ${discordTag ? `• <span style="color: #7289da;">${discordTag}</span>` : ''}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td data-label="Actions" style="text-align: right;">
+                                    <span style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;">Protected (Master)</span>
+                                </td>
+                            </tr>
+                        `;
+                    } else {
+                        list.innerHTML += `
+                            <tr>
+                                <td data-label="Admin User">
+                                    <div style="display: flex; align-items: center; gap: 0.85rem;">
+                                        <div style="width: 40px; height: 40px; border-radius: 50%; background: rgba(255, 255, 255, 0.05); border: 1.5px solid rgba(255, 255, 255, 0.12); display: flex; align-items: center; justify-content: center; font-size: 1.05rem; flex-shrink: 0; overflow: hidden;">
+                                            ${avatar ? `<img src="${avatar}" style="width: 100%; height: 100%; object-fit: cover;" alt="">` : '🛡️'}
+                                        </div>
+                                        <div>
+                                            <div style="font-weight: 700; color: #fff; font-size: 0.95rem; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                                                <span>${resolvedName}</span>
+                                                <span style="font-size: 0.65rem; background: rgba(255, 255, 255, 0.08); color: #cbd5e1; padding: 0.15rem 0.5rem; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px; border: 1px solid rgba(255, 255, 255, 0.15); font-weight: 600;">Team Admin</span>
+                                            </div>
+                                            <div style="font-size: 0.73rem; color: var(--text-muted); font-family: monospace; margin-top: 3px;">
+                                                ${uid} ${discordTag ? `• <span style="color: #7289da;">${discordTag}</span>` : ''}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td data-label="Actions" style="text-align: right;">
+                                    <button onclick="removeAdmin('${uid}', '${safeName}')" class="btn btn-outline" style="padding: 0.4rem 0.85rem; font-size: 0.75rem; border-color: #ff0099; color: #ff0099; display: inline-flex; align-items: center; gap: 0.35rem; transition: all 0.2s ease; cursor: pointer;">
+                                        <span>🗑️</span> Remove Admin
+                                    </button>
                                 </td>
                             </tr>
                         `;
@@ -4658,7 +4761,7 @@ body.meeting-mode-active .btn-summary-confirm {
                 });
             } catch (e) {
                 console.error("Error loading admins:", e);
-                list.innerHTML = '<tr><td colspan="2" style="text-align: center; color: #ff0099;">Error loading admin list.</td></tr>';
+                list.innerHTML = '<tr><td colspan="2" style="text-align: center; color: #ff0099; padding: 1.5rem;">Error loading admin list.</td></tr>';
             }
         }
 
@@ -4675,7 +4778,14 @@ body.meeting-mode-active .btn-summary-confirm {
                 if (!uids.includes(newUid)) {
                     uids.push(newUid);
                     await docRef.set({ uids: uids }, { merge: true });
+                    try {
+                        await db.collection("users").doc(newUid).set({ isAdmin: true, role: 'admin' }, { merge: true });
+                    } catch (errUser) {
+                        console.warn("Could not sync user profile role in Firestore:", errUser);
+                    }
                     document.getElementById('new-admin-uid').value = '';
+                    const searchInput = document.getElementById('admin-driver-search');
+                    if (searchInput) searchInput.value = '';
                     alert("Admin added successfully!");
                     loadAdmins();
                 } else {
@@ -4687,8 +4797,9 @@ body.meeting-mode-active .btn-summary-confirm {
             }
         }
 
-        async function removeAdmin(uid) {
-            if (!confirm('Are you sure you want to remove admin privileges for ' + uid + '?')) return;
+        async function removeAdmin(uid, name) {
+            const displayName = name || uid;
+            if (!confirm(`Are you sure you want to remove admin privileges for ${displayName}?\n\nUID: ${uid}`)) return;
             
             try {
                 const docRef = db.collection("settings").doc("admins");
@@ -4697,9 +4808,17 @@ body.meeting-mode-active .btn-summary-confirm {
                     let uids = doc.data().uids || [];
                     uids = uids.filter(u => u !== uid);
                     await docRef.set({ uids: uids }, { merge: true });
-                    alert("Admin removed.");
-                    loadAdmins();
                 }
+
+                // Also update user's role in users/{uid}
+                try {
+                    await db.collection("users").doc(uid).set({ isAdmin: false, role: 'driver' }, { merge: true });
+                } catch (errUser) {
+                    console.warn("Could not update user role in Firestore:", errUser);
+                }
+
+                alert(`Admin privileges removed for ${displayName}.`);
+                loadAdmins();
             } catch (e) {
                 console.error("Error removing admin:", e);
                 alert("Failed to remove admin: " + e.message);
