@@ -2190,8 +2190,6 @@
             // Apply squad color theme immediately
             applyTeamPortalTheme(team.teamName);
             
-            const eventObj = UPCOMING_EVENTS.find(e => e.id === team.eventSlug) || {};
-
             document.getElementById('event-title').textContent = team.eventName || eventObj.title || 'Special Event';
             document.getElementById('team-title').textContent = team.teamName;
 
@@ -4958,8 +4956,11 @@
                 container.innerHTML = `<h1 class="glow-text" style="margin-bottom: 3rem;">Team Portal Dashboard</h1>` + html;
                 container.style.display = 'block';
 
-                // Populate Availability Buttons
-                populateAvailability();
+                const loading = document.getElementById('loading-portal');
+                if (loading) loading.style.display = 'none';
+
+                // Populate Availability Buttons asynchronously
+                populateAvailability().catch(e => console.warn("Error populating availability:", e));
             } catch (err) {
                 console.error("Error in showSelection:", err);
                 const loading = document.getElementById('loading-portal');
