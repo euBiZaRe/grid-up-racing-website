@@ -758,6 +758,19 @@
             color: var(--text-muted);
         }
 
+        .setup-team-car-banner {
+            background: linear-gradient(135deg, rgba(0, 207, 255, 0.08) 0%, rgba(10, 16, 28, 0.75) 100%);
+            border: 1px solid rgba(0, 207, 255, 0.28);
+            border-radius: 12px;
+            padding: 1.15rem 1.4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
         .setup-event-banner {
             background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(6, 78, 59, 0.18) 100%);
             border: 1px solid rgba(16, 185, 129, 0.35);
@@ -1379,6 +1392,11 @@
                                 <span id="stat-my-installs" class="highlight-val" style="color: #00cfff;">0</span>
                                 <span class="highlight-sub">Synced to PC</span>
                             </div>
+                        </div>
+
+                        <!-- Team Builder Car Selection Banner -->
+                        <div id="team-builder-car-banner" style="display: none; margin-bottom: 1.5rem;">
+                            <!-- Injected dynamically via renderTeamBuilderBanner() -->
                         </div>
 
                         <!-- Event Approved Highlight Banner (shown if an event setup is approved) -->
@@ -2153,6 +2171,11 @@
         async function loadTeamPortal(team) {
             currentEvent = team.eventSlug;
             currentTeam = team.teamName;
+            window.currentTeamData = team.teamData || null;
+            const eventObj = UPCOMING_EVENTS.find(e => e.id === team.eventSlug) || {};
+            window.currentEventTrack = eventObj.track || null;
+            window.currentTeamCar = (team.teamData && (team.teamData.carModel || team.teamData.car || team.teamData.car_class)) || null;
+            window._userManuallyClearedCarFilter = false;
 
             if (team.eventSlug) {
                 try {
@@ -2205,7 +2228,7 @@
             const list = document.getElementById('lineup-list');
             if (!list || !data) return;
             
-            const carName = data.car || data.car_class || 'Not Assigned';
+            const carName = (data && (data.carModel || data.car || data.car_class)) || 'Not Assigned';
             const carClass = data.car_class || data.class || '';
             const captain = data.captain || 'None';
             const drivers = Array.isArray(data.drivers) ? data.drivers : [];
@@ -2982,7 +3005,124 @@
             initTelemetryDeviceDetector();
         }
 
-        function openUploadSetupModal() {
+        async function getTeamBuilderCarInfo() {
+            let teamName = (currentTeam && currentTeam !== 'all') ? currentTeam : null;
+            let car = window.currentTeamCar || null;
+            let eventSlug = (currentEvent && currentEvent !== 'all') ? currentEvent : null;
+            let track = window.currentEventTrack || null;
+            let allEventCars = [];
+
+            if (eventSlug && !track) {
+                const ev = UPCOMING_EVENTS.find(e => e.id === eventSlug);
+                if (ev && ev.track) track = ev.track;
+            }
+
+            if (!car && window._userMyTeams && window._userMyTeams.length > 0) {
+                const primary = window._userMyTeams[0];
+                teamName = teamName || primary.teamName;
+                eventSlug = eventSlug || primary.eventSlug;
+                const d = primary.teamData || {};
+                car = d.carModel || d.car || d.car_class || null;
+                if (!track && eventSlug) {
+                    const ev = UPCOMING_EVENTS.find(e => e.id === eventSlug);
+                    if (ev && ev.track) track = ev.track;
+                }
+            }
+
+            const targetEventId = eventSlug || (UPCOMING_EVENTS[0]?.id || null);
+            if (targetEventId) {
+                try {
+                    const lineupDoc = await db.collection("race_lineups").doc(targetEventId).get();
+                    if (lineupDoc.exists) {
+                        const teams = lineupDoc.data()?.teams || [];
+                        teams.forEach(t => {
+                            const c = t.carModel || t.car || t.car_class;
+                            if (c && !allEventCars.includes(c)) allEventCars.push(c);
+                        });
+
+                        if (!car) {
+                            if (teamName) {
+                                const match = teams.find(t => (t.name === teamName || t.teamName === teamName));
+                                if (match) car = match.carModel || match.car || match.car_class;
+                            }
+                            if (!car && allEventCars.length > 0) {
+                                car = allEventCars[0];
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.warn("Could not retrieve race_lineups for car detection:", e);
+                }
+            }
+
+            return {
+                teamName: teamName,
+                car: car,
+                track: track,
+                eventSlug: eventSlug,
+                allEventCars: allEventCars
+            };
+        }
+
+        function renderTeamBuilderBanner(builderInfo) {
+            const banner = document.getElementById('team-builder-car-banner');
+            if (!banner) return;
+
+            if (!builderInfo || !builderInfo.car) {
+                banner.style.display = 'none';
+                banner.innerHTML = '';
+                return;
+            }
+
+            const activeCar = builderInfo.car;
+            const teamLabel = builderInfo.teamName ? `(${escapeHtml(builderInfo.teamName)})` : '';
+            const trackLabel = builderInfo.track ? `&bull; ${escapeHtml(builderInfo.track)}` : '';
+
+            banner.style.display = 'block';
+            banner.innerHTML = `
+                <div class="setup-team-car-banner">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 42px; height: 42px; border-radius: 10px; background: rgba(0, 207, 255, 0.15); border: 1px solid rgba(0, 207, 255, 0.35); display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 1.15rem;">
+                            <i class="fas fa-car-side"></i>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.68rem; color: var(--primary); text-transform: uppercase; font-weight: 800; letter-spacing: 1.5px; display: flex; align-items: center; gap: 6px;">
+                                <i class="fas fa-layer-group"></i> Team Builder Selection
+                            </div>
+                            <div style="font-size: 1.1rem; font-weight: 800; color: #fff; margin-top: 2px;">
+                                ${escapeHtml(activeCar)} <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">${teamLabel} ${trackLabel}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                        <button type="button" onclick="setCarFilter('${escapeHtml(activeCar)}')" class="btn btn-primary" style="font-size: 0.75rem; padding: 0.45rem 1rem;">
+                            <i class="fas fa-check"></i> Filter to ${escapeHtml(activeCar)}
+                        </button>
+                        <button type="button" onclick="setCarFilter('all')" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.45rem 0.85rem;">
+                            Show All Chassis
+                        </button>
+                        <button type="button" onclick="openUploadSetupModal()" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.45rem 0.85rem; border-color: var(--primary); color: var(--primary);">
+                            <i class="fas fa-cloud-arrow-up"></i> Upload for this Car
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        window.setCarFilter = function(carName) {
+            const carFilter = document.getElementById('setup-filter-car');
+            if (carFilter) {
+                if (carName === 'all') {
+                    window._userManuallyClearedCarFilter = true;
+                } else {
+                    window._userManuallyClearedCarFilter = false;
+                }
+                carFilter.value = carName;
+                filterAndRenderSetups();
+            }
+        };
+
+        async function openUploadSetupModal() {
             if (!auth.currentUser) {
                 alert('Please sign in to upload setups.');
                 return;
@@ -3009,6 +3149,23 @@
             const eventApprovedBox = document.getElementById('upload-event-approved-box');
             if (eventApprovedBox) {
                 eventApprovedBox.style.display = isAdminUser ? 'block' : 'none';
+            }
+
+            // Auto-select car and circuit configured in Team Builder
+            try {
+                const builderInfo = await getTeamBuilderCarInfo();
+                if (builderInfo) {
+                    if (builderInfo.car) {
+                        const carSelect = document.getElementById('upload-car-select');
+                        if (carSelect) carSelect.value = builderInfo.car;
+                    }
+                    if (builderInfo.track) {
+                        const trackInput = document.getElementById('upload-track-input');
+                        if (trackInput && !trackInput.value) trackInput.value = builderInfo.track;
+                    }
+                }
+            } catch (e) {
+                console.warn("Could not prefill from team builder:", e);
             }
 
             const modal = document.getElementById('modal-upload-setup');
@@ -3962,42 +4119,85 @@
                     } catch (e) {}
                 }
 
+                // 3. Query Team Builder car selection info
+                const builderInfo = await getTeamBuilderCarInfo();
+                const teamBuilderCar = builderInfo?.car || null;
+                const allEventCars = builderInfo?.allEventCars || [];
+
+                // Render Team Builder Selection Banner
+                renderTeamBuilderBanner(builderInfo);
+
+                // Populate car filter with Team Builder options and auto-select!
                 const carFilter = document.getElementById('setup-filter-car');
                 if (carFilter) {
-                    const uniqueCars = Array.from(new Set(ALL_SETUPS.map(s => s.car).filter(Boolean))).sort();
-                    const cur = carFilter.value;
+                    const curVal = carFilter.value;
                     carFilter.innerHTML = '<option value="all">All Chassis</option>';
-                    uniqueCars.forEach(c => {
-                        const opt = document.createElement('option');
-                        opt.value = c;
-                        opt.textContent = c;
-                        carFilter.appendChild(opt);
-                    });
-                    if (cur) carFilter.value = cur;
+
+                    const builderCarsToShow = Array.from(new Set([teamBuilderCar, ...allEventCars].filter(Boolean)));
+                    if (builderCarsToShow.length > 0) {
+                        const optgroupBuilder = document.createElement('optgroup');
+                        optgroupBuilder.label = '🏎️ Team Builder Selections';
+                        builderCarsToShow.forEach(c => {
+                            const opt = document.createElement('option');
+                            opt.value = c;
+                            opt.textContent = `${c}${c === teamBuilderCar ? ' ★ (Team Assigned)' : ''}`;
+                            optgroupBuilder.appendChild(opt);
+                        });
+                        carFilter.appendChild(optgroupBuilder);
+                    }
+
+                    const otherCars = Array.from(new Set(ALL_SETUPS.map(s => s.car).filter(c => c && !builderCarsToShow.includes(c)))).sort();
+                    if (otherCars.length > 0) {
+                        const optgroupOther = document.createElement('optgroup');
+                        optgroupOther.label = 'Other Chassis';
+                        otherCars.forEach(c => {
+                            const opt = document.createElement('option');
+                            opt.value = c;
+                            opt.textContent = c;
+                            optgroupOther.appendChild(opt);
+                        });
+                        carFilter.appendChild(optgroupOther);
+                    }
+
+                    // Auto-select the car chosen in Team Builder if filter is currently 'all' or empty
+                    if ((!curVal || curVal === 'all') && teamBuilderCar && !window._userManuallyClearedCarFilter) {
+                        carFilter.value = teamBuilderCar;
+                    } else if (curVal && (builderCarsToShow.includes(curVal) || otherCars.includes(curVal) || curVal === 'all')) {
+                        carFilter.value = curVal;
+                    }
                 }
 
+                // Populate track filter
                 const trackFilter = document.getElementById('setup-filter-track');
                 if (trackFilter) {
-                    const uniqueTracks = Array.from(new Set(ALL_SETUPS.map(s => s.track).filter(Boolean))).sort();
+                    const uniqueTracks = Array.from(new Set([
+                        ...(builderInfo?.track ? [builderInfo.track] : []),
+                        ...ALL_SETUPS.map(s => s.track)
+                    ].filter(Boolean))).sort();
                     const cur = trackFilter.value;
                     trackFilter.innerHTML = '<option value="all">All Circuits</option>';
                     uniqueTracks.forEach(t => {
                         const opt = document.createElement('option');
                         opt.value = t;
-                        opt.textContent = t;
+                        opt.textContent = `${t}${t === builderInfo?.track ? ' ★ (Event Circuit)' : ''}`;
                         trackFilter.appendChild(opt);
                     });
                     if (cur) trackFilter.value = cur;
                 }
 
+                // Update KPI Cards: If teamBuilderCar is known, Active Chassis card displays it directly!
                 const activeSetups = ALL_SETUPS.filter(s => !s.isArchived);
                 const statTotal = document.getElementById('stat-total-setups');
                 if (statTotal) statTotal.textContent = activeSetups.length;
 
                 const statCars = document.getElementById('stat-total-cars');
                 if (statCars) {
-                    const carCount = new Set(activeSetups.map(s => s.car)).size;
-                    statCars.textContent = carCount;
+                    if (teamBuilderCar) {
+                        statCars.innerHTML = `<span style="font-size: 0.95rem; color: var(--primary);" title="Team Builder Assigned Chassis">${escapeHtml(teamBuilderCar)}</span>`;
+                    } else {
+                        const carCount = new Set(activeSetups.map(s => s.car)).size;
+                        statCars.textContent = carCount;
+                    }
                 }
 
                 const statApproved = document.getElementById('stat-event-approved');
@@ -4543,6 +4743,9 @@
                     }
                 });
 
+                window._userMyTeams = myTeams;
+                window._allTeamAssignments = allTeamAssignments;
+
                 // Separate teams user is assigned to from other teams
                 const otherTeams = allTeamAssignments.filter(t => 
                     !myTeams.some(m => m.eventSlug === t.eventSlug && m.teamName === t.teamName)
@@ -4639,7 +4842,7 @@
                     }
                 } else {
                     assignedTeams.forEach((t, idx) => {
-                        const carName = (t.teamData && t.teamData.car) ? t.teamData.car : null;
+                        const carName = (t.teamData && (t.teamData.carModel || t.teamData.car)) ? (t.teamData.carModel || t.teamData.car) : null;
                         const driverCount = (t.teamData && t.teamData.drivers) ? t.teamData.drivers.length : 0;
                         const isCaptain = Boolean(t.teamData && t.teamData.captain && isDriverMatch(t.teamData.captain));
                         const squadTheme = getTeamColorTheme(t.teamName);
@@ -4689,7 +4892,7 @@
                         optionsHtml += `<optgroup label="${eventName}">`;
                         groupedByEvent[eventName].forEach(item => {
                             const t = item.team;
-                            const car = (t.teamData && t.teamData.car) ? ` (${t.teamData.car})` : '';
+                            const car = (t.teamData && (t.teamData.carModel || t.teamData.car)) ? ` (${t.teamData.carModel || t.teamData.car})` : '';
                             optionsHtml += `<option value="${item.index}">${t.teamName}${car}</option>`;
                         });
                         optionsHtml += `</optgroup>`;
