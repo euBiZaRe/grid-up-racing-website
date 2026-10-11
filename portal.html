@@ -2053,16 +2053,12 @@
 
 
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
-
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
-
+    <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <script defer src="js/stint-planner.js?v=1"></script>
-    <script defer src="js/auth.js?v=11"></script>
+    <script defer src="js/auth.js?v=12"></script>
 
     <script>
 
@@ -3570,6 +3566,36 @@
             }
         }
 
+        async function ensureFirebaseStorage() {
+            if (typeof firebase !== 'undefined' && typeof firebase.storage === 'function') {
+                return firebase.storage();
+            }
+            if (typeof window.storage !== 'undefined' && window.storage) {
+                return window.storage;
+            }
+            // Wait briefly if script was deferred and still initializing
+            for (let i = 0; i < 30; i++) {
+                if (typeof firebase !== 'undefined' && typeof firebase.storage === 'function') {
+                    return firebase.storage();
+                }
+                await new Promise(r => setTimeout(r, 100));
+            }
+            // Dynamic fallback if still not loaded
+            if (typeof firebase !== 'undefined' && typeof firebase.storage !== 'function') {
+                await new Promise((resolve, reject) => {
+                    const s = document.createElement('script');
+                    s.src = 'https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js';
+                    s.onload = resolve;
+                    s.onerror = reject;
+                    document.head.appendChild(s);
+                });
+            }
+            if (typeof firebase !== 'undefined' && typeof firebase.storage === 'function') {
+                return firebase.storage();
+            }
+            throw new Error('Firebase Storage service is not loaded yet. Please reload the page and try again.');
+        }
+
         async function submitSetupUpload(event) {
             event.preventDefault();
             if (!uploadFileSelected || !uploadFileChecksum) {
@@ -3607,7 +3633,8 @@
                 const safeFileName = sanitizeFileName(uploadFileSelected.name);
                 const targetTeam = (currentTeam && currentTeam !== 'all') ? currentTeam : 'team_global';
                 const storagePath = `setups/${targetTeam}/${setupId}/v1.0/${safeFileName}`;
-                const storageRef = firebase.storage().ref(storagePath);
+                const storageService = await ensureFirebaseStorage();
+                const storageRef = storageService.ref(storagePath);
 
                 const uploadTask = storageRef.put(uploadFileSelected);
 
@@ -3717,7 +3744,8 @@
 
                 const safeFileName = sanitizeFileName(newVersionFileSelected.name);
                 const storagePath = `setups/${setup.teamId || 'team_global'}/${setupId}/${normVer}/${safeFileName}`;
-                const storageRef = firebase.storage().ref(storagePath);
+                const storageService = await ensureFirebaseStorage();
+                const storageRef = storageService.ref(storagePath);
 
                 const snap = await storageRef.put(newVersionFileSelected);
                 const downloadUrl = await snap.ref.getDownloadURL();

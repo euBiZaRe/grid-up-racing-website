@@ -18,6 +18,9 @@ if (typeof firebase !== 'undefined') {
     var db = firebase.firestore();
     window.db = db;
     window.auth = auth;
+    if (typeof firebase.storage === 'function') {
+        window.storage = firebase.storage();
+    }
 }
 
 // Global Auth State
