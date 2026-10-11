@@ -164,6 +164,7 @@ function initAuth() {
             // 3. Watch for application notifications
             watchApplicationNotification(user);
         } else {
+            // Only clear cached credentials if not in a transient network/quota error state
             if (appNotificationUnsub) {
                 appNotificationUnsub();
                 appNotificationUnsub = null;
@@ -348,7 +349,34 @@ function loginWithDiscord() {
         window.location.href = "index.html";
     }).catch((error) => {
         console.error("Login Error:", error.code, error.message);
-        alert("Authentication failed: " + error.message);
+        const errorDiv = document.getElementById('login-error-msg');
+        if (error.code === 'auth/quota-exceeded' || (error.message && error.message.toLowerCase().includes('quota'))) {
+            const quotaMsg = "Firebase Authentication Quota Limit Reached:<br><br>Discord login uses an OIDC Identity Platform provider on Firebase, which is capped at 50 Monthly Active Users (MAU) on the free Spark tier. Once that threshold is reached, Firebase rejects further sign-ins with <code>auth/quota-exceeded</code> until upgraded to the pay-as-you-go Blaze plan (which provides unlimited scale at $0.015/user above 50).<br><br><strong>Action needed:</strong> The Firebase project owner must attach billing / enable the Blaze plan in the Firebase Console (or raise the Identity Toolkit quota in Google Cloud Console).";
+            if (errorDiv) {
+                errorDiv.innerHTML = quotaMsg;
+                errorDiv.style.display = 'block';
+            } else {
+                alert("Firebase Authentication Quota Exceeded:\n\nDiscord OIDC logins require the Firebase 'Blaze' plan (or upgrading Identity Platform quota) because the free Spark tier caps OIDC/SAML at 50 monthly active users. Please upgrade the Firebase project plan in Firebase Console / Google Cloud.");
+            }
+        } else if (error.code === 'auth/popup-blocked') {
+            const blockMsg = "Login popup was blocked by your browser. Please allow popups for this site and try again.";
+            if (errorDiv) {
+                errorDiv.textContent = blockMsg;
+                errorDiv.style.display = 'block';
+            } else {
+                alert(blockMsg);
+            }
+        } else if (error.code === 'auth/popup-closed-by-user') {
+            console.log("Login popup was closed before completing.");
+        } else {
+            const genericMsg = "Authentication failed: " + error.message;
+            if (errorDiv) {
+                errorDiv.textContent = genericMsg;
+                errorDiv.style.display = 'block';
+            } else {
+                alert(genericMsg);
+            }
+        }
     });
 }
 
