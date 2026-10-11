@@ -23,6 +23,19 @@ if (typeof firebase !== 'undefined') {
     }
 }
 
+// Hardcoded Verified Admin UIDs failsafe (guarantees access even if Firestore rules or network restricts settings/admins)
+const MASTER_ADMIN = 'B0t4f4nqqpZIQKpT8Ed97xka5gM2'; // Matty Roberts (Protected Master)
+const KNOWN_ADMIN_UIDS = [
+    'B0t4f4nqqpZIQKpT8Ed97xka5gM2', // Matty Roberts (Master)
+    'uYUa2WYZ5TPg98v1e6jQzzrItR53', // Andrew Fabian (Team Admin)
+    'BnojTKUFKUUKDFFpnUGEdueLhkN2', // Martyn Cook (Team Admin)
+    '2TfuhZVILNQerQK9SYL1304jYp83'  // Adam Jones (Team Admin)
+];
+if (typeof window !== 'undefined') {
+    window.MASTER_ADMIN = MASTER_ADMIN;
+    window.KNOWN_ADMIN_UIDS = KNOWN_ADMIN_UIDS;
+}
+
 // Global Auth State
 let AUTH_USER = null;
 let IS_ADMIN = false;
@@ -37,8 +50,7 @@ let appNotificationUnsub = null;
         if (cached) {
             const data = JSON.parse(cached);
             const userUid = data.user ? data.user.uid : null;
-            const hardcodedAdmins = ['B0t4f4nqqpZIQKpT8Ed97xka5gM2', 'uYUa2WYZ5TPg98v1e6jQzzrItR53', 'BnojTKUFKUUKDFFpnUGEdueLhkN2', '2TfuhZVILNQerQK9SYL1304jYp83'];
-            const resolvedIsAdmin = (userUid && hardcodedAdmins.includes(userUid)) ? true : (data.isAdmin || false);
+            const resolvedIsAdmin = (userUid && KNOWN_ADMIN_UIDS.includes(userUid)) ? true : (data.isAdmin || false);
             // Wait for DOM to be ready to update UI safely
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', () => {
@@ -174,11 +186,20 @@ function initAuth() {
 
             // 1. Immediate UI update
             updateAuthUI(user);
+
+            // 2. Fast-path hook execution for admins (instant unlock before network calls)
+            if (isInitialAdmin && typeof onAuthEnriched === 'function') {
+                try {
+                    onAuthEnriched(user, { isAdmin: true, isVerified: cached.isVerified || false });
+                } catch (eAuthHook) {
+                    console.warn("Early onAuthEnriched error:", eAuthHook);
+                }
+            }
             
-            // 2. Background Enrichment (Admin/Verification)
+            // 3. Background Enrichment (Admin/Verification)
             enrichAuthData(user);
 
-            // 3. Watch for application notifications
+            // 4. Watch for application notifications
             watchApplicationNotification(user);
         } else {
             // Only clear cached credentials if not in a transient network/quota error state
@@ -197,19 +218,6 @@ function initAuth() {
             onAuthReady(user);
         }
     });
-}
-
-// Hardcoded Verified Admin UIDs failsafe (guarantees access even if Firestore rules or network restricts settings/admins)
-const MASTER_ADMIN = 'B0t4f4nqqpZIQKpT8Ed97xka5gM2'; // Matty Roberts (Protected Master)
-const KNOWN_ADMIN_UIDS = [
-    'B0t4f4nqqpZIQKpT8Ed97xka5gM2', // Matty Roberts (Master)
-    'uYUa2WYZ5TPg98v1e6jQzzrItR53', // Andrew Fabian (Team Admin)
-    'BnojTKUFKUUKDFFpnUGEdueLhkN2', // Martyn Cook (Team Admin)
-    '2TfuhZVILNQerQK9SYL1304jYp83'  // Adam Jones (Team Admin)
-];
-if (typeof window !== 'undefined') {
-    window.MASTER_ADMIN = MASTER_ADMIN;
-    window.KNOWN_ADMIN_UIDS = KNOWN_ADMIN_UIDS;
 }
 
 async function enrichAuthData(user) {
@@ -235,6 +243,14 @@ async function enrichAuthData(user) {
             if (!IS_ADMIN && adminDoc && adminDoc.exists) {
                 const admins = adminDoc.data().uids || [];
                 IS_ADMIN = admins.includes(user.uid);
+            }
+
+            // Fallback Check Admin via users collection
+            if (!IS_ADMIN && userDoc && userDoc.exists) {
+                const ud = userDoc.data();
+                if (ud.isAdmin === true || ud.role === 'admin') {
+                    IS_ADMIN = true;
+                }
             }
 
             // Check Verification

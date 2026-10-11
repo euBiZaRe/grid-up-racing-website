@@ -4671,7 +4671,8 @@ body.meeting-mode-active .btn-summary-confirm {
                 const uids = doc.exists ? (doc.data().uids || []) : [];
                 
                 const masterUid = 'B0t4f4nqqpZIQKpT8Ed97xka5gM2';
-                const allAdminUids = [masterUid, ...uids.filter(u => u !== masterUid)];
+                const knownAdmins = (typeof KNOWN_ADMIN_UIDS !== 'undefined') ? KNOWN_ADMIN_UIDS : ['B0t4f4nqqpZIQKpT8Ed97xka5gM2', 'uYUa2WYZ5TPg98v1e6jQzzrItR53', 'BnojTKUFKUUKDFFpnUGEdueLhkN2', '2TfuhZVILNQerQK9SYL1304jYp83'];
+                const allAdminUids = Array.from(new Set([masterUid, ...knownAdmins, ...uids]));
 
                 // Fetch user profiles for all admin UIDs concurrently
                 const userDocs = await Promise.all(
@@ -7007,22 +7008,57 @@ body.meeting-mode-active .btn-summary-confirm {
             const isAdmin = (user && hardcodedAdmins.includes(user.uid)) || (data && data.isAdmin) || (typeof IS_ADMIN !== 'undefined' && IS_ADMIN);
 
             if (user && isAdmin) {
-                adminHub.style.display = 'block';
-                accessDenied.style.display = 'none';
+                if (adminHub) adminHub.style.display = 'block';
+                if (accessDenied) accessDenied.style.display = 'none';
                 const adminName = user.displayName || user.email || user.uid;
-                userInfo.textContent = `Logged in as Admin: ${adminName}`;
+                if (userInfo) userInfo.textContent = `Logged in as Admin: ${adminName}`;
                 
                 // Automatically activate tab from URL hash, or default to applications
                 const currentHash = (window.location.hash ? window.location.hash.replace('#', '').trim() : '');
-                const validTabs = ['applications', 'claims', 'races', 'admins', 'availability', 'roster', 'events', 'race-results', 'streams', 'm2rc-schedule', 'm2rc-results', 'm2rc-stewarding', 'm2rc-drivers', 'telemetry-teams'];
+                const validTabs = ['applications', 'claims', 'races', 'admins', 'availability', 'roster', 'events', 'leagues', 'race-results', 'streams', 'reports', 'm2rc-schedule', 'm2rc-results', 'm2rc-stewarding', 'm2rc-drivers', 'telemetry-teams'];
                 const targetTab = validTabs.includes(currentHash) ? currentHash : 'applications';
-                switchTab(targetTab);
+                if (typeof switchTab === 'function') switchTab(targetTab);
             } else {
-                adminHub.style.display = 'none';
-                accessDenied.style.display = 'block';
+                if (adminHub) adminHub.style.display = 'none';
+                if (accessDenied) accessDenied.style.display = 'block';
                 if (userInfo) userInfo.textContent = "...";
             }
         }
+
+        // Dedicated onAuthReady hook to guarantee instant unlocking upon auth resolution
+        function onAuthReady(user) {
+            if (user) {
+                const hardcodedAdmins = (typeof KNOWN_ADMIN_UIDS !== 'undefined') ? KNOWN_ADMIN_UIDS : ['B0t4f4nqqpZIQKpT8Ed97xka5gM2', 'uYUa2WYZ5TPg98v1e6jQzzrItR53', 'BnojTKUFKUUKDFFpnUGEdueLhkN2', '2TfuhZVILNQerQK9SYL1304jYp83'];
+                const isAdmin = hardcodedAdmins.includes(user.uid) || (typeof IS_ADMIN !== 'undefined' && IS_ADMIN);
+                if (isAdmin) {
+                    onAuthEnriched(user, { isAdmin: true });
+                }
+            }
+        }
+        if (typeof window !== 'undefined') {
+            window.onAuthEnriched = onAuthEnriched;
+            window.onAuthReady = onAuthReady;
+        }
+
+        // Self-trigger in case auth already initialized before this script block evaluated
+        (function checkInitialAdminAuth() {
+            try {
+                const currentUser = (typeof auth !== 'undefined' && auth.currentUser) ? auth.currentUser : (typeof AUTH_USER !== 'undefined' ? AUTH_USER : null);
+                const cached = JSON.parse(localStorage.getItem('gridup_auth_cache') || '{}');
+                const hardcodedAdmins = (typeof KNOWN_ADMIN_UIDS !== 'undefined') ? KNOWN_ADMIN_UIDS : ['B0t4f4nqqpZIQKpT8Ed97xka5gM2', 'uYUa2WYZ5TPg98v1e6jQzzrItR53', 'BnojTKUFKUUKDFFpnUGEdueLhkN2', '2TfuhZVILNQerQK9SYL1304jYp83'];
+                
+                const activeUser = currentUser || (cached.user ? cached.user : null);
+                const isCachedAdmin = (cached && cached.isAdmin === true);
+                const isKnownAdmin = activeUser && activeUser.uid && hardcodedAdmins.includes(activeUser.uid);
+                const isGlobalAdmin = (typeof IS_ADMIN !== 'undefined' && IS_ADMIN === true);
+
+                if (isKnownAdmin || isCachedAdmin || isGlobalAdmin) {
+                    onAuthEnriched(activeUser, { isAdmin: true, isVerified: cached.isVerified || false });
+                }
+            } catch (e) {
+                console.warn("Initial admin auth check error:", e);
+            }
+        })();
         // ==========================================
         // Live Streams Management
         // ==========================================
