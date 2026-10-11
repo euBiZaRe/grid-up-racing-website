@@ -3979,6 +3979,23 @@ body.meeting-mode-active .btn-summary-confirm {
                 await db.collection("claims").doc(driverName).update({
                     status: newStatus
                 });
+
+                // When verified, automatically set user's profile driverName to match verified driver name
+                if (newStatus === 'verified') {
+                    try {
+                        const claimDoc = await db.collection("claims").doc(driverName).get();
+                        const discordUid = claimDoc.exists ? claimDoc.data().discordId : null;
+                        if (discordUid) {
+                            await db.collection("users").doc(discordUid).set({
+                                driverName: driverName,
+                                lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                            }, { merge: true });
+                        }
+                    } catch (e) {
+                        console.warn("Could not auto-sync driver name to user doc:", e);
+                    }
+                }
+
                 alert("Status updated successfully!");
                 loadClaims();
             } catch (error) {
@@ -4397,6 +4414,23 @@ body.meeting-mode-active .btn-summary-confirm {
 
 
 
+        async function getVerifiedClaimsMap() {
+            if (window._verifiedClaimsMap) return window._verifiedClaimsMap;
+            window._verifiedClaimsMap = {};
+            try {
+                const claimsSnap = await db.collection("claims").where("status", "==", "verified").get();
+                claimsSnap.forEach(cd => {
+                    const cData = cd.data();
+                    if (cData.discordId) {
+                        window._verifiedClaimsMap[cData.discordId] = cd.id;
+                    }
+                });
+            } catch (e) {
+                console.warn("Could not load claims map:", e);
+            }
+            return window._verifiedClaimsMap;
+        }
+
         async function loadAvailability() {
             const container = document.getElementById('availability-matrix-container');
             const subtitle = document.getElementById('availability-subtitle');
@@ -4424,6 +4458,8 @@ body.meeting-mode-active .btn-summary-confirm {
             }
 
             try {
+                const claimsMap = await getVerifiedClaimsMap();
+
                 if (selectedEventId === 'matrix') {
                     subtitle.textContent = "Driver Availability Matrix";
                     // Matrix Logic
@@ -4436,7 +4472,8 @@ body.meeting-mode-active .btn-summary-confirm {
                             allResponses[event.id] = {};
                             snap.forEach(doc => {
                                 const data = doc.data();
-                                allDrivers[doc.id] = data.driverName || data.name || data.discordName || "Unknown Driver";
+                                const resolvedName = claimsMap[doc.id] || ((data.driverName && !data.driverName.toLowerCase().includes('discord user')) ? data.driverName : null) || data.name || data.discordName || "Unknown Driver";
+                                allDrivers[doc.id] = resolvedName;
                                 allResponses[event.id][doc.id] = {
                                     status: data.status,
                                     slot: data.preferredSlot
@@ -4512,7 +4549,7 @@ body.meeting-mode-active .btn-summary-confirm {
 
                     const snap = await db.collection("event_availability").doc(selectedEventId).collection("responses").get();
                     let docs = [];
-                    snap.forEach(doc => docs.push(doc.data()));
+                    snap.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
 
                     if (availableOnly) {
                         docs = docs.filter(d => d.status === 'signed_up');
@@ -4551,9 +4588,11 @@ body.meeting-mode-active .btn-summary-confirm {
                             carDesc = `<span style="color:var(--primary); font-size:0.8rem;">${pClass} (Any)</span>`;
                         }
 
+                        const resolvedName = (data.id && claimsMap[data.id]) || ((data.driverName && !data.driverName.toLowerCase().includes('discord user')) ? data.driverName : null) || data.name || data.discordName || "Unknown Driver";
+
                         html += `
                             <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
-                                <td style="padding: 1.25rem; font-weight: 700; color: var(--primary);">${data.driverName || data.name || data.discordName || "Unknown Driver"}</td>
+                                <td style="padding: 1.25rem; font-weight: 700; color: var(--primary);">${resolvedName}</td>
                                 <td style="padding: 1.25rem;"><span class="status-badge" style="background: ${statusColor}22; color: ${statusColor};">${statusText}</span></td>
                                 <td style="padding: 1.25rem;">${carDesc}</td>
                                 <td style="padding: 1.25rem; color: #fff;">${data.preferredSlot || '<span style="color:rgba(255,255,255,0.2);">No Preference Set</span>'}</td>
@@ -5814,10 +5853,43 @@ body.meeting-mode-active .btn-summary-confirm {
 
             // Load Driver Availability Responses for this Event
             try {
-                const respSnap = await db.collection("event_availability").doc(activeId).collection("responses").get();
+                const [respSnap, claimsMap] = await Promise.all([
+                    db.collection("event_availability").doc(activeId).collection("responses").get(),
+                    getVerifiedClaimsMap()
+                ]);
                 const responses = [];
-                respSnap.forEach(d => responses.push({ id: d.id, ...d.data() }));
+                respSnap.forEach(d => {
+                    const rData = d.data();
+                    let dName = rData.driverName;
+                    const verifiedName = claimsMap[d.id];
+                    const isGeneric = !dName || dName.toLowerCase().includes('discord user') || dName.toLowerCase().includes('unknown');
+                    if (isGeneric && verifiedName) {
+                        dName = verifiedName;
+                        rData.driverName = verifiedName;
+                        // Auto-heal the availability response document in Firestore
+                        db.collection("event_availability").doc(activeId).collection("responses").doc(d.id).set({
+                            driverName: verifiedName
+                        }, { merge: true }).catch(() => {});
+                    }
+                    responses.push({ id: d.id, ...rData, driverName: dName || verifiedName || rData.driverName || 'Driver' });
+                });
                 window._adminBuilderResponses = responses;
+
+                // Also auto-heal any 'Discord User' in existing car lineups
+                if (window._adminBuilderCars && Array.isArray(window._adminBuilderCars)) {
+                    window._adminBuilderCars.forEach(car => {
+                        if (car.drivers && Array.isArray(car.drivers)) {
+                            car.drivers = car.drivers.map(dn => {
+                                if (dn && (dn.toLowerCase().includes('discord user') || dn.toLowerCase().includes('unknown'))) {
+                                    // Match against available driver responses
+                                    const match = responses.find(r => r.driverName && !r.driverName.toLowerCase().includes('discord user') && !r.driverName.toLowerCase().includes('unknown') && !car.drivers.includes(r.driverName));
+                                    if (match) return match.driverName;
+                                }
+                                return dn;
+                            });
+                        }
+                    });
+                }
             } catch (e) {
                 console.warn("Could not load event_availability responses:", e);
                 window._adminBuilderResponses = [];
@@ -6215,8 +6287,15 @@ body.meeting-mode-active .btn-summary-confirm {
             const unassignZone = document.getElementById('pool-unassign-dropzone');
             if (unassignZone) unassignZone.classList.remove('active');
 
-            const driverName = e.dataTransfer.getData("text/plain");
+            let driverName = e.dataTransfer.getData("text/plain");
             if (!driverName || !window._adminBuilderCars || !window._adminBuilderCars[carIdx]) return;
+
+            // Prevent generic Discord User from being added if a resolved name exists
+            if (driverName.toLowerCase().includes('discord user') && window._adminBuilderResponses) {
+                const match = window._adminBuilderResponses.find(r => r.driverName && !r.driverName.toLowerCase().includes('discord user') && !r.driverName.toLowerCase().includes('unknown'));
+                if (match) driverName = match.driverName;
+            }
+
             const car = window._adminBuilderCars[carIdx];
             car.drivers = car.drivers || [];
             if (car.drivers.includes(driverName)) return;

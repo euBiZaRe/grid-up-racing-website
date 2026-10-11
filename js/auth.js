@@ -201,8 +201,24 @@ async function enrichAuthData(user) {
             }
 
             // Check Verification
+            let verifiedDriverName = null;
             if (claimSnapshot && !claimSnapshot.empty && claimSnapshot.docs[0].data().status === 'verified') {
                 IS_VERIFIED = true;
+                verifiedDriverName = claimSnapshot.docs[0].id;
+
+                // Auto-sync profile name and user record to verified team driver name
+                if (verifiedDriverName) {
+                    const currentDriverName = (userDoc && userDoc.exists) ? userDoc.data().driverName : null;
+                    if (!currentDriverName || currentDriverName !== verifiedDriverName || currentDriverName === 'Discord User' || currentDriverName === 'Unknown Driver') {
+                        db.collection("users").doc(user.uid).set({
+                            driverName: verifiedDriverName,
+                            lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                        }, { merge: true }).catch(e => console.warn("Auto-sync driver name error:", e));
+                    }
+                    if (user.displayName !== verifiedDriverName) {
+                        user.updateProfile({ displayName: verifiedDriverName }).catch(() => {});
+                    }
+                }
             }
 
             // Check Custom Avatar
@@ -219,11 +235,11 @@ async function enrichAuthData(user) {
         }
     }
 
-    // Update user object's photoURL with custom avatar so updateAuthUI and cache use it
+    // Update user object's photoURL and displayName with verified info so updateAuthUI and cache use it
     const enrichedUser = {
         uid: user.uid,
         photoURL: finalAvatar,
-        displayName: user.displayName
+        displayName: verifiedDriverName || user.displayName
     };
 
     // Re-update UI with enriched data

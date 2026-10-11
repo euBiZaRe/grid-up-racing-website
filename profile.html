@@ -1035,8 +1035,30 @@
                     const claimData = claims.docs[0].data();
                     if (claimStatusDiv) claimStatusDiv.style.display = 'block';
                     if (claimData.status === 'verified') {
+                        const verifiedDriverName = claims.docs[0].id;
                         if (claimBadge) claimBadge.style.display = 'inline-flex';
-                        if (claimStatusDiv) claimStatusDiv.innerHTML = `<div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;"><span style="color: #10b981; font-weight: 800; font-size: 0.8rem;"><i class="fas fa-check-circle" style="margin-right: 6px;"></i> VERIFIED TEAM DRIVER: ${claims.docs[0].id}</span><span style="color: var(--text-muted); font-size: 0.72rem;">Official Roster Sync Connected</span></div>`;
+                        if (claimStatusDiv) claimStatusDiv.innerHTML = `<div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;"><span style="color: #10b981; font-weight: 800; font-size: 0.8rem;"><i class="fas fa-check-circle" style="margin-right: 6px;"></i> VERIFIED TEAM DRIVER: ${verifiedDriverName}</span><span style="color: var(--text-muted); font-size: 0.72rem;">Official Roster Sync Connected</span></div>`;
+
+                        // Auto-set profile name input and header to verified team driver name
+                        const nameInput = document.getElementById('input-name');
+                        if (nameInput) {
+                            nameInput.value = verifiedDriverName;
+                        }
+                        if (nameElt) {
+                            nameElt.textContent = verifiedDriverName;
+                        }
+
+                        // Auto-sync into Firestore users collection if not already set or generic
+                        const currentVal = (doc.exists && doc.data().driverName) ? doc.data().driverName.trim() : '';
+                        if (!currentVal || currentVal !== verifiedDriverName || currentVal === 'Discord User' || currentVal === 'Unknown Driver') {
+                            await db.collection("users").doc(user.uid).set({
+                                driverName: verifiedDriverName,
+                                lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                            }, { merge: true });
+                        }
+                        if (user.displayName !== verifiedDriverName) {
+                            user.updateProfile({ displayName: verifiedDriverName }).catch(() => {});
+                        }
                     } else {
                         if (claimStatusDiv) claimStatusDiv.innerHTML = `<div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;"><span style="color: #f59e0b; font-weight: 800; font-size: 0.8rem;"><i class="fas fa-clock" style="margin-right: 6px;"></i> CLAIM PENDING VERIFICATION: ${claims.docs[0].id}</span><span style="color: var(--text-muted); font-size: 0.72rem;">Awaiting Discord Staff Review</span></div>`;
                     }
@@ -1218,6 +1240,23 @@
                 if (driverNameVal) {
                     const nameElt = document.getElementById('user-name');
                     if (nameElt) nameElt.textContent = driverNameVal;
+                    if (user.displayName !== driverNameVal) {
+                        user.updateProfile({ displayName: driverNameVal }).catch(() => {});
+                    }
+
+                    // Auto-heal any existing event availability responses for this user
+                    try {
+                        const eventsToHeal = ['NEC-4HR', 'SPA-6HR', 'bathurst-1000', 'bathurst-12', 'brickyard-400', 'britcar-24hr', 'chili-bowl', 'crandon-championship', 'daytona-24', 'daytona-500', 'ff1600-festival', 'firecracker-400', 'homestead-championship', 'imsa-classic-500', 'indy-500', 'indy-8h', 'iracing-roar', 'knoxville-nationals', 'nurburgring-24h', 'petit-le-mans', 'portimao-1000', 'production-car-challenge', 'road-america-6h', 'scca-runoffs', 'sebring-12hr', 'sfl-mountain-showdown', 'southern-500', 'spa-24hr', 'suzuka-1000km', 'thruxton-4h', 'watkins-glen-6h', 'winter-derby', 'world-600'];
+                        eventsToHeal.forEach(async (evId) => {
+                            try {
+                                const respRef = db.collection("event_availability").doc(evId).collection("responses").doc(user.uid);
+                                const respDoc = await respRef.get();
+                                if (respDoc.exists && (!respDoc.data().driverName || respDoc.data().driverName !== driverNameVal || respDoc.data().driverName.toLowerCase().includes('discord user') || respDoc.data().driverName.toLowerCase().includes('unknown'))) {
+                                    await respRef.set({ driverName: driverNameVal }, { merge: true });
+                                }
+                            } catch (_) {}
+                        });
+                    } catch (_) {}
                 }
 
                 setSaveStatus("✓ Changes saved!", "#10b981");

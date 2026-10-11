@@ -2324,8 +2324,23 @@
                     claimedDriverName = claimDoc.docs[0].id;
                 }
 
-                const myName = userProfile.driverName || claimedDriverName || user.displayName || 'Driver';
+                // If user has a verified driver claim, always lock and prioritize it
+                const myName = claimedDriverName || (userProfile && userProfile.driverName && !userProfile.driverName.toLowerCase().includes('discord user') ? userProfile.driverName : null) || (user.displayName && !user.displayName.toLowerCase().includes('discord user') ? user.displayName : null) || 'Driver';
                 window.currentDriverName = myName;
+
+                if (claimedDriverName) {
+                    if (userProfile) userProfile.driverName = claimedDriverName;
+                    const curName = (userDoc && userDoc.exists) ? userDoc.data().driverName : null;
+                    if (!curName || curName !== claimedDriverName || curName === 'Discord User' || curName === 'Unknown Driver') {
+                        db.collection("users").doc(user.uid).set({
+                            driverName: claimedDriverName,
+                            lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                        }, { merge: true }).catch(() => {});
+                    }
+                    if (user.displayName !== claimedDriverName) {
+                        user.updateProfile({ displayName: claimedDriverName }).catch(() => {});
+                    }
+                }
 
                 const driverAliases = [
                     userProfile.driverName,
@@ -3025,7 +3040,7 @@
                     await docRef.delete();
                     nextStatus = null;
                 } else {
-                    const myName = userProfile.driverName || auth.currentUser.displayName || "Driver";
+                    const myName = (window.currentDriverName && !window.currentDriverName.toLowerCase().includes('discord user')) ? window.currentDriverName : ((userProfile && userProfile.driverName && !userProfile.driverName.toLowerCase().includes('discord user')) ? userProfile.driverName : (auth.currentUser.displayName && !auth.currentUser.displayName.toLowerCase().includes('discord user') ? auth.currentUser.displayName : "Driver"));
                     if (!window._driverAvailabilityDrafts[eventId]) {
                         window._driverAvailabilityDrafts[eventId] = {
                             hourly: {},
@@ -3066,7 +3081,7 @@
             try {
                 const draft = window._driverAvailabilityDrafts[eventId];
                 if (!draft) return;
-                const myName = userProfile.driverName || auth.currentUser.displayName || "Driver";
+                const myName = (window.currentDriverName && !window.currentDriverName.toLowerCase().includes('discord user')) ? window.currentDriverName : ((userProfile && userProfile.driverName && !userProfile.driverName.toLowerCase().includes('discord user')) ? userProfile.driverName : (auth.currentUser.displayName && !auth.currentUser.displayName.toLowerCase().includes('discord user') ? auth.currentUser.displayName : "Driver"));
 
                 await db.collection("event_availability").doc(eventId).collection("responses").doc(auth.currentUser.uid).set({
                     status: draft.status || 'signed_up',
