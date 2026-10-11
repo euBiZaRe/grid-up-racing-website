@@ -60,6 +60,22 @@
             background: var(--bg-card-hover);
         }
 
+        .results-table-container table {
+            width: 100%;
+            table-layout: fixed;
+            border-collapse: collapse;
+            min-width: 520px;
+        }
+
+        .results-table-container table col.col-team {
+            width: auto;
+        }
+
+        .results-table-container table col.col-qualy,
+        .results-table-container table col.col-finish {
+            width: 120px;
+        }
+
         .results-table-container table th {
             color: var(--text-muted);
             text-transform: uppercase;
@@ -72,8 +88,22 @@
         
         .results-table-container table td {
             vertical-align: middle;
-            padding: 1rem;
+            padding: 0.75rem 1rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .results-table-container table th.col-team,
+        .results-table-container table td.col-team {
+            text-align: left;
+        }
+
+        .results-table-container table th.col-qualy,
+        .results-table-container table td.col-qualy,
+        .results-table-container table th.col-finish,
+        .results-table-container table td.col-finish {
+            width: 120px;
+            text-align: center;
+            white-space: nowrap;
         }
         
         .results-table-container table tbody tr {
@@ -146,7 +176,7 @@
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-    <script defer src="script.js?v=25"></script>
+    <script defer src="script.js?v=26"></script>
     <script defer src="js/auth.js?v=11"></script>
 </body>
 </html>

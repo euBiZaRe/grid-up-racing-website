@@ -1570,16 +1570,16 @@ async function loadAllResults() {
                 const drivers = Array.isArray(d.drivers) ? d.drivers.join(', ') : (d.drivers || 'TBA');
                 rowsHtml += `
                     <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
-                        <td style="padding: 0.5rem 0.75rem;">
+                        <td class="col-team" style="padding: 0.5rem 0.75rem;">
                             <strong style="color: var(--text); font-size: 0.9rem; letter-spacing: 0.5px;">${d.teamName || 'GRiD UP'}</strong>
                             <span style="font-size: 0.75rem; color: var(--primary); margin-left: 0.5rem;">${d.car || 'TBA'}</span><br>
                             <span style="font-size: 0.7rem; color: var(--text-muted); opacity: 0.6; display: block; margin-top: 0.1rem;">${drivers}</span>
                         </td>
-                        <td style="padding: 0.5rem 0.75rem; text-align: center;">
-                            <span style="color: var(--text-muted); font-size: 0.8rem;">${d.qualy || '-'}</span>
+                        <td class="col-qualy" style="padding: 0.5rem 0.75rem; width: 120px; text-align: center; white-space: nowrap;">
+                            <span style="color: var(--text-muted); font-size: 0.85rem; font-variant-numeric: tabular-nums; display: inline-block;">${d.qualy || '-'}</span>
                         </td>
-                        <td style="padding: 0.5rem 0.75rem; text-align: center;">
-                            <strong style="color: var(--primary); font-weight: 900; font-size: 1rem;">${d.finish || '-'}</strong>
+                        <td class="col-finish" style="padding: 0.5rem 0.75rem; width: 120px; text-align: center; white-space: nowrap;">
+                            <strong style="color: var(--primary); font-weight: 900; font-size: 1rem; font-variant-numeric: tabular-nums; display: inline-block;">${d.finish || '-'}</strong>
                         </td>
                     </tr>
                 `;
@@ -1595,12 +1595,17 @@ async function loadAllResults() {
                     <p style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0;">${eventData.date || ''}</p>
                 </div>
                 <div class="results-table-container" style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; color: var(--text-muted); font-size: 0.85rem;">
+                    <table style="width: 100%; table-layout: fixed; border-collapse: collapse; color: var(--text-muted); font-size: 0.85rem;">
+                        <colgroup>
+                            <col class="col-team" style="width: auto;">
+                            <col class="col-qualy" style="width: 120px;">
+                            <col class="col-finish" style="width: 120px;">
+                        </colgroup>
                         <thead>
-                            <tr style="border-bottom: 1px solid var(--glass-border); text-align: left;">
-                                <th style="padding: 0.5rem 0.75rem; font-size: 0.7rem;">Team / Car / Drivers</th>
-                                <th style="padding: 0.5rem 0.75rem; font-size: 0.7rem; text-align: center;">Qualy</th>
-                                <th style="padding: 0.5rem 0.75rem; font-size: 0.7rem; text-align: center;">Finish</th>
+                            <tr style="border-bottom: 1px solid var(--glass-border);">
+                                <th class="col-team" style="padding: 0.5rem 0.75rem; font-size: 0.7rem; text-align: left;">Team / Car / Drivers</th>
+                                <th class="col-qualy" style="padding: 0.5rem 0.75rem; font-size: 0.7rem; width: 120px; text-align: center;">Qualy</th>
+                                <th class="col-finish" style="padding: 0.5rem 0.75rem; font-size: 0.7rem; width: 120px; text-align: center;">Finish</th>
                             </tr>
                         </thead>
                         <tbody>
