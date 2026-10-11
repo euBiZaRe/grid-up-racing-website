@@ -350,12 +350,18 @@ function loginWithDiscord() {
         console.error("Login Error:", error.code, error.message);
         const errorDiv = document.getElementById('login-error-msg');
         if (error.code === 'auth/quota-exceeded' || (error.message && error.message.toLowerCase().includes('quota'))) {
-            const quotaMsg = "Firebase Authentication Quota Limit Reached:<br><br>Discord login uses an OIDC Identity Platform provider on Firebase, which is capped at 50 Monthly Active Users (MAU) on the free Spark tier. Once that threshold is reached, Firebase rejects further sign-ins with <code>auth/quota-exceeded</code> until upgraded to the pay-as-you-go Blaze plan (which provides unlimited scale at $0.015/user above 50).<br><br><strong>Action needed:</strong> The Firebase project owner must attach billing / enable the Blaze plan in the Firebase Console (or raise the Identity Toolkit quota in Google Cloud Console).";
+            const quotaMsg = `<strong>Authentication Quota Limit (${escapeHtml(error.code)}):</strong><br><br>` +
+                `Firebase reported: <em>${escapeHtml(error.message)}</em><br><br>` +
+                `<strong>If your project is on the Blaze plan:</strong><br>` +
+                `1. <strong>GCP Quota Caps:</strong> In Google Cloud Console &rarr; <em>IAM &amp; Admin</em> &rarr; <em>Quotas &amp; System Limits</em>, check <code>Identity Toolkit API</code> and ensure daily/per-minute request quotas are not capped by a safety limit or budget alert.<br>` +
+                `2. <strong>Recent Upgrade Sync:</strong> If the Blaze plan was attached recently, Google Cloud takes up to 30&ndash;60 minutes to propagate billing changes across Identity Platform servers.<br>` +
+                `3. <strong>Discord Rate Limits:</strong> Check Discord Developer Portal to ensure your OAuth2 app has not hit Discord's API rate limits.<br>` +
+                `4. <strong>Authorized Domains:</strong> Verify that <code>gridup.online</code> is listed in Firebase Console &rarr; <em>Authentication</em> &rarr; <em>Settings</em> &rarr; <em>Authorized domains</em>.`;
             if (errorDiv) {
                 errorDiv.innerHTML = quotaMsg;
                 errorDiv.style.display = 'block';
             } else {
-                alert("Firebase Authentication Quota Exceeded:\n\nDiscord OIDC logins require the Firebase 'Blaze' plan (or upgrading Identity Platform quota) because the free Spark tier caps OIDC/SAML at 50 monthly active users. Please upgrade the Firebase project plan in Firebase Console / Google Cloud.");
+                alert("Firebase Authentication Quota Limit:\n\n" + error.message + "\n\nIf already on the Blaze plan, check Identity Toolkit API quotas in Google Cloud Console, or allow up to 30-60 minutes for recent billing upgrades to propagate.");
             }
         } else if (error.code === 'auth/popup-blocked') {
             const blockMsg = "Login popup was blocked by your browser. Please allow popups for this site and try again.";
