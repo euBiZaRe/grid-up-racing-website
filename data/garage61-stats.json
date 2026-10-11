@@ -1,13 +1,13 @@
 {
-  "syncedAt": "2026-10-11T16:04:55Z",
+  "syncedAt": "2026-10-11T21:17:53Z",
   "team": {
     "name": "Grid Up Sim Racing",
     "slug": "grid-up-simsport",
     "totalDrivers": 49,
-    "totalLaps": 710673,
-    "cleanLaps": 559915,
+    "totalLaps": 710993,
+    "cleanLaps": 560153,
     "cleanPct": 78.8,
-    "totalHours": 26185.1,
+    "totalHours": 26198.8,
     "activeDays": 1355
   },
   "drivers": [
@@ -616,14 +616,14 @@
     {
       "slug": "connor-hatfield",
       "name": "Connor Hatfield",
-      "totalLaps": 56982,
-      "cleanLaps": 47260,
+      "totalLaps": 56989,
+      "cleanLaps": 47267,
       "cleanPct": 82.9,
-      "hours": 1304.6,
-      "totalEvents": 4783,
+      "hours": 1304.8,
+      "totalEvents": 4784,
       "firstDay": "2023-03-10",
-      "lastDay": "2026-10-10",
-      "activeDaysCount": 878,
+      "lastDay": "2026-10-11",
+      "activeDaysCount": 879,
       "favoriteCar": "NASCAR Cup Series Next Gen Chevrolet Camaro ZL1",
       "favoriteTrack": "Talladega Superspeedway",
       "topCars": [
@@ -772,10 +772,10 @@
       ],
       "sessions": {
         "Practice": {
-          "laps": 13121,
-          "cleanLaps": 10230,
+          "laps": 13128,
+          "cleanLaps": 10237,
           "cleanPct": 78.0,
-          "hours": 465.0
+          "hours": 465.2
         },
         "Qualifying": {
           "laps": 2227,
@@ -791,6 +791,10 @@
         }
       },
       "recentActivity": [
+        {
+          "day": "2026-10-11",
+          "laps": 7
+        },
         {
           "day": "2026-10-10",
           "laps": 3
@@ -906,10 +910,6 @@
         {
           "day": "2026-08-16",
           "laps": 19
-        },
-        {
-          "day": "2026-08-13",
-          "laps": 0
         }
       ],
       "rank": 3
@@ -1218,11 +1218,11 @@
     {
       "slug": "ric-wishon",
       "name": "Ric Wishon",
-      "totalLaps": 44001,
-      "cleanLaps": 31331,
+      "totalLaps": 44041,
+      "cleanLaps": 31353,
       "cleanPct": 71.2,
-      "hours": 1341.6,
-      "totalEvents": 3434,
+      "hours": 1343.4,
+      "totalEvents": 3438,
       "firstDay": "2023-12-14",
       "lastDay": "2026-10-11",
       "activeDaysCount": 685,
@@ -1266,10 +1266,10 @@
         },
         {
           "name": "Ray FF1600",
-          "laps": 1443,
-          "cleanLaps": 943,
-          "cleanPct": 65.3,
-          "hours": 47.5
+          "laps": 1463,
+          "cleanLaps": 954,
+          "cleanPct": 65.2,
+          "hours": 48.5
         },
         {
           "name": "NASCAR Truck Toyota Tundra TRD Pro",
@@ -1380,22 +1380,22 @@
           "hours": 659.0
         },
         "Qualifying": {
-          "laps": 4092,
-          "cleanLaps": 2696,
-          "cleanPct": 65.9,
-          "hours": 142.1
+          "laps": 4096,
+          "cleanLaps": 2697,
+          "cleanPct": 65.8,
+          "hours": 142.4
         },
         "Race": {
-          "laps": 23796,
-          "cleanLaps": 17806,
+          "laps": 23832,
+          "cleanLaps": 17827,
           "cleanPct": 74.8,
-          "hours": 540.5
+          "hours": 542.0
         }
       },
       "recentActivity": [
         {
           "day": "2026-10-11",
-          "laps": 43
+          "laps": 83
         },
         {
           "day": "2026-10-10",
@@ -1515,6 +1515,307 @@
         }
       ],
       "rank": 5
+    },
+    {
+      "slug": "marko-skrnjug",
+      "name": "Marko Skrnjug",
+      "totalLaps": 37984,
+      "cleanLaps": 27109,
+      "cleanPct": 71.4,
+      "hours": 1539.2,
+      "totalEvents": 4916,
+      "firstDay": "2023-09-09",
+      "lastDay": "2026-10-11",
+      "activeDaysCount": 626,
+      "favoriteCar": "Global Mazda MX-5 Cup",
+      "favoriteTrack": "Okayama International Circuit - Full Course",
+      "topCars": [
+        {
+          "name": "Global Mazda MX-5 Cup",
+          "laps": 18181,
+          "cleanLaps": 13069,
+          "cleanPct": 71.9,
+          "hours": 694.2
+        },
+        {
+          "name": "Chevrolet Corvette Z06 GT3.R",
+          "laps": 3985,
+          "cleanLaps": 2921,
+          "cleanPct": 73.3,
+          "hours": 206.3
+        },
+        {
+          "name": "Porsche 718 Cayman GT4 Clubsport MR",
+          "laps": 3717,
+          "cleanLaps": 2517,
+          "cleanPct": 67.7,
+          "hours": 156.2
+        },
+        {
+          "name": "FIA F4",
+          "laps": 3201,
+          "cleanLaps": 2151,
+          "cleanPct": 67.2,
+          "hours": 121.3
+        },
+        {
+          "name": "Porsche 911 GT3 R (992)",
+          "laps": 2236,
+          "cleanLaps": 1609,
+          "cleanPct": 72.0,
+          "hours": 97.8
+        },
+        {
+          "name": "Ferrari 296 GT3",
+          "laps": 1794,
+          "cleanLaps": 1040,
+          "cleanPct": 58.0,
+          "hours": 107.2
+        },
+        {
+          "name": "NASCAR Truck Toyota Tundra TRD Pro",
+          "laps": 1166,
+          "cleanLaps": 1034,
+          "cleanPct": 88.7,
+          "hours": 24.6
+        },
+        {
+          "name": "NASCAR O'Reilly Toyota Supra",
+          "laps": 633,
+          "cleanLaps": 619,
+          "cleanPct": 97.8,
+          "hours": 11.8
+        },
+        {
+          "name": "Aston Martin Vantage GT3 EVO",
+          "laps": 628,
+          "cleanLaps": 464,
+          "cleanPct": 73.9,
+          "hours": 32.6
+        },
+        {
+          "name": "McLaren 570S GT4",
+          "laps": 381,
+          "cleanLaps": 265,
+          "cleanPct": 69.6,
+          "hours": 16.4
+        }
+      ],
+      "topTracks": [
+        {
+          "name": "Okayama International Circuit - Full Course",
+          "laps": 3623,
+          "cleanLaps": 2866,
+          "cleanPct": 79.1,
+          "hours": 127.8
+        },
+        {
+          "name": "Virginia International Raceway - Full Course",
+          "laps": 2894,
+          "cleanLaps": 1715,
+          "cleanPct": 59.3,
+          "hours": 126.1
+        },
+        {
+          "name": "Summit Point Raceway - Summit Point Raceway",
+          "laps": 2614,
+          "cleanLaps": 1996,
+          "cleanPct": 76.4,
+          "hours": 78.9
+        },
+        {
+          "name": "Long Beach Street Circuit",
+          "laps": 2359,
+          "cleanLaps": 2277,
+          "cleanPct": 96.5,
+          "hours": 80.4
+        },
+        {
+          "name": "Daytona International Speedway - Road Course",
+          "laps": 1530,
+          "cleanLaps": 1119,
+          "cleanPct": 73.1,
+          "hours": 63.9
+        },
+        {
+          "name": "Watkins Glen International - Boot",
+          "laps": 1497,
+          "cleanLaps": 1050,
+          "cleanPct": 70.1,
+          "hours": 86.8
+        },
+        {
+          "name": "Autodromo Nazionale Monza - Grand Prix",
+          "laps": 1423,
+          "cleanLaps": 967,
+          "cleanPct": 68.0,
+          "hours": 62.0
+        },
+        {
+          "name": "Circuit de Spa-Francorchamps - Grand Prix Pits",
+          "laps": 1211,
+          "cleanLaps": 927,
+          "cleanPct": 76.5,
+          "hours": 70.0
+        },
+        {
+          "name": "Rudskogen Motorsenter",
+          "laps": 1186,
+          "cleanLaps": 735,
+          "cleanPct": 62.0,
+          "hours": 43.7
+        },
+        {
+          "name": "Daytona International Speedway - Oval",
+          "laps": 1170,
+          "cleanLaps": 1115,
+          "cleanPct": 95.3,
+          "hours": 25.2
+        }
+      ],
+      "sessions": {
+        "Practice": {
+          "laps": 7495,
+          "cleanLaps": 4230,
+          "cleanPct": 56.4,
+          "hours": 426.4
+        },
+        "Qualifying": {
+          "laps": 2102,
+          "cleanLaps": 1348,
+          "cleanPct": 64.1,
+          "hours": 108.9
+        },
+        "Race": {
+          "laps": 28387,
+          "cleanLaps": 21531,
+          "cleanPct": 75.8,
+          "hours": 1003.8
+        }
+      },
+      "recentActivity": [
+        {
+          "day": "2026-10-11",
+          "laps": 124
+        },
+        {
+          "day": "2026-10-10",
+          "laps": 138
+        },
+        {
+          "day": "2026-10-08",
+          "laps": 51
+        },
+        {
+          "day": "2026-10-07",
+          "laps": 39
+        },
+        {
+          "day": "2026-10-06",
+          "laps": 24
+        },
+        {
+          "day": "2026-10-05",
+          "laps": 18
+        },
+        {
+          "day": "2026-10-04",
+          "laps": 83
+        },
+        {
+          "day": "2026-10-03",
+          "laps": 105
+        },
+        {
+          "day": "2026-10-02",
+          "laps": 40
+        },
+        {
+          "day": "2026-09-30",
+          "laps": 29
+        },
+        {
+          "day": "2026-09-28",
+          "laps": 30
+        },
+        {
+          "day": "2026-09-27",
+          "laps": 99
+        },
+        {
+          "day": "2026-09-26",
+          "laps": 23
+        },
+        {
+          "day": "2026-09-25",
+          "laps": 23
+        },
+        {
+          "day": "2026-09-23",
+          "laps": 50
+        },
+        {
+          "day": "2026-09-22",
+          "laps": 38
+        },
+        {
+          "day": "2026-09-21",
+          "laps": 35
+        },
+        {
+          "day": "2026-09-20",
+          "laps": 65
+        },
+        {
+          "day": "2026-09-19",
+          "laps": 55
+        },
+        {
+          "day": "2026-09-17",
+          "laps": 19
+        },
+        {
+          "day": "2026-09-16",
+          "laps": 35
+        },
+        {
+          "day": "2026-09-15",
+          "laps": 21
+        },
+        {
+          "day": "2026-09-14",
+          "laps": 17
+        },
+        {
+          "day": "2026-09-13",
+          "laps": 54
+        },
+        {
+          "day": "2026-09-12",
+          "laps": 49
+        },
+        {
+          "day": "2026-09-10",
+          "laps": 17
+        },
+        {
+          "day": "2026-09-08",
+          "laps": 46
+        },
+        {
+          "day": "2026-09-07",
+          "laps": 73
+        },
+        {
+          "day": "2026-09-03",
+          "laps": 22
+        },
+        {
+          "day": "2026-09-01",
+          "laps": 11
+        }
+      ],
+      "rank": 6
     },
     {
       "slug": "michael-odell",
@@ -1813,307 +2114,6 @@
         {
           "day": "2026-08-22",
           "laps": 4
-        }
-      ],
-      "rank": 6
-    },
-    {
-      "slug": "marko-skrnjug",
-      "name": "Marko Skrnjug",
-      "totalLaps": 37946,
-      "cleanLaps": 27073,
-      "cleanPct": 71.3,
-      "hours": 1537.9,
-      "totalEvents": 4913,
-      "firstDay": "2023-09-09",
-      "lastDay": "2026-10-11",
-      "activeDaysCount": 626,
-      "favoriteCar": "Global Mazda MX-5 Cup",
-      "favoriteTrack": "Okayama International Circuit - Full Course",
-      "topCars": [
-        {
-          "name": "Global Mazda MX-5 Cup",
-          "laps": 18143,
-          "cleanLaps": 13033,
-          "cleanPct": 71.8,
-          "hours": 692.9
-        },
-        {
-          "name": "Chevrolet Corvette Z06 GT3.R",
-          "laps": 3985,
-          "cleanLaps": 2921,
-          "cleanPct": 73.3,
-          "hours": 206.3
-        },
-        {
-          "name": "Porsche 718 Cayman GT4 Clubsport MR",
-          "laps": 3717,
-          "cleanLaps": 2517,
-          "cleanPct": 67.7,
-          "hours": 156.2
-        },
-        {
-          "name": "FIA F4",
-          "laps": 3201,
-          "cleanLaps": 2151,
-          "cleanPct": 67.2,
-          "hours": 121.3
-        },
-        {
-          "name": "Porsche 911 GT3 R (992)",
-          "laps": 2236,
-          "cleanLaps": 1609,
-          "cleanPct": 72.0,
-          "hours": 97.8
-        },
-        {
-          "name": "Ferrari 296 GT3",
-          "laps": 1794,
-          "cleanLaps": 1040,
-          "cleanPct": 58.0,
-          "hours": 107.2
-        },
-        {
-          "name": "NASCAR Truck Toyota Tundra TRD Pro",
-          "laps": 1166,
-          "cleanLaps": 1034,
-          "cleanPct": 88.7,
-          "hours": 24.6
-        },
-        {
-          "name": "NASCAR O'Reilly Toyota Supra",
-          "laps": 633,
-          "cleanLaps": 619,
-          "cleanPct": 97.8,
-          "hours": 11.8
-        },
-        {
-          "name": "Aston Martin Vantage GT3 EVO",
-          "laps": 628,
-          "cleanLaps": 464,
-          "cleanPct": 73.9,
-          "hours": 32.6
-        },
-        {
-          "name": "McLaren 570S GT4",
-          "laps": 381,
-          "cleanLaps": 265,
-          "cleanPct": 69.6,
-          "hours": 16.4
-        }
-      ],
-      "topTracks": [
-        {
-          "name": "Okayama International Circuit - Full Course",
-          "laps": 3623,
-          "cleanLaps": 2866,
-          "cleanPct": 79.1,
-          "hours": 127.8
-        },
-        {
-          "name": "Virginia International Raceway - Full Course",
-          "laps": 2894,
-          "cleanLaps": 1715,
-          "cleanPct": 59.3,
-          "hours": 126.1
-        },
-        {
-          "name": "Summit Point Raceway - Summit Point Raceway",
-          "laps": 2614,
-          "cleanLaps": 1996,
-          "cleanPct": 76.4,
-          "hours": 78.9
-        },
-        {
-          "name": "Long Beach Street Circuit",
-          "laps": 2321,
-          "cleanLaps": 2241,
-          "cleanPct": 96.6,
-          "hours": 79.2
-        },
-        {
-          "name": "Daytona International Speedway - Road Course",
-          "laps": 1530,
-          "cleanLaps": 1119,
-          "cleanPct": 73.1,
-          "hours": 63.9
-        },
-        {
-          "name": "Watkins Glen International - Boot",
-          "laps": 1497,
-          "cleanLaps": 1050,
-          "cleanPct": 70.1,
-          "hours": 86.8
-        },
-        {
-          "name": "Autodromo Nazionale Monza - Grand Prix",
-          "laps": 1423,
-          "cleanLaps": 967,
-          "cleanPct": 68.0,
-          "hours": 62.0
-        },
-        {
-          "name": "Circuit de Spa-Francorchamps - Grand Prix Pits",
-          "laps": 1211,
-          "cleanLaps": 927,
-          "cleanPct": 76.5,
-          "hours": 70.0
-        },
-        {
-          "name": "Rudskogen Motorsenter",
-          "laps": 1186,
-          "cleanLaps": 735,
-          "cleanPct": 62.0,
-          "hours": 43.7
-        },
-        {
-          "name": "Daytona International Speedway - Oval",
-          "laps": 1170,
-          "cleanLaps": 1115,
-          "cleanPct": 95.3,
-          "hours": 25.2
-        }
-      ],
-      "sessions": {
-        "Practice": {
-          "laps": 7495,
-          "cleanLaps": 4230,
-          "cleanPct": 56.4,
-          "hours": 426.4
-        },
-        "Qualifying": {
-          "laps": 2102,
-          "cleanLaps": 1348,
-          "cleanPct": 64.1,
-          "hours": 108.8
-        },
-        "Race": {
-          "laps": 28349,
-          "cleanLaps": 21495,
-          "cleanPct": 75.8,
-          "hours": 1002.7
-        }
-      },
-      "recentActivity": [
-        {
-          "day": "2026-10-11",
-          "laps": 86
-        },
-        {
-          "day": "2026-10-10",
-          "laps": 138
-        },
-        {
-          "day": "2026-10-08",
-          "laps": 51
-        },
-        {
-          "day": "2026-10-07",
-          "laps": 39
-        },
-        {
-          "day": "2026-10-06",
-          "laps": 24
-        },
-        {
-          "day": "2026-10-05",
-          "laps": 18
-        },
-        {
-          "day": "2026-10-04",
-          "laps": 83
-        },
-        {
-          "day": "2026-10-03",
-          "laps": 105
-        },
-        {
-          "day": "2026-10-02",
-          "laps": 40
-        },
-        {
-          "day": "2026-09-30",
-          "laps": 29
-        },
-        {
-          "day": "2026-09-28",
-          "laps": 30
-        },
-        {
-          "day": "2026-09-27",
-          "laps": 99
-        },
-        {
-          "day": "2026-09-26",
-          "laps": 23
-        },
-        {
-          "day": "2026-09-25",
-          "laps": 23
-        },
-        {
-          "day": "2026-09-23",
-          "laps": 50
-        },
-        {
-          "day": "2026-09-22",
-          "laps": 38
-        },
-        {
-          "day": "2026-09-21",
-          "laps": 35
-        },
-        {
-          "day": "2026-09-20",
-          "laps": 65
-        },
-        {
-          "day": "2026-09-19",
-          "laps": 55
-        },
-        {
-          "day": "2026-09-17",
-          "laps": 19
-        },
-        {
-          "day": "2026-09-16",
-          "laps": 35
-        },
-        {
-          "day": "2026-09-15",
-          "laps": 21
-        },
-        {
-          "day": "2026-09-14",
-          "laps": 17
-        },
-        {
-          "day": "2026-09-13",
-          "laps": 54
-        },
-        {
-          "day": "2026-09-12",
-          "laps": 49
-        },
-        {
-          "day": "2026-09-10",
-          "laps": 17
-        },
-        {
-          "day": "2026-09-08",
-          "laps": 46
-        },
-        {
-          "day": "2026-09-07",
-          "laps": 73
-        },
-        {
-          "day": "2026-09-03",
-          "laps": 22
-        },
-        {
-          "day": "2026-09-01",
-          "laps": 11
         }
       ],
       "rank": 7
@@ -2723,11 +2723,11 @@
     {
       "slug": "thomas-fox-2",
       "name": "Thomas Fox4",
-      "totalLaps": 23901,
-      "cleanLaps": 20078,
+      "totalLaps": 23911,
+      "cleanLaps": 20086,
       "cleanPct": 84.0,
-      "hours": 750.2,
-      "totalEvents": 2975,
+      "hours": 751.9,
+      "totalEvents": 2984,
       "firstDay": "2025-09-22",
       "lastDay": "2026-10-11",
       "activeDaysCount": 325,
@@ -2879,10 +2879,10 @@
       ],
       "sessions": {
         "Practice": {
-          "laps": 4893,
-          "cleanLaps": 3751,
+          "laps": 4903,
+          "cleanLaps": 3759,
           "cleanPct": 76.7,
-          "hours": 337.2
+          "hours": 338.9
         },
         "Qualifying": {
           "laps": 739,
@@ -2900,7 +2900,7 @@
       "recentActivity": [
         {
           "day": "2026-10-11",
-          "laps": 12
+          "laps": 22
         },
         {
           "day": "2026-10-10",
@@ -3626,14 +3626,14 @@
     {
       "slug": "martyn-cook",
       "name": "martyn cook",
-      "totalLaps": 19656,
-      "cleanLaps": 13132,
+      "totalLaps": 19674,
+      "cleanLaps": 13149,
       "cleanPct": 66.8,
-      "hours": 1127.8,
-      "totalEvents": 2651,
+      "hours": 1128.3,
+      "totalEvents": 2653,
       "firstDay": "2023-06-16",
-      "lastDay": "2026-10-10",
-      "activeDaysCount": 698,
+      "lastDay": "2026-10-11",
+      "activeDaysCount": 699,
       "favoriteCar": "Dallara P217",
       "favoriteTrack": "Sebring International Raceway - International",
       "topCars": [
@@ -3653,10 +3653,10 @@
         },
         {
           "name": "Chevrolet Corvette Z06 GT3.R",
-          "laps": 1167,
-          "cleanLaps": 770,
-          "cleanPct": 66.0,
-          "hours": 64.0
+          "laps": 1185,
+          "cleanLaps": 787,
+          "cleanPct": 66.4,
+          "hours": 64.5
         },
         {
           "name": "Mercedes-AMG GT3 2020",
@@ -3767,10 +3767,10 @@
         },
         {
           "name": "Indianapolis Motor Speedway - Road Course",
-          "laps": 630,
-          "cleanLaps": 484,
-          "cleanPct": 76.8,
-          "hours": 32.8
+          "laps": 648,
+          "cleanLaps": 501,
+          "cleanPct": 77.3,
+          "hours": 33.4
         },
         {
           "name": "WeatherTech Raceway at Laguna Seca - Full Course",
@@ -3782,10 +3782,10 @@
       ],
       "sessions": {
         "Practice": {
-          "laps": 16795,
-          "cleanLaps": 10855,
-          "cleanPct": 64.6,
-          "hours": 1011.8
+          "laps": 16813,
+          "cleanLaps": 10872,
+          "cleanPct": 64.7,
+          "hours": 1012.4
         },
         "Qualifying": {
           "laps": 176,
@@ -3801,6 +3801,10 @@
         }
       },
       "recentActivity": [
+        {
+          "day": "2026-10-11",
+          "laps": 18
+        },
         {
           "day": "2026-10-10",
           "laps": 101
@@ -3916,10 +3920,6 @@
         {
           "day": "2026-09-11",
           "laps": 12
-        },
-        {
-          "day": "2026-09-10",
-          "laps": 28
         }
       ],
       "rank": 13
@@ -3927,11 +3927,11 @@
     {
       "slug": "david-greenberg",
       "name": "David Greenberg",
-      "totalLaps": 17285,
-      "cleanLaps": 11516,
+      "totalLaps": 17300,
+      "cleanLaps": 11520,
       "cleanPct": 66.6,
-      "hours": 1140.3,
-      "totalEvents": 3548,
+      "hours": 1141.3,
+      "totalEvents": 3551,
       "firstDay": "2024-01-26",
       "lastDay": "2026-10-11",
       "activeDaysCount": 599,
@@ -3943,7 +3943,7 @@
           "laps": 3880,
           "cleanLaps": 2562,
           "cleanPct": 66.0,
-          "hours": 260.6
+          "hours": 260.7
         },
         {
           "name": "Ford Mustang GT3",
@@ -3968,10 +3968,10 @@
         },
         {
           "name": "Porsche 911 GT3 R (992)",
-          "laps": 905,
-          "cleanLaps": 616,
-          "cleanPct": 68.1,
-          "hours": 53.6
+          "laps": 920,
+          "cleanLaps": 620,
+          "cleanPct": 67.4,
+          "hours": 54.5
         },
         {
           "name": "Porsche 718 Cayman GT4 Clubsport MR",
@@ -4083,10 +4083,10 @@
       ],
       "sessions": {
         "Practice": {
-          "laps": 10927,
-          "cleanLaps": 6592,
+          "laps": 10942,
+          "cleanLaps": 6596,
           "cleanPct": 60.3,
-          "hours": 855.9
+          "hours": 856.9
         },
         "Qualifying": {
           "laps": 968,
@@ -4104,7 +4104,7 @@
       "recentActivity": [
         {
           "day": "2026-10-11",
-          "laps": 8
+          "laps": 23
         },
         {
           "day": "2026-10-10",
@@ -4830,14 +4830,14 @@
     {
       "slug": "brandon-berg",
       "name": "Brandon Berg",
-      "totalLaps": 14559,
-      "cleanLaps": 11258,
+      "totalLaps": 14572,
+      "cleanLaps": 11268,
       "cleanPct": 77.3,
-      "hours": 491.0,
-      "totalEvents": 1846,
+      "hours": 491.7,
+      "totalEvents": 1847,
       "firstDay": "2025-07-04",
-      "lastDay": "2026-10-10",
-      "activeDaysCount": 340,
+      "lastDay": "2026-10-11",
+      "activeDaysCount": 341,
       "favoriteCar": "Toyota GR86",
       "favoriteTrack": "Lanier National Speedway - Dirt",
       "topCars": [
@@ -4986,10 +4986,10 @@
       ],
       "sessions": {
         "Practice": {
-          "laps": 6236,
-          "cleanLaps": 4606,
+          "laps": 6249,
+          "cleanLaps": 4616,
           "cleanPct": 73.9,
-          "hours": 267.0
+          "hours": 267.6
         },
         "Qualifying": {
           "laps": 900,
@@ -5005,6 +5005,10 @@
         }
       },
       "recentActivity": [
+        {
+          "day": "2026-10-11",
+          "laps": 13
+        },
         {
           "day": "2026-10-10",
           "laps": 13
@@ -5120,10 +5124,6 @@
         {
           "day": "2026-08-28",
           "laps": 29
-        },
-        {
-          "day": "2026-08-27",
-          "laps": 28
         }
       ],
       "rank": 17
@@ -6034,11 +6034,11 @@
     {
       "slug": "stephen-smalley",
       "name": "Stephen Smalley",
-      "totalLaps": 11319,
+      "totalLaps": 11321,
       "cleanLaps": 8411,
       "cleanPct": 74.3,
-      "hours": 546.0,
-      "totalEvents": 1471,
+      "hours": 546.4,
+      "totalEvents": 1473,
       "firstDay": "2022-04-29",
       "lastDay": "2026-10-11",
       "activeDaysCount": 453,
@@ -6190,10 +6190,10 @@
       ],
       "sessions": {
         "Practice": {
-          "laps": 5543,
+          "laps": 5545,
           "cleanLaps": 3664,
           "cleanPct": 66.1,
-          "hours": 361.7
+          "hours": 362.1
         },
         "Qualifying": {
           "laps": 594,
@@ -6217,7 +6217,7 @@
       "recentActivity": [
         {
           "day": "2026-10-11",
-          "laps": 87
+          "laps": 89
         },
         {
           "day": "2026-10-10",
@@ -6341,14 +6341,14 @@
     {
       "slug": "ethan-turner",
       "name": "Ethan Turner",
-      "totalLaps": 10511,
-      "cleanLaps": 5947,
+      "totalLaps": 10524,
+      "cleanLaps": 5956,
       "cleanPct": 56.6,
-      "hours": 711.2,
-      "totalEvents": 1494,
+      "hours": 712.1,
+      "totalEvents": 1495,
       "firstDay": "2025-06-01",
-      "lastDay": "2026-10-09",
-      "activeDaysCount": 280,
+      "lastDay": "2026-10-11",
+      "activeDaysCount": 281,
       "favoriteCar": "McLaren 720S GT3 EVO",
       "favoriteTrack": "Circuit de Spa-Francorchamps - Grand Prix Pits",
       "topCars": [
@@ -6368,10 +6368,10 @@
         },
         {
           "name": "Aston Martin Vantage GT3 EVO",
-          "laps": 1378,
-          "cleanLaps": 754,
-          "cleanPct": 54.7,
-          "hours": 67.5
+          "laps": 1391,
+          "cleanLaps": 763,
+          "cleanPct": 54.9,
+          "hours": 68.4
         },
         {
           "name": "Ferrari 499P",
@@ -6426,10 +6426,10 @@
       "topTracks": [
         {
           "name": "Circuit de Spa-Francorchamps - Grand Prix Pits",
-          "laps": 1563,
-          "cleanLaps": 1107,
+          "laps": 1576,
+          "cleanLaps": 1116,
           "cleanPct": 70.8,
-          "hours": 92.5
+          "hours": 93.4
         },
         {
           "name": "Autodromo Internazionale Enzo e Dino Ferrari - Grand Prix",
@@ -6497,10 +6497,10 @@
       ],
       "sessions": {
         "Practice": {
-          "laps": 6114,
-          "cleanLaps": 2814,
-          "cleanPct": 46.0,
-          "hours": 495.8
+          "laps": 6127,
+          "cleanLaps": 2823,
+          "cleanPct": 46.1,
+          "hours": 496.6
         },
         "Qualifying": {
           "laps": 411,
@@ -6516,6 +6516,10 @@
         }
       },
       "recentActivity": [
+        {
+          "day": "2026-10-11",
+          "laps": 13
+        },
         {
           "day": "2026-10-09",
           "laps": 65
@@ -6631,10 +6635,6 @@
         {
           "day": "2026-09-07",
           "laps": 86
-        },
-        {
-          "day": "2026-09-06",
-          "laps": 56
         }
       ],
       "rank": 22
@@ -7545,11 +7545,11 @@
     {
       "slug": "terry-cantwell",
       "name": "Terry Cantwell",
-      "totalLaps": 7799,
-      "cleanLaps": 5687,
+      "totalLaps": 7810,
+      "cleanLaps": 5694,
       "cleanPct": 72.9,
-      "hours": 399.5,
-      "totalEvents": 776,
+      "hours": 399.7,
+      "totalEvents": 780,
       "firstDay": "2025-10-08",
       "lastDay": "2026-10-11",
       "activeDaysCount": 204,
@@ -7701,28 +7701,28 @@
       ],
       "sessions": {
         "Practice": {
-          "laps": 3645,
-          "cleanLaps": 2308,
+          "laps": 3648,
+          "cleanLaps": 2309,
           "cleanPct": 63.3,
-          "hours": 227.4
+          "hours": 227.5
         },
         "Qualifying": {
-          "laps": 158,
-          "cleanLaps": 132,
-          "cleanPct": 83.5,
+          "laps": 160,
+          "cleanLaps": 134,
+          "cleanPct": 83.8,
           "hours": 7.6
         },
         "Race": {
-          "laps": 3996,
-          "cleanLaps": 3247,
-          "cleanPct": 81.3,
-          "hours": 164.6
+          "laps": 4002,
+          "cleanLaps": 3251,
+          "cleanPct": 81.2,
+          "hours": 164.7
         }
       },
       "recentActivity": [
         {
           "day": "2026-10-11",
-          "laps": 30
+          "laps": 41
         },
         {
           "day": "2026-10-10",
@@ -9652,14 +9652,14 @@
     {
       "slug": "chandler-english",
       "name": "Chandler English",
-      "totalLaps": 4535,
-      "cleanLaps": 3610,
+      "totalLaps": 4567,
+      "cleanLaps": 3636,
       "cleanPct": 79.6,
-      "hours": 192.1,
-      "totalEvents": 384,
+      "hours": 193.3,
+      "totalEvents": 387,
       "firstDay": "2026-06-19",
-      "lastDay": "2026-10-06",
-      "activeDaysCount": 78,
+      "lastDay": "2026-10-11",
+      "activeDaysCount": 79,
       "favoriteCar": "Dallara P217",
       "favoriteTrack": "Daytona International Speedway - Road Course",
       "topCars": [
@@ -9700,10 +9700,10 @@
         },
         {
           "name": "Lotus 79",
-          "laps": 338,
-          "cleanLaps": 289,
-          "cleanPct": 85.5,
-          "hours": 11.0
+          "laps": 370,
+          "cleanLaps": 315,
+          "cleanPct": 85.1,
+          "hours": 12.2
         },
         {
           "name": "HPD ARX-01c",
@@ -9808,25 +9808,29 @@
       ],
       "sessions": {
         "Practice": {
-          "laps": 999,
-          "cleanLaps": 658,
-          "cleanPct": 65.9,
-          "hours": 56.1
+          "laps": 1004,
+          "cleanLaps": 661,
+          "cleanPct": 65.8,
+          "hours": 56.4
         },
         "Qualifying": {
-          "laps": 181,
-          "cleanLaps": 140,
-          "cleanPct": 77.3,
-          "hours": 8.9
+          "laps": 183,
+          "cleanLaps": 142,
+          "cleanPct": 77.6,
+          "hours": 9.0
         },
         "Race": {
-          "laps": 3355,
-          "cleanLaps": 2812,
+          "laps": 3380,
+          "cleanLaps": 2833,
           "cleanPct": 83.8,
-          "hours": 127.0
+          "hours": 127.9
         }
       },
       "recentActivity": [
+        {
+          "day": "2026-10-11",
+          "laps": 32
+        },
         {
           "day": "2026-10-06",
           "laps": 52
@@ -9942,10 +9946,6 @@
         {
           "day": "2026-08-23",
           "laps": 94
-        },
-        {
-          "day": "2026-08-22",
-          "laps": 139
         }
       ],
       "rank": 33
@@ -10254,11 +10254,11 @@
     {
       "slug": "aron-lotthammer",
       "name": "Aron Lotthammer",
-      "totalLaps": 3366,
-      "cleanLaps": 1932,
+      "totalLaps": 3373,
+      "cleanLaps": 1935,
       "cleanPct": 57.4,
-      "hours": 235.4,
-      "totalEvents": 692,
+      "hours": 235.9,
+      "totalEvents": 694,
       "firstDay": "2026-06-16",
       "lastDay": "2026-10-11",
       "activeDaysCount": 99,
@@ -10274,10 +10274,10 @@
         },
         {
           "name": "Ferrari 296 GT3",
-          "laps": 651,
-          "cleanLaps": 298,
-          "cleanPct": 45.8,
-          "hours": 46.5
+          "laps": 658,
+          "cleanLaps": 301,
+          "cleanPct": 45.7,
+          "hours": 46.9
         },
         {
           "name": "BMW M4 GT3 EVO",
@@ -10312,7 +10312,7 @@
           "laps": 116,
           "cleanLaps": 32,
           "cleanPct": 27.6,
-          "hours": 11.8
+          "hours": 11.9
         },
         {
           "name": "Dirt Micro Sprint Car - Winged",
@@ -10410,10 +10410,10 @@
       ],
       "sessions": {
         "Practice": {
-          "laps": 2166,
-          "cleanLaps": 984,
+          "laps": 2173,
+          "cleanLaps": 987,
           "cleanPct": 45.4,
-          "hours": 178.0
+          "hours": 178.5
         },
         "Qualifying": {
           "laps": 58,
@@ -10431,7 +10431,7 @@
       "recentActivity": [
         {
           "day": "2026-10-11",
-          "laps": 7
+          "laps": 14
         },
         {
           "day": "2026-10-10",
@@ -11157,14 +11157,14 @@
     {
       "slug": "andrew-gould",
       "name": "Andrew Gould",
-      "totalLaps": 2472,
-      "cleanLaps": 1867,
-      "cleanPct": 75.5,
-      "hours": 100.6,
-      "totalEvents": 306,
+      "totalLaps": 2507,
+      "cleanLaps": 1891,
+      "cleanPct": 75.4,
+      "hours": 101.8,
+      "totalEvents": 309,
       "firstDay": "2026-06-24",
-      "lastDay": "2026-10-06",
-      "activeDaysCount": 67,
+      "lastDay": "2026-10-11",
+      "activeDaysCount": 68,
       "favoriteCar": "Dallara P217",
       "favoriteTrack": "Road Atlanta - Full Course",
       "topCars": [
@@ -11177,10 +11177,10 @@
         },
         {
           "name": "Lotus 79",
-          "laps": 340,
-          "cleanLaps": 272,
-          "cleanPct": 80.0,
-          "hours": 11.8
+          "laps": 375,
+          "cleanLaps": 296,
+          "cleanPct": 78.9,
+          "hours": 13.0
         },
         {
           "name": "Super Formula Lights",
@@ -11313,25 +11313,29 @@
       ],
       "sessions": {
         "Practice": {
-          "laps": 662,
-          "cleanLaps": 385,
-          "cleanPct": 58.2,
-          "hours": 35.0
+          "laps": 671,
+          "cleanLaps": 388,
+          "cleanPct": 57.8,
+          "hours": 35.2
         },
         "Qualifying": {
-          "laps": 143,
-          "cleanLaps": 119,
-          "cleanPct": 83.2,
-          "hours": 7.1
+          "laps": 145,
+          "cleanLaps": 120,
+          "cleanPct": 82.8,
+          "hours": 7.2
         },
         "Race": {
-          "laps": 1667,
-          "cleanLaps": 1363,
+          "laps": 1691,
+          "cleanLaps": 1383,
           "cleanPct": 81.8,
-          "hours": 58.5
+          "hours": 59.3
         }
       },
       "recentActivity": [
+        {
+          "day": "2026-10-11",
+          "laps": 35
+        },
         {
           "day": "2026-10-06",
           "laps": 59
@@ -11447,10 +11451,6 @@
         {
           "day": "2026-08-23",
           "laps": 26
-        },
-        {
-          "day": "2026-08-22",
-          "laps": 17
         }
       ],
       "rank": 38
@@ -11759,11 +11759,11 @@
     {
       "slug": "matty-roberts",
       "name": "Matty Roberts",
-      "totalLaps": 2271,
-      "cleanLaps": 1440,
+      "totalLaps": 2272,
+      "cleanLaps": 1441,
       "cleanPct": 63.4,
-      "hours": 157.7,
-      "totalEvents": 425,
+      "hours": 158.0,
+      "totalEvents": 427,
       "firstDay": "2026-04-18",
       "lastDay": "2026-10-11",
       "activeDaysCount": 86,
@@ -11828,10 +11828,10 @@
         },
         {
           "name": "Chevrolet Corvette Z06 GT3.R",
-          "laps": 77,
-          "cleanLaps": 59,
-          "cleanPct": 76.6,
-          "hours": 8.9
+          "laps": 78,
+          "cleanLaps": 60,
+          "cleanPct": 76.9,
+          "hours": 9.1
         },
         {
           "name": "Mini Stock",
@@ -11915,10 +11915,10 @@
       ],
       "sessions": {
         "Practice": {
-          "laps": 1054,
-          "cleanLaps": 611,
+          "laps": 1055,
+          "cleanLaps": 612,
           "cleanPct": 58.0,
-          "hours": 109.1
+          "hours": 109.3
         },
         "Qualifying": {
           "laps": 116,
@@ -11936,7 +11936,7 @@
       "recentActivity": [
         {
           "day": "2026-10-11",
-          "laps": 25
+          "laps": 26
         },
         {
           "day": "2026-10-10",
@@ -13565,14 +13565,14 @@
     {
       "slug": "bret-leinweber-weyand",
       "name": "Bret Leinweber Weyand",
-      "totalLaps": 772,
-      "cleanLaps": 610,
-      "cleanPct": 79.0,
-      "hours": 27.6,
-      "totalEvents": 81,
+      "totalLaps": 805,
+      "cleanLaps": 634,
+      "cleanPct": 78.8,
+      "hours": 28.8,
+      "totalEvents": 84,
       "firstDay": "2026-08-05",
-      "lastDay": "2026-10-04",
-      "activeDaysCount": 22,
+      "lastDay": "2026-10-11",
+      "activeDaysCount": 23,
       "favoriteCar": "Dallara P217",
       "favoriteTrack": "Road Atlanta - Full Course",
       "topCars": [
@@ -13585,10 +13585,10 @@
         },
         {
           "name": "Lotus 79",
-          "laps": 147,
-          "cleanLaps": 112,
-          "cleanPct": 76.2,
-          "hours": 5.6
+          "laps": 180,
+          "cleanLaps": 136,
+          "cleanPct": 75.6,
+          "hours": 6.8
         },
         {
           "name": "Super Formula Lights",
@@ -13691,6 +13691,13 @@
           "hours": 1.2
         },
         {
+          "name": "Autodromo Internazionale Enzo e Dino Ferrari - Grand Prix",
+          "laps": 33,
+          "cleanLaps": 24,
+          "cleanPct": 72.7,
+          "hours": 1.2
+        },
+        {
           "name": "Suzuka International Racing Course - Grand Prix",
           "laps": 28,
           "cleanLaps": 22,
@@ -13710,36 +13717,33 @@
           "cleanLaps": 8,
           "cleanPct": 47.1,
           "hours": 0.4
-        },
-        {
-          "name": "Nürburgring Combined - Gesamtstrecke VLN",
-          "laps": 13,
-          "cleanLaps": 4,
-          "cleanPct": 30.8,
-          "hours": 3.4
         }
       ],
       "sessions": {
         "Practice": {
-          "laps": 120,
-          "cleanLaps": 70,
-          "cleanPct": 58.3,
-          "hours": 8.4
+          "laps": 126,
+          "cleanLaps": 75,
+          "cleanPct": 59.5,
+          "hours": 8.7
         },
         "Qualifying": {
-          "laps": 47,
-          "cleanLaps": 39,
-          "cleanPct": 83.0,
-          "hours": 2.4
+          "laps": 49,
+          "cleanLaps": 41,
+          "cleanPct": 83.7,
+          "hours": 2.5
         },
         "Race": {
-          "laps": 605,
-          "cleanLaps": 501,
-          "cleanPct": 82.8,
-          "hours": 16.8
+          "laps": 630,
+          "cleanLaps": 518,
+          "cleanPct": 82.2,
+          "hours": 17.6
         }
       },
       "recentActivity": [
+        {
+          "day": "2026-10-11",
+          "laps": 33
+        },
         {
           "day": "2026-10-04",
           "laps": 6
@@ -14079,23 +14083,23 @@
     {
       "slug": "landen-hendershot",
       "name": "Landen Hendershot",
-      "totalLaps": 72,
-      "cleanLaps": 68,
-      "cleanPct": 94.4,
-      "hours": 9.9,
-      "totalEvents": 10,
+      "totalLaps": 117,
+      "cleanLaps": 108,
+      "cleanPct": 92.3,
+      "hours": 10.6,
+      "totalEvents": 14,
       "firstDay": "2025-02-23",
-      "lastDay": "2026-10-10",
-      "activeDaysCount": 5,
+      "lastDay": "2026-10-11",
+      "activeDaysCount": 6,
       "favoriteCar": "NASCAR Truck Ford F150",
       "favoriteTrack": "Charlotte Motor Speedway - Oval",
       "topCars": [
         {
           "name": "NASCAR Truck Ford F150",
-          "laps": 72,
-          "cleanLaps": 68,
-          "cleanPct": 94.4,
-          "hours": 1.3
+          "laps": 117,
+          "cleanLaps": 108,
+          "cleanPct": 92.3,
+          "hours": 2.0
         },
         {
           "name": "Dallara P217",
@@ -14122,10 +14126,10 @@
       "topTracks": [
         {
           "name": "Charlotte Motor Speedway - Oval",
-          "laps": 72,
-          "cleanLaps": 68,
-          "cleanPct": 94.4,
-          "hours": 1.2
+          "laps": 117,
+          "cleanLaps": 108,
+          "cleanPct": 92.3,
+          "hours": 1.9
         },
         {
           "name": "Sebring International Raceway - International",
@@ -14151,25 +14155,29 @@
       ],
       "sessions": {
         "Practice": {
-          "laps": 26,
-          "cleanLaps": 26,
+          "laps": 31,
+          "cleanLaps": 31,
           "cleanPct": 100.0,
-          "hours": 1.3
+          "hours": 1.4
         },
         "Qualifying": {
           "laps": 2,
           "cleanLaps": 2,
           "cleanPct": 100.0,
-          "hours": 0.0
+          "hours": 0.1
         },
         "Race": {
-          "laps": 44,
-          "cleanLaps": 40,
-          "cleanPct": 90.9,
-          "hours": 8.6
+          "laps": 84,
+          "cleanLaps": 75,
+          "cleanPct": 89.3,
+          "hours": 9.1
         }
       },
       "recentActivity": [
+        {
+          "day": "2026-10-11",
+          "laps": 45
+        },
         {
           "day": "2026-10-10",
           "laps": 72
