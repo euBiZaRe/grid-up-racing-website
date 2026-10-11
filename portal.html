@@ -2101,6 +2101,17 @@
             if (tabId === 'setups') loadSetups();
             if (tabId === 'telemetry') loadTelemetry();
             if (tabId === 'stints') initPortalStintView();
+
+            try {
+                sessionStorage.setItem('gridup_active_tab', tabId);
+                if (currentEvent && currentTeam) {
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('event', currentEvent);
+                    url.searchParams.set('team', currentTeam);
+                    url.searchParams.set('tab', tabId);
+                    history.replaceState(null, document.title, url.toString());
+                }
+            } catch (_) {}
         }
 
         let _driverStatsCache = null;
@@ -2339,7 +2350,8 @@
             return false;
         }
 
-        async function loadTeamPortal(team) {
+        async function loadTeamPortal(team, preferredTab = null) {
+            if (!team) return;
             currentEvent = team.eventSlug;
             currentTeam = team.teamName;
             window.currentTeamData = team.teamData || null;
@@ -2358,14 +2370,26 @@
                 } catch (_) {}
             }
 
-            if (team.eventSlug) {
-                try {
-                    history.replaceState(null, document.title, window.location.pathname + window.location.search + '#team-' + team.eventSlug);
-                } catch (_) {}
-            }
+            const urlParams = new URLSearchParams(window.location.search);
+            const activeTab = preferredTab || urlParams.get('tab') || sessionStorage.getItem('gridup_active_tab') || 'wall';
+
+            try {
+                sessionStorage.setItem('gridup_active_event', team.eventSlug);
+                sessionStorage.setItem('gridup_active_team', team.teamName);
+                sessionStorage.setItem('gridup_active_tab', activeTab);
+
+                const url = new URL(window.location.href);
+                url.searchParams.set('event', team.eventSlug);
+                url.searchParams.set('team', team.teamName);
+                url.searchParams.set('tab', activeTab);
+                url.hash = `team-${team.eventSlug}`;
+                history.replaceState(null, document.title, url.toString());
+            } catch (_) {}
             
-            document.getElementById('selection-view').style.display = 'none';
-            document.getElementById('portal-view').style.display = 'block';
+            const selectionView = document.getElementById('selection-view');
+            const portalView = document.getElementById('portal-view');
+            if (selectionView) selectionView.style.display = 'none';
+            if (portalView) portalView.style.display = 'block';
             window.scrollTo({ top: 0, behavior: 'smooth' });
 
             // Apply squad color theme immediately
@@ -2385,15 +2409,25 @@
             await ensureDriverStatsCache();
             await loadLineup(team.teamData, eventObj);
             loadMessages();
-            switchTab('wall');
+            switchTab(activeTab);
         }
 
         window.returnToPortalDashboard = function() {
             try {
-                history.pushState("", document.title, window.location.pathname + window.location.search);
+                sessionStorage.removeItem('gridup_active_event');
+                sessionStorage.removeItem('gridup_active_team');
+                sessionStorage.removeItem('gridup_active_tab');
+                const url = new URL(window.location.href);
+                url.searchParams.delete('event');
+                url.searchParams.delete('team');
+                url.searchParams.delete('tab');
+                url.hash = '';
+                history.pushState("", document.title, url.pathname + (url.search ? url.search : ''));
             } catch (_) {
                 window.location.hash = '';
             }
+            currentEvent = null;
+            currentTeam = null;
             const portalView = document.getElementById('portal-view');
             const selectionView = document.getElementById('selection-view');
             if (portalView) portalView.style.display = 'none';
@@ -5266,19 +5300,47 @@
                     !myTeams.some(m => m.eventSlug === t.eventSlug && m.teamName === t.teamName)
                 );
 
-                // Always render the full portal dashboard so drivers can view/enter their assigned team AND participate in other upcoming races
-                await showSelection(myTeams, isAdminUser, otherTeams, allTeamAssignments);
+                // Check for persisted active team or deep-link from URL search params, sessionStorage, or hash
+                const urlParams = new URLSearchParams(window.location.search);
+                const targetEvent = urlParams.get('event') || sessionStorage.getItem('gridup_active_event') || '';
+                const targetTeamName = urlParams.get('team') || sessionStorage.getItem('gridup_active_team') || '';
+                const targetTab = urlParams.get('tab') || sessionStorage.getItem('gridup_active_tab') || 'wall';
 
-                // Deep-link to specific team portal only if hash explicitly targets one (e.g. #team-NEC-4HR)
-                if (window.location.hash && window.location.hash.startsWith('#team-')) {
-                    const targetSlug = window.location.hash.replace('#team-', '').toLowerCase();
-                    const matchedTeam = allTeamAssignments.find(t => 
-                        (t.eventSlug && t.eventSlug.toLowerCase() === targetSlug) || 
-                        (`${t.eventSlug}-${t.teamName}`.toLowerCase() === targetSlug)
+                let matchedTeam = null;
+
+                if (targetEvent && targetTeamName) {
+                    matchedTeam = allTeamAssignments.find(t => 
+                        t.eventSlug && t.eventSlug.toLowerCase() === targetEvent.toLowerCase() &&
+                        t.teamName && t.teamName.toLowerCase() === targetTeamName.toLowerCase()
                     );
-                    if (matchedTeam) {
-                        await loadTeamPortal(matchedTeam);
-                    }
+                }
+
+                if (!matchedTeam && targetEvent) {
+                    matchedTeam = allTeamAssignments.find(t => 
+                        t.eventSlug && t.eventSlug.toLowerCase() === targetEvent.toLowerCase()
+                    );
+                }
+
+                if (!matchedTeam && window.location.hash && window.location.hash.startsWith('#team-')) {
+                    const rawTarget = decodeURIComponent(window.location.hash.replace('#team-', '')).toLowerCase();
+                    matchedTeam = allTeamAssignments.find(t => 
+                        (t.eventSlug && t.eventSlug.toLowerCase() === rawTarget) || 
+                        (`${t.eventSlug}-${t.teamName}`.toLowerCase() === rawTarget)
+                    );
+                }
+
+                // Render selection dashboard in background if matchedTeam exists, or show directly if not
+                await showSelection(myTeams, isAdminUser, otherTeams, allTeamAssignments, !matchedTeam);
+
+                if (matchedTeam) {
+                    await loadTeamPortal(matchedTeam, targetTab);
+                } else if (targetEvent || targetTeamName) {
+                    // Clear stale session storage if team was not found
+                    try {
+                        sessionStorage.removeItem('gridup_active_event');
+                        sessionStorage.removeItem('gridup_active_team');
+                        sessionStorage.removeItem('gridup_active_tab');
+                    } catch (_) {}
                 }
 
                 if (loading) loading.style.display = 'none';
@@ -5306,7 +5368,7 @@
             if (btn) btn.disabled = (val === '');
         };
 
-        async function showSelection(assignedTeams, isAdmin, otherTeams = [], allTeams = []) {
+        async function showSelection(assignedTeams, isAdmin, otherTeams = [], allTeams = [], shouldDisplay = true) {
             try {
                 const container = document.getElementById('selection-view');
                 if (!container) return;
@@ -5471,7 +5533,7 @@
                 }
 
                 container.innerHTML = `<h1 class="glow-text" style="margin-bottom: 3rem;">Team Portal Dashboard</h1>` + html;
-                container.style.display = 'block';
+                container.style.display = shouldDisplay ? 'block' : 'none';
 
                 const loading = document.getElementById('loading-portal');
                 if (loading) loading.style.display = 'none';
