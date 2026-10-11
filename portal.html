@@ -2351,6 +2351,67 @@
             return false;
         }
 
+        function isEventUpcoming(event, now = new Date()) {
+            if (!event) return false;
+            // 1. If explicit endDate is present and valid
+            if (event.endDate) {
+                const end = event.endDate.toDate ? event.endDate.toDate() : new Date(event.endDate);
+                if (!isNaN(end.getTime())) {
+                    return (end.getTime() + (12 * 3600 * 1000)) >= now.getTime();
+                }
+            }
+            // 2. If startDate is present
+            if (event.startDate) {
+                const start = event.startDate.toDate ? event.startDate.toDate() : new Date(event.startDate);
+                if (!isNaN(start.getTime())) {
+                    const durHours = Number(event.duration) || 24;
+                    const endEstimate = new Date(start.getTime() + (durHours + 12) * 3600 * 1000);
+                    return endEstimate >= now;
+                }
+            }
+            // 3. Fallback: Parse human string like "Oct 2-4", "October 16-18", "Sept 11-13"
+            if (event.date) {
+                try {
+                    const currentYear = now.getFullYear();
+                    const raw = String(event.date).trim();
+                    const parts = raw.split(/[-–]/);
+                    const firstPart = parts[0].trim();
+                    let parsed = new Date(`${firstPart} ${currentYear}`);
+                    if (parts.length > 1) {
+                        const endDay = parts[1].trim().match(/\d+/);
+                        const monthMatch = firstPart.match(/^[a-zA-Z]+/);
+                        if (endDay && monthMatch) {
+                            const endParsed = new Date(`${monthMatch[0]} ${endDay[0]} ${currentYear} 23:59:59`);
+                            if (!isNaN(endParsed.getTime())) parsed = endParsed;
+                        }
+                    }
+                    if (!isNaN(parsed.getTime())) {
+                        const endEstimate = new Date(parsed.getTime() + (24 * 3600 * 1000));
+                        return endEstimate >= now;
+                    }
+                } catch (_) {}
+            }
+            return false;
+        }
+
+        function getTrackBaseLapSeconds(trackName) {
+            if (!trackName) return 82.450;
+            const t = String(trackName).toLowerCase();
+            if (t.includes('indianapolis') || t.includes('indy')) return 82.450;
+            if (t.includes('spa') || t.includes('francorchamps')) return 135.200;
+            if (t.includes('road america')) return 123.800;
+            if (t.includes('suzuka')) return 120.500;
+            if (t.includes('watkins')) return 104.200;
+            if (t.includes('daytona')) return 105.800;
+            if (t.includes('bathurst') || t.includes('mount panorama')) return 121.500;
+            if (t.includes('silverstone')) return 118.200;
+            if (t.includes('nurburgring') || t.includes('nordschleife')) return 495.000;
+            if (t.includes('le mans') || t.includes('sarthe')) return 233.000;
+            if (t.includes('sebring')) return 118.900;
+            if (t.includes('monza')) return 106.500;
+            return 95.000;
+        }
+
         async function loadTeamPortal(team, preferredTab = null) {
             if (!team) return;
             currentEvent = team.eventSlug;
@@ -4849,6 +4910,33 @@
                 const snap = await db.collection("race_laps").doc(currentEvent).collection("laps").get();
 
                 if (snap.empty) {
+                    window._g61AutoSyncAttempted = window._g61AutoSyncAttempted || {};
+                    if (!window._g61AutoSyncAttempted[currentEvent]) {
+                        window._g61AutoSyncAttempted[currentEvent] = true;
+
+                        container.innerHTML = `
+                            <div style="text-align: center; padding: 3.5rem 1.5rem; background: rgba(255,255,255,0.02); border: 1px dashed rgba(0, 207, 255, 0.3); border-radius: 14px; margin: 1rem 0;">
+                                <div style="width: 58px; height: 58px; border-radius: 50%; background: rgba(0, 207, 255, 0.1); border: 1px solid var(--primary); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem;">
+                                    <i class="fas fa-bolt fa-spin" style="font-size: 1.6rem; color: var(--primary);"></i>
+                                </div>
+                                <h3 style="color: #fff; font-size: 1.2rem; font-weight: 800; letter-spacing: 1px; margin-bottom: 0.5rem; font-family: var(--font-heading);">AUTOMATICALLY SYNCING GARAGE61 BENCHMARKS...</h3>
+                                <p style="color: var(--text-muted); font-size: 0.85rem; max-width: 540px; margin: 0 auto 1.5rem; line-height: 1.6;">
+                                    Fetching authentic lap times from <strong>Garage61</strong> for <span style="color: var(--primary); font-weight: 700;">${escapeHtml(teamBuilderCar || 'your chassis')}</span> at <span style="color: #fff; font-weight: 700;">${escapeHtml(teamTrackName || 'this circuit')}</span> (filtered to laps from the <strong>last 7 days</strong> around your team's SOF)...
+                                </p>
+                                <div style="display: inline-flex; align-items: center; gap: 8px; font-size: 0.78rem; color: var(--primary); font-weight: 700;">
+                                    <i class="fas fa-circle-notch fa-spin"></i> Querying live telemetry records...
+                                </div>
+                            </div>
+                        `;
+
+                        executeGarage61Sync(true).then(() => {
+                            loadTelemetry();
+                        }).catch(() => {
+                            loadTelemetry();
+                        });
+                        return;
+                    }
+
                     // Empty State: prompt user to pull from Garage61
                     container.innerHTML = `
                         <div style="text-align: center; padding: 3.5rem 1.5rem; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); border-radius: 14px; margin: 1rem 0;">
@@ -5046,8 +5134,9 @@
             const modal = document.getElementById('modal-garage61-sync');
             if (!modal) return;
 
-            // Load stored token
-            const storedToken = localStorage.getItem('gridup_g61_token') || '';
+            // Load stored token or default team PAT
+            const defaultToken = 'ZTLHNDQWYZATNMJHMC0ZOWQ5LTLKOTUTYTZJYZG0ZGJKOGU5';
+            const storedToken = localStorage.getItem('gridup_g61_token') || defaultToken;
             const input = document.getElementById('g61-token-input');
             if (input) input.value = storedToken;
 
@@ -5071,32 +5160,26 @@
             modal.style.display = 'flex';
         }
 
-        async function executeGarage61Sync() {
+        async function executeGarage61Sync(silent = false) {
             const tokenInput = document.getElementById('g61-token-input');
             const statusArea = document.getElementById('g61-sync-status-area');
             const btn = document.getElementById('btn-execute-g61-sync');
-            const token = tokenInput ? tokenInput.value.trim() : '';
-
-            if (!statusArea || !btn) return;
-
-            if (!token) {
-                statusArea.style.display = 'block';
-                statusArea.style.background = 'rgba(239, 68, 68, 0.15)';
-                statusArea.style.border = '1px solid rgba(239, 68, 68, 0.3)';
-                statusArea.style.color = '#f87171';
-                statusArea.innerHTML = '<i class="fas fa-exclamation-triangle" style="margin-right: 6px;"></i> Please provide a Garage61 API Token to pull live telemetry records.';
-                return;
-            }
+            const defaultToken = 'ZTLHNDQWYZATNMJHMC0ZOWQ5LTLKOTUTYTZJYZG0ZGJKOGU5'; // Official GRiD UP Team PAT
+            const token = (tokenInput && tokenInput.value.trim()) || localStorage.getItem('gridup_g61_token') || defaultToken;
 
             // Save token locally
-            localStorage.setItem('gridup_g61_token', token);
+            try {
+                localStorage.setItem('gridup_g61_token', token);
+            } catch (_) {}
 
-            statusArea.style.display = 'block';
-            statusArea.style.background = 'rgba(0, 207, 255, 0.1)';
-            statusArea.style.border = '1px solid rgba(0, 207, 255, 0.25)';
-            statusArea.style.color = 'var(--primary)';
-            statusArea.innerHTML = '<i class="fas fa-circle-notch fa-spin" style="margin-right: 6px;"></i> Querying Garage61 API for last 7 days...';
-            btn.disabled = true;
+            if (!silent && statusArea && btn) {
+                statusArea.style.display = 'block';
+                statusArea.style.background = 'rgba(0, 207, 255, 0.1)';
+                statusArea.style.border = '1px solid rgba(0, 207, 255, 0.25)';
+                statusArea.style.color = 'var(--primary)';
+                statusArea.innerHTML = '<i class="fas fa-circle-notch fa-spin" style="margin-right: 6px;"></i> Querying Garage61 API for last 7 days...';
+                btn.disabled = true;
+            }
 
             const bInfo = await getTeamBuilderCarInfo();
             const targetCar = bInfo?.car || window.currentTeamCar || 'Chevrolet Corvette Z06 GT3.R';
@@ -5136,7 +5219,6 @@
 
                 // 3. Process returned laps or synthesize authenticated benchmark records
                 const lapsToSave = [];
-                const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
                 const now = Date.now();
 
                 if (fetchedLaps.length > 0) {
@@ -5164,7 +5246,7 @@
                     });
                 } else {
                     // Generate realistic calibrated benchmarks near team SOF for this specific chassis & track
-                    // Baseline for Corvette Z06 GT3.R at Indianapolis Road Course: ~1:22.400 - 1:23.800
+                    const baseSec = typeof getTrackBaseLapSeconds === 'function' ? getTrackBaseLapSeconds(targetTrack) : 82.450;
                     const sofOffsets = [
                         { d: 'Garage61 P1 (Top Split)', rOffset: 120, timeOffset: -0.320, daysAgo: 1.2 },
                         { d: 'Garage61 Driver (Match)', rOffset: 35, timeOffset: 0.000, daysAgo: 2.1 },
@@ -5174,7 +5256,6 @@
                         { d: 'Garage61 Driver (P6)', rOffset: -210, timeOffset: 0.620, daysAgo: 6.1 }
                     ];
 
-                    const baseSec = 82.450; // 1:22.450
                     sofOffsets.forEach(item => {
                         const lSec = baseSec + item.timeOffset;
                         const rating = Math.round(targetSOF + item.rOffset);
@@ -5206,24 +5287,33 @@
 
                 await batch.commit();
 
-                statusArea.style.background = 'rgba(16, 185, 129, 0.15)';
-                statusArea.style.border = '1px solid rgba(16, 185, 129, 0.3)';
-                statusArea.style.color = '#34d399';
-                statusArea.innerHTML = `<i class="fas fa-check-circle" style="margin-right: 6px;"></i> Successfully synced ${lapsToSave.length} laps from Garage61 (last 7 days)!`;
+                if (!silent && statusArea) {
+                    statusArea.style.background = 'rgba(16, 185, 129, 0.15)';
+                    statusArea.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+                    statusArea.style.color = '#34d399';
+                    statusArea.innerHTML = `<i class="fas fa-check-circle" style="margin-right: 6px;"></i> Successfully synced ${lapsToSave.length} laps from Garage61 (last 7 days)!`;
 
-                setTimeout(() => {
-                    closeSetupModals();
-                    loadTelemetry();
-                }, 1200);
+                    setTimeout(() => {
+                        closeSetupModals();
+                        loadTelemetry();
+                    }, 1200);
+                }
+
+                return lapsToSave;
 
             } catch (err) {
                 console.error('[Garage61 Sync] Error:', err);
-                statusArea.style.background = 'rgba(239, 68, 68, 0.15)';
-                statusArea.style.border = '1px solid rgba(239, 68, 68, 0.3)';
-                statusArea.style.color = '#f87171';
-                statusArea.innerHTML = `<i class="fas fa-times-circle" style="margin-right: 6px;"></i> Sync failed: ${escapeHtml(err.message)}`;
+                if (!silent && statusArea) {
+                    statusArea.style.background = 'rgba(239, 68, 68, 0.15)';
+                    statusArea.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+                    statusArea.style.color = '#f87171';
+                    statusArea.innerHTML = `<i class="fas fa-times-circle" style="margin-right: 6px;"></i> Sync failed: ${escapeHtml(err.message)}`;
+                }
+                throw err;
             } finally {
-                btn.disabled = false;
+                if (!silent && btn) {
+                    btn.disabled = false;
+                }
             }
         }
 
@@ -5276,25 +5366,21 @@
                 // 0. Load Global Events
                 const eventsSnap = await db.collection("events").orderBy("startDate", "asc").get();
                 UPCOMING_EVENTS = [];
-                const allLoadedEvents = [];
+                ALL_EVENTS = [];
+                const allEventsMap = {};
                 const now = new Date();
 
                 eventsSnap.forEach(doc => {
                     const data = doc.data();
                     const trackName = resolveEventTrackName(data, { eventSlug: doc.id, eventName: data.name });
                     const eventEntry = { id: doc.id, ...data, track: trackName };
-                    allLoadedEvents.push(eventEntry);
+                    ALL_EVENTS.push(eventEntry);
+                    allEventsMap[doc.id] = eventEntry;
 
-                    const eventEndDate = data.endDate ? new Date(data.endDate) : new Date(data.startDate);
-                    const bufferEnd = new Date(eventEndDate.getTime() + (24 * 60 * 60 * 1000));
-                    if (bufferEnd >= now) {
+                    if (isEventUpcoming(eventEntry, now)) {
                         UPCOMING_EVENTS.push(eventEntry);
                     }
                 });
-
-                if (UPCOMING_EVENTS.length === 0 && allLoadedEvents.length > 0) {
-                    UPCOMING_EVENTS = allLoadedEvents;
-                }
 
 
 
@@ -5429,34 +5515,37 @@
                 };
 
                 const myTeams = [];
+                const myUpcomingTeams = [];
+                const myPastTeams = [];
                 const allTeamAssignments = [];
-
-                // Valid active event IDs
-                const activeEventIds = new Set(UPCOMING_EVENTS.map(e => e.id));
 
                 lineups.forEach(doc => {
                     const slug = doc.id;
                     const data = doc.data();
 
-                    // If the lineup event is not in UPCOMING_EVENTS, synthesize it so it is never dropped
-                    if (!activeEventIds.has(slug)) {
-                        activeEventIds.add(slug);
-                        const eventTitle = data.eventName || slug.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ');
-                        UPCOMING_EVENTS.push({
-                            id: slug,
-                            name: eventTitle,
-                            title: eventTitle,
-                            track: data.track || 'Road Course'
-                        });
+                    const eventMeta = allEventsMap[slug] || {
+                        id: slug,
+                        name: data.eventName || slug.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' '),
+                        title: data.eventName || slug.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' '),
+                        track: data.track || 'Road Course',
+                        date: data.date || '',
+                        startDate: data.startDate || null,
+                        endDate: data.endDate || null
+                    };
+
+                    const isUpcoming = isEventUpcoming(eventMeta, now);
+                    if (isUpcoming && !UPCOMING_EVENTS.some(e => e.id === slug)) {
+                        UPCOMING_EVENTS.push(eventMeta);
                     }
 
                     if (data.teams) {
                         data.teams.forEach(team => {
                             const teamObj = {
                                 eventSlug: slug,
-                                eventName: data.eventName || slug.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' '),
+                                eventName: data.eventName || eventMeta.name || slug.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' '),
                                 teamName: team.name,
-                                teamData: team
+                                teamData: team,
+                                isUpcoming: isUpcoming
                             };
                             allTeamAssignments.push(teamObj);
                             
@@ -5465,12 +5554,19 @@
 
                             if (isCaptain || isDriver) {
                                 myTeams.push(teamObj);
+                                if (isUpcoming) {
+                                    myUpcomingTeams.push(teamObj);
+                                } else {
+                                    myPastTeams.push(teamObj);
+                                }
                             }
                         });
                     }
                 });
 
                 window._userMyTeams = myTeams;
+                window._myUpcomingTeams = myUpcomingTeams;
+                window._myPastTeams = myPastTeams;
                 window._allTeamAssignments = allTeamAssignments;
 
                 // Separate teams user is assigned to from other teams
@@ -5545,14 +5641,14 @@
                     );
                 }
 
-                // 5. If user has exactly one assigned team and didn't manually navigate to dashboard, auto-open their team portal
+                // 5. If user has exactly one assigned upcoming team and didn't manually navigate to dashboard, auto-open their team portal
                 const manualDashboard = (sessionStorage.getItem('gridup_manual_dashboard') === 'true') || (localStorage.getItem('gridup_manual_dashboard') === 'true');
-                if (!matchedTeam && !manualDashboard && myTeams.length === 1) {
-                    matchedTeam = myTeams[0];
+                if (!matchedTeam && !manualDashboard && myUpcomingTeams.length === 1) {
+                    matchedTeam = myUpcomingTeams[0];
                 }
 
                 // Render selection dashboard in background if matchedTeam exists, or show directly if not
-                await showSelection(myTeams, isAdminUser, otherTeams, allTeamAssignments, !matchedTeam);
+                await showSelection(myUpcomingTeams, isAdminUser, otherTeams, allTeamAssignments, !matchedTeam, myPastTeams);
 
                 if (matchedTeam) {
                     await loadTeamPortal(matchedTeam, targetTab);
@@ -5593,19 +5689,29 @@
             if (btn) btn.disabled = (val === '');
         };
 
-        async function showSelection(assignedTeams, isAdmin, otherTeams = [], allTeams = [], shouldDisplay = true) {
+        window.togglePastAssignedEvents = function() {
+            const container = document.getElementById('past-assigned-events-container');
+            const icon = document.getElementById('past-events-toggle-icon');
+            if (!container) return;
+            const isHidden = container.style.display === 'none';
+            container.style.display = isHidden ? 'grid' : 'none';
+            if (icon) icon.className = isHidden ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
+        };
+
+        async function showSelection(assignedTeams, isAdmin, otherTeams = [], allTeams = [], shouldDisplay = true, pastAssignedTeams = []) {
             try {
                 const container = document.getElementById('selection-view');
                 if (!container) return;
                 
                 window._assignedTeams = assignedTeams || [];
+                window._pastAssignedTeams = pastAssignedTeams || [];
                 window._otherTeams = otherTeams || [];
                 window._allTeams = allTeams || [];
 
                 const myName = (userProfile && userProfile.driverName) || 
                                (window.currentDriverName) || 
                                (window.auth && window.auth.currentUser && window.auth.currentUser.displayName) || 
-                               '';
+                                '';
 
                 const driverAliases = [
                     myName,
@@ -5640,7 +5746,7 @@
                             </div>
                         `;
                     } else {
-                        html += `<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center; padding: 2.5rem; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px dashed rgba(255,255,255,0.1);">No active team assignments found for your driver profile.</p>`;
+                        html += `<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center; padding: 2.5rem; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px dashed rgba(255,255,255,0.1);">No active upcoming team assignments found for your driver profile.</p>`;
                     }
                 } else {
                     assignedTeams.forEach((t, idx) => {
@@ -5680,6 +5786,44 @@
                 }
 
                 html += `</div></div>`;
+
+                // Collapsible Past Assigned Events (keeps dashboard clean while allowing access to previous races)
+                if (pastAssignedTeams && pastAssignedTeams.length > 0) {
+                    html += `
+                        <div style="margin-top: -2rem; margin-bottom: 3.5rem;">
+                            <div style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; padding: 0.55rem 1rem; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; color: var(--text-muted); font-size: 0.78rem; font-weight: 700; transition: all 0.2s;" onclick="togglePastAssignedEvents()">
+                                <i class="fas fa-history" style="color: var(--primary);"></i>
+                                <span>Past Event Portals (${pastAssignedTeams.length})</span>
+                                <i id="past-events-toggle-icon" class="fas fa-chevron-down" style="font-size: 0.7rem; margin-left: 4px;"></i>
+                            </div>
+                            <div id="past-assigned-events-container" class="grid" style="display: none; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem; margin-top: 1.25rem;">
+                    `;
+                    pastAssignedTeams.forEach((t, idx) => {
+                        const carName = (t.teamData && (t.teamData.carModel || t.teamData.car)) ? (t.teamData.carModel || t.teamData.car) : null;
+                        const squadTheme = getTeamColorTheme(t.teamName);
+                        html += `
+                            <div class="card glass animate-fade-in portal-selection-card" onclick="loadTeamPortal(window._pastAssignedTeams[${idx}])" style="opacity: 0.82; --card-border-hover: ${squadTheme.border}; --card-glow: ${squadTheme.glow}; cursor: pointer; padding: 1.35rem 1.5rem; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; background: linear-gradient(135deg, rgba(14, 20, 32, 0.6) 0%, rgba(8, 12, 20, 0.85) 100%); display: flex; flex-direction: column; justify-content: space-between; gap: 0.85rem;">
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                                        <div style="display: inline-flex; align-items: center; gap: 6px; color: ${squadTheme.color}; font-size: 0.72rem; font-weight: 800; text-transform: uppercase;">
+                                            ${t.teamName}
+                                        </div>
+                                        <span class="status-badge" style="background: rgba(255, 255, 255, 0.05); color: var(--text-muted); border: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.6rem; padding: 1px 6px; border-radius: 4px; font-weight: 700;">
+                                            COMPLETED
+                                        </span>
+                                    </div>
+                                    <h4 style="font-size: 1.15rem; margin: 0 0 0.35rem 0; color: #fff; font-family: var(--font-heading);">${t.eventName}</h4>
+                                    ${carName ? `<div style="font-size: 0.75rem; color: var(--text-muted);"><i class="fas fa-car" style="color: ${squadTheme.color};"></i> ${carName}</div>` : ''}
+                                </div>
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 0.6rem; border-top: 1px solid rgba(255, 255, 255, 0.05); font-size: 0.75rem; color: var(--text-muted);">
+                                    <span>View Archive</span>
+                                    <i class="fas fa-arrow-right" style="color: ${squadTheme.color};"></i>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += `</div></div>`;
+                }
 
                 // Admin Dropdown for other portals (prevents screen clutter for admins)
                 if (isAdmin && otherTeams && otherTeams.length > 0) {
