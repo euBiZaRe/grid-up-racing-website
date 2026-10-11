@@ -2100,7 +2100,12 @@
 
             try {
                 sessionStorage.setItem('gridup_active_tab', tabId);
+                localStorage.setItem('gridup_active_tab', tabId);
                 if (currentEvent && currentTeam) {
+                    sessionStorage.setItem('gridup_active_event', currentEvent);
+                    sessionStorage.setItem('gridup_active_team', currentTeam);
+                    localStorage.setItem('gridup_active_event', currentEvent);
+                    localStorage.setItem('gridup_active_team', currentTeam);
                     const url = new URL(window.location.href);
                     url.searchParams.set('event', currentEvent);
                     url.searchParams.set('team', currentTeam);
@@ -2367,12 +2372,17 @@
             }
 
             const urlParams = new URLSearchParams(window.location.search);
-            const activeTab = preferredTab || urlParams.get('tab') || sessionStorage.getItem('gridup_active_tab') || 'wall';
+            const activeTab = preferredTab || urlParams.get('tab') || localStorage.getItem('gridup_active_tab') || sessionStorage.getItem('gridup_active_tab') || 'wall';
 
             try {
+                sessionStorage.removeItem('gridup_manual_dashboard');
+                localStorage.removeItem('gridup_manual_dashboard');
                 sessionStorage.setItem('gridup_active_event', team.eventSlug);
                 sessionStorage.setItem('gridup_active_team', team.teamName);
                 sessionStorage.setItem('gridup_active_tab', activeTab);
+                localStorage.setItem('gridup_active_event', team.eventSlug);
+                localStorage.setItem('gridup_active_team', team.teamName);
+                localStorage.setItem('gridup_active_tab', activeTab);
 
                 const url = new URL(window.location.href);
                 url.searchParams.set('event', team.eventSlug);
@@ -2410,9 +2420,14 @@
 
         window.returnToPortalDashboard = function() {
             try {
+                sessionStorage.setItem('gridup_manual_dashboard', 'true');
+                localStorage.setItem('gridup_manual_dashboard', 'true');
                 sessionStorage.removeItem('gridup_active_event');
                 sessionStorage.removeItem('gridup_active_team');
                 sessionStorage.removeItem('gridup_active_tab');
+                localStorage.removeItem('gridup_active_event');
+                localStorage.removeItem('gridup_active_team');
+                localStorage.removeItem('gridup_active_tab');
                 const url = new URL(window.location.href);
                 url.searchParams.delete('event');
                 url.searchParams.delete('team');
@@ -5259,36 +5274,26 @@
             try {
 
                 // 0. Load Global Events
-
                 const eventsSnap = await db.collection("events").orderBy("startDate", "asc").get();
-
                 UPCOMING_EVENTS = [];
-
+                const allLoadedEvents = [];
                 const now = new Date();
 
                 eventsSnap.forEach(doc => {
-
                     const data = doc.data();
+                    const trackName = resolveEventTrackName(data, { eventSlug: doc.id, eventName: data.name });
+                    const eventEntry = { id: doc.id, ...data, track: trackName };
+                    allLoadedEvents.push(eventEntry);
 
                     const eventEndDate = data.endDate ? new Date(data.endDate) : new Date(data.startDate);
-
-                    // Filter: Only include events where endDate is in the future
-
-                    if (eventEndDate >= now) {
-                        const trackName = resolveEventTrackName(data, { eventSlug: doc.id, eventName: data.name });
-                        UPCOMING_EVENTS.push({ id: doc.id, ...data, track: trackName });
+                    const bufferEnd = new Date(eventEndDate.getTime() + (24 * 60 * 60 * 1000));
+                    if (bufferEnd >= now) {
+                        UPCOMING_EVENTS.push(eventEntry);
                     }
-
                 });
 
-
-
-                if (UPCOMING_EVENTS.length === 0) {
-
-                    loading.innerHTML = `<p style="color: var(--text-muted);">No upcoming events found. Please wait for an admin to post the schedule.</p>`;
-
-                    return;
-
+                if (UPCOMING_EVENTS.length === 0 && allLoadedEvents.length > 0) {
+                    UPCOMING_EVENTS = allLoadedEvents;
                 }
 
 
@@ -5431,9 +5436,20 @@
 
                 lineups.forEach(doc => {
                     const slug = doc.id;
-                    if (!activeEventIds.has(slug)) return; // Skip orphaned lineups
-
                     const data = doc.data();
+
+                    // If the lineup event is not in UPCOMING_EVENTS, synthesize it so it is never dropped
+                    if (!activeEventIds.has(slug)) {
+                        activeEventIds.add(slug);
+                        const eventTitle = data.eventName || slug.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ');
+                        UPCOMING_EVENTS.push({
+                            id: slug,
+                            name: eventTitle,
+                            title: eventTitle,
+                            track: data.track || 'Road Course'
+                        });
+                    }
+
                     if (data.teams) {
                         data.teams.forEach(team => {
                             const teamObj = {
@@ -5462,33 +5478,77 @@
                     !myTeams.some(m => m.eventSlug === t.eventSlug && m.teamName === t.teamName)
                 );
 
-                // Check for persisted active team or deep-link from URL search params, sessionStorage, or hash
+                // Check for persisted active team or deep-link from URL search params, localStorage, sessionStorage, or hash
                 const urlParams = new URLSearchParams(window.location.search);
-                const targetEvent = urlParams.get('event') || sessionStorage.getItem('gridup_active_event') || '';
-                const targetTeamName = urlParams.get('team') || sessionStorage.getItem('gridup_active_team') || '';
-                const targetTab = urlParams.get('tab') || sessionStorage.getItem('gridup_active_tab') || 'wall';
+                const targetEvent = urlParams.get('event') || localStorage.getItem('gridup_active_event') || sessionStorage.getItem('gridup_active_event') || '';
+                const targetTeamName = urlParams.get('team') || localStorage.getItem('gridup_active_team') || sessionStorage.getItem('gridup_active_team') || '';
+                const targetTab = urlParams.get('tab') || localStorage.getItem('gridup_active_tab') || sessionStorage.getItem('gridup_active_tab') || 'wall';
+
+                const normalizeSquad = (str) => {
+                    if (!str) return '';
+                    return String(str)
+                        .toLowerCase()
+                        .replace(/grid\s*up\s*/gi, '')
+                        .replace(/[^a-z0-9]/g, '')
+                        .trim();
+                };
+
+                const isTeamMatch = (nameA, nameB) => {
+                    if (!nameA || !nameB) return false;
+                    const aRaw = String(nameA).toLowerCase().trim();
+                    const bRaw = String(nameB).toLowerCase().trim();
+                    if (aRaw === bRaw) return true;
+                    const aNorm = normalizeSquad(nameA);
+                    const bNorm = normalizeSquad(nameB);
+                    if (aNorm && bNorm && (aNorm === bNorm || aNorm.includes(bNorm) || bNorm.includes(aNorm))) return true;
+                    return false;
+                };
+
+                const isEventMatch = (slugA, slugB) => {
+                    if (!slugA || !slugB) return false;
+                    const a = String(slugA).toLowerCase().replace(/[^a-z0-9]/g, '');
+                    const b = String(slugB).toLowerCase().replace(/[^a-z0-9]/g, '');
+                    return a === b || a.includes(b) || b.includes(a);
+                };
 
                 let matchedTeam = null;
 
-                if (targetEvent && targetTeamName) {
-                    matchedTeam = allTeamAssignments.find(t => 
-                        t.eventSlug && t.eventSlug.toLowerCase() === targetEvent.toLowerCase() &&
-                        t.teamName && t.teamName.toLowerCase() === targetTeamName.toLowerCase()
-                    );
+                // 1. Match both event and team name (checking user's assigned teams first)
+                if (targetTeamName && targetEvent) {
+                    matchedTeam = myTeams.find(t => isEventMatch(t.eventSlug, targetEvent) && isTeamMatch(t.teamName, targetTeamName))
+                               || allTeamAssignments.find(t => isEventMatch(t.eventSlug, targetEvent) && isTeamMatch(t.teamName, targetTeamName));
                 }
 
+                // 2. Match team name alone
+                if (!matchedTeam && targetTeamName) {
+                    matchedTeam = myTeams.find(t => isTeamMatch(t.teamName, targetTeamName))
+                               || allTeamAssignments.find(t => isTeamMatch(t.teamName, targetTeamName));
+                }
+
+                // 3. Match event alone
                 if (!matchedTeam && targetEvent) {
-                    matchedTeam = allTeamAssignments.find(t => 
-                        t.eventSlug && t.eventSlug.toLowerCase() === targetEvent.toLowerCase()
-                    );
+                    matchedTeam = myTeams.find(t => isEventMatch(t.eventSlug, targetEvent))
+                               || allTeamAssignments.find(t => isEventMatch(t.eventSlug, targetEvent));
                 }
 
+                // 4. Match URL hash (#team-...)
                 if (!matchedTeam && window.location.hash && window.location.hash.startsWith('#team-')) {
                     const rawTarget = decodeURIComponent(window.location.hash.replace('#team-', '')).toLowerCase();
-                    matchedTeam = allTeamAssignments.find(t => 
-                        (t.eventSlug && t.eventSlug.toLowerCase() === rawTarget) || 
-                        (`${t.eventSlug}-${t.teamName}`.toLowerCase() === rawTarget)
+                    matchedTeam = myTeams.find(t => 
+                        isEventMatch(t.eventSlug, rawTarget) || 
+                        isTeamMatch(t.teamName, rawTarget) ||
+                        isTeamMatch(`${t.eventSlug}-${t.teamName}`, rawTarget)
+                    ) || allTeamAssignments.find(t => 
+                        isEventMatch(t.eventSlug, rawTarget) || 
+                        isTeamMatch(t.teamName, rawTarget) ||
+                        isTeamMatch(`${t.eventSlug}-${t.teamName}`, rawTarget)
                     );
+                }
+
+                // 5. If user has exactly one assigned team and didn't manually navigate to dashboard, auto-open their team portal
+                const manualDashboard = (sessionStorage.getItem('gridup_manual_dashboard') === 'true') || (localStorage.getItem('gridup_manual_dashboard') === 'true');
+                if (!matchedTeam && !manualDashboard && myTeams.length === 1) {
+                    matchedTeam = myTeams[0];
                 }
 
                 // Render selection dashboard in background if matchedTeam exists, or show directly if not
@@ -5497,11 +5557,14 @@
                 if (matchedTeam) {
                     await loadTeamPortal(matchedTeam, targetTab);
                 } else if (targetEvent || targetTeamName) {
-                    // Clear stale session storage if team was not found
+                    // Clear stale session & local storage if team was not found
                     try {
                         sessionStorage.removeItem('gridup_active_event');
                         sessionStorage.removeItem('gridup_active_team');
                         sessionStorage.removeItem('gridup_active_tab');
+                        localStorage.removeItem('gridup_active_event');
+                        localStorage.removeItem('gridup_active_team');
+                        localStorage.removeItem('gridup_active_tab');
                     } catch (_) {}
                 }
 
