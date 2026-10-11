@@ -61,6 +61,29 @@ let appNotificationUnsub = null;
     } catch (e) { console.error("Cache Restore Error:", e); }
 })();
 
+// --- SECURITY SANITIZERS ---
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function sanitizeHttpUrl(url) {
+    if (!url || typeof url !== 'string') return '';
+    const trimmed = url.trim();
+    try {
+        const parsed = new URL(trimmed, window.location.origin);
+        if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+            return parsed.href;
+        }
+    } catch (_) {}
+    return '';
+}
+
 // --- GLOBAL STYLES FOR SOCIALS ---
 if (typeof document !== 'undefined' && !document.getElementById('social-styles')) {
     const style = document.createElement('style');
@@ -560,18 +583,21 @@ async function loadRaceLineup(slug) {
                 const p = profileMap[name];
                 let socialHtml = `<span class="social-links-lineup">`;
                 if (p) {
-                    if (p.twitchUrl) {
-                        socialHtml += `<a href="${p.twitchUrl}" target="_blank" title="Watch on Twitch"><span class="live-pulse"></span><img src="https://cdn-icons-png.flaticon.com/512/5968/5968819.png" class="social-icon-sm"></a>`;
+                    const twitch = sanitizeHttpUrl(p.twitchUrl);
+                    const tiktok = sanitizeHttpUrl(p.tiktokUrl);
+                    const youtube = sanitizeHttpUrl(p.youtubeUrl);
+                    if (twitch) {
+                        socialHtml += `<a href="${twitch}" target="_blank" rel="noopener noreferrer" title="Watch on Twitch"><span class="live-pulse"></span><img src="https://cdn-icons-png.flaticon.com/512/5968/5968819.png" class="social-icon-sm" alt="Twitch"></a>`;
                     }
-                    if (p.tiktokUrl) {
-                        socialHtml += `<a href="${p.tiktokUrl}" target="_blank" title="Follow on TikTok"><img src="https://cdn-icons-png.flaticon.com/512/3046/3046124.png" class="social-icon-sm"></a>`;
+                    if (tiktok) {
+                        socialHtml += `<a href="${tiktok}" target="_blank" rel="noopener noreferrer" title="Follow on TikTok"><img src="https://cdn-icons-png.flaticon.com/512/3046/3046124.png" class="social-icon-sm" alt="TikTok"></a>`;
                     }
-                    if (p.youtubeUrl) {
-                        socialHtml += `<a href="${p.youtubeUrl}" target="_blank" title="Subscribe on YouTube"><img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" class="social-icon-sm"></a>`;
+                    if (youtube) {
+                        socialHtml += `<a href="${youtube}" target="_blank" rel="noopener noreferrer" title="Subscribe on YouTube"><img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" class="social-icon-sm" alt="YouTube"></a>`;
                     }
                 }
                 socialHtml += `</span>`;
-                return `${name}${socialHtml}`;
+                return `${escapeHtml(name)}${socialHtml}`;
             };
 
             const searchRoot = document.getElementById('confirmed-lineup') || document.body;
@@ -601,7 +627,7 @@ async function loadRaceLineup(slug) {
                     standardTeams.forEach(name => {
                         html += `
                             <div class="lineup-item" style="margin-top: 1rem;">
-                                <span style="color: var(--primary); font-weight: 600;">${name}</span>
+                                <span style="color: var(--primary); font-weight: 600;">${escapeHtml(name)}</span>
                             </div>
                         `;
                     });
@@ -611,8 +637,8 @@ async function loadRaceLineup(slug) {
                     teams.forEach(team => {
                         html += `
                             <div class="lineup-item" style="margin-top: 1rem;">
-                                <span style="color: var(--primary); font-weight: 600;">${team.name}</span><br>
-                                <span style="font-size: 0.9rem; color: var(--text-muted);">${team.car_class || ""}</span>
+                                <span style="color: var(--primary); font-weight: 600;">${escapeHtml(team.name)}</span><br>
+                                <span style="font-size: 0.9rem; color: var(--text-muted);">${escapeHtml(team.car_class || "")}</span>
                             </div>
                             <ul style="list-style: none; margin-top: 0.5rem; padding-left: 1rem; border-left: 2px solid var(--primary);">
                         `;

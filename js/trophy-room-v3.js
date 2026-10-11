@@ -33,6 +33,31 @@ async function initTrophyRoom() {
     }, 30000);
 }
 
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function sanitizeUrl(url) {
+    if (!url || typeof url !== 'string') return '#';
+    const trimmed = url.trim();
+    if (trimmed.startsWith('/') || trimmed.startsWith('./') || trimmed.startsWith('../')) {
+        return trimmed.replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+    try {
+        const parsed = new URL(trimmed, window.location.origin);
+        if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+            return parsed.href.replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+        }
+    } catch (_) {}
+    return '#';
+}
+
 /**
  * Safely parse any timestamp representation
  */
@@ -965,14 +990,15 @@ function renderFeaturedPodiums() {
     container.innerHTML = featuredItems.map((item, idx) => {
         const posClass = item.position === 1 ? 'pos-1 gold' : (item.position === 2 ? 'pos-2 silver' : 'pos-3 bronze');
         const posSup = item.position === 1 ? 'ST' : (item.position === 2 ? 'ND' : 'RD');
-        const driversStr = Array.isArray(item.drivers) ? item.drivers.join(' / ') : item.drivers;
-        const targetUrl = item.source || getEventTargetUrl(item.eventId, item.event);
+        const rawDrivers = Array.isArray(item.drivers) ? item.drivers.join(' / ') : item.drivers;
+        const driversStr = escapeHtml(rawDrivers);
+        const targetUrl = sanitizeUrl(item.source || getEventTargetUrl(item.eventId, item.event));
 
         return `
             <div class="featured-card ${posClass}" data-index="${idx}" style="cursor: pointer;" onclick="window.location.href='${targetUrl}'" title="View official event details">
                 <div class="card-glow"></div>
                 <div class="featured-img-container">
-                    <img src="${item.image}" alt="${item.positionLabel} Trophy" class="featured-img" loading="lazy">
+                    <img src="${sanitizeUrl(item.image)}" alt="${escapeHtml(item.positionLabel)} Trophy" class="featured-img" loading="lazy">
                     <div class="featured-img-gradient"></div>
                     <div class="featured-pos-watermark">
                         <span class="pos-num">${item.position}</span>
@@ -985,18 +1011,18 @@ function renderFeaturedPodiums() {
 
                 <div class="featured-body">
                     <div class="featured-meta-header">
-                        <div class="featured-series">${item.teamName}</div>
-                        <div class="featured-round">${item.event}</div>
+                        <div class="featured-series">${escapeHtml(item.teamName)}</div>
+                        <div class="featured-round">${escapeHtml(item.event)}</div>
                     </div>
 
                     <div class="featured-specs">
                         <div class="spec-row">
                             <svg class="spec-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                            <span class="spec-text">${item.date || 'Official Event'}</span>
+                            <span class="spec-text">${escapeHtml(item.date || 'Official Event')}</span>
                         </div>
                         <div class="spec-row">
                             <svg class="spec-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 17h14M5 12h14M5 7h14"/></svg>
-                            <span class="spec-text">${item.car}</span>
+                            <span class="spec-text">${escapeHtml(item.car)}</span>
                         </div>
                         <div class="spec-row">
                             <svg class="spec-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -1119,22 +1145,23 @@ function renderPastPodiums() {
                     <tbody>
                         ${items.map(item => {
                             const posClass = item.position === 1 ? 'gold' : (item.position === 2 ? 'silver' : 'bronze');
-                            const driversStr = Array.isArray(item.drivers) ? item.drivers.join(', ') : item.drivers;
-                            const targetUrl = item.source || getEventTargetUrl(item.eventId, item.event);
+                            const rawDrivers = Array.isArray(item.drivers) ? item.drivers.join(', ') : item.drivers;
+                            const driversStr = escapeHtml(rawDrivers);
+                            const targetUrl = sanitizeUrl(item.source || getEventTargetUrl(item.eventId, item.event));
                             return `
                                 <tr class="trophy-list-row ${posClass}" style="cursor: pointer;" onclick="window.location.href='${targetUrl}'" title="View official event details">
                                     <td class="col-pos">
-                                        <div class="pos-badge ${posClass}">${item.finish}</div>
+                                        <div class="pos-badge ${posClass}">${escapeHtml(item.finish)}</div>
                                     </td>
                                     <td class="col-event">
-                                        <strong>${item.event}</strong>
-                                        <span>${item.teamName}</span>
+                                        <strong>${escapeHtml(item.event)}</strong>
+                                        <span>${escapeHtml(item.teamName)}</span>
                                     </td>
-                                    <td class="col-date">${item.date}</td>
-                                    <td class="col-car">${item.car}</td>
-                                    <td class="col-qualy">${item.qualy}</td>
+                                    <td class="col-date">${escapeHtml(item.date)}</td>
+                                    <td class="col-car">${escapeHtml(item.car)}</td>
+                                    <td class="col-qualy">${escapeHtml(item.qualy)}</td>
                                     <td class="col-drivers">${driversStr}</td>
-                                    <td class="col-track">${item.trackName}</td>
+                                    <td class="col-track">${escapeHtml(item.trackName)}</td>
                                 </tr>
                             `;
                         }).join('')}
@@ -1148,31 +1175,32 @@ function renderPastPodiums() {
     // Grid View
     container.innerHTML = items.map(item => {
         const posClass = item.position === 1 ? 'pos-1 gold' : (item.position === 2 ? 'pos-2 silver' : 'pos-3 bronze');
-        const driversStr = Array.isArray(item.drivers) ? item.drivers.join(' / ') : item.drivers;
-        const targetUrl = item.source || getEventTargetUrl(item.eventId, item.event);
+        const rawDrivers = Array.isArray(item.drivers) ? item.drivers.join(' / ') : item.drivers;
+        const driversStr = escapeHtml(rawDrivers);
+        const targetUrl = sanitizeUrl(item.source || getEventTargetUrl(item.eventId, item.event));
 
         return `
             <div class="past-card ${posClass}" style="cursor: pointer;" onclick="window.location.href='${targetUrl}'" title="View official event details">
                 <div class="past-card-header">
-                    <div class="past-pos-badge ${posClass}">${item.finish}</div>
+                    <div class="past-pos-badge ${posClass}">${escapeHtml(item.finish)}</div>
                     <div class="past-card-img-wrap">
-                        <img src="${item.image}" alt="${item.positionLabel} Trophy" class="past-img" loading="lazy">
+                        <img src="${sanitizeUrl(item.image)}" alt="${escapeHtml(item.positionLabel)} Trophy" class="past-img" loading="lazy">
                         <div class="past-img-overlay"></div>
                     </div>
                 </div>
 
                 <div class="past-card-body">
-                    <div class="past-series-title">${item.teamName}</div>
-                    <div class="past-event-title">${item.event}</div>
+                    <div class="past-series-title">${escapeHtml(item.teamName)}</div>
+                    <div class="past-event-title">${escapeHtml(item.event)}</div>
 
                     <div class="past-specs">
                         <div class="past-spec-line">
                             <svg class="spec-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                            <span>${item.date}</span>
+                            <span>${escapeHtml(item.date)}</span>
                         </div>
                         <div class="past-spec-line">
                             <svg class="spec-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 17h14M5 12h14M5 7h14"/></svg>
-                            <span>${item.car} (Qualy: ${item.qualy})</span>
+                            <span>${escapeHtml(item.car)} (Qualy: ${escapeHtml(item.qualy)})</span>
                         </div>
                         <div class="past-spec-line">
                             <svg class="spec-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>

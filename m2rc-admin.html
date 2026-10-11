@@ -390,7 +390,7 @@
             </select>
           </div>
           <p style="color:var(--sub);font-size:0.88rem;margin-bottom:1rem;background:rgba(0,0,0,0.3);padding:0.75rem;border-radius:8px;border-left:2px solid var(--purple);">"${p.description}"</p>
-          ${p.videoUrl?`<p style="margin-bottom:1rem;"><a href="${p.videoUrl}" target="_blank" style="color:var(--pl);font-size:0.75rem;">▶ View Video Evidence</a></p>`:''}
+          ${p.videoUrl?`<p style="margin-bottom:1rem;"><a rel="noopener noreferrer" href="${p.videoUrl}" target="_blank" style="color:var(--pl);font-size:0.75rem;">▶ View Video Evidence</a></p>`:''}
           <div class="form-group" style="margin-bottom:0.5rem;">
             <label>Official Steward Decision / Ruling</label>
             <textarea id="st-decision-${doc.id}" placeholder="Enter official penalty or ruling text...">${p.decision||''}</textarea>
