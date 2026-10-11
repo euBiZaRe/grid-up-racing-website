@@ -245,6 +245,19 @@ nav .container {
     color: #ffffff;
 }
 
+.nav-links a:has(img) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0;
+}
+
+.nav-links a:has(img) img,
+.nav-links a img {
+    display: block;
+    margin: 0 auto;
+}
+
 .nav-links a.active::after,
 .nav-links a:hover::after {
     content: '';
