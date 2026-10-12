@@ -1820,6 +1820,17 @@
                     let gearText = gearRaw === 0 ? "N" : gearRaw === -1 ? "R" : (gearRaw !== undefined && gearRaw !== null ? gearRaw : "N");
                     let displayRpm = (isDriverSpectating && targetDriver && targetDriver.rpm !== undefined) ? Math.round(targetDriver.rpm) : (tel.rpm || 0);
 
+                    let displayPos = "P-";
+                    if (targetDriver) {
+                        displayPos = targetDriver.classPos ? `P${targetDriver.classPos}` : (targetDriver.pos ? `P${targetDriver.pos}` : "P-");
+                    } else if (tel.position) {
+                        displayPos = `P${tel.position}`;
+                    }
+
+                    // Delta Timing to Selected Driver's Fastest Lap
+                    const targetBestLap = (targetDriver && targetDriver.bestLap > 15) ? targetDriver.bestLap : (tel.bestLap > 15 ? tel.bestLap : 0);
+                    const targetLastLap = (targetDriver && targetDriver.lastLap > 15) ? targetDriver.lastLap : (tel.lastLap > 15 ? tel.lastLap : 0);
+
                     let displayFuel = (isDriverSpectating && targetDriver && targetDriver.fuel !== undefined) ? targetDriver.fuel : (tel.fuel || 0);
                     let fuelFormatted = useImperial ? ((displayFuel * 0.264172).toFixed(1)) : displayFuel.toFixed(1);
                     let fuelUnit = useImperial ? "gal" : "L";
@@ -1911,17 +1922,6 @@
                             minsRemainingDisplay = Math.round((lapsRemaining * lapTimeSec) / 60);
                         }
                     }
-
-                    let displayPos = "P-";
-                    if (targetDriver) {
-                        displayPos = targetDriver.classPos ? `P${targetDriver.classPos}` : (targetDriver.pos ? `P${targetDriver.pos}` : "P-");
-                    } else if (tel.position) {
-                        displayPos = `P${tel.position}`;
-                    }
-
-                    // Delta Timing to Selected Driver's Fastest Lap
-                    const targetBestLap = (targetDriver && targetDriver.bestLap > 15) ? targetDriver.bestLap : (tel.bestLap > 15 ? tel.bestLap : 0);
-                    const targetLastLap = (targetDriver && targetDriver.lastLap > 15) ? targetDriver.lastLap : (tel.lastLap > 15 ? tel.lastLap : 0);
 
                     let deltaVal = null;
                     let deltaDisplay = "--";
