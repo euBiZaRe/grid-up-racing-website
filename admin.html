@@ -3826,7 +3826,7 @@ body.meeting-mode-active .btn-summary-confirm {
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
-    <script defer src="js/auth.js?v=11"></script>
+    <script defer src="js/auth.js?v=13"></script>
     <script defer src="script.js?v=24"></script>
     <script defer src="js/stint-planner.js?v=2"></script>
     <script>
@@ -3836,9 +3836,9 @@ body.meeting-mode-active .btn-summary-confirm {
             const list = document.getElementById('claims-list');
             if (!list) return;
 
-            if (!db) {
-                console.error("Admin: Firestore 'db' is NOT INITIALIZED!");
-                list.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #ff0099;">Error: Database connection failed. Please refresh.</td></tr>';
+            const database = (typeof db !== 'undefined' && db) ? db : (typeof window.db !== 'undefined' ? window.db : null);
+            if (!database) {
+                console.warn("loadClaims: Database not ready yet, will retry when ready");
                 return;
             }
 
@@ -4017,6 +4017,11 @@ body.meeting-mode-active .btn-summary-confirm {
         }
         const _adminTabLoadedTime = {};
         function shouldReloadAdminTab(tab, force = false, ttlMs = 45000) {
+            const database = (typeof db !== 'undefined' && db) ? db : (typeof window.db !== 'undefined' ? window.db : null);
+            if (!database) {
+                // Database not ready yet: do not record cache timestamp so it will reload immediately once ready
+                return false;
+            }
             if (force) {
                 _adminTabLoadedTime[tab] = Date.now();
                 return true;
@@ -7017,7 +7022,7 @@ body.meeting-mode-active .btn-summary-confirm {
                 const currentHash = (window.location.hash ? window.location.hash.replace('#', '').trim() : '');
                 const validTabs = ['applications', 'claims', 'races', 'admins', 'availability', 'roster', 'events', 'leagues', 'race-results', 'streams', 'reports', 'm2rc-schedule', 'm2rc-results', 'm2rc-stewarding', 'm2rc-drivers', 'telemetry-teams'];
                 const targetTab = validTabs.includes(currentHash) ? currentHash : 'applications';
-                if (typeof switchTab === 'function') switchTab(targetTab);
+                if (typeof switchTab === 'function') switchTab(targetTab, true);
             } else {
                 if (adminHub) adminHub.style.display = 'none';
                 if (accessDenied) accessDenied.style.display = 'block';
@@ -7040,6 +7045,24 @@ body.meeting-mode-active .btn-summary-confirm {
             window.onAuthReady = onAuthReady;
         }
 
+        // Automatic retry loop to load tab data once Firestore db finishes initializing
+        let _adminInitialDataLoaded = false;
+        function ensureInitialAdminDataLoaded() {
+            if (_adminInitialDataLoaded) return;
+            const database = (typeof db !== 'undefined' && db) ? db : (typeof window.db !== 'undefined' ? window.db : null);
+            if (database) {
+                _adminInitialDataLoaded = true;
+                const currentHash = (window.location.hash ? window.location.hash.replace('#', '').trim() : '');
+                const validTabs = ['applications', 'claims', 'races', 'admins', 'availability', 'roster', 'events', 'leagues', 'race-results', 'streams', 'reports', 'm2rc-schedule', 'm2rc-results', 'm2rc-stewarding', 'm2rc-drivers', 'telemetry-teams'];
+                const targetTab = validTabs.includes(currentHash) ? currentHash : 'applications';
+                if (typeof switchTab === 'function') {
+                    switchTab(targetTab, true);
+                }
+            } else {
+                setTimeout(ensureInitialAdminDataLoaded, 100);
+            }
+        }
+
         // Self-trigger in case auth already initialized before this script block evaluated
         (function checkInitialAdminAuth() {
             try {
@@ -7053,7 +7076,13 @@ body.meeting-mode-active .btn-summary-confirm {
                 const isGlobalAdmin = (typeof IS_ADMIN !== 'undefined' && IS_ADMIN === true);
 
                 if (isKnownAdmin || isCachedAdmin || isGlobalAdmin) {
-                    onAuthEnriched(activeUser, { isAdmin: true, isVerified: cached.isVerified || false });
+                    const adminHub = document.getElementById('admin-hub');
+                    const accessDenied = document.getElementById('access-denied');
+                    const userInfo = document.getElementById('admin-user-info');
+                    if (adminHub) adminHub.style.display = 'block';
+                    if (accessDenied) accessDenied.style.display = 'none';
+                    if (userInfo && activeUser) userInfo.textContent = `Logged in as Admin: ${activeUser.displayName || activeUser.email || activeUser.uid}`;
+                    ensureInitialAdminDataLoaded();
                 }
             } catch (e) {
                 console.warn("Initial admin auth check error:", e);
@@ -7849,13 +7878,21 @@ body.meeting-mode-active .btn-summary-confirm {
             const list = document.getElementById('applications-list');
             if (!list) return;
 
-            if (!db) {
-                list.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #ff0099;">Error: Database connection failed.</td></tr>';
+            const database = (typeof db !== 'undefined' && db) ? db : (typeof window.db !== 'undefined' ? window.db : null);
+            if (!database) {
+                console.warn("loadApplications: Database not ready yet, will retry when ready");
                 return;
             }
 
             try {
-                const snapshot = await db.collection("applications").orderBy("timestamp", "desc").get();
+                let snapshot;
+                try {
+                    snapshot = await database.collection("applications").orderBy("timestamp", "desc").get();
+                } catch (orderErr) {
+                    console.warn("Ordered applications query failed, falling back to unordered query:", orderErr);
+                    snapshot = await database.collection("applications").get();
+                }
+
                 if (snapshot.empty) {
                     list.innerHTML = `
                         <tr>
@@ -7874,9 +7911,18 @@ body.meeting-mode-active .btn-summary-confirm {
                 let html = '';
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    const date = data.timestamp ? data.timestamp.toDate().toLocaleDateString() : 'Unknown';
-                    const exp = data.experience ? data.experience.toUpperCase() : 'N/A';
-                    const loc = data.location ? data.location.toUpperCase() : 'N/A';
+                    let date = 'Unknown';
+                    if (data.timestamp) {
+                        try {
+                            date = typeof data.timestamp.toDate === 'function' 
+                                ? data.timestamp.toDate().toLocaleDateString() 
+                                : new Date(data.timestamp).toLocaleDateString();
+                        } catch (_) {
+                            date = String(data.timestamp);
+                        }
+                    }
+                    const exp = (data.experience || 'N/A').toUpperCase();
+                    const loc = (data.location || 'N/A').toUpperCase();
                     const status = data.status || 'pending';
                     
                     let statusColor = 'var(--text-muted)';
@@ -7885,18 +7931,23 @@ body.meeting-mode-active .btn-summary-confirm {
                     if (status === 'approved') statusColor = '#00ff88';
                     if (status === 'denied') statusColor = '#ff3333';
 
+                    const safeId = (typeof escapeHtml === 'function') ? escapeHtml(doc.id) : doc.id;
+                    const safeName = (typeof escapeHtml === 'function') ? escapeHtml(data.iracingName || 'Unknown') : (data.iracingName || 'Unknown');
+                    const safeExp = (typeof escapeHtml === 'function') ? escapeHtml(exp) : exp;
+                    const safeLoc = (typeof escapeHtml === 'function') ? escapeHtml(loc) : loc;
+
                     html += `
                         <tr>
                             <td>
-                                <strong>${data.iracingName || 'Unknown'}</strong><br>
+                                <strong>${safeName}</strong><br>
                                 <span style="font-size: 0.7rem; color: var(--text-muted);">${date}</span>
                             </td>
-                            <td>${exp}</td>
-                            <td>${loc}</td>
+                            <td>${safeExp}</td>
+                            <td>${safeLoc}</td>
                             <td style="color: ${statusColor}; text-transform: uppercase; font-size: 0.8rem; font-weight: bold;">${status}</td>
                             <td>
-                                <button onclick="viewApplication('${doc.id}')" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; margin-right: 5px;">View Details</button>
-                                <button onclick="deleteApplication('${doc.id}')" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; border-color: #ff3333; color: #ff3333;">Delete</button>
+                                <button onclick="viewApplication('${safeId}')" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; margin-right: 5px;">View Details</button>
+                                <button onclick="deleteApplication('${safeId}')" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; border-color: #ff3333; color: #ff3333;">Delete</button>
                             </td>
                         </tr>
                     `;
