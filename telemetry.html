@@ -377,6 +377,55 @@
             color: #34d399 !important; /* Personal best lap */
         }
 
+        .metric-fuel {
+            position: relative;
+            border-color: rgba(56, 189, 248, 0.18);
+        }
+
+        .metric-fuel-rate-badge {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #38bdf8;
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            border-radius: 4px;
+            padding: 1px 5px;
+            letter-spacing: 0.02em;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+
+        .metric-fuel-sub {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-top: 0.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .fuel-ok {
+            color: #34d399 !important; /* Healthy fuel level */
+        }
+
+        .fuel-caution {
+            color: #f59e0b !important; /* Low fuel warning */
+        }
+
+        .fuel-critical {
+            color: #ef4444 !important; /* Critical fuel alarm */
+            animation: pulse-danger 0.8s infinite alternate;
+        }
+
+        @keyframes pulse-danger {
+            from { opacity: 1; transform: scale(1); }
+            to { opacity: 0.6; transform: scale(0.98); }
+        }
+
         .spectating-badge {
             display: inline-flex;
             align-items: center;
@@ -1121,6 +1170,7 @@
         let useImperial = localStorage.getItem('use_imperial') === 'true';
         let showPosOnMap = localStorage.getItem('show_pos_on_map') === 'true';
         let traceHistory = {};
+        let fuelTrackers = {};
 
 
         fetch('js/track-maps.json')
@@ -1640,6 +1690,7 @@
             // Clear previous team trace and map data immediately
             traceHistory = {};
             trackMapDrivers = {};
+            fuelTrackers = {};
             currentStreams = {};
             currentDrivers = {};
 
@@ -1773,6 +1824,94 @@
                     let fuelFormatted = useImperial ? ((displayFuel * 0.264172).toFixed(1)) : displayFuel.toFixed(1);
                     let fuelUnit = useImperial ? "gal" : "L";
 
+                    // Fuel Per-Lap Consumption & Laps Remaining Calculation
+                    const currentLapNum = (isDriverSpectating && targetDriver && typeof targetDriver.lap === 'number')
+                        ? targetDriver.lap
+                        : (typeof tel.lap === 'number' ? tel.lap : -1);
+
+                    const fuelTrackerKey = `${mid}_${targetDriver?.carIdx !== undefined ? targetDriver.carIdx : (tel.playerIdx !== undefined ? tel.playerIdx : 'player')}`;
+
+                    if (!fuelTrackers[fuelTrackerKey]) {
+                        fuelTrackers[fuelTrackerKey] = {
+                            lastLap: currentLapNum,
+                            lastFuel: displayFuel,
+                            burnHistory: []
+                        };
+                    }
+                    const fTracker = fuelTrackers[fuelTrackerKey];
+
+                    // Track fuel burn across completed racing laps
+                    if (currentLapNum > fTracker.lastLap && fTracker.lastLap > 0 && fTracker.lastFuel !== null && fTracker.lastFuel > 0 && displayFuel > 0) {
+                        const lapDelta = currentLapNum - fTracker.lastLap;
+                        const fuelBurned = fTracker.lastFuel - displayFuel;
+                        // Plausible consumption check: 0.3L to 15L per lap (ignores refuelling / resets)
+                        if (fuelBurned > 0.3 && fuelBurned < (15.0 * lapDelta)) {
+                            fTracker.burnHistory.push(fuelBurned / lapDelta);
+                            if (fTracker.burnHistory.length > 5) {
+                                fTracker.burnHistory.shift();
+                            }
+                        }
+                        fTracker.lastLap = currentLapNum;
+                        fTracker.lastFuel = displayFuel;
+                    } else if (fTracker.lastLap === -1 || (displayFuel > (fTracker.lastFuel + 1.5))) {
+                        // Out-lap initialization or refuel in pit
+                        fTracker.lastLap = currentLapNum;
+                        fTracker.lastFuel = displayFuel;
+                    }
+
+                    // Fallback hierarchy for burn rate (in Liters)
+                    let avgBurnLiters = 0;
+                    let isEstimatedBurn = false;
+
+                    if (fTracker.burnHistory.length > 0) {
+                        avgBurnLiters = fTracker.burnHistory.reduce((a, b) => a + b, 0) / fTracker.burnHistory.length;
+                    } else if (typeof tel.fuel_per_lap === 'number' && tel.fuel_per_lap > 0.2) {
+                        avgBurnLiters = tel.fuel_per_lap;
+                    } else if (typeof session?.fuel_per_lap === 'number' && session.fuel_per_lap > 0.2) {
+                        avgBurnLiters = session.fuel_per_lap;
+                    } else {
+                        // Baseline road/GT3 consumption estimate until 1 full lap is completed
+                        avgBurnLiters = 3.2;
+                        isEstimatedBurn = true;
+                    }
+
+                    // Compute display values
+                    let burnRateDisplay = "--";
+                    let lapsRemainingDisplay = "--";
+                    let lapsColorClass = "fuel-ok";
+                    let minsRemainingDisplay = null;
+
+                    const burnRateUnit = useImperial ? "gal/lap" : "L/lap";
+                    const burnRateVal = useImperial ? (avgBurnLiters * 0.264172) : avgBurnLiters;
+
+                    if (displayFuel <= 0.05) {
+                        burnRateDisplay = `0.0 ${burnRateUnit}`;
+                        lapsRemainingDisplay = "0.0 Laps (Empty)";
+                        lapsColorClass = "fuel-critical";
+                    } else {
+                        const estPrefix = isEstimatedBurn ? "~" : "";
+                        burnRateDisplay = `${estPrefix}${burnRateVal.toFixed(2)} ${burnRateUnit}`;
+
+                        const lapsRemaining = displayFuel / Math.max(avgBurnLiters, 0.1);
+
+                        if (lapsRemaining <= 1.5) {
+                            lapsColorClass = "fuel-critical";
+                            lapsRemainingDisplay = `⚠️ ${estPrefix}${lapsRemaining.toFixed(1)} Laps Left`;
+                        } else if (lapsRemaining <= 3.5) {
+                            lapsColorClass = "fuel-caution";
+                            lapsRemainingDisplay = `${estPrefix}${lapsRemaining.toFixed(1)} Laps Left`;
+                        } else {
+                            lapsColorClass = "fuel-ok";
+                            lapsRemainingDisplay = `${estPrefix}${lapsRemaining.toFixed(1)} Laps Left`;
+                        }
+
+                        // Calculate estimated stint time if lap time is available
+                        const lapTimeSec = (targetLastLap > 15 ? targetLastLap : (targetBestLap > 15 ? targetBestLap : (tel.lastLap > 15 ? tel.lastLap : 0)));
+                        if (lapTimeSec > 15) {
+                            minsRemainingDisplay = Math.round((lapsRemaining * lapTimeSec) / 60);
+                        }
+                    }
+
                     let displayPos = "P-";
                     if (targetDriver) {
                         displayPos = targetDriver.classPos ? `P${targetDriver.classPos}` : (targetDriver.pos ? `P${targetDriver.pos}` : "P-");
@@ -1885,9 +2024,16 @@
                                             <span class="metric-title"><i data-lucide="zap" style="width: 12px; height: 12px;"></i> Gear</span>
                                             <div class="metric-val" style="color: #34d399;">${gearText} <span style="font-size: 0.65rem; font-weight: 500;">(${displayRpm} RPM)</span></div>
                                         </div>
-                                        <div class="metric-card">
-                                            <span class="metric-title"><i data-lucide="droplet" style="width: 12px; height: 12px;"></i> Fuel</span>
+                                        <div class="metric-card metric-fuel">
+                                            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                                <span class="metric-title"><i data-lucide="droplet" style="width: 12px; height: 12px;"></i> Fuel</span>
+                                                <span class="metric-fuel-rate-badge" title="Fuel consumption per lap">${burnRateDisplay}</span>
+                                            </div>
                                             <div class="metric-val">${fuelFormatted}<span>${fuelUnit}</span></div>
+                                            <div class="metric-fuel-sub">
+                                                <span class="${lapsColorClass}" title="Calculated laps remaining until empty">${lapsRemainingDisplay}</span>
+                                                ${minsRemainingDisplay !== null ? `<span style="opacity: 0.75; font-size: 0.6rem;" title="Estimated time remaining until empty">~${minsRemainingDisplay}m</span>` : ''}
+                                            </div>
                                         </div>
                                         <div class="metric-card">
                                             <span class="metric-title"><i data-lucide="check-circle-2" style="width: 12px; height: 12px;"></i> Position</span>
@@ -2348,13 +2494,17 @@
                 if (stintLapEl && primaryTel) {
                     const fuel = primaryTel.fuel || 0;
                     const lap = primaryTel.lap || 0;
-                    const burn = 3.2; // ~3.2L/lap
+                    const primaryTrackerKey = `${primaryMid}_${primaryTel.playerIdx !== undefined ? primaryTel.playerIdx : 'player'}`;
+                    const primaryTracker = fuelTrackers[primaryTrackerKey];
+                    const burn = (primaryTracker && primaryTracker.burnHistory.length > 0)
+                        ? (primaryTracker.burnHistory.reduce((a, b) => a + b, 0) / primaryTracker.burnHistory.length)
+                        : ((typeof primaryTel.fuel_per_lap === 'number' && primaryTel.fuel_per_lap > 0.2) ? primaryTel.fuel_per_lap : 3.2);
                     const lapsLeft = burn > 0 ? (fuel / burn) : 0;
                     const minsLeft = Math.round((lapsLeft * (primaryTel.lastLap || 90)) / 60);
 
                     stintLapEl.textContent = lap;
-                    stintFuelEl.textContent = `${fuel.toFixed(1)}L`;
-                    stintPitEl.textContent = `~${minsLeft}m`;
+                    stintFuelEl.textContent = useImperial ? `${(fuel * 0.264172).toFixed(1)}gal` : `${fuel.toFixed(1)}L`;
+                    stintPitEl.textContent = `~${minsLeft}m (${lapsLeft.toFixed(1)} Laps)`;
 
                     if (stintTagEl) {
                         stintTagEl.textContent = `DRIVER: ${primaryDriverName.toUpperCase()}`;

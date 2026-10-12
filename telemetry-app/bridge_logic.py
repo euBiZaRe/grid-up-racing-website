@@ -572,7 +572,8 @@ class TelemetryBridge:
                 self.last_lap_num = current_lap_num
                 self.last_fuel_level = fuel_current
 
-            laps_rem = int(fuel_current / max(sum(self.fuel_history)/len(self.fuel_history), 0.1)) if self.fuel_history else int(fuel_current / 3.0)
+            avg_consumption = round(sum(self.fuel_history) / len(self.fuel_history), 2) if self.fuel_history else 0.0
+            laps_rem = round(fuel_current / avg_consumption, 1) if avg_consumption > 0.05 else (round(fuel_current / 3.0, 1) if fuel_current > 0 else 0.0)
 
             # ABS Intervention
             is_abs = False
@@ -621,6 +622,8 @@ class TelemetryBridge:
                 'brake': target_brake,
                 'brake_applied': target_brake_applied,
                 'fuel': target_fuel,
+                'fuel_per_lap': avg_consumption,
+                'fuel_laps_rem': laps_rem,
                 'lap': target_lap,
                 'position': target_pos,
                 'track_temp': round(self.get_safe('TrackTemp', 0), 1),
@@ -683,7 +686,7 @@ class TelemetryBridge:
 
     def simulate_telemetry(self):
         telemetry = {
-            'speed': 0, 'rpm': 0, 'gear': 0, 'throttle': 0, 'brake': 0, 'fuel': 0, 'lap': 0, 'position': 0, 'is_live': False, 'v': BRIDGE_VERSION
+            'speed': 0, 'rpm': 0, 'gear': 0, 'throttle': 0, 'brake': 0, 'fuel': 0, 'fuel_per_lap': 0.0, 'fuel_laps_rem': 0.0, 'lap': 0, 'position': 0, 'is_live': False, 'v': BRIDGE_VERSION
         }
         session = {
             'active': False, 'sid': -1, 'trackName': 'WAITING FOR SIMULATION...', 'is_live': False
