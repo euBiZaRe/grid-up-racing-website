@@ -2802,6 +2802,28 @@ body.meeting-mode-active .btn-summary-confirm {
                         </div>
                     </div>
 
+                    <!-- Emergency Maintenance Mode Panel (Master Admin Only) -->
+                    <div id="master-maint-panel" class="glass" style="padding: 1.5rem; margin-bottom: 2rem; border: 1px solid rgba(239,68,68,0.3); display: none;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+                            <div>
+                                <h3 style="color: #ef4444; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px;">
+                                    <span>🛡️ Emergency Maintenance Mode</span>
+                                    <span id="maint-panel-badge" style="font-size: 0.72rem; padding: 2px 10px; border-radius: 999px; background: rgba(16,185,129,0.2); color: #10b981; border: 1px solid #10b981; font-weight: 800;">OFF</span>
+                                </h3>
+                                <p style="color: var(--text-muted); font-size: 0.8rem; line-height: 1.5; margin: 0 0 0.5rem 0; max-width: 600px;">
+                                    When enabled, public visitors and team admins see the Emergency Maintenance screen. 
+                                    <strong>Only you (Master Admin)</strong> have unrestricted access. 
+                                    Authorized testers can enter the site with the password: <code style="color: var(--primary); background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 4px; font-weight: 700;">griduptest</code>
+                                </p>
+                            </div>
+                            <div>
+                                <button id="btn-toggle-maint" onclick="toggleEmergencyMaintenance()" class="btn" style="background: #ef4444; color: #fff; font-weight: 800; font-size: 0.85rem; padding: 0.75rem 1.5rem; box-shadow: 0 0 20px rgba(239,68,68,0.3);">
+                                    Enable Emergency Mode
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Admins List -->
                     <div class="glass" style="padding: 1.5rem;">
                         <h3 style="color: var(--primary); margin-bottom: 2rem;">Current Team Admins</h3>
@@ -4708,6 +4730,9 @@ body.meeting-mode-active .btn-summary-confirm {
         }
 
         async function loadAdmins() {
+            if (typeof checkMaintenanceStatusInAdmin === 'function') {
+                checkMaintenanceStatusInAdmin();
+            }
             const list = document.getElementById('admins-list');
             if (!list) return;
             list.innerHTML = '<tr><td colspan="2" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Loading admins...</td></tr>';
@@ -4906,9 +4931,79 @@ body.meeting-mode-active .btn-summary-confirm {
             }
         }
 
+        // ==========================================
+        // EMERGENCY MAINTENANCE MODE CONTROLLER (Master Admin)
+        // ==========================================
+        async function checkMaintenanceStatusInAdmin() {
+            const panel = document.getElementById('master-maint-panel');
+            const badge = document.getElementById('maint-panel-badge');
+            const btn = document.getElementById('btn-toggle-maint');
+            if (!panel || !badge || !btn) return;
 
+            const masterUid = 'B0t4f4nqqpZIQKpT8Ed97xka5gM2';
+            const currentUid = (window.auth && window.auth.currentUser) ? window.auth.currentUser.uid : null;
+            if (currentUid === masterUid) {
+                panel.style.display = 'block';
+            } else {
+                panel.style.display = 'none';
+                return;
+            }
 
+            try {
+                const doc = await db.collection("settings").doc("maintenance").get();
+                const isActive = doc.exists && doc.data().active === true;
+                if (isActive) {
+                    badge.textContent = '🔴 EMERGENCY ACTIVE';
+                    badge.style.background = 'rgba(239,68,68,0.2)';
+                    badge.style.color = '#ef4444';
+                    badge.style.borderColor = '#ef4444';
+                    btn.textContent = 'Disable Maintenance Mode';
+                    btn.style.background = '#10b981';
+                    btn.style.boxShadow = '0 0 20px rgba(16,185,129,0.3)';
+                } else {
+                    badge.textContent = '🟢 NORMAL (OFF)';
+                    badge.style.background = 'rgba(16,185,129,0.2)';
+                    badge.style.color = '#10b981';
+                    badge.style.borderColor = '#10b981';
+                    btn.textContent = 'Enable Emergency Mode';
+                    btn.style.background = '#ef4444';
+                    btn.style.boxShadow = '0 0 20px rgba(239,68,68,0.3)';
+                }
+            } catch (err) {
+                console.warn("Could not check maintenance status:", err);
+            }
+        }
 
+        async function toggleEmergencyMaintenance() {
+            try {
+                const docRef = db.collection("settings").doc("maintenance");
+                const doc = await docRef.get();
+                const currentlyActive = doc.exists && doc.data().active === true;
+                const newStatus = !currentlyActive;
+                
+                if (newStatus) {
+                    if (!confirm("Are you sure you want to ACTIVATE EMERGENCY MAINTENANCE MODE?\n\n- All public visitors and team admins will see the maintenance screen.\n- Only you (Master Admin) can browse without restriction.\n- Other testers can enter with the password: griduptest")) return;
+                } else {
+                    if (!confirm("Are you sure you want to DEACTIVATE Maintenance Mode and make the site live for everyone?")) return;
+                }
+
+                await docRef.set({
+                    active: newStatus,
+                    emergency: true,
+                    password: 'griduptest',
+                    message: newStatus ? "We are currently performing emergency maintenance and security hardening. Access is restricted to authorized testing." : "",
+                    estimatedEnd: newStatus ? "Shortly" : "",
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedBy: (auth.currentUser ? auth.currentUser.uid : 'MasterAdmin')
+                }, { merge: true });
+
+                alert(newStatus ? "Emergency Maintenance Mode is now ACTIVE!" : "Maintenance Mode has been DEACTIVATED. Site is now live for all visitors.");
+                checkMaintenanceStatusInAdmin();
+            } catch (e) {
+                console.error("Error toggling maintenance mode:", e);
+                alert("Failed to update maintenance mode: " + e.message);
+            }
+        }
 
         // ==========================================
         // TEAM BUILDER STUDIO & CAR ELIGIBILITY ENGINE
@@ -7087,6 +7182,9 @@ body.meeting-mode-active .btn-summary-confirm {
                 const validTabs = ['applications', 'claims', 'races', 'admins', 'availability', 'roster', 'events', 'leagues', 'race-results', 'streams', 'reports', 'm2rc-schedule', 'm2rc-results', 'm2rc-stewarding', 'm2rc-drivers', 'telemetry-teams'];
                 const targetTab = validTabs.includes(currentHash) ? currentHash : 'applications';
                 if (typeof switchTab === 'function') switchTab(targetTab, true);
+                if (typeof checkMaintenanceStatusInAdmin === 'function') {
+                    checkMaintenanceStatusInAdmin();
+                }
             } else {
                 if (adminHub) adminHub.style.display = 'none';
                 if (accessDenied) accessDenied.style.display = 'block';

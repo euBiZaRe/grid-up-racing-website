@@ -201,6 +201,9 @@ function initAuth() {
             // 3. Background Enrichment (Admin/Verification)
             enrichAuthData(user);
 
+            // Re-evaluate maintenance mode now that user identity is confirmed
+            checkPublicMaintenanceMode();
+
             // 4. Watch for application notifications
             watchApplicationNotification(user);
         } else {
@@ -212,6 +215,7 @@ function initAuth() {
             PORTAL_HAS_UNREAD = false;
             localStorage.removeItem('gridup_auth_cache');
             updateAuthUI(null);
+            checkPublicMaintenanceMode();
             handleLogOutRedirect();
         }
 
@@ -717,53 +721,141 @@ async function checkPublicMaintenanceMode() {
         const maintDoc = await db.collection("settings").doc("maintenance").get();
         if (maintDoc.exists && maintDoc.data().active === true) {
             window.GRIDUP_MAINTENANCE_ACTIVE = true;
-            const cached = JSON.parse(localStorage.getItem('gridup_auth_cache') || '{}');
-            const uid = cached.user ? cached.user.uid : null;
-            if (uid && KNOWN_ADMIN_UIDS.includes(uid)) {
-                showAdminMaintenanceNotice();
+            
+            // 1. Check if user has entered the test access password 'griduptest'
+            if (sessionStorage.getItem('gridup_maint_unlock') === 'true' || localStorage.getItem('gridup_maint_unlock') === 'true') {
+                showUnlockedMaintenanceNotice();
+                const existingOverlay = document.getElementById('gridup-maintenance-overlay');
+                if (existingOverlay) existingOverlay.remove();
+                document.body.style.overflow = '';
                 return;
             }
+
+            // 2. Check if current user is Master Admin (only Master Admin can see site without password)
+            const cached = JSON.parse(localStorage.getItem('gridup_auth_cache') || '{}');
+            const currentUid = (window.auth && window.auth.currentUser) ? window.auth.currentUser.uid : (cached.user ? cached.user.uid : null);
+            if (currentUid && currentUid === MASTER_ADMIN) {
+                showAdminMaintenanceNotice(true);
+                const existingOverlay = document.getElementById('gridup-maintenance-overlay');
+                if (existingOverlay) existingOverlay.remove();
+                document.body.style.overflow = '';
+                return;
+            }
+
+            // 3. Display Emergency Maintenance screen with password entry
             showMaintenanceScreen(maintDoc.data());
+        } else {
+            window.GRIDUP_MAINTENANCE_ACTIVE = false;
+            const overlay = document.getElementById('gridup-maintenance-overlay');
+            if (overlay) overlay.remove();
+            const notice = document.getElementById('admin-maint-notice');
+            if (notice) notice.remove();
+            const unlockNotice = document.getElementById('maint-unlocked-notice');
+            if (unlockNotice) unlockNotice.remove();
+            document.body.style.overflow = '';
         }
     } catch (_) {}
 }
 
-function showAdminMaintenanceNotice() {
+function showAdminMaintenanceNotice(isMaster = false) {
     if (document.getElementById('admin-maint-notice')) return;
     const banner = document.createElement('div');
     banner.id = 'admin-maint-notice';
-    banner.style.cssText = 'position:fixed;bottom:16px;right:16px;z-index:99999;background:rgba(239,68,68,0.95);backdrop-filter:blur(10px);border:1px solid #ff4455;color:#fff;padding:8px 16px;border-radius:8px;font-size:0.75rem;font-weight:700;box-shadow:0 4px 20px rgba(0,0,0,0.5);display:flex;align-items:center;gap:8px;';
-    banner.innerHTML = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#fff;"></span> MAINTENANCE MODE ACTIVE (Admin Bypass Active)';
+    banner.style.cssText = 'position:fixed;bottom:16px;right:16px;z-index:99999;background:rgba(239,68,68,0.95);backdrop-filter:blur(10px);border:1px solid #ff4455;color:#fff;padding:8px 16px;border-radius:8px;font-size:0.75rem;font-weight:700;box-shadow:0 4px 20px rgba(0,0,0,0.5);display:flex;align-items:center;gap:8px;font-family:system-ui,-apple-system,sans-serif;';
+    banner.innerHTML = `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#fff;"></span> EMERGENCY MAINTENANCE ACTIVE (${isMaster ? 'Master Admin Bypass' : 'Admin Bypass'})`;
     document.body.appendChild(banner);
 }
 
+function showUnlockedMaintenanceNotice() {
+    if (document.getElementById('maint-unlocked-notice')) return;
+    const banner = document.createElement('div');
+    banner.id = 'maint-unlocked-notice';
+    banner.style.cssText = 'position:fixed;bottom:16px;right:16px;z-index:99999;background:rgba(16,185,129,0.95);backdrop-filter:blur(10px);border:1px solid #10b981;color:#fff;padding:8px 16px;border-radius:8px;font-size:0.75rem;font-weight:700;box-shadow:0 4px 20px rgba(0,0,0,0.5);display:flex;align-items:center;gap:12px;font-family:system-ui,-apple-system,sans-serif;';
+    banner.innerHTML = `
+        <span>🔑 MAINTENANCE PASSWORD BYPASS ACTIVE ("griduptest")</span>
+        <button onclick="window.relockMaintenance()" style="background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.5);color:#fff;border-radius:4px;padding:2px 8px;font-size:0.7rem;cursor:pointer;font-weight:700;">Lock Site</button>
+    `;
+    document.body.appendChild(banner);
+}
+
+window.unlockMaintenanceWithPassword = function() {
+    const input = document.getElementById('maint-password-input');
+    const err = document.getElementById('maint-password-error');
+    if (!input) return;
+    const val = input.value.trim();
+    if (val === 'griduptest') {
+        sessionStorage.setItem('gridup_maint_unlock', 'true');
+        localStorage.setItem('gridup_maint_unlock', 'true');
+        const overlay = document.getElementById('gridup-maintenance-overlay');
+        if (overlay) overlay.remove();
+        document.body.style.overflow = '';
+        showUnlockedMaintenanceNotice();
+    } else {
+        if (err) {
+            err.style.display = 'block';
+            err.textContent = 'Incorrect access password. Please try again.';
+        }
+        input.value = '';
+        input.focus();
+    }
+};
+
+window.relockMaintenance = function() {
+    sessionStorage.removeItem('gridup_maint_unlock');
+    localStorage.removeItem('gridup_maint_unlock');
+    const notice = document.getElementById('maint-unlocked-notice');
+    if (notice) notice.remove();
+    checkPublicMaintenanceMode();
+};
+
 function showMaintenanceScreen(data = {}) {
-    // Never block login.html so admins can sign in to manage the site
+    // Never block login.html so Master Admin can log in
     if (window.location.pathname.endsWith('login.html')) return;
     
     let overlay = document.getElementById('gridup-maintenance-overlay');
     if (!overlay) {
         overlay = document.createElement('div');
         overlay.id = 'gridup-maintenance-overlay';
-        overlay.style.cssText = 'position:fixed;inset:0;z-index:999999;background:#060810;color:#f1f5f9;display:flex;align-items:center;justify-content:center;padding:2rem;font-family:system-ui,-apple-system,sans-serif;';
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:999999;background:#060810;color:#f1f5f9;display:flex;align-items:center;justify-content:center;padding:1.5rem;font-family:system-ui,-apple-system,sans-serif;overflow-y:auto;';
         document.body.appendChild(overlay);
     }
-    const message = data.message || "We are currently performing scheduled security updates and system maintenance. We'll be back online shortly.";
+    const message = data.message || "We are currently performing emergency maintenance and security hardening. Access is restricted to authorized testing.";
     const estimatedEnd = data.estimatedEnd || "Shortly";
+    
     overlay.innerHTML = `
-        <div style="max-width:540px;width:100%;text-align:center;background:rgba(255,255,255,0.03);border:1px solid rgba(0,207,255,0.25);border-radius:16px;padding:3rem 2rem;box-shadow:0 0 50px rgba(0,207,255,0.1);">
-            <div style="font-size:2.5rem;margin-bottom:1rem;">🛡️</div>
-            <h1 style="font-size:1.75rem;font-weight:800;letter-spacing:1px;margin-bottom:0.75rem;color:#00cfff;">SCHEDULED MAINTENANCE</h1>
-            <p style="color:#94a3b8;font-size:0.95rem;line-height:1.6;margin-bottom:1.5rem;">${escapeHtml(message)}</p>
-            <div style="display:inline-block;background:rgba(0,207,255,0.08);border:1px solid rgba(0,207,255,0.2);padding:6px 16px;border-radius:999px;font-size:0.78rem;font-weight:700;color:#00cfff;margin-bottom:2rem;">
+        <div style="max-width:520px;width:100%;text-align:center;background:rgba(15,23,42,0.95);border:1px solid rgba(0,207,255,0.3);border-radius:16px;padding:2.5rem 2rem;box-shadow:0 0 60px rgba(0,207,255,0.15);backdrop-filter:blur(20px);">
+            <div style="font-size:3rem;margin-bottom:0.75rem;">🛡️</div>
+            <h1 style="font-size:1.6rem;font-weight:900;letter-spacing:1px;margin-bottom:0.5rem;color:#00cfff;text-transform:uppercase;">Emergency Maintenance</h1>
+            <p style="color:#94a3b8;font-size:0.9rem;line-height:1.6;margin-bottom:1.25rem;">${escapeHtml(message)}</p>
+            <div style="display:inline-block;background:rgba(0,207,255,0.08);border:1px solid rgba(0,207,255,0.25);padding:5px 14px;border-radius:999px;font-size:0.75rem;font-weight:700;color:#00cfff;margin-bottom:1.75rem;">
                 Estimated Return: ${escapeHtml(estimatedEnd)}
             </div>
-            <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-                <a href="https://discord.gg/gridup" target="_blank" rel="noopener noreferrer" style="background:#5865F2;color:#fff;text-decoration:none;padding:0.6rem 1.4rem;border-radius:8px;font-size:0.82rem;font-weight:700;">Join Discord for Updates</a>
-                <a href="/login.html" style="background:rgba(255,255,255,0.06);color:#94a3b8;border:1px solid rgba(255,255,255,0.12);text-decoration:none;padding:0.6rem 1.4rem;border-radius:8px;font-size:0.82rem;font-weight:700;">Admin Login</a>
+
+            <!-- Password Access Form -->
+            <div style="background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:1.25rem;margin-bottom:1.5rem;text-align:left;">
+                <label for="maint-password-input" style="display:block;font-size:0.72rem;font-weight:700;color:#cbd5e1;text-transform:uppercase;letter-spacing:1px;margin-bottom:0.5rem;">
+                    🔑 Test / Staff Access Password
+                </label>
+                <form id="maint-pass-form" onsubmit="event.preventDefault(); window.unlockMaintenanceWithPassword();" style="display:flex;gap:8px;">
+                    <input type="password" id="maint-password-input" placeholder="Enter access password..." autocomplete="off" style="flex:1;background:rgba(15,23,42,0.9);border:1px solid rgba(0,207,255,0.4);border-radius:8px;padding:0.6rem 0.85rem;color:#fff;font-size:0.85rem;outline:none;" />
+                    <button type="submit" style="background:#00cfff;color:#000;font-weight:800;border:none;border-radius:8px;padding:0.6rem 1.2rem;font-size:0.85rem;cursor:pointer;white-space:nowrap;transition:opacity 0.2s;">
+                        Enter
+                    </button>
+                </form>
+                <div id="maint-password-error" style="color:#ef4444;font-size:0.75rem;font-weight:600;margin-top:0.5rem;display:none;"></div>
+            </div>
+
+            <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+                <a href="https://discord.gg/gridup" target="_blank" rel="noopener noreferrer" style="background:#5865F2;color:#fff;text-decoration:none;padding:0.55rem 1.2rem;border-radius:8px;font-size:0.8rem;font-weight:700;display:inline-flex;align-items:center;gap:6px;">
+                    Discord Updates
+                </a>
+                <a href="/login.html" style="background:rgba(255,255,255,0.06);color:#94a3b8;border:1px solid rgba(255,255,255,0.12);text-decoration:none;padding:0.55rem 1.2rem;border-radius:8px;font-size:0.8rem;font-weight:700;">
+                    Master Admin Login
+                </a>
             </div>
         </div>
     `;
+    document.body.style.overflow = 'hidden';
 }
 
 window.checkPublicMaintenanceMode = checkPublicMaintenanceMode;
