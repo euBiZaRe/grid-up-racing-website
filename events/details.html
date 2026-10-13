@@ -137,7 +137,7 @@
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
     <script defer src="../js/stint-planner.js?v=1"></script>
     <script defer src="../script.js?v=24"></script>
-    <script defer src="../js/auth.js?v=11"></script>
+    <script defer src="../js/auth.js?v=13"></script>
     <script>
         async function loadDynamicEvent() {
             const params = new URLSearchParams(window.location.search);
@@ -192,7 +192,11 @@
                     content.style.display = 'grid';
                     
                     // Load Lineup & Results
-                    if (typeof loadRaceLineup === 'function') loadRaceLineup(id);
+                    if (typeof window.renderEventDetailsLineup === 'function') {
+                        window.renderEventDetailsLineup(id);
+                    } else if (typeof loadRaceLineup === 'function') {
+                        loadRaceLineup(id);
+                    }
                     if (typeof renderEventResults === 'function') {
                         renderEventResults(id, document.getElementById('results-anchor'));
                     }
@@ -206,12 +210,15 @@
             }
         }
 
-        
-        async function loadRaceLineup(eventId) {
+        window.renderEventDetailsLineup = async function(eventId) {
             const container = document.getElementById('confirmed-lineup');
             if (!container) return;
             
             try {
+                if (typeof db === 'undefined' || !db) {
+                    setTimeout(() => window.renderEventDetailsLineup(eventId), 300);
+                    return;
+                }
                 const doc = await db.collection("race_lineups").doc(eventId).get();
                 if (!doc.exists || !doc.data().teams || doc.data().teams.length === 0) {
                     container.innerHTML = `
@@ -286,9 +293,16 @@
                 container.innerHTML = html;
             } catch (e) {
                 console.error("Error loading race lineup:", e);
-                container.innerHTML = '<div style="color: var(--text-muted); font-size: 0.8rem; text-align: center;">Could not load lineup.</div>';
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 1.5rem; color: var(--text-muted);">
+                        <p style="font-size: 0.85rem; margin-bottom: 1rem;">Lineup is currently being finalized.</p>
+                        <a href="../portal.html" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.4rem 0.8rem; border-radius: 6px;">Sign Up in Portal &rarr;</a>
+                    </div>
+                `;
             }
-        }
+        };
+
+        window.loadRaceLineup = window.renderEventDetailsLineup;
 
         window.toggleStintRunSheet = function(id) {
             const el = document.getElementById(id);

@@ -544,36 +544,52 @@ async function claimProfile(driverName, iracingId = "") {
 
 // Race Lineup Dynamic Loading
 async function loadRaceLineup(slug) {
+    if (typeof window.renderEventDetailsLineup === 'function') {
+        return window.renderEventDetailsLineup(slug);
+    }
     if (!db) {
         setTimeout(() => loadRaceLineup(slug), 500);
         return;
     }
 
+    const fallbackHtml = `
+        <div style="text-align: center; padding: 1.5rem; color: var(--text-muted);">
+            <p style="font-size: 0.85rem; margin-bottom: 1rem;">Lineup is currently being finalized.</p>
+            <a href="/portal.html" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.4rem 0.8rem; border-radius: 6px;">Sign Up in Portal &rarr;</a>
+        </div>
+    `;
+
     try {
         const doc = await db.collection("race_lineups").doc(slug).get();
-        if (doc.exists && doc.data().teams) {
+        const confirmedEl = document.getElementById('confirmed-lineup');
+
+        if (doc.exists && doc.data().teams && doc.data().teams.length > 0) {
             const teams = doc.data().teams;
             
             const allDriverNames = new Set();
             teams.forEach(t => {
                 if (t.captain) allDriverNames.add(t.captain);
-                if (t.drivers) t.drivers.forEach(d => allDriverNames.add(d));
+                if (t.drivers && Array.isArray(t.drivers)) t.drivers.forEach(d => allDriverNames.add(d));
             });
             
             const profileMap = {};
             if (allDriverNames.size > 0) {
-                const nameArray = Array.from(allDriverNames);
-                const batches = [];
-                for (let i = 0; i < nameArray.length; i += 10) {
-                    batches.push(nameArray.slice(i, i + 10));
-                }
-                
-                for (const batch of batches) {
-                    const snap = await db.collection("users").where("driverName", "in", batch).get();
-                    snap.forEach(pDoc => {
-                        const pData = pDoc.data();
-                        profileMap[pData.driverName] = pData;
-                    });
+                try {
+                    const nameArray = Array.from(allDriverNames);
+                    const batches = [];
+                    for (let i = 0; i < nameArray.length; i += 10) {
+                        batches.push(nameArray.slice(i, i + 10));
+                    }
+                    
+                    for (const batch of batches) {
+                        const snap = await db.collection("users").where("driverName", "in", batch).get();
+                        snap.forEach(pDoc => {
+                            const pData = pDoc.data();
+                            profileMap[pData.driverName] = pData;
+                        });
+                    }
+                } catch (userQueryErr) {
+                    console.warn("Could not fetch user social profiles for lineup:", userQueryErr);
                 }
             }
             
@@ -598,7 +614,25 @@ async function loadRaceLineup(slug) {
                 return `${escapeHtml(name)}${socialHtml}`;
             };
 
-            const searchRoot = document.getElementById('confirmed-lineup') || document.body;
+            let html = "";
+            teams.forEach(team => {
+                html += `
+                    <div class="lineup-item" style="margin-top: 1rem;">
+                        <span style="color: var(--primary); font-weight: 600;">${escapeHtml(team.name || team.teamName || 'GRiD UP Team')}</span><br>
+                        <span style="font-size: 0.9rem; color: var(--text-muted);">${escapeHtml(team.car_class || team.carClass || "")}</span>
+                    </div>
+                    <ul style="list-style: none; margin-top: 0.5rem; padding-left: 1rem; border-left: 2px solid var(--primary);">
+                `;
+                if (team.captain) html += `<li>${renderDriver(team.captain)} (C)</li>`;
+                if (team.drivers && Array.isArray(team.drivers)) {
+                    team.drivers.forEach(driver => {
+                        if (driver !== team.captain) html += `<li>${renderDriver(driver)}</li>`;
+                    });
+                }
+                html += `</ul>`;
+            });
+
+            const searchRoot = confirmedEl || document.body;
             const iterator = document.createNodeIterator(searchRoot, NodeFilter.SHOW_COMMENT);
             let startNode, endNode;
             let node = iterator.nextNode();
@@ -618,47 +652,48 @@ async function loadRaceLineup(slug) {
 
                 const fragment = document.createDocumentFragment();
                 const tempDiv = document.createElement('div');
-                
-                if (teams.length === 0) {
-                    const standardTeams = ["GRiD UP Sim Racing", "GRiD UP Black", "GRiD UP White", "GRiD UP Blue", "GRiD UP Red", "GRiD UP Purple"];
-                    let html = "";
-                    standardTeams.forEach(name => {
-                        html += `
-                            <div class="lineup-item" style="margin-top: 1rem;">
-                                <span style="color: var(--primary); font-weight: 600;">${escapeHtml(name)}</span>
-                            </div>
-                        `;
-                    });
-                    tempDiv.innerHTML = html;
-                } else {
-                    let html = "";
-                    teams.forEach(team => {
-                        html += `
-                            <div class="lineup-item" style="margin-top: 1rem;">
-                                <span style="color: var(--primary); font-weight: 600;">${escapeHtml(team.name)}</span><br>
-                                <span style="font-size: 0.9rem; color: var(--text-muted);">${escapeHtml(team.car_class || "")}</span>
-                            </div>
-                            <ul style="list-style: none; margin-top: 0.5rem; padding-left: 1rem; border-left: 2px solid var(--primary);">
-                        `;
-                        if (team.captain) html += `<li>${renderDriver(team.captain)} (C)</li>`;
-                        if (team.drivers) {
-                            team.drivers.forEach(driver => {
-                                if (driver !== team.captain) html += `<li>${renderDriver(driver)}</li>`;
-                            });
-                        }
-                        html += `</ul>`;
-                    });
-                    tempDiv.innerHTML = html;
-                }
-
+                tempDiv.innerHTML = html;
                 while (tempDiv.firstChild) {
                     fragment.appendChild(tempDiv.firstChild);
                 }
                 startNode.parentNode.insertBefore(fragment, endNode);
+            } else if (confirmedEl) {
+                confirmedEl.innerHTML = html;
+            }
+        } else {
+            // Lineup document not found or empty
+            if (confirmedEl) {
+                confirmedEl.innerHTML = fallbackHtml;
+            } else {
+                const iterator = document.createNodeIterator(document.body, NodeFilter.SHOW_COMMENT);
+                let startNode, endNode;
+                let node = iterator.nextNode();
+                while (node) {
+                    if (node.textContent.trim() === "LINEUP_START") startNode = node;
+                    if (node.textContent.trim() === "LINEUP_END") endNode = node;
+                    node = iterator.nextNode();
+                }
+                if (startNode && endNode) {
+                    let current = startNode.nextSibling;
+                    while (current && current !== endNode) {
+                        let next = current.nextSibling;
+                        current.remove();
+                        current = next;
+                    }
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = fallbackHtml;
+                    while (tempDiv.firstChild) {
+                        startNode.parentNode.insertBefore(tempDiv.firstChild, endNode);
+                    }
+                }
             }
         }
     } catch (error) {
         console.error("Error loading lineup from Firestore:", error);
+        const confirmedEl = document.getElementById('confirmed-lineup');
+        if (confirmedEl) {
+            confirmedEl.innerHTML = fallbackHtml;
+        }
     }
 }
 

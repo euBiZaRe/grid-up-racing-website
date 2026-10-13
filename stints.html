@@ -725,7 +725,13 @@
                 });
 
                 // 2. Fetch events metadata
-                const eventsSnap = await db.collection("events").orderBy("startDate", "asc").get();
+                let eventsSnap;
+                try {
+                    eventsSnap = await db.collection("events").orderBy("startDate", "asc").get();
+                } catch (eOrder) {
+                    console.warn("orderBy startDate failed, falling back to unordered events:", eOrder);
+                    eventsSnap = await db.collection("events").get();
+                }
                 availableEvents = [];
 
                 eventsSnap.forEach(doc => {

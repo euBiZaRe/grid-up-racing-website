@@ -5480,7 +5480,13 @@
             try {
 
                 // 0. Load Global Events
-                const eventsSnap = await db.collection("events").orderBy("startDate", "asc").get();
+                let eventsSnap;
+                try {
+                    eventsSnap = await db.collection("events").orderBy("startDate", "asc").get();
+                } catch (eOrder) {
+                    console.warn("orderBy startDate failed in portal, falling back to unordered events:", eOrder);
+                    eventsSnap = await db.collection("events").get();
+                }
                 UPCOMING_EVENTS = [];
                 ALL_EVENTS = [];
                 const allEventsMap = {};
@@ -5496,6 +5502,17 @@
                     if (isEventUpcoming(eventEntry, now)) {
                         UPCOMING_EVENTS.push(eventEntry);
                     }
+                });
+
+                ALL_EVENTS.sort((a, b) => {
+                    const tA = a.startDate ? new Date(a.startDate).getTime() : 0;
+                    const tB = b.startDate ? new Date(b.startDate).getTime() : 0;
+                    return tA - tB;
+                });
+                UPCOMING_EVENTS.sort((a, b) => {
+                    const tA = a.startDate ? new Date(a.startDate).getTime() : 0;
+                    const tB = b.startDate ? new Date(b.startDate).getTime() : 0;
+                    return tA - tB;
                 });
 
 

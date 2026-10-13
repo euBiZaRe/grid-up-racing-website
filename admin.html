@@ -4203,7 +4203,10 @@ body.meeting-mode-active .btn-summary-confirm {
                         <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 2rem;">
                             Classes: ${event.classes ? event.classes.join(', ') : 'None'}
                         </div>
-                        <div style="display: flex; gap: 10px;">
+                        <div style="display: flex; gap: 8px;">
+                            <button onclick="openLineupsForEvent('${event.id}')" class="btn btn-primary" style="flex: 1.2; font-size: 0.7rem; padding: 0.5rem; display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
+                                <i class="fas fa-users-cog"></i> Lineup
+                            </button>
                             <button onclick="showEventModal('${event.id}')" class="btn btn-outline" style="flex: 1; font-size: 0.7rem; padding: 0.5rem;">Edit</button>
                             <button onclick="deleteEvent('${event.id}')" class="btn btn-outline" style="flex: 1; font-size: 0.7rem; padding: 0.5rem; border-color: #ff0055; color: #ff0055;">Delete</button>
                         </div>
@@ -4392,6 +4395,7 @@ body.meeting-mode-active .btn-summary-confirm {
 
             try {
                 await db.collection("events").doc(id).set(eventData, { merge: true });
+                await autoInitializeLineup(id, eventData);
                 hideEventModal();
                 loadEvents();
                 alert("Event saved!");
@@ -4399,6 +4403,63 @@ body.meeting-mode-active .btn-summary-confirm {
                 alert("Error saving event: " + e.message);
             }
         }
+
+        async function autoInitializeLineup(id, eventData) {
+            try {
+                const lineupRef = db.collection("race_lineups").doc(id);
+                const snap = await lineupRef.get();
+                if (!snap.exists || !snap.data().teams || !Array.isArray(snap.data().teams) || snap.data().teams.length === 0) {
+                    const classes = (eventData && eventData.classes && eventData.classes.length > 0) ? eventData.classes : ['GT3'];
+                    const primaryClass = classes[0] || 'GT3';
+                    const defaultModel = (typeof EVENT_CAR_CATALOG !== 'undefined' && EVENT_CAR_CATALOG[primaryClass] && EVENT_CAR_CATALOG[primaryClass][0]) || `${primaryClass} Chassis`;
+                    const defaultStint = primaryClass === 'Supercars' ? 45 : (primaryClass === 'GTP' || primaryClass === 'LMP2') ? 45 : 60;
+                    const durationHours = typeof getEventDurationHours === 'function' ? getEventDurationHours(eventData) : 6;
+
+                    const teamsConfig = (typeof DEFAULT_TEAM_CONFIG !== 'undefined' ? DEFAULT_TEAM_CONFIG : [
+                        { name: "GRiD UP Sim Racing", number: "144" },
+                        { name: "GRiD UP Blue",       number: "141" },
+                        { name: "GRiD UP Black",      number: "142" },
+                        { name: "GRiD UP Red",        number: "143" },
+                        { name: "GRiD UP White",      number: "145" },
+                        { name: "GRiD UP Purple",     number: "146" }
+                    ]);
+
+                    const initialTeams = teamsConfig.map(cfg => ({
+                        carNumber: cfg.number,
+                        name: cfg.name,
+                        teamName: cfg.name,
+                        car_class: primaryClass,
+                        carModel: defaultModel,
+                        stintMinutes: defaultStint,
+                        captain: "",
+                        drivers: [],
+                        stints: typeof generateCarStints === 'function' ? generateCarStints(durationHours, defaultStint, [], [], cfg.number, primaryClass) : []
+                    }));
+
+                    await lineupRef.set({
+                        eventName: (eventData && eventData.name) || id,
+                        lastPublished: firebase.firestore.FieldValue.serverTimestamp(),
+                        teams: initialTeams
+                    }, { merge: true });
+                    console.log(`Auto-initialized race_lineups for event: ${id}`);
+                }
+            } catch (err) {
+                console.warn("Auto-initialization of lineup failed:", err);
+            }
+        }
+
+        window.openLineupsForEvent = async function(eventId) {
+            if (typeof switchTab === 'function') {
+                switchTab('races', true);
+            }
+            const selector = document.getElementById('lineup-event-selector');
+            if (selector) {
+                selector.value = eventId;
+            }
+            if (typeof loadAdminBuilderData === 'function') {
+                await loadAdminBuilderData(true, eventId);
+            }
+        };
 
 
 
