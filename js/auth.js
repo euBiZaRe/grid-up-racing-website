@@ -849,7 +849,27 @@ window.relockMaintenance = function() {
     checkPublicMaintenanceMode();
 };
 
-function showMaintenanceScreen(data = {}) {
+// Secret background keyboard listener (typing 'griduptest' anywhere unlocks access)
+let secretKeyBuffer = '';
+window.addEventListener('keydown', (e) => {
+    if (!window.GRIDUP_MAINTENANCE_ACTIVE) return;
+    if (e.key && e.key.length === 1) {
+        secretKeyBuffer += e.key.toLowerCase();
+        if (secretKeyBuffer.length > 25) secretKeyBuffer = secretKeyBuffer.slice(-25);
+        if (secretKeyBuffer.endsWith('griduptest')) {
+            sessionStorage.setItem('gridup_maint_unlock', 'true');
+            localStorage.setItem('gridup_maint_unlock', 'true');
+            removeMaintenanceLockStyle();
+            const overlay = document.getElementById('gridup-maintenance-overlay');
+            if (overlay) overlay.remove();
+            document.body.style.overflow = '';
+            showUnlockedMaintenanceNotice();
+            secretKeyBuffer = '';
+        }
+    }
+});
+
+function showMaintenanceScreen() {
     // Never block login.html so Master Admin can log in
     if (window.location.pathname.endsWith('login.html')) return;
     
@@ -857,49 +877,13 @@ function showMaintenanceScreen(data = {}) {
     if (!overlay) {
         overlay = document.createElement('div');
         overlay.id = 'gridup-maintenance-overlay';
-        overlay.style.cssText = 'position:fixed;inset:0;z-index:999999;background:#060810;color:#f1f5f9;display:flex;align-items:center;justify-content:center;padding:1.5rem;font-family:system-ui,-apple-system,sans-serif;overflow-y:auto;';
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:999999;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;margin:0;padding:0;cursor:default;';
         document.body.appendChild(overlay);
     }
-    const title = data.title || "WEBSITE CURRENTLY DOWN";
-    const message = data.message || "The website is currently down for maintenance and updates. We are working to restore service as quickly as possible.";
-    const estimatedEnd = data.estimatedEnd || "Shortly";
     
     overlay.innerHTML = `
-        <div style="max-width:520px;width:100%;text-align:center;background:rgba(15,23,42,0.96);border:1px solid rgba(239,68,68,0.3);border-radius:18px;padding:2.5rem 2rem;box-shadow:0 0 60px rgba(0,0,0,0.8), 0 0 40px rgba(239,68,68,0.1);backdrop-filter:blur(20px);">
-            <div style="margin-bottom:1rem;">
-                <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.35);color:#ef4444;padding:5px 14px;border-radius:999px;font-size:0.75rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;">
-                    <span style="width:8px;height:8px;background:#ef4444;border-radius:50%;box-shadow:0 0 8px #ef4444;animation:pulse 1.5s infinite;"></span>
-                    TEMPORARILY OFFLINE
-                </div>
-            </div>
-            <h1 style="font-size:1.7rem;font-weight:900;letter-spacing:1px;margin-bottom:0.75rem;color:#fff;text-transform:uppercase;">${escapeHtml(title)}</h1>
-            <p style="color:#94a3b8;font-size:0.92rem;line-height:1.6;margin-bottom:1.25rem;">${escapeHtml(message)}</p>
-            <div style="display:inline-block;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);padding:5px 14px;border-radius:999px;font-size:0.75rem;font-weight:700;color:#cbd5e1;margin-bottom:1.75rem;">
-                Estimated Return: ${escapeHtml(estimatedEnd)}
-            </div>
-
-            <!-- Password Access Form -->
-            <div style="background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:1.25rem;margin-bottom:1.5rem;text-align:left;">
-                <label for="maint-password-input" style="display:block;font-size:0.72rem;font-weight:700;color:#cbd5e1;text-transform:uppercase;letter-spacing:1px;margin-bottom:0.5rem;">
-                    🔑 Test / Staff Access Password
-                </label>
-                <form id="maint-pass-form" onsubmit="event.preventDefault(); window.unlockMaintenanceWithPassword();" style="display:flex;gap:8px;">
-                    <input type="password" id="maint-password-input" placeholder="Enter access password..." autocomplete="off" style="flex:1;background:rgba(15,23,42,0.9);border:1px solid rgba(0,207,255,0.4);border-radius:8px;padding:0.6rem 0.85rem;color:#fff;font-size:0.85rem;outline:none;" />
-                    <button type="submit" style="background:#00cfff;color:#000;font-weight:800;border:none;border-radius:8px;padding:0.6rem 1.2rem;font-size:0.85rem;cursor:pointer;white-space:nowrap;transition:opacity 0.2s;">
-                        Enter
-                    </button>
-                </form>
-                <div id="maint-password-error" style="color:#ef4444;font-size:0.75rem;font-weight:600;margin-top:0.5rem;display:none;"></div>
-            </div>
-
-            <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
-                <a href="https://discord.gg/gridup" target="_blank" rel="noopener noreferrer" style="background:#5865F2;color:#fff;text-decoration:none;padding:0.55rem 1.2rem;border-radius:8px;font-size:0.8rem;font-weight:700;display:inline-flex;align-items:center;gap:6px;">
-                    Discord Updates
-                </a>
-                <a href="/login.html" style="background:rgba(255,255,255,0.06);color:#94a3b8;border:1px solid rgba(255,255,255,0.12);text-decoration:none;padding:0.55rem 1.2rem;border-radius:8px;font-size:0.8rem;font-weight:700;">
-                    Master Admin Login
-                </a>
-            </div>
+        <div style="width:100vw;height:100vh;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;margin:0;padding:0;">
+            <img src="/assets/maintenance.jpg" alt="Site Offline" style="width:100%;height:100%;max-width:100vw;max-height:100vh;object-fit:contain;background:#000;display:block;pointer-events:none;user-select:none;" />
         </div>
     `;
     document.body.style.overflow = 'hidden';
