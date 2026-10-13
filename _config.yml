@@ -1,4 +1,8 @@
 # GitHub Pages Jekyll Configuration
+# Include standard RFC 9116 security policy directory
+include:
+  - .well-known
+
 # Exclude sensitive backend scripts, dev tooling, and build files from static deployment
 exclude:
   - scripts/
