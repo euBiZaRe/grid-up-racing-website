@@ -4990,8 +4990,8 @@ body.meeting-mode-active .btn-summary-confirm {
                 await docRef.set({
                     active: newStatus,
                     emergency: true,
-                    password: 'griduptest',
-                    message: newStatus ? "We are currently performing emergency maintenance and security hardening. Access is restricted to authorized testing." : "",
+                    title: "WEBSITE CURRENTLY DOWN",
+                    message: newStatus ? "The website is currently down for maintenance and updates. We are working to restore service as quickly as possible." : "",
                     estimatedEnd: newStatus ? "Shortly" : "",
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                     updatedBy: (auth.currentUser ? auth.currentUser.uid : 'MasterAdmin')

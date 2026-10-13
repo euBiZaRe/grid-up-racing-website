@@ -860,15 +860,21 @@ function showMaintenanceScreen(data = {}) {
         overlay.style.cssText = 'position:fixed;inset:0;z-index:999999;background:#060810;color:#f1f5f9;display:flex;align-items:center;justify-content:center;padding:1.5rem;font-family:system-ui,-apple-system,sans-serif;overflow-y:auto;';
         document.body.appendChild(overlay);
     }
-    const message = data.message || "We are currently performing emergency maintenance and security hardening. Access is restricted to authorized testing.";
+    const title = data.title || "WEBSITE CURRENTLY DOWN";
+    const message = data.message || "The website is currently down for maintenance and updates. We are working to restore service as quickly as possible.";
     const estimatedEnd = data.estimatedEnd || "Shortly";
     
     overlay.innerHTML = `
-        <div style="max-width:520px;width:100%;text-align:center;background:rgba(15,23,42,0.95);border:1px solid rgba(0,207,255,0.3);border-radius:16px;padding:2.5rem 2rem;box-shadow:0 0 60px rgba(0,207,255,0.15);backdrop-filter:blur(20px);">
-            <div style="font-size:3rem;margin-bottom:0.75rem;">🛡️</div>
-            <h1 style="font-size:1.6rem;font-weight:900;letter-spacing:1px;margin-bottom:0.5rem;color:#00cfff;text-transform:uppercase;">Emergency Maintenance</h1>
-            <p style="color:#94a3b8;font-size:0.9rem;line-height:1.6;margin-bottom:1.25rem;">${escapeHtml(message)}</p>
-            <div style="display:inline-block;background:rgba(0,207,255,0.08);border:1px solid rgba(0,207,255,0.25);padding:5px 14px;border-radius:999px;font-size:0.75rem;font-weight:700;color:#00cfff;margin-bottom:1.75rem;">
+        <div style="max-width:520px;width:100%;text-align:center;background:rgba(15,23,42,0.96);border:1px solid rgba(239,68,68,0.3);border-radius:18px;padding:2.5rem 2rem;box-shadow:0 0 60px rgba(0,0,0,0.8), 0 0 40px rgba(239,68,68,0.1);backdrop-filter:blur(20px);">
+            <div style="margin-bottom:1rem;">
+                <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.35);color:#ef4444;padding:5px 14px;border-radius:999px;font-size:0.75rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;">
+                    <span style="width:8px;height:8px;background:#ef4444;border-radius:50%;box-shadow:0 0 8px #ef4444;animation:pulse 1.5s infinite;"></span>
+                    TEMPORARILY OFFLINE
+                </div>
+            </div>
+            <h1 style="font-size:1.7rem;font-weight:900;letter-spacing:1px;margin-bottom:0.75rem;color:#fff;text-transform:uppercase;">${escapeHtml(title)}</h1>
+            <p style="color:#94a3b8;font-size:0.92rem;line-height:1.6;margin-bottom:1.25rem;">${escapeHtml(message)}</p>
+            <div style="display:inline-block;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);padding:5px 14px;border-radius:999px;font-size:0.75rem;font-weight:700;color:#cbd5e1;margin-bottom:1.75rem;">
                 Estimated Return: ${escapeHtml(estimatedEnd)}
             </div>
 
