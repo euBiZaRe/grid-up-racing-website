@@ -883,7 +883,7 @@ function showMaintenanceScreen() {
     
     overlay.innerHTML = `
         <div style="width:100vw;height:100vh;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;margin:0;padding:0;">
-            <img src="/assets/maintenance.jpg" alt="Site Offline" style="width:100%;height:100%;max-width:100vw;max-height:100vh;object-fit:contain;background:#000;display:block;pointer-events:none;user-select:none;" />
+            <img src="/assets/maintenance.jpg?v=20261013" alt="Site Offline" style="width:100%;height:100%;max-width:100vw;max-height:100vh;object-fit:contain;background:#000;display:block;pointer-events:none;user-select:none;" />
         </div>
     `;
     document.body.style.overflow = 'hidden';
