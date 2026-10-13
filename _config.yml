@@ -1,0 +1,13 @@
+# GitHub Pages Jekyll Configuration
+# Exclude sensitive backend scripts, dev tooling, and build files from static deployment
+exclude:
+  - scripts/
+  - tests/
+  - scratch/
+  - package.json
+  - package-lock.json
+  - firebase.json
+  - firestore.rules
+  - cors.json
+  - "*.ps1"
+  - README.md
