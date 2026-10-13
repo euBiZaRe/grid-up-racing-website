@@ -722,8 +722,9 @@ async function checkPublicMaintenanceMode() {
         if (maintDoc.exists && maintDoc.data().active === true) {
             window.GRIDUP_MAINTENANCE_ACTIVE = true;
             
-            // 1. Check if user has entered the test access password 'griduptest'
+            // 1. Check if user has entered the test access password
             if (sessionStorage.getItem('gridup_maint_unlock') === 'true' || localStorage.getItem('gridup_maint_unlock') === 'true') {
+                removeMaintenanceLockStyle();
                 showUnlockedMaintenanceNotice();
                 const existingOverlay = document.getElementById('gridup-maintenance-overlay');
                 if (existingOverlay) existingOverlay.remove();
@@ -735,6 +736,7 @@ async function checkPublicMaintenanceMode() {
             const cached = JSON.parse(localStorage.getItem('gridup_auth_cache') || '{}');
             const currentUid = (window.auth && window.auth.currentUser) ? window.auth.currentUser.uid : (cached.user ? cached.user.uid : null);
             if (currentUid && currentUid === MASTER_ADMIN) {
+                removeMaintenanceLockStyle();
                 showAdminMaintenanceNotice(true);
                 const existingOverlay = document.getElementById('gridup-maintenance-overlay');
                 if (existingOverlay) existingOverlay.remove();
@@ -742,10 +744,14 @@ async function checkPublicMaintenanceMode() {
                 return;
             }
 
-            // 3. Display Emergency Maintenance screen with password entry
+            // 3. Lock down DOM: hide all underlying page elements so inspecting DOM yields blank screen
+            applyMaintenanceLockStyle();
+
+            // 4. Display Emergency Maintenance screen with password entry
             showMaintenanceScreen(maintDoc.data());
         } else {
             window.GRIDUP_MAINTENANCE_ACTIVE = false;
+            removeMaintenanceLockStyle();
             const overlay = document.getElementById('gridup-maintenance-overlay');
             if (overlay) overlay.remove();
             const notice = document.getElementById('admin-maint-notice');
@@ -755,6 +761,22 @@ async function checkPublicMaintenanceMode() {
             document.body.style.overflow = '';
         }
     } catch (_) {}
+}
+
+function applyMaintenanceLockStyle() {
+    if (window.location.pathname.endsWith('login.html')) return;
+    let lockStyle = document.getElementById('maint-lock-style');
+    if (!lockStyle) {
+        lockStyle = document.createElement('style');
+        lockStyle.id = 'maint-lock-style';
+        lockStyle.textContent = 'body > *:not(#gridup-maintenance-overlay):not(#admin-maint-notice):not(#maint-unlocked-notice) { display: none !important; }';
+        document.head.appendChild(lockStyle);
+    }
+}
+
+function removeMaintenanceLockStyle() {
+    const lockStyle = document.getElementById('maint-lock-style');
+    if (lockStyle) lockStyle.remove();
 }
 
 function showAdminMaintenanceNotice(isMaster = false) {
@@ -772,31 +794,50 @@ function showUnlockedMaintenanceNotice() {
     banner.id = 'maint-unlocked-notice';
     banner.style.cssText = 'position:fixed;bottom:16px;right:16px;z-index:99999;background:rgba(16,185,129,0.95);backdrop-filter:blur(10px);border:1px solid #10b981;color:#fff;padding:8px 16px;border-radius:8px;font-size:0.75rem;font-weight:700;box-shadow:0 4px 20px rgba(0,0,0,0.5);display:flex;align-items:center;gap:12px;font-family:system-ui,-apple-system,sans-serif;';
     banner.innerHTML = `
-        <span>🔑 MAINTENANCE PASSWORD BYPASS ACTIVE ("griduptest")</span>
+        <span>🔑 MAINTENANCE ACCESS ACTIVE (Unlocked)</span>
         <button onclick="window.relockMaintenance()" style="background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.5);color:#fff;border-radius:4px;padding:2px 8px;font-size:0.7rem;cursor:pointer;font-weight:700;">Lock Site</button>
     `;
     document.body.appendChild(banner);
 }
 
-window.unlockMaintenanceWithPassword = function() {
+// SHA-256 Hash of access password (prevents plaintext password exposure in client code)
+const MAINT_LOCK_SHA256 = 'ce50cdc0d9a7b64863b8bb98bdd2afa5689be68eb88a3643854887e134e2a29e';
+
+async function computeSha256(text) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(text);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+window.unlockMaintenanceWithPassword = async function() {
     const input = document.getElementById('maint-password-input');
     const err = document.getElementById('maint-password-error');
     if (!input) return;
     const val = input.value.trim();
-    if (val === 'griduptest') {
-        sessionStorage.setItem('gridup_maint_unlock', 'true');
-        localStorage.setItem('gridup_maint_unlock', 'true');
-        const overlay = document.getElementById('gridup-maintenance-overlay');
-        if (overlay) overlay.remove();
-        document.body.style.overflow = '';
-        showUnlockedMaintenanceNotice();
-    } else {
-        if (err) {
-            err.style.display = 'block';
-            err.textContent = 'Incorrect access password. Please try again.';
+    if (!val) return;
+    
+    try {
+        const hashedInput = await computeSha256(val);
+        if (hashedInput === MAINT_LOCK_SHA256) {
+            sessionStorage.setItem('gridup_maint_unlock', 'true');
+            localStorage.setItem('gridup_maint_unlock', 'true');
+            removeMaintenanceLockStyle();
+            const overlay = document.getElementById('gridup-maintenance-overlay');
+            if (overlay) overlay.remove();
+            document.body.style.overflow = '';
+            showUnlockedMaintenanceNotice();
+        } else {
+            if (err) {
+                err.style.display = 'block';
+                err.textContent = 'Incorrect access password. Please try again.';
+            }
+            input.value = '';
+            input.focus();
         }
-        input.value = '';
-        input.focus();
+    } catch (e) {
+        console.error("Hash calculation failed:", e);
     }
 };
 
