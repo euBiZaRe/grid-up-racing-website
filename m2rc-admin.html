@@ -196,12 +196,14 @@
   function checkAdminAccess(){
     const main=document.getElementById('admin-main');
     const denied=document.getElementById('access-denied');
-    let cachedIsAdmin=false;
+    const KNOWN_ADMINS=['B0t4f4nqqpZIQKpT8Ed97xka5gM2','uYUa2WYZ5TPg98v1e6jQzzrItR53','BnojTKUFKUUKDFFpnUGEdueLhkN2','2TfuhZVILNQerQK9SYL1304jYp83'];
+    let isPreverified=false;
     try{
       const cached=JSON.parse(localStorage.getItem('gridup_auth_cache')||'{}');
-      if(cached&&cached.isAdmin)cachedIsAdmin=true;
+      const uid=cached.user?cached.user.uid:null;
+      if(uid&&KNOWN_ADMINS.includes(uid))isPreverified=true;
     }catch(e){}
-    if(window.IS_ADMIN||cachedIsAdmin){
+    if((window.IS_ADMIN && firebase.auth().currentUser && KNOWN_ADMINS.includes(firebase.auth().currentUser.uid))||isPreverified){
       main.style.display='block';denied.style.display='none';
       initAdminData();
     }
@@ -210,7 +212,9 @@
   window.onAuthEnriched=function(user,data){
     const main=document.getElementById('admin-main');
     const denied=document.getElementById('access-denied');
-    if(data&&data.isAdmin){
+    const KNOWN_ADMINS=['B0t4f4nqqpZIQKpT8Ed97xka5gM2','uYUa2WYZ5TPg98v1e6jQzzrItR53','BnojTKUFKUUKDFFpnUGEdueLhkN2','2TfuhZVILNQerQK9SYL1304jYp83'];
+    const isAuthAdmin=Boolean(user && (KNOWN_ADMINS.includes(user.uid) || (window.IS_ADMIN===true)));
+    if(isAuthAdmin){
       window.IS_ADMIN=true;
       main.style.display='block';denied.style.display='none';
       initAdminData();

@@ -796,10 +796,14 @@
         // Check cache for admin selection
         function checkAdminStatus() {
             try {
+                const hardcodedAdmins = (typeof KNOWN_ADMIN_UIDS !== 'undefined') ? KNOWN_ADMIN_UIDS : ['B0t4f4nqqpZIQKpT8Ed97xka5gM2', 'uYUa2WYZ5TPg98v1e6jQzzrItR53', 'BnojTKUFKUUKDFFpnUGEdueLhkN2', '2TfuhZVILNQerQK9SYL1304jYp83'];
+                const currentUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
+                if (currentUser && hardcodedAdmins.includes(currentUser.uid)) return true;
                 const cached = localStorage.getItem('gridup_auth_cache');
                 if (cached) {
                     const data = JSON.parse(cached);
-                    return !!data.isAdmin;
+                    const userUid = data.user ? data.user.uid : null;
+                    return Boolean(userUid && hardcodedAdmins.includes(userUid));
                 }
             } catch (e) {}
             return false;

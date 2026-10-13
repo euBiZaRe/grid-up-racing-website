@@ -50,17 +50,18 @@ let appNotificationUnsub = null;
         if (cached) {
             const data = JSON.parse(cached);
             const userUid = data.user ? data.user.uid : null;
-            const resolvedIsAdmin = (userUid && KNOWN_ADMIN_UIDS.includes(userUid)) ? true : (data.isAdmin || false);
+            // SECURITY: Only pre-verify hardcoded known admin UIDs; never trust client-controlled data.isAdmin
+            const resolvedIsAdmin = Boolean(userUid && KNOWN_ADMIN_UIDS.includes(userUid));
             // Wait for DOM to be ready to update UI safely
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', () => {
                     IS_ADMIN = resolvedIsAdmin;
-                    IS_VERIFIED = data.isVerified;
+                    IS_VERIFIED = Boolean(data.isVerified);
                     updateAuthUI(data.user, true);
                 });
             } else {
                 IS_ADMIN = resolvedIsAdmin;
-                IS_VERIFIED = data.isVerified;
+                IS_VERIFIED = Boolean(data.isVerified);
                 updateAuthUI(data.user, true);
             }
         } else {
@@ -176,12 +177,13 @@ function initAuth() {
         if (user) {
             // Update cache with basic user info
             const cached = JSON.parse(localStorage.getItem('gridup_auth_cache') || '{}');
-            const isInitialAdmin = KNOWN_ADMIN_UIDS.includes(user.uid) || cached.isAdmin || false;
+            // SECURITY: Only trust known hardcoded admin UIDs on fast-path; full verification occurs in enrichAuthData
+            const isInitialAdmin = KNOWN_ADMIN_UIDS.includes(user.uid);
             IS_ADMIN = isInitialAdmin;
             localStorage.setItem('gridup_auth_cache', JSON.stringify({
                 user: { uid: user.uid, photoURL: user.photoURL, displayName: user.displayName },
                 isAdmin: isInitialAdmin,
-                isVerified: cached.isVerified || false
+                isVerified: Boolean(cached.isVerified)
             }));
 
             // 1. Immediate UI update
@@ -190,7 +192,7 @@ function initAuth() {
             // 2. Fast-path hook execution for admins (instant unlock before network calls)
             if (isInitialAdmin && typeof onAuthEnriched === 'function') {
                 try {
-                    onAuthEnriched(user, { isAdmin: true, isVerified: cached.isVerified || false });
+                    onAuthEnriched(user, { isAdmin: true, isVerified: Boolean(cached.isVerified) });
                 } catch (eAuthHook) {
                     console.warn("Early onAuthEnriched error:", eAuthHook);
                 }
@@ -229,27 +231,33 @@ async function enrichAuthData(user) {
     
     if (db) {
         try {
-            // Concurrently fetch settings, claims, and user profile in a single network round-trip
-            const [adminDoc, claimSnapshot, userDoc] = await Promise.all([
-                !IS_ADMIN ? db.collection("settings").doc("admins").get().catch(e => {
+            const isKnownHardcodedAdmin = KNOWN_ADMIN_UIDS.includes(user.uid);
+            const [adminDoc, claimSnapshot, userDoc, maintDoc] = await Promise.all([
+                !isKnownHardcodedAdmin ? db.collection("settings").doc("admins").get().catch(e => {
                     console.warn("Could not read settings/admins doc (rules/permissions):", e);
                     return null;
                 }) : Promise.resolve(null),
                 db.collection("claims").where("discordId", "==", user.uid).get().catch(() => null),
-                db.collection("users").doc(user.uid).get().catch(() => null)
+                db.collection("users").doc(user.uid).get().catch(() => null),
+                db.collection("settings").doc("maintenance").get().catch(() => null)
             ]);
 
-            // Check Admin via settings/admins
-            if (!IS_ADMIN && adminDoc && adminDoc.exists) {
+            // SECURITY: Authoritative Admin Verification ONLY via KNOWN_ADMIN_UIDS or settings/admins.
+            // Never trust userDoc.isAdmin or userDoc.role (prevents self-promotion vulnerability).
+            let isVerifiedAdmin = isKnownHardcodedAdmin;
+            if (!isVerifiedAdmin && adminDoc && adminDoc.exists) {
                 const admins = adminDoc.data().uids || [];
-                IS_ADMIN = admins.includes(user.uid);
+                isVerifiedAdmin = admins.includes(user.uid);
             }
+            IS_ADMIN = isVerifiedAdmin;
 
-            // Fallback Check Admin via users collection
-            if (!IS_ADMIN && userDoc && userDoc.exists) {
-                const ud = userDoc.data();
-                if (ud.isAdmin === true || ud.role === 'admin') {
-                    IS_ADMIN = true;
+            // Check Maintenance Mode
+            if (maintDoc && maintDoc.exists && maintDoc.data().active === true) {
+                window.GRIDUP_MAINTENANCE_ACTIVE = true;
+                if (!IS_ADMIN) {
+                    showMaintenanceScreen(maintDoc.data());
+                } else {
+                    showAdminMaintenanceNotice();
                 }
             }
 
@@ -696,6 +704,71 @@ async function loadRaceLineup(slug) {
         }
     }
 }
+
+// ==========================================
+// System Security & Maintenance Mode Control
+// ==========================================
+async function checkPublicMaintenanceMode() {
+    if (!db) {
+        setTimeout(checkPublicMaintenanceMode, 400);
+        return;
+    }
+    try {
+        const maintDoc = await db.collection("settings").doc("maintenance").get();
+        if (maintDoc.exists && maintDoc.data().active === true) {
+            window.GRIDUP_MAINTENANCE_ACTIVE = true;
+            const cached = JSON.parse(localStorage.getItem('gridup_auth_cache') || '{}');
+            const uid = cached.user ? cached.user.uid : null;
+            if (uid && KNOWN_ADMIN_UIDS.includes(uid)) {
+                showAdminMaintenanceNotice();
+                return;
+            }
+            showMaintenanceScreen(maintDoc.data());
+        }
+    } catch (_) {}
+}
+
+function showAdminMaintenanceNotice() {
+    if (document.getElementById('admin-maint-notice')) return;
+    const banner = document.createElement('div');
+    banner.id = 'admin-maint-notice';
+    banner.style.cssText = 'position:fixed;bottom:16px;right:16px;z-index:99999;background:rgba(239,68,68,0.95);backdrop-filter:blur(10px);border:1px solid #ff4455;color:#fff;padding:8px 16px;border-radius:8px;font-size:0.75rem;font-weight:700;box-shadow:0 4px 20px rgba(0,0,0,0.5);display:flex;align-items:center;gap:8px;';
+    banner.innerHTML = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#fff;"></span> MAINTENANCE MODE ACTIVE (Admin Bypass Active)';
+    document.body.appendChild(banner);
+}
+
+function showMaintenanceScreen(data = {}) {
+    // Never block login.html so admins can sign in to manage the site
+    if (window.location.pathname.endsWith('login.html')) return;
+    
+    let overlay = document.getElementById('gridup-maintenance-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'gridup-maintenance-overlay';
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:999999;background:#060810;color:#f1f5f9;display:flex;align-items:center;justify-content:center;padding:2rem;font-family:system-ui,-apple-system,sans-serif;';
+        document.body.appendChild(overlay);
+    }
+    const message = data.message || "We are currently performing scheduled security updates and system maintenance. We'll be back online shortly.";
+    const estimatedEnd = data.estimatedEnd || "Shortly";
+    overlay.innerHTML = `
+        <div style="max-width:540px;width:100%;text-align:center;background:rgba(255,255,255,0.03);border:1px solid rgba(0,207,255,0.25);border-radius:16px;padding:3rem 2rem;box-shadow:0 0 50px rgba(0,207,255,0.1);">
+            <div style="font-size:2.5rem;margin-bottom:1rem;">🛡️</div>
+            <h1 style="font-size:1.75rem;font-weight:800;letter-spacing:1px;margin-bottom:0.75rem;color:#00cfff;">SCHEDULED MAINTENANCE</h1>
+            <p style="color:#94a3b8;font-size:0.95rem;line-height:1.6;margin-bottom:1.5rem;">${escapeHtml(message)}</p>
+            <div style="display:inline-block;background:rgba(0,207,255,0.08);border:1px solid rgba(0,207,255,0.2);padding:6px 16px;border-radius:999px;font-size:0.78rem;font-weight:700;color:#00cfff;margin-bottom:2rem;">
+                Estimated Return: ${escapeHtml(estimatedEnd)}
+            </div>
+            <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+                <a href="https://discord.gg/gridup" target="_blank" rel="noopener noreferrer" style="background:#5865F2;color:#fff;text-decoration:none;padding:0.6rem 1.4rem;border-radius:8px;font-size:0.82rem;font-weight:700;">Join Discord for Updates</a>
+                <a href="/login.html" style="background:rgba(255,255,255,0.06);color:#94a3b8;border:1px solid rgba(255,255,255,0.12);text-decoration:none;padding:0.6rem 1.4rem;border-radius:8px;font-size:0.82rem;font-weight:700;">Admin Login</a>
+            </div>
+        </div>
+    `;
+}
+
+window.checkPublicMaintenanceMode = checkPublicMaintenanceMode;
+window.showMaintenanceScreen = showMaintenanceScreen;
+setTimeout(checkPublicMaintenanceMode, 300);
 
 function watchApplicationNotification(user) {
     if (appNotificationUnsub) {

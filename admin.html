@@ -2348,8 +2348,8 @@ body.meeting-mode-active .btn-summary-confirm {
                     const cached = JSON.parse(localStorage.getItem('gridup_auth_cache') || '{}');
                     const knownAdmins = ['B0t4f4nqqpZIQKpT8Ed97xka5gM2', 'uYUa2WYZ5TPg98v1e6jQzzrItR53', 'BnojTKUFKUUKDFFpnUGEdueLhkN2', '2TfuhZVILNQerQK9SYL1304jYp83'];
                     const userUid = cached.user ? cached.user.uid : null;
-                    const isKnownAdmin = userUid && knownAdmins.includes(userUid);
-                    if ((cached && cached.isAdmin) || isKnownAdmin) {
+                    const isKnownAdmin = Boolean(userUid && knownAdmins.includes(userUid));
+                    if (isKnownAdmin) {
                         const style = document.createElement('style');
                         style.id = 'admin-fastpath-style';
                         style.textContent = '#admin-hub { display: block !important; } .admin-access-denied { display: none !important; }';
@@ -7071,9 +7071,10 @@ body.meeting-mode-active .btn-summary-confirm {
             const userInfo = document.getElementById('admin-user-info');
 
             const hardcodedAdmins = (typeof KNOWN_ADMIN_UIDS !== 'undefined') ? KNOWN_ADMIN_UIDS : ['B0t4f4nqqpZIQKpT8Ed97xka5gM2', 'uYUa2WYZ5TPg98v1e6jQzzrItR53', 'BnojTKUFKUUKDFFpnUGEdueLhkN2', '2TfuhZVILNQerQK9SYL1304jYp83'];
-            const isAdmin = (user && hardcodedAdmins.includes(user.uid)) || (data && data.isAdmin) || (typeof IS_ADMIN !== 'undefined' && IS_ADMIN);
+            const isHardcodedAdmin = Boolean(user && user.uid && hardcodedAdmins.includes(user.uid));
+            const isVerifiedAdmin = Boolean(user && ((data && data.isAdmin === true && isHardcodedAdmin) || (typeof IS_ADMIN !== 'undefined' && IS_ADMIN)));
 
-            if (user && isAdmin) {
+            if (user && (isHardcodedAdmin || isVerifiedAdmin)) {
                 if (adminHub) adminHub.style.display = 'block';
                 if (accessDenied) accessDenied.style.display = 'none';
                 const adminName = user.displayName || user.email || user.uid;
@@ -7132,11 +7133,11 @@ body.meeting-mode-active .btn-summary-confirm {
                 const hardcodedAdmins = (typeof KNOWN_ADMIN_UIDS !== 'undefined') ? KNOWN_ADMIN_UIDS : ['B0t4f4nqqpZIQKpT8Ed97xka5gM2', 'uYUa2WYZ5TPg98v1e6jQzzrItR53', 'BnojTKUFKUUKDFFpnUGEdueLhkN2', '2TfuhZVILNQerQK9SYL1304jYp83'];
                 
                 const activeUser = currentUser || (cached.user ? cached.user : null);
-                const isCachedAdmin = (cached && cached.isAdmin === true);
-                const isKnownAdmin = activeUser && activeUser.uid && hardcodedAdmins.includes(activeUser.uid);
-                const isGlobalAdmin = (typeof IS_ADMIN !== 'undefined' && IS_ADMIN === true);
+                const isKnownAdmin = Boolean(activeUser && activeUser.uid && hardcodedAdmins.includes(activeUser.uid));
+                const isGlobalAdmin = Boolean(currentUser && (typeof IS_ADMIN !== 'undefined' && IS_ADMIN === true));
 
-                if (isKnownAdmin || isCachedAdmin || isGlobalAdmin) {
+                // SECURITY: Never grant access based on unverified client-side cached.isAdmin
+                if (isKnownAdmin || isGlobalAdmin) {
                     const adminHub = document.getElementById('admin-hub');
                     const accessDenied = document.getElementById('access-denied');
                     const userInfo = document.getElementById('admin-user-info');

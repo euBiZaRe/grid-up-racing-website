@@ -1299,10 +1299,9 @@
                 }
             } catch (e) {}
 
-            // 1. Admins always see the banner
             const MASTER_ADMIN = 'B0t4f4nqqpZIQKpT8Ed97xka5gM2';
             const KNOWN_ADMINS = ['B0t4f4nqqpZIQKpT8Ed97xka5gM2', 'uYUa2WYZ5TPg98v1e6jQzzrItR53', 'BnojTKUFKUUKDFFpnUGEdueLhkN2', '2TfuhZVILNQerQK9SYL1304jYp83'];
-            const isUserAdmin = authDetails?.isAdmin || (KNOWN_ADMINS.includes(user.uid)) || (user.uid === MASTER_ADMIN) || (typeof IS_ADMIN !== 'undefined' && IS_ADMIN);
+            const isUserAdmin = Boolean(user && (KNOWN_ADMINS.includes(user.uid) || (typeof IS_ADMIN !== 'undefined' && IS_ADMIN)));
             if (isUserAdmin) {
                 banner.style.display = 'flex';
                 try { localStorage.setItem('gridup_portal_access_' + user.uid, 'true'); } catch (e) {}
