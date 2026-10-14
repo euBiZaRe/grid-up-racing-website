@@ -1920,6 +1920,137 @@ body[data-theme="theme-purple"]::before, body::before {
 }
 
 /* ===================================================
+   UPCOMING EVENTS SCROLLING TICKER (Homepage only)
+   =================================================== */
+.events-ticker-bar {
+    position: relative;
+    margin-top: 72px; /* Clears fixed navbar */
+    width: 100%;
+    height: 42px;
+    background: rgba(9, 11, 18, 0.96);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.28);
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    z-index: 95;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
+}
+
+.ticker-badge {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0 1.25rem 0 1.5rem;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(139, 92, 246, 0.22) 0%, rgba(139, 92, 246, 0.06) 100%);
+    border-right: 1px solid rgba(139, 92, 246, 0.35);
+    font-family: var(--font-heading);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: var(--primary-light);
+    text-transform: uppercase;
+    z-index: 2;
+    white-space: nowrap;
+}
+
+.ticker-pulse-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--primary);
+    box-shadow: 0 0 8px var(--primary);
+    animation: liveDot 1.5s infinite;
+}
+
+.ticker-track {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    white-space: nowrap;
+    mask-image: linear-gradient(90deg, transparent 0%, #000 24px, #000 calc(100% - 24px), transparent 100%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 24px, #000 calc(100% - 24px), transparent 100%);
+}
+
+.ticker-content {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    will-change: transform;
+    animation: tickerScroll 42s linear infinite;
+}
+
+.ticker-track:hover .ticker-content {
+    animation-play-state: paused;
+}
+
+@keyframes tickerScroll {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+.ticker-event-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-family: var(--font-heading);
+    font-size: 0.74rem;
+    text-decoration: none;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.ticker-event-item:hover {
+    background: rgba(139, 92, 246, 0.15);
+}
+
+.ticker-item-flag {
+    font-size: 0.8rem;
+    opacity: 0.85;
+}
+
+.ticker-item-name {
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    color: #ffffff;
+    text-transform: uppercase;
+    transition: color 0.2s ease;
+}
+
+.ticker-event-item:hover .ticker-item-name {
+    color: var(--primary-light);
+}
+
+.ticker-item-divider {
+    color: rgba(139, 92, 246, 0.7);
+    font-weight: 700;
+    font-size: 0.7rem;
+}
+
+.ticker-item-date {
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: var(--primary-light);
+    text-transform: uppercase;
+}
+
+.ticker-separator {
+    color: rgba(139, 92, 246, 0.35);
+    font-size: 0.65rem;
+    padding: 0 0.85rem;
+    user-select: none;
+}
+
+/* ===================================================
    MOCKUP HERO SECTION
    =================================================== */
 .mockup-hero {
@@ -1927,7 +2058,7 @@ body[data-theme="theme-purple"]::before, body::before {
     min-height: 85vh;
     display: flex;
     align-items: center;
-    padding: 9rem 0 5rem;
+    padding: 5.5rem 0 5rem;
     overflow: hidden;
     background-color: var(--bg-dark);
 }
@@ -2727,8 +2858,21 @@ body[data-theme="theme-purple"]::before, body::before {
     }
 }
 @media (max-width: 768px) {
+    .events-ticker-bar {
+        margin-top: 66px;
+        height: 38px;
+    }
+    .ticker-badge {
+        padding: 0 0.85rem 0 1rem;
+        font-size: 0.65rem;
+        letter-spacing: 1.5px;
+    }
+    .ticker-event-item {
+        font-size: 0.7rem;
+        gap: 0.4rem;
+    }
     .mockup-hero {
-        padding: 7rem 0 3.5rem;
+        padding: 4.5rem 0 3.5rem;
     }
     .mockup-event-split {
         grid-template-columns: 1fr;

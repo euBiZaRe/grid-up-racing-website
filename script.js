@@ -662,8 +662,8 @@ function populateNextEventDashboard(nextEvent, staticIds = [], eventBanners = {}
         'indy-8h': {
             name: '8 HOURS OF INDIANAPOLIS',
             trackName: 'INDIANAPOLIS MOTOR SPEEDWAY',
-            trackSpecs: '2.439 MILES • 14 TURNS • ROAD COURSE',
-            trackImg: 'assets/league-posters/Indy.png',
+            trackSpecs: '2.43mi • 14 TURNS • ROAD COURSE',
+            trackImg: 'assets/tracks/indy.png',
             date: 'OCTOBER 16–18, 2026',
             schedule: { practice: '17:00 GMT', qualifying: '18:30 GMT', greenFlag: '19:00 GMT' },
             classes: ['GT3 CLASS', '2+ DRIVERS PER CAR'],
@@ -681,8 +681,8 @@ function populateNextEventDashboard(nextEvent, staticIds = [], eventBanners = {}
         'indianapolis-8h': {
             name: '8 HOURS OF INDIANAPOLIS',
             trackName: 'INDIANAPOLIS MOTOR SPEEDWAY',
-            trackSpecs: '2.439 MILES • 14 TURNS • ROAD COURSE',
-            trackImg: 'assets/league-posters/Indy.png',
+            trackSpecs: '2.43mi • 14 TURNS • ROAD COURSE',
+            trackImg: 'assets/tracks/indy.png',
             date: 'OCTOBER 16–18, 2026',
             schedule: { practice: '17:00 GMT', qualifying: '18:30 GMT', greenFlag: '19:00 GMT' },
             classes: ['GT3 CLASS', '2+ DRIVERS PER CAR'],
@@ -700,7 +700,7 @@ function populateNextEventDashboard(nextEvent, staticIds = [], eventBanners = {}
         'bathurst-1000': {
             name: 'BATHURST 1000',
             trackName: 'MOUNT PANORAMA CIRCUIT',
-            trackSpecs: '3.861 MILES • 23 TURNS • MOUNT PANORAMA',
+            trackSpecs: '3.86mi • 23 TURNS • MOUNT PANORAMA',
             trackImg: 'assets/tracks/daytona.png',
             date: 'OCTOBER 09–11, 2026',
             schedule: { practice: '08:00 GMT', qualifying: '09:30 GMT', greenFlag: '10:00 GMT' },
@@ -719,7 +719,7 @@ function populateNextEventDashboard(nextEvent, staticIds = [], eventBanners = {}
         'petit-le-mans': {
             name: 'PETIT LE MANS',
             trackName: 'MICHELIN RACEWAY ROAD ATLANTA',
-            trackSpecs: '2.540 MILES • 12 TURNS • FULL COURSE',
+            trackSpecs: '2.54mi • 12 TURNS • FULL COURSE',
             trackImg: 'assets/league-posters/Atlanta.png',
             date: 'OCTOBER 02–04, 2026',
             schedule: { practice: '14:00 GMT', qualifying: '15:30 GMT', greenFlag: '16:00 GMT' },
@@ -738,8 +738,8 @@ function populateNextEventDashboard(nextEvent, staticIds = [], eventBanners = {}
         'road-america-6h': {
             name: 'ROAD AMERICA 6 HOUR',
             trackName: 'ROAD AMERICA',
-            trackSpecs: '4.048 MILES • 14 TURNS • FULL COURSE',
-            trackImg: 'assets/league-posters/Elkhart Lake.png',
+            trackSpecs: '4.05mi • 14 TURNS • FULL COURSE',
+            trackImg: 'assets/tracks/road-america.png',
             date: 'JULY 24–26, 2026',
             schedule: { practice: '16:00 GMT', qualifying: '17:30 GMT', greenFlag: '18:00 GMT' },
             classes: ['GTP + LMP2 + GT3', '2-3 DRIVERS PER CAR'],
@@ -757,8 +757,8 @@ function populateNextEventDashboard(nextEvent, staticIds = [], eventBanners = {}
         'suzuka-1000km': {
             name: 'SUZUKA 1000KM',
             trackName: 'SUZUKA INTERNATIONAL RACING COURSE',
-            trackSpecs: '3.610 MILES • 18 TURNS • GRAND PRIX',
-            trackImg: 'assets/league-posters/Suzuka.png',
+            trackSpecs: '3.61mi • 18 TURNS • GRAND PRIX',
+            trackImg: 'assets/tracks/suzuka.png',
             date: 'SEPTEMBER 11–13, 2026',
             schedule: { practice: '13:00 GMT', qualifying: '14:30 GMT', greenFlag: '15:00 GMT' },
             classes: ['GT3 CLASS', '2-3 DRIVERS PER CAR'],
@@ -776,7 +776,7 @@ function populateNextEventDashboard(nextEvent, staticIds = [], eventBanners = {}
         'spa-24hr': {
             name: '24 HOURS OF SPA',
             trackName: 'CIRCUIT DE SPA-FRANCORCHAMPS',
-            trackSpecs: '4.352 MILES • 19 TURNS • GRAND PRIX',
+            trackSpecs: '4.35mi • 19 TURNS • GRAND PRIX',
             trackImg: 'assets/league-posters/SPA.png',
             date: 'JULY 10–12, 2026',
             schedule: { practice: '11:00 GMT', qualifying: '12:30 GMT', greenFlag: '13:00 GMT' },
@@ -795,7 +795,7 @@ function populateNextEventDashboard(nextEvent, staticIds = [], eventBanners = {}
         'watkins-glen-6h': {
             name: 'WATKINS GLEN 6 HOUR',
             trackName: 'WATKINS GLEN INTERNATIONAL',
-            trackSpecs: '3.400 MILES • 11 TURNS • BOOT LAYOUT',
+            trackSpecs: '3.40mi • 11 TURNS • BOOT LAYOUT',
             trackImg: 'assets/league-posters/The Glen.png',
             date: 'JUNE 19–21, 2026',
             schedule: { practice: '15:00 GMT', qualifying: '16:30 GMT', greenFlag: '17:00 GMT' },
@@ -814,7 +814,7 @@ function populateNextEventDashboard(nextEvent, staticIds = [], eventBanners = {}
         'daytona-24': {
             name: '24 HOURS OF DAYTONA',
             trackName: 'DAYTONA INTERNATIONAL SPEEDWAY',
-            trackSpecs: '3.560 MILES • 12 TURNS • ROAD COURSE',
+            trackSpecs: '3.56mi • 12 TURNS • ROAD COURSE',
             trackImg: 'assets/tracks/daytona.png',
             date: 'JANUARY 23–25, 2026',
             schedule: { practice: '17:00 GMT', qualifying: '18:30 GMT', greenFlag: '19:00 GMT' },
@@ -907,6 +907,31 @@ function populateNextEventDashboard(nextEvent, staticIds = [], eventBanners = {}
     if (heroLink) {
         heroLink.href = profile.detailsUrl;
     }
+}
+
+// Populates the scrolling upcoming events marquee ticker under the navbar (Homepage only)
+function populateEventsTicker(upcomingEvents, staticIds = []) {
+    const tickerContent = document.getElementById('events-ticker-content');
+    if (!tickerContent) return;
+    if (!Array.isArray(upcomingEvents) || upcomingEvents.length === 0) return;
+
+    const itemsHtml = upcomingEvents.map(e => {
+        const link = (staticIds && staticIds.includes(e.id)) ? getEventLink(e.id, true) : getEventLink(e.id);
+        const name = (e.name || 'Upcoming Race').toUpperCase();
+        const date = (e.date || 'Season 2026').toUpperCase();
+        return `
+            <a href="${link}" class="ticker-event-item">
+                <span class="ticker-item-flag">🏁</span>
+                <span class="ticker-item-name">${name}</span>
+                <span class="ticker-item-divider">•</span>
+                <span class="ticker-item-date">${date}</span>
+            </a>
+            <span class="ticker-separator">✦</span>
+        `;
+    }).join('');
+
+    // Duplicate once for seamless infinite continuous marquee loop
+    tickerContent.innerHTML = itemsHtml + itemsHtml;
 }
 
 // Extracted UI rendering logic to allow calling from cache or Firestore
@@ -1088,6 +1113,9 @@ function renderEventsUI(upcomingEvents, pastEvents = null, featuredOverride = nu
         if (telemetryBtn) {
             telemetryBtn.style.display = (nextEvent.id === 'spa-24hr') ? 'inline-flex' : 'none';
         }
+
+        // Populate upcoming events marquee ticker under navbar
+        populateEventsTicker(upcomingEvents, staticIds);
         
         updateCountdown(nextEvent.startDate, endTime, nextEvent.broadcastUrl, nextEvent.practiceStart);
 
