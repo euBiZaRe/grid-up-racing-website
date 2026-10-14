@@ -1781,50 +1781,6 @@ function renderRecentResultsUI(results) {
     resultsTrack.dataset.renderedFingerprint = resultsFingerprint;
     resultsTrack.innerHTML = '';
 
-    // Dynamically update the Homepage Past 2 Races Results Card if present
-    const mockupResultsList = document.getElementById('mockup-recent-results-list');
-    if (mockupResultsList && Array.isArray(results) && results.length > 0) {
-        const top2 = results.slice(0, 2);
-        mockupResultsList.innerHTML = top2.map(d => {
-            const pos = String(d.position || '').toUpperCase();
-            const isP1 = pos === 'P1' || pos === '1' || pos === '1ST';
-            const isP2 = pos === 'P2' || pos === '2' || pos === '2ND';
-            const badgeClass = isP1 ? 'p1-badge' : (isP2 ? 'p2-badge' : 'p1-badge');
-            const cardClass = isP1 ? 'p1-card' : (isP2 ? 'p2-card' : '');
-            const badgeIcon = isP1 ? '🥇' : (isP2 ? '🥈' : '🏆');
-            const driversStr = Array.isArray(d.drivers) ? d.drivers.join(' • ') : (d.drivers || 'GRiD UP Team Entry');
-            const eventTitle = (d.trackName || d.eventName || 'Race Event').toUpperCase();
-            const dateStr = (d.raceDate || d.date || 'Season 2026').toUpperCase();
-            const carClass = d.carUsed || d.car || 'GT3';
-            const link = d.eventId ? getEventLink(d.eventId) : 'trophy-room.html';
-
-            return `
-                <div class="result-entry-card ${cardClass}">
-                    <div class="result-entry-top">
-                        <div class="result-pos-badge ${badgeClass}">
-                            <span class="pos-icon">${badgeIcon}</span>
-                            <span class="pos-text">${pos || 'FINISH'}</span>
-                        </div>
-                        <div class="result-event-date">${dateStr}</div>
-                    </div>
-                    <div class="result-event-title">${eventTitle}</div>
-                    <div class="result-meta-line">
-                        <span class="result-tag">${carClass}</span>
-                        ${d.split ? `<span class="result-split">${d.split}</span>` : ''}
-                    </div>
-                    <div class="result-drivers-line">
-                        <span class="drivers-label">DRIVERS:</span>
-                        <span class="drivers-names">${driversStr}</span>
-                    </div>
-                    <div class="result-footer-link">
-                        <a href="${link}" class="result-link-btn">
-                            RACE RECAP & STATS →
-                        </a>
-                    </div>
-                </div>
-            `;
-        }).join('');
-    }
     
     results.forEach(d => {
         const card = document.createElement('div');
@@ -2620,7 +2576,9 @@ window.filterPodiumResults = function(filter) {
 
     const cards = document.querySelectorAll('#mockup-recent-results-list .result-entry-card');
     cards.forEach(card => {
-        if (filter === 'ALL') {
+        if (filter === 'LAST2') {
+            card.style.display = card.dataset.recent === 'true' ? 'flex' : 'none';
+        } else if (filter === 'ALL') {
             card.style.display = 'flex';
         } else if (filter === 'P1') {
             card.style.display = card.classList.contains('p1-card') ? 'flex' : 'none';

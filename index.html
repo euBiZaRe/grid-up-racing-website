@@ -58,7 +58,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" media="print" onload="this.media='all'"><noscript><link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet"></noscript>
-    <link rel="stylesheet" href="style.css?v=30">
+    <link rel="stylesheet" href="style.css?v=31">
     <link rel="icon" type="image/png" href="assets/G_2.png">
 </head>
 <body>
@@ -564,7 +564,7 @@
                                 <span class="card-title-icon">🏆</span>
                                 <div>
                                     <span class="mockup-card-title">OFFICIAL TEAM RESULTS</span>
-                                    <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; letter-spacing: 0.5px; margin-top: 2px;">ALL PODIUM FINISHES (P1 • P2 • P3)</div>
+                                    <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; letter-spacing: 0.5px; margin-top: 2px;">LAST 2 PODIUM FINISHES (P1 • P2 • P3)</div>
                                 </div>
                             </div>
                             <span class="mockup-badge-upcoming" style="border-color: rgba(234, 179, 8, 0.4); background: rgba(234, 179, 8, 0.1); color: #facc15;">
@@ -574,15 +574,16 @@
 
                         <!-- Podium Filter Bar -->
                         <div class="podium-filter-bar">
-                            <button class="podium-filter-btn active" data-filter="ALL" onclick="filterPodiumResults('ALL')">ALL PODIUMS (6)</button>
+                            <button class="podium-filter-btn active" data-filter="LAST2" onclick="filterPodiumResults('LAST2')">LAST 2 PODIUMS</button>
                             <button class="podium-filter-btn" data-filter="P1" onclick="filterPodiumResults('P1')">🥇 P1 WINS (2)</button>
                             <button class="podium-filter-btn" data-filter="P2" onclick="filterPodiumResults('P2')">🥈 P2 PODIUMS (3)</button>
                             <button class="podium-filter-btn" data-filter="P3" onclick="filterPodiumResults('P3')">🥉 P3 PODIUMS (1)</button>
+                            <button class="podium-filter-btn" data-filter="ALL" onclick="filterPodiumResults('ALL')">ALL PODIUMS (6)</button>
                         </div>
 
                         <div class="recent-results-grid" id="mockup-recent-results-list">
-                            <!-- Card 1: Road America 6H (P1) -->
-                            <div class="result-entry-card p1-card">
+                            <!-- Card 1: Road America 6H (P1) - Most Recent Podium -->
+                            <div class="result-entry-card p1-card" data-recent="true">
                                 <div class="result-entry-top">
                                     <div class="result-pos-badge p1-badge">
                                         <span class="pos-icon">🥇</span>
@@ -607,8 +608,8 @@
                                 </div>
                             </div>
 
-                            <!-- Card 2: INDY 500 (P1) -->
-                            <div class="result-entry-card p1-card">
+                            <!-- Card 2: INDY 500 (P1) - Second Most Recent Podium -->
+                            <div class="result-entry-card p1-card" data-recent="true">
                                 <div class="result-entry-top">
                                     <div class="result-pos-badge p1-badge">
                                         <span class="pos-icon">🥇</span>
@@ -634,7 +635,7 @@
                             </div>
 
                             <!-- Card 3: Daytona 24 (P2) -->
-                            <div class="result-entry-card p2-card">
+                            <div class="result-entry-card p2-card" style="display: none;">
                                 <div class="result-entry-top">
                                     <div class="result-pos-badge p2-badge">
                                         <span class="pos-icon">🥈</span>
@@ -660,7 +661,7 @@
                             </div>
 
                             <!-- Card 4: 24h Nürburgring (P2) -->
-                            <div class="result-entry-card p2-card">
+                            <div class="result-entry-card p2-card" style="display: none;">
                                 <div class="result-entry-top">
                                     <div class="result-pos-badge p2-badge">
                                         <span class="pos-icon">🥈</span>
@@ -685,7 +686,7 @@
                             </div>
 
                             <!-- Card 5: Suzuka 1000km (P2) -->
-                            <div class="result-entry-card p2-card">
+                            <div class="result-entry-card p2-card" style="display: none;">
                                 <div class="result-entry-top">
                                     <div class="result-pos-badge p2-badge">
                                         <span class="pos-icon">🥈</span>
@@ -711,7 +712,7 @@
                             </div>
 
                             <!-- Card 6: iRacing ROAR (P3) -->
-                            <div class="result-entry-card p3-card">
+                            <div class="result-entry-card p3-card" style="display: none;">
                                 <div class="result-entry-top">
                                     <div class="result-pos-badge p3-badge">
                                         <span class="pos-icon">🥉</span>
@@ -909,7 +910,7 @@
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-    <script defer src="script.js?v=30"></script>
+    <script defer src="script.js?v=31"></script>
     <script defer src="js/auth.js?v=11"></script>
 </body>
 </html>
