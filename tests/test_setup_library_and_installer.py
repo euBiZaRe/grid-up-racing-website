@@ -183,6 +183,54 @@ class TestSetupLibraryAndInstaller(unittest.TestCase):
         finally:
             urllib.request.urlopen = orig_urlopen
 
+    def test_insecure_url_scheme_rejection(self):
+        """SEC-006: Verify non-HTTPS schemes (file://, http://, ftp://) are rejected to prevent LFI."""
+        insecure_urls = [
+            "file:///C:/Windows/System32/drivers/etc/hosts",
+            "file:///etc/passwd",
+            "http://example.com/unencrypted_setup.sto",
+            "ftp://example.com/setup.sto",
+            "javascript:alert(1)"
+        ]
+        for url in insecure_urls:
+            self.assertFalse(
+                self.bridge.is_safe_download_url(url),
+                f"Insecure URL was not rejected: {url}"
+            )
+
+    def test_loopback_and_internal_ip_ssrf_rejection(self):
+        """SEC-006: Verify loopback, private RFC 1918, and cloud metadata IPs are rejected to prevent SSRF."""
+        dangerous_urls = [
+            "https://127.0.0.1/admin/secrets",
+            "https://localhost:3001/api",
+            "https://0.0.0.0/test",
+            "https://169.254.169.254/latest/meta-data/",
+            "https://10.0.0.1/setup.sto",
+            "https://192.168.1.1/setup.sto",
+            "https://172.16.0.1/setup.sto",
+            "https://server.local/setup.sto",
+            "https://internal.internal/setup.sto"
+        ]
+        for url in dangerous_urls:
+            self.assertFalse(
+                self.bridge.is_safe_download_url(url),
+                f"SSRF URL was not rejected: {url}"
+            )
+
+    def test_safe_https_urls_accepted(self):
+        """Verify legitimate public HTTPS URLs are accepted."""
+        safe_urls = [
+            "https://firebasestorage.googleapis.com/v0/b/app/o/setup.sto",
+            "https://storage.googleapis.com/bucket/setup.sto",
+            "https://example.com/setups/race.sto"
+        ]
+        for url in safe_urls:
+            self.assertTrue(
+                self.bridge.is_safe_download_url(url),
+                f"Valid public HTTPS URL was incorrectly rejected: {url}"
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
+

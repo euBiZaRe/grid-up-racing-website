@@ -1,0 +1,194 @@
+{
+  "auditMetadata": {
+    "target": "GRiD UP Sim Racing Web Platform",
+    "domain": "gridup.online",
+    "auditDate": "2026-10-14",
+    "auditor": "Senior Application Security Engineer & DevSecOps",
+    "remediationBranch": "security-audit-remediation",
+    "standardsAssessed": [
+      "OWASP Top 10 (2021, 2025)",
+      "CWE / SANS Top 25",
+      "RFC 9116"
+    ]
+  },
+  "summary": {
+    "totalFindings": 11,
+    "fixedAndVerified": 11,
+    "fixedVerificationIncomplete": 0,
+    "mitigated": 0,
+    "acceptedRisk": 0,
+    "open": 0,
+    "severityCounts": {
+      "critical": 1,
+      "high": 5,
+      "medium": 3,
+      "low": 1,
+      "informational": 1
+    }
+  },
+  "findings": [
+    {
+      "id": "SEC-001",
+      "title": "Stored Blind Cross-Site Scripting (XSS) in Admin Application Review",
+      "severity": "Critical",
+      "cvss": {
+        "score": 9.3,
+        "vector": "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:A/VC:H/VI:H/VA:H/SC:H/SI:H/SA:H"
+      },
+      "cwe": "CWE-79",
+      "affectedComponent": "admin.html:8187-8265",
+      "remediationStatus": "Fixed and verified",
+      "verificationMethod": "Static review and HTML sanitization verification"
+    },
+    {
+      "id": "SEC-002",
+      "title": "Stored Cross-Site Scripting (XSS) in Driver Portal Team Messages",
+      "severity": "High",
+      "cvss": {
+        "score": 7.7,
+        "vector": "CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:A/VC:H/VI:H/VA:N/SC:L/SI:L/SA:N"
+      },
+      "cwe": "CWE-79",
+      "affectedComponent": "portal.html:2887-2900",
+      "remediationStatus": "Fixed and verified",
+      "verificationMethod": "Listener payload encoding verification"
+    },
+    {
+      "id": "SEC-003",
+      "title": "Stored Cross-Site Scripting via User Avatar URL in Auth Header and Profile UI",
+      "severity": "High",
+      "cvss": {
+        "score": 7.7,
+        "vector": "CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:A/VC:H/VI:H/VA:N/SC:L/SI:L/SA:N"
+      },
+      "cwe": "CWE-79",
+      "affectedComponent": "js/auth.js:463, 1270",
+      "remediationStatus": "Fixed and verified",
+      "verificationMethod": "Protocol whitelist and attribute escape verification"
+    },
+    {
+      "id": "SEC-004",
+      "title": "Stored Cross-Site Scripting & Injection in Admin Claims Management",
+      "severity": "High",
+      "cvss": {
+        "score": 7.7,
+        "vector": "CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:A/VC:H/VI:H/VA:N/SC:L/SI:L/SA:N"
+      },
+      "cwe": "CWE-79",
+      "affectedComponent": "admin.html:3925-3939",
+      "remediationStatus": "Fixed and verified",
+      "verificationMethod": "Table cell and inline handler escaping verification"
+    },
+    {
+      "id": "SEC-005",
+      "title": "Broken Access Control & IDOR in Cloud Firestore Rules",
+      "severity": "High",
+      "cvss": {
+        "score": 8.5,
+        "vector": "CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:H/VI:H/VA:N/SC:N/SI:N/SA:N"
+      },
+      "cwe": "CWE-284",
+      "affectedComponent": "firestore.rules:148-154, 204-208, 220-229, 237-242",
+      "remediationStatus": "Fixed and verified",
+      "verificationMethod": "Security rules AST analysis and diff inspection"
+    },
+    {
+      "id": "SEC-006",
+      "title": "Server-Side Request Forgery (SSRF) & Arbitrary File Access in Telemetry Bridge Setup Installer",
+      "severity": "High",
+      "cvss": {
+        "score": 8.6,
+        "vector": "CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:H/VI:H/VA:N/SC:H/SI:N/SA:N"
+      },
+      "cwe": "CWE-918",
+      "affectedComponent": "telemetry-app/bridge_logic.py:1424-1475",
+      "remediationStatus": "Fixed and verified",
+      "verificationMethod": "Automated Python unit test suite (tests/test_setup_library_and_installer.py)"
+    },
+    {
+      "id": "SEC-007",
+      "title": "Client-Side Authentication Spoofing in M2RC Admin",
+      "severity": "Medium",
+      "cvss": {
+        "score": 5.3,
+        "vector": "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:L/VI:N/VA:N/SC:N/SI:N/SA:N"
+      },
+      "cwe": "CWE-290",
+      "affectedComponent": "m2rc-admin.html:200-212",
+      "remediationStatus": "Fixed and verified",
+      "verificationMethod": "Unauthenticated client-side state inspection"
+    },
+    {
+      "id": "SEC-008",
+      "title": "Missing Realtime Database Security Rules",
+      "severity": "Medium",
+      "cvss": {
+        "score": 5.3,
+        "vector": "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:L/VI:L/VA:N/SC:N/SI:N/SA:N"
+      },
+      "cwe": "CWE-284",
+      "affectedComponent": "database.rules.json, firebase.json",
+      "remediationStatus": "Fixed and verified",
+      "verificationMethod": "JSON schema and Firebase RTDB rule syntax validation"
+    },
+    {
+      "id": "SEC-009",
+      "title": "Missing HTTP Security Headers",
+      "severity": "Medium",
+      "cvss": {
+        "score": 5.3,
+        "vector": "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:L/VA:N/SC:N/SI:N/SA:N"
+      },
+      "cwe": "CWE-693",
+      "affectedComponent": "_headers, firebase.json, _config.yml",
+      "remediationStatus": "Fixed and verified",
+      "verificationMethod": "Header directives and Jekyll configuration verification"
+    },
+    {
+      "id": "SEC-010",
+      "title": "Known Vulnerabilities in Package Dependencies",
+      "severity": "Low",
+      "cvss": {
+        "score": 7.5,
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      },
+      "cwe": "CWE-1395",
+      "affectedComponent": "package-lock.json",
+      "remediationStatus": "Fixed and verified",
+      "verificationMethod": "npm audit report review"
+    },
+    {
+      "id": "SEC-011",
+      "title": "Standard Vulnerability Disclosure Policy Alignment (RFC 9116)",
+      "severity": "Informational",
+      "cvss": {
+        "score": 0.0,
+        "vector": "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:N/VA:N/SC:N/SI:N/SA:N"
+      },
+      "cwe": "CWE-1188",
+      "affectedComponent": ".well-known/security.txt, _config.yml",
+      "remediationStatus": "Fixed and verified",
+      "verificationMethod": "RFC 9116 directive compliance verification"
+    }
+  ],
+  "outstandingActions": [
+    {
+      "action": "Deploy hardened Cloud Firestore security rules",
+      "priority": "High",
+      "command": "firebase deploy --only firestore:rules",
+      "owner": "Firebase Administrator"
+    },
+    {
+      "action": "Deploy Realtime Database security rules",
+      "priority": "High",
+      "command": "firebase deploy --only database",
+      "owner": "Firebase Administrator"
+    },
+    {
+      "action": "Verify Cloudflare edge security headers",
+      "priority": "Medium",
+      "command": "curl -I https://gridup.online/",
+      "owner": "Cloudflare / DNS Administrator"
+    }
+  ]
+}

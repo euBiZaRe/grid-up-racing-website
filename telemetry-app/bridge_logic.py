@@ -14,6 +14,8 @@ import firebase_admin
 from firebase_admin import credentials, db, firestore
 import urllib.request
 import urllib.error
+import urllib.parse
+import ipaddress
 
 # Resolve base directory dynamically
 if getattr(sys, 'frozen', False):
@@ -1421,6 +1423,28 @@ class TelemetryBridge:
             except Exception as e:
                 self.log(f"Firestore job update error: {e}")
 
+    def is_safe_download_url(self, url):
+        try:
+            parsed = urllib.parse.urlparse(str(url).strip())
+            if parsed.scheme.lower() != 'https':
+                return False
+            hostname = parsed.hostname
+            if not hostname:
+                return False
+            hostname_lower = hostname.lower()
+            if hostname_lower in ('localhost', '0.0.0.0', '127.0.0.1', '::1', '169.254.169.254'):
+                return False
+            try:
+                ip = ipaddress.ip_address(hostname_lower)
+                if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved:
+                    return False
+            except ValueError:
+                if hostname_lower.endswith('.local') or hostname_lower.endswith('.internal'):
+                    return False
+            return True
+        except Exception:
+            return False
+
     def process_setup_job(self, job_id, job):
         try:
             download_url = job.get('downloadUrl')
@@ -1431,6 +1455,9 @@ class TelemetryBridge:
 
             if not download_url:
                 raise ValueError("Job payload missing downloadUrl.")
+
+            if not self.is_safe_download_url(download_url):
+                raise ValueError("Insecure downloadUrl rejected (must be public HTTPS URL).")
 
             self.update_job_status(job_id, 'downloading', f"Downloading setup for {car_name or 'car'}...")
             self.log(f"[Setup Installer] Downloading job {job_id} from {download_url[:60]}...")
@@ -1459,6 +1486,12 @@ class TelemetryBridge:
 
             safe_filename = self.sanitize_setup_filename(raw_filename)
             target_path = os.path.join(target_car_dir, safe_filename)
+
+            # Strict path containment verification to eliminate path traversal risks
+            abs_setups = os.path.abspath(setups_dir)
+            abs_target = os.path.abspath(target_path)
+            if not abs_target.startswith(abs_setups + os.sep) and abs_target != abs_setups:
+                raise ValueError("Invalid target setup path: path traversal detected.")
 
             temp_path = target_path + f".tmp_{int(time.time())}"
             with open(temp_path, "wb") as f:

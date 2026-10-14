@@ -1,0 +1,32 @@
+{
+  "rules": {
+    "setup_jobs": {
+      "$machineId": {
+        ".read": "auth != null",
+        ".write": "auth != null"
+      }
+    },
+    "teams": {
+      "$teamId": {
+        "streams": {
+          "$streamKey": {
+            ".read": true,
+            ".write": "auth != null"
+          }
+        },
+        "drivers": {
+          "$streamKey": {
+            ".read": true,
+            ".write": "auth != null"
+          }
+        }
+      }
+    },
+    "telemetry": {
+      ".read": true,
+      ".write": "auth != null"
+    },
+    ".read": false,
+    ".write": false
+  }
+}

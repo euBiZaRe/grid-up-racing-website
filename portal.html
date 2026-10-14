@@ -2888,11 +2888,11 @@
 
                                 <div class="message ${isMe ? 'sent' : 'received'}" style="display: flex; flex-direction: column; padding: 0.6rem 1rem; background: ${isMe ? 'rgba(0, 207, 255, 0.05)' : 'rgba(255,255,255,0.02)'}; border-left: 2px solid ${isMe ? 'var(--primary)' : 'rgba(255,255,255,0.05)'}; border-radius: 4px; max-width: 80%; align-self: ${isMe ? 'flex-end' : 'flex-start'};">
 
-                                    <span style="font-weight: 700; color: ${isMe ? 'var(--primary)' : 'var(--text-muted)'}; font-size: 0.8rem; margin-bottom: 0.2rem;">${m.author}</span>
+                                    <span style="font-weight: 700; color: ${isMe ? 'var(--primary)' : 'var(--text-muted)'}; font-size: 0.8rem; margin-bottom: 0.2rem;">${escapeHtml(m.author || 'Teammate')}</span>
 
-                                    <span style="font-size: 0.9rem; color: var(--text-main); word-break: break-word;">${m.text}</span>
+                                    <span style="font-size: 0.9rem; color: var(--text-main); word-break: break-word;">${escapeHtml(m.text || '')}</span>
 
-                                    <span style="font-size: 0.65rem; color: var(--text-muted); opacity: 0.5; margin-top: 0.4rem; align-self: flex-end;">${time}</span>
+                                    <span style="font-size: 0.65rem; color: var(--text-muted); opacity: 0.5; margin-top: 0.4rem; align-self: flex-end;">${escapeHtml(time)}</span>
 
                                 </div>
 

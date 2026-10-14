@@ -443,7 +443,8 @@ async function updateAuthUI(user, isTentative = false) {
     else if (loginBtn) loginBtn.remove();
 
     if (user) {
-        let avatar = user.photoURL || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
+        const rawAvatar = user.photoURL || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
+        const avatar = sanitizeHttpUrl(rawAvatar) || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
         
         if (navActions) {
             let container = document.getElementById('navbar-user-ui');
@@ -460,7 +461,7 @@ async function updateAuthUI(user, isTentative = false) {
             const adminLink = IS_ADMIN ? `<a href="${adminUrl}" id="navbar-admin-btn" style="${btnBase} background: rgba(255,59,48,0.12); border: 1px solid rgba(255,59,48,0.4); color: #FF6B6B;">Admin</a>` : '';
             const portalLink = `<a href="${basePath}portal.html" id="navbar-portal-btn" style="position: relative; ${btnBase} background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.2); color: #FFFFFF;">Portal<span id="portal-badge" style="display: ${PORTAL_HAS_UNREAD ? 'block' : 'none'}; position: absolute; top: -4px; right: -4px; width: 8px; height: 8px; background-color: #ff3b30; border-radius: 50%; border: 1px solid #fff; box-shadow: 0 0 4px rgba(255,59,48,0.6);"></span></a>`;
             const profileLink = `<a href="${basePath}profile.html" style="${btnBase} background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.2); color: #FFFFFF;">Profile</a>`;
-            const logoutBtn = `<a href="#" onclick="if(confirm('Logout?')) firebase.auth().signOut()" style="${btnBase} background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.15); color: #E2E8F0; display: inline-flex; align-items: center; gap: 6px;"><img src="${avatar}" style="width: 18px; height: 18px; border-radius: 50%; vertical-align: middle; object-fit: cover; border: 1px solid rgba(255,255,255,0.3);"> Logout</a>`;
+            const logoutBtn = `<a href="#" onclick="if(confirm('Logout?')) firebase.auth().signOut()" style="${btnBase} background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.15); color: #E2E8F0; display: inline-flex; align-items: center; gap: 6px;"><img src="${escapeHtml(avatar)}" alt="User Avatar" style="width: 18px; height: 18px; border-radius: 50%; vertical-align: middle; object-fit: cover; border: 1px solid rgba(255,255,255,0.3);"> Logout</a>`;
 
             container.innerHTML = `${adminLink}${portalLink}${profileLink}${logoutBtn}`;
             navActions.innerHTML = '';
@@ -1265,9 +1266,12 @@ async function loadDriverCustomInfo(driverName) {
                             const userData = userDoc.data();
                             
                             if (userData.customAvatarUrl) {
-                                const avatarEl = document.getElementById("driver-avatar-container") || document.querySelector(".driver-avatar-container");
-                                if (avatarEl) {
-                                    avatarEl.innerHTML = `<img src="${userData.customAvatarUrl}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                                const safeAvatar = sanitizeHttpUrl(userData.customAvatarUrl);
+                                if (safeAvatar) {
+                                    const avatarEl = document.getElementById("driver-avatar-container") || document.querySelector(".driver-avatar-container");
+                                    if (avatarEl) {
+                                        avatarEl.innerHTML = `<img src="${escapeHtml(safeAvatar)}" alt="Driver Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                                    }
                                 }
                             }
                             if (userData.age) {

@@ -3,15 +3,18 @@
 include:
   - .well-known
   - security.txt
+  - _headers
 
 # Exclude sensitive backend scripts, dev tooling, and build files from static deployment
 exclude:
   - scripts/
   - tests/
+  - security-audit/
   - scratch/
   - package.json
   - package-lock.json
   - firebase.json
   - firestore.rules
+  - database.rules.json
   - cors.json
   - README.md

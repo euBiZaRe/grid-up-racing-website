@@ -3922,17 +3922,23 @@ body.meeting-mode-active .btn-summary-confirm {
                     // Check if the user is already an admin
                     const isAdmin = data.discordId && adminUids.includes(data.discordId);
                     
-                    const row = document.createElement('tr');
+                    const safeId = escapeHtml(id);
+                    const safeIracingId = escapeHtml(data.iracingId || '');
+                    const safeStatus = escapeHtml((data.status || 'pending').toLowerCase());
+                    const safeStatusText = escapeHtml((data.status || 'pending').toUpperCase());
+                    const jsId = String(id).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                    const jsDiscordId = String(data.discordId || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
                     
+                    const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td data-label="Driver Name"><strong style="color: var(--text-main);">${id}</strong></td>
-                        <td data-label="iRacing ID" style="font-family: monospace; color: var(--primary);">${data.iracingId}</td>
-                        <td data-label="Status"><span class="status-badge status-${data.status}">${data.status.toUpperCase()}</span></td>
+                        <td data-label="Driver Name"><strong style="color: var(--text-main);">${safeId}</strong></td>
+                        <td data-label="iRacing ID" style="font-family: monospace; color: var(--primary);">${safeIracingId}</td>
+                        <td data-label="Status"><span class="status-badge status-${safeStatus}">${safeStatusText}</span></td>
                         <td data-label="Actions">
                             <div class="action-btns" style="display: flex; gap: 5px; justify-content: flex-end; align-items: center;">
-                                ${data.status !== 'verified' ? `<button onclick="updateClaim('${id}', 'verified')" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.7rem;">Approve</button>` : ''}
-                                ${data.status === 'verified' ? (isAdmin ? `<span class="status-badge status-admin" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; display: inline-block;">ADMIN</span>` : `<button onclick="promoteUIDAsAdmin('${data.discordId}', '${id}')" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; color: var(--primary); border-color: var(--primary);">Promote</button>`) : ''}
-                                ${data.status !== 'denied' ? `<button onclick="updateClaim('${id}', 'denied')" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; border-color: #ff0099; color: #ff0099;">Deny</button>` : ''}
+                                ${data.status !== 'verified' ? `<button onclick="updateClaim('${jsId}', 'verified')" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.7rem;">Approve</button>` : ''}
+                                ${data.status === 'verified' ? (isAdmin ? `<span class="status-badge status-admin" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; display: inline-block;">ADMIN</span>` : `<button onclick="promoteUIDAsAdmin('${jsDiscordId}', '${jsId}')" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; color: var(--primary); border-color: var(--primary);">Promote</button>`) : ''}
+                                ${data.status !== 'denied' ? `<button onclick="updateClaim('${jsId}', 'denied')" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; border-color: #ff0099; color: #ff0099;">Deny</button>` : ''}
                             </div>
                         </td>
                     `;
@@ -8183,42 +8189,44 @@ body.meeting-mode-active .btn-summary-confirm {
                     
                     const avail = Array.isArray(data.availability) ? data.availability.join(', ') : (data.availability || 'None');
                     const classes = Array.isArray(data.classes) ? data.classes.join(', ') : (data.classes || 'None');
+                    const safeJsId = String(id).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                    const safeJsDiscordUser = String(resolvedDiscordUsername).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
                     
                     const leftColHTML = `
                         <div style="margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem;">
-                            <h3 style="color: var(--primary); margin-bottom: 0.5rem;">${data.iracingName || 'Unknown'}</h3>
+                            <h3 style="color: var(--primary); margin-bottom: 0.5rem;">${escapeHtml(data.iracingName || 'Unknown')}</h3>
                             <p style="font-size: 0.85rem; color: #5865F2; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                                 <strong>Discord:</strong> 
-                                <span>${resolvedDiscordUsername}</span> 
-                                <button onclick="editDiscordUsername('${id}', '${resolvedDiscordUsername}')" class="btn btn-outline" style="padding: 2px 8px; font-size: 0.6rem; border-radius: 4px; line-height: 1.2;">Edit</button>
-                                ${data.discordUid ? `<span style="color: var(--text-muted); font-size: 0.7rem;">(UID: ${data.discordUid})</span>` : ''}
+                                <span>${escapeHtml(resolvedDiscordUsername)}</span> 
+                                <button onclick="editDiscordUsername('${safeJsId}', '${safeJsDiscordUser}')" class="btn btn-outline" style="padding: 2px 8px; font-size: 0.6rem; border-radius: 4px; line-height: 1.2;">Edit</button>
+                                ${data.discordUid ? `<span style="color: var(--text-muted); font-size: 0.7rem;">(UID: ${escapeHtml(data.discordUid)})</span>` : ''}
                             </p>
-                            <p style="font-size: 0.8rem; color: var(--text-muted);">Applied on: ${data.timestamp ? data.timestamp.toDate().toLocaleString() : 'Unknown'}</p>
+                            <p style="font-size: 0.8rem; color: var(--text-muted);">Applied on: ${escapeHtml(data.timestamp ? (data.timestamp.toDate ? data.timestamp.toDate().toLocaleString() : new Date(data.timestamp).toLocaleString()) : 'Unknown')}</p>
                         </div>
                         
                         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
                             <div>
                                 <p style="font-size: 0.7rem; color: var(--primary); margin-bottom: 0.2rem;">IRATING</p>
-                                <p style="font-size: 0.9rem; font-weight: 700;">${data.irating || 'N/A'}</p>
+                                <p style="font-size: 0.9rem; font-weight: 700;">${escapeHtml(data.irating || 'N/A')}</p>
                             </div>
                             <div>
                                 <p style="font-size: 0.7rem; color: var(--primary); margin-bottom: 0.2rem;">EXPERIENCE</p>
-                                <p style="font-size: 0.9rem;">${data.experience || 'N/A'}</p>
+                                <p style="font-size: 0.9rem;">${escapeHtml(data.experience || 'N/A')}</p>
                             </div>
                             <div>
                                 <p style="font-size: 0.7rem; color: var(--primary); margin-bottom: 0.2rem;">LOCATION</p>
-                                <p style="font-size: 0.9rem;">${data.location || 'N/A'}</p>
+                                <p style="font-size: 0.9rem;">${escapeHtml(data.location || 'N/A')}</p>
                             </div>
                         </div>
                         
                         <div style="margin-top: 1rem;">
                             <p style="font-size: 0.7rem; color: var(--primary); margin-bottom: 0.2rem;">AVAILABILITY</p>
-                            <p style="font-size: 0.9rem;">${avail}</p>
+                            <p style="font-size: 0.9rem;">${escapeHtml(avail)}</p>
                         </div>
                         
                         <div style="margin-top: 1rem;">
                             <p style="font-size: 0.7rem; color: var(--primary); margin-bottom: 0.2rem;">PREFERRED CAR CLASSES</p>
-                            <p style="font-size: 0.9rem;">${classes}</p>
+                            <p style="font-size: 0.9rem;">${escapeHtml(classes)}</p>
                         </div>
                         
                         <div style="margin-top: 1rem; padding: 1rem; background: rgba(0,207,255,0.05); border-left: 2px solid var(--primary);">
@@ -8227,11 +8235,11 @@ body.meeting-mode-active .btn-summary-confirm {
                         </div>
 
                         <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
-                            <p style="font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">UPDATE APPLICATION STATUS (${(data.status || 'pending').toUpperCase()})</p>
+                            <p style="font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">UPDATE APPLICATION STATUS (${escapeHtml((data.status || 'pending').toUpperCase())})</p>
                             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                                <button onclick="updateApplicationStatus('${id}', 'processing')" class="btn btn-outline" style="flex: 1; font-size: 0.75rem; padding: 0.6rem; border-color: #00CFFF; color: #00CFFF; ${(data.status === 'processing') ? 'background: rgba(0,207,255,0.2);' : ''}">Processing</button>
-                                <button onclick="updateApplicationStatus('${id}', 'approved')" class="btn btn-outline" style="flex: 1; font-size: 0.75rem; padding: 0.6rem; border-color: #00ff88; color: #00ff88; ${(data.status === 'approved') ? 'background: rgba(0,255,136,0.2);' : ''}">Approve</button>
-                                <button onclick="updateApplicationStatus('${id}', 'denied')" class="btn btn-outline" style="flex: 1; font-size: 0.75rem; padding: 0.6rem; border-color: #ff3333; color: #ff3333; ${(data.status === 'denied') ? 'background: rgba(255,51,51,0.2);' : ''}">Deny</button>
+                                <button onclick="updateApplicationStatus('${safeJsId}', 'processing')" class="btn btn-outline" style="flex: 1; font-size: 0.75rem; padding: 0.6rem; border-color: #00CFFF; color: #00CFFF; ${(data.status === 'processing') ? 'background: rgba(0,207,255,0.2);' : ''}">Processing</button>
+                                <button onclick="updateApplicationStatus('${safeJsId}', 'approved')" class="btn btn-outline" style="flex: 1; font-size: 0.75rem; padding: 0.6rem; border-color: #00ff88; color: #00ff88; ${(data.status === 'approved') ? 'background: rgba(0,255,136,0.2);' : ''}">Approve</button>
+                                <button onclick="updateApplicationStatus('${safeJsId}', 'denied')" class="btn btn-outline" style="flex: 1; font-size: 0.75rem; padding: 0.6rem; border-color: #ff3333; color: #ff3333; ${(data.status === 'denied') ? 'background: rgba(255,51,51,0.2);' : ''}">Deny</button>
                             </div>
                         </div>
                     `;
@@ -8254,9 +8262,9 @@ body.meeting-mode-active .btn-summary-confirm {
                                 const isMe = m.author === 'Admin' || m.uid === currentUid;
                                 chatMessagesContainer.innerHTML += `
                                     <div class="message ${isMe ? 'sent' : 'received'}" style="display: flex; flex-direction: column; padding: 0.6rem 1rem; background: ${isMe ? 'rgba(0, 207, 255, 0.05)' : 'rgba(255,255,255,0.02)'}; border-left: 2px solid ${isMe ? 'var(--primary)' : 'rgba(255,255,255,0.05)'}; border-radius: 4px; max-width: 80%; align-self: ${isMe ? 'flex-end' : 'flex-start'};">
-                                        <span style="font-weight: 700; color: ${isMe ? 'var(--primary)' : 'var(--text-muted)'}; font-size: 0.8rem; margin-bottom: 0.2rem;">${m.author}</span>
-                                        <span style="font-size: 0.9rem; color: var(--text-main); word-break: break-word;">${m.text}</span>
-                                        <span style="font-size: 0.65rem; color: var(--text-muted); opacity: 0.5; margin-top: 0.4rem; align-self: flex-end;">${time}</span>
+                                        <span style="font-weight: 700; color: ${isMe ? 'var(--primary)' : 'var(--text-muted)'}; font-size: 0.8rem; margin-bottom: 0.2rem;">${escapeHtml(m.author || 'User')}</span>
+                                        <span style="font-size: 0.9rem; color: var(--text-main); word-break: break-word;">${escapeHtml(m.text || '')}</span>
+                                        <span style="font-size: 0.65rem; color: var(--text-muted); opacity: 0.5; margin-top: 0.4rem; align-self: flex-end;">${escapeHtml(time)}</span>
                                     </div>
                                 `;
                             });
