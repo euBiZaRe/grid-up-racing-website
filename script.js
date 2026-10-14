@@ -666,6 +666,13 @@ function populateNextEventDashboard(nextEvent, staticIds = [], eventBanners = {}
             trackImg: 'assets/tracks/indy-road-course.png',
             date: 'OCTOBER 16–18, 2026',
             schedule: { practice: '17:00 GMT', qualifying: '18:30 GMT', greenFlag: '19:00 GMT' },
+            timeslots: [
+                { slot: 1, utc: '2026-10-16T22:00:00Z', duration: '8 hr' },
+                { slot: 2, utc: '2026-10-17T07:00:00Z', duration: '8 hr' },
+                { slot: 3, utc: '2026-10-17T12:00:00Z', duration: '8 hr' },
+                { slot: 4, utc: '2026-10-17T16:00:00Z', duration: '8 hr' },
+                { slot: 5, utc: '2026-10-18T00:00:00Z', duration: '8 hr' }
+            ],
             classes: ['GT3 CLASS', '2+ DRIVERS PER CAR'],
             metrics: [
                 { icon: '⛽', val: '100%', lbl: 'FUEL CAPACITY' },
@@ -685,6 +692,13 @@ function populateNextEventDashboard(nextEvent, staticIds = [], eventBanners = {}
             trackImg: 'assets/tracks/indy-road-course.png',
             date: 'OCTOBER 16–18, 2026',
             schedule: { practice: '17:00 GMT', qualifying: '18:30 GMT', greenFlag: '19:00 GMT' },
+            timeslots: [
+                { slot: 1, utc: '2026-10-16T22:00:00Z', duration: '8 hr' },
+                { slot: 2, utc: '2026-10-17T07:00:00Z', duration: '8 hr' },
+                { slot: 3, utc: '2026-10-17T12:00:00Z', duration: '8 hr' },
+                { slot: 4, utc: '2026-10-17T16:00:00Z', duration: '8 hr' },
+                { slot: 5, utc: '2026-10-18T00:00:00Z', duration: '8 hr' }
+            ],
             classes: ['GT3 CLASS', '2+ DRIVERS PER CAR'],
             metrics: [
                 { icon: '⛽', val: '100%', lbl: 'FUEL CAPACITY' },
@@ -860,13 +874,16 @@ function populateNextEventDashboard(nextEvent, staticIds = [], eventBanners = {}
     if (dateEl) dateEl.textContent = profile.date;
 
     const schedPrac = document.getElementById('hero-sched-practice');
-    if (schedPrac) schedPrac.textContent = profile.schedule.practice;
+    if (schedPrac) schedPrac.textContent = profile.schedule ? profile.schedule.practice : '';
 
     const schedQual = document.getElementById('hero-sched-quali');
-    if (schedQual) schedQual.textContent = profile.schedule.qualifying;
+    if (schedQual) schedQual.textContent = profile.schedule ? profile.schedule.qualifying : '';
 
     const schedGreen = document.getElementById('hero-sched-green');
-    if (schedGreen) schedGreen.textContent = profile.schedule.greenFlag;
+    if (schedGreen) schedGreen.textContent = profile.schedule ? profile.schedule.greenFlag : '';
+
+    // Render Event Timeslots formatted to user's local timezone
+    renderHeroTimeslots(profile.timeslots || nextEvent.slots);
 
     const classesEl = document.getElementById('hero-event-classes');
     if (classesEl && Array.isArray(profile.classes)) {
@@ -907,6 +924,97 @@ function populateNextEventDashboard(nextEvent, staticIds = [], eventBanners = {}
     if (heroLink) {
         heroLink.href = profile.detailsUrl;
     }
+}
+
+// Renders the Event Timeslots list formatted to the user's local timezone
+function renderHeroTimeslots(slots) {
+    const listEl = document.getElementById('hero-timeslots-list');
+    const badgeEl = document.getElementById('hero-tz-badge');
+    if (!listEl) return;
+
+    let tzShort = 'LOCAL';
+    try {
+        const parts = new Intl.DateTimeFormat([], { timeZoneName: 'short' }).formatToParts(new Date());
+        const tzPart = parts.find(p => p.type === 'timeZoneName');
+        if (tzPart && tzPart.value) {
+            tzShort = tzPart.value;
+        }
+    } catch (e) {
+        tzShort = 'LOCAL';
+    }
+    if (badgeEl) {
+        badgeEl.textContent = tzShort;
+        badgeEl.title = `Times converted to your local time (${tzShort})`;
+    }
+
+    const defaultSlots = [
+        { slot: 1, utc: '2026-10-16T22:00:00Z', duration: '8 hr' },
+        { slot: 2, utc: '2026-10-17T07:00:00Z', duration: '8 hr' },
+        { slot: 3, utc: '2026-10-17T12:00:00Z', duration: '8 hr' },
+        { slot: 4, utc: '2026-10-17T16:00:00Z', duration: '8 hr' },
+        { slot: 5, utc: '2026-10-18T00:00:00Z', duration: '8 hr' }
+    ];
+
+    const activeSlots = (Array.isArray(slots) && slots.length > 0) ? slots : defaultSlots;
+    const now = Date.now();
+
+    listEl.innerHTML = activeSlots.map((s, idx) => {
+        const slotDate = new Date(s.utc || s.date || s.startTime);
+        const slotNum = s.slot || (idx + 1);
+        const duration = s.duration || '8 hr';
+
+        // Local time formatting
+        const timeFormatted = slotDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
+        const dateFormatted = slotDate.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+
+        // Relative remaining time
+        const diffMs = slotDate.getTime() - now;
+        let countdownText = '';
+        let isActive = false;
+
+        const durHoursMatch = String(duration).match(/(\d+)/);
+        const durHours = durHoursMatch ? parseInt(durHoursMatch[1], 10) : 8;
+        const endMs = slotDate.getTime() + (durHours * 3600 * 1000);
+
+        if (diffMs > 0) {
+            const totalHours = Math.floor(diffMs / (1000 * 60 * 60));
+            const days = Math.floor(totalHours / 24);
+            const remHours = totalHours % 24;
+            if (days > 0) {
+                countdownText = `${days}d ${String(remHours).padStart(2, '0')} hrs`;
+            } else {
+                const remMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                countdownText = `${remHours}h ${String(remMins).padStart(2, '0')}m`;
+            }
+        } else if (now <= endMs) {
+            countdownText = 'LIVE NOW';
+            isActive = true;
+        } else {
+            countdownText = 'COMPLETED';
+        }
+
+        return `
+            <div class="timeslot-row ${isActive ? 'is-active-now' : ''}">
+                <div class="timeslot-col col-start">
+                    <div class="timeslot-time">${timeFormatted}</div>
+                    <div class="timeslot-countdown">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        <span>${countdownText}</span>
+                    </div>
+                </div>
+                <div class="timeslot-col col-date">
+                    <div class="timeslot-date-title">${dateFormatted}</div>
+                    <div class="timeslot-slot-tag">Timeslot #${slotNum}</div>
+                </div>
+                <div class="timeslot-col col-duration">
+                    <span class="duration-badge">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        ${duration}
+                    </span>
+                </div>
+            </div>
+        `;
+    }).join('');
 }
 
 // Populates the scrolling upcoming events marquee ticker under the navbar (Homepage only)
@@ -2300,6 +2408,7 @@ function initializeApp() {
         return;
     }
 
+    renderHeroTimeslots(); // Format timeslots in user local timezone immediately
     loadDynamicContent(); // Load from cache immediately
     loadRecentResults(); // Load from cache immediately
     initCarousel();

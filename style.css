@@ -2406,6 +2406,135 @@ body[data-theme="theme-purple"]::before, body::before {
     color: #4ade80;
     text-shadow: 0 0 8px rgba(74, 222, 128, 0.4);
 }
+
+/* Event Timeslots Table (Matching iRacing/Telemetry Local Time UI) */
+.mockup-event-timeslots {
+    background: rgba(14, 18, 28, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    margin-bottom: 1.15rem;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+.timeslots-header {
+    display: grid;
+    grid-template-columns: 1.15fr 1.55fr 0.8fr;
+    gap: 0.5rem;
+    align-items: center;
+    padding: 0.55rem 0.85rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #8e9bb0;
+    letter-spacing: 0.3px;
+}
+.timeslots-header .ts-col-start {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+.timeslots-header .ts-col-duration {
+    text-align: right;
+    padding-right: 0.4rem;
+}
+.sort-icon {
+    opacity: 0.7;
+}
+.tz-badge {
+    background: rgba(139, 92, 246, 0.15);
+    color: #a78bfa;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    font-size: 0.6rem;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+.timeslots-list {
+    display: flex;
+    flex-direction: column;
+}
+.timeslot-row {
+    display: grid;
+    grid-template-columns: 1.15fr 1.55fr 0.8fr;
+    gap: 0.5rem;
+    align-items: center;
+    padding: 0.6rem 0.85rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    transition: background 0.15s ease;
+}
+.timeslot-row:last-child {
+    border-bottom: none;
+}
+.timeslot-row:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+.timeslot-row.is-active-now {
+    background: rgba(74, 222, 128, 0.06);
+    border-left: 2px solid #4ade80;
+}
+.timeslot-col.col-start {
+    display: flex;
+    flex-direction: column;
+}
+.timeslot-time {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #ffffff;
+    font-family: var(--font-heading);
+    letter-spacing: 0.3px;
+}
+.timeslot-countdown {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.72rem;
+    color: #94a3b8;
+    margin-top: 2px;
+}
+.timeslot-countdown svg {
+    opacity: 0.7;
+    width: 12px;
+    height: 12px;
+}
+.timeslot-col.col-date {
+    display: flex;
+    flex-direction: column;
+}
+.timeslot-date-title {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #f1f5f9;
+}
+.timeslot-slot-tag {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #cbd5e1;
+    margin-top: 2px;
+}
+.timeslot-col.col-duration {
+    display: flex;
+    justify-content: flex-end;
+}
+.duration-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 9999px;
+    padding: 0.22rem 0.65rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    white-space: nowrap;
+}
+.duration-badge svg {
+    width: 12px;
+    height: 12px;
+    opacity: 0.8;
+}
 .mockup-event-classes {
     display: flex;
     gap: 0.6rem;
