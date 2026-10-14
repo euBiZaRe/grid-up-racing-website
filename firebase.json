@@ -9,6 +9,23 @@
       "**/.*",
       "**/node_modules/**"
     ],
+    "redirects": [
+      {
+        "source": "/league",
+        "destination": "/events.html",
+        "type": 301
+      },
+      {
+        "source": "/league.html",
+        "destination": "/events.html",
+        "type": 301
+      },
+      {
+        "source": "/league-detail.html",
+        "destination": "/events.html",
+        "type": 301
+      }
+    ],
     "headers": [
       {
         "source": "**",

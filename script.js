@@ -488,36 +488,7 @@ async function loadDynamicContent() {
         return;
     }
 
-    // Check if Watkins Glen league event is active/upcoming/live (only on homepage)
     let featuredOverride = null;
-    if (document.getElementById('home')) {
-        try {
-            const glenDoc = await db.collection("leagues").doc("gtc-glen-24").get();
-            if (glenDoc.exists) {
-                const data = glenDoc.data();
-                const start = data.startDate ? new Date(data.startDate) : null;
-                if (start) {
-                    const practiceStart = new Date(start.getTime() - 60 * 60 * 1000); // 1h before race start (practice starts)
-                    const raceEnd = new Date(start.getTime() + 3.5 * 60 * 60 * 1000); // 3.5h after race start
-                    const now = new Date();
-                    
-                    if (now < raceEnd) {
-                        featuredOverride = {
-                            id: 'gtc-glen-24',
-                            name: data.name || 'GT Challenge: The Glen 24',
-                            startDate: data.startDate,
-                            practiceStart: practiceStart,
-                            endDate: raceEnd,
-                            isLeague: true,
-                            broadcastUrl: "https://www.youtube.com/watch?v=VF8XwzNoAUw"
-                        };
-                    }
-                }
-            }
-        } catch (e) {
-            console.warn("Could not fetch Watkins Glen league event for hero override:", e);
-        }
-    }
 
     // 1. Load Upcoming Races & Update Hero (Show events starting now or recently finished)
     // We use a 24h lookback so ongoing races stay visible
@@ -680,6 +651,261 @@ async function loadDynamicContent() {
         }
     } catch (error) {
         console.error("Error loading dynamic content:", error);
+    }
+}
+
+// Dynamically populates the Next Event dashboard card with real track and event info
+function populateNextEventDashboard(nextEvent, staticIds = [], eventBanners = {}) {
+    if (!nextEvent) return;
+
+    const EVENT_PROFILES = {
+        'indy-8h': {
+            name: '8 HOURS OF INDIANAPOLIS',
+            trackName: 'INDIANAPOLIS MOTOR SPEEDWAY',
+            trackSpecs: '2.439 MILES • 14 TURNS • ROAD COURSE',
+            trackImg: 'assets/league-posters/Indy.png',
+            date: 'OCTOBER 16–18, 2026',
+            schedule: { practice: '17:00 GMT', qualifying: '18:30 GMT', greenFlag: '19:00 GMT' },
+            classes: ['GT3 CLASS', '2+ DRIVERS PER CAR'],
+            metrics: [
+                { icon: '⛽', val: '100%', lbl: 'FUEL CAPACITY' },
+                { icon: '🛞', val: '4 SETS', lbl: 'TIRE SETS' },
+                { icon: '⏱️', val: '~45 MIN', lbl: 'FUEL STINTS' },
+                { icon: '🔧', val: 'TIRE STRATEGY', lbl: 'DOUBLE STINT TIRES' },
+                { icon: '⚖️', val: 'FAIR SHARE RULE', lbl: 'MIN 2 DRIVERS PER CAR' },
+                { icon: '⚡', val: '1 FAST REPAIR', lbl: 'AVAILABLE IN RACE' }
+            ],
+            highlights: 'Demanding front stretch of the Brickyard oval into heavy braking turn 1, technical infield snake complex, and high-speed banking transition.',
+            detailsUrl: 'events/indy-8h.html'
+        },
+        'indianapolis-8h': {
+            name: '8 HOURS OF INDIANAPOLIS',
+            trackName: 'INDIANAPOLIS MOTOR SPEEDWAY',
+            trackSpecs: '2.439 MILES • 14 TURNS • ROAD COURSE',
+            trackImg: 'assets/league-posters/Indy.png',
+            date: 'OCTOBER 16–18, 2026',
+            schedule: { practice: '17:00 GMT', qualifying: '18:30 GMT', greenFlag: '19:00 GMT' },
+            classes: ['GT3 CLASS', '2+ DRIVERS PER CAR'],
+            metrics: [
+                { icon: '⛽', val: '100%', lbl: 'FUEL CAPACITY' },
+                { icon: '🛞', val: '4 SETS', lbl: 'TIRE SETS' },
+                { icon: '⏱️', val: '~45 MIN', lbl: 'FUEL STINTS' },
+                { icon: '🔧', val: 'TIRE STRATEGY', lbl: 'DOUBLE STINT TIRES' },
+                { icon: '⚖️', val: 'FAIR SHARE RULE', lbl: 'MIN 2 DRIVERS PER CAR' },
+                { icon: '⚡', val: '1 FAST REPAIR', lbl: 'AVAILABLE IN RACE' }
+            ],
+            highlights: 'Demanding front stretch of the Brickyard oval into heavy braking turn 1, technical infield snake complex, and high-speed banking transition.',
+            detailsUrl: 'events/indy-8h.html'
+        },
+        'bathurst-1000': {
+            name: 'BATHURST 1000',
+            trackName: 'MOUNT PANORAMA CIRCUIT',
+            trackSpecs: '3.861 MILES • 23 TURNS • MOUNT PANORAMA',
+            trackImg: 'assets/tracks/daytona.png',
+            date: 'OCTOBER 09–11, 2026',
+            schedule: { practice: '08:00 GMT', qualifying: '09:30 GMT', greenFlag: '10:00 GMT' },
+            classes: ['SUPERCAR CLASS', '2 DRIVERS PER CAR'],
+            metrics: [
+                { icon: '⛽', val: '100%', lbl: 'FUEL CAPACITY' },
+                { icon: '🛞', val: '6 SETS', lbl: 'TIRE SETS' },
+                { icon: '⏱️', val: '~40 MIN', lbl: 'FUEL STINTS' },
+                { icon: '🔧', val: 'THE MOUNTAIN', lbl: 'CONROD STRAIGHT DRAFT' },
+                { icon: '⚖️', val: 'CO-DRIVER RULE', lbl: 'MIN 54 LAPS CO-DRIVER' },
+                { icon: '⚡', val: '1 FAST REPAIR', lbl: 'PER ENTERED CAR' }
+            ],
+            highlights: 'Breathtaking 174-meter vertical climb, razor-thin barriers through the Cutting, and 300 km/h Conrod Straight.',
+            detailsUrl: 'events/bathurst-1000.html'
+        },
+        'petit-le-mans': {
+            name: 'PETIT LE MANS',
+            trackName: 'MICHELIN RACEWAY ROAD ATLANTA',
+            trackSpecs: '2.540 MILES • 12 TURNS • FULL COURSE',
+            trackImg: 'assets/league-posters/Atlanta.png',
+            date: 'OCTOBER 02–04, 2026',
+            schedule: { practice: '14:00 GMT', qualifying: '15:30 GMT', greenFlag: '16:00 GMT' },
+            classes: ['GTP + LMP2 + GT3', '2-3 DRIVERS PER CAR'],
+            metrics: [
+                { icon: '⛽', val: '100%', lbl: 'FUEL CAPACITY' },
+                { icon: '🛞', val: 'UNLIMITED', lbl: 'TIRE SETS' },
+                { icon: '⏱️', val: '~45 MIN', lbl: 'FUEL STINTS' },
+                { icon: '🔧', val: 'TURN 12 DOWNHILL', lbl: 'BLIND CREST ENTRY' },
+                { icon: '⚖️', val: 'FAIR SHARE RULE', lbl: 'EACH DRIVER >= 1 STINT' },
+                { icon: '⚡', val: '1 FAST REPAIR', lbl: 'AVAILABLE IN RACE' }
+            ],
+            highlights: 'The sweeping downhill esses, high-speed back straight into the chicane, and thrilling plunge down turn 12 to the line.',
+            detailsUrl: 'events/petit-le-mans.html'
+        },
+        'road-america-6h': {
+            name: 'ROAD AMERICA 6 HOUR',
+            trackName: 'ROAD AMERICA',
+            trackSpecs: '4.048 MILES • 14 TURNS • FULL COURSE',
+            trackImg: 'assets/league-posters/Elkhart Lake.png',
+            date: 'JULY 24–26, 2026',
+            schedule: { practice: '16:00 GMT', qualifying: '17:30 GMT', greenFlag: '18:00 GMT' },
+            classes: ['GTP + LMP2 + GT3', '2-3 DRIVERS PER CAR'],
+            metrics: [
+                { icon: '⛽', val: '100%', lbl: 'FUEL CAPACITY' },
+                { icon: '🛞', val: 'UNLIMITED', lbl: 'TIRE SETS' },
+                { icon: '⏱️', val: '~50 MIN', lbl: 'FUEL STINTS' },
+                { icon: '🔧', val: 'CAROUSEL & KINK', lbl: 'HIGH DOWNFORCE SETUP' },
+                { icon: '⚖️', val: 'FAIR SHARE RULE', lbl: 'EACH DRIVER >= 1 STINT' },
+                { icon: '⚡', val: '1 FAST REPAIR', lbl: 'PER ENTERED CAR' }
+            ],
+            highlights: 'High-speed straights into downhill braking zones, the relentless right-hand Carousel, and the flat-out Kink.',
+            detailsUrl: 'events/road-america-6h.html'
+        },
+        'suzuka-1000km': {
+            name: 'SUZUKA 1000KM',
+            trackName: 'SUZUKA INTERNATIONAL RACING COURSE',
+            trackSpecs: '3.610 MILES • 18 TURNS • GRAND PRIX',
+            trackImg: 'assets/league-posters/Suzuka.png',
+            date: 'SEPTEMBER 11–13, 2026',
+            schedule: { practice: '13:00 GMT', qualifying: '14:30 GMT', greenFlag: '15:00 GMT' },
+            classes: ['GT3 CLASS', '2-3 DRIVERS PER CAR'],
+            metrics: [
+                { icon: '⛽', val: '100%', lbl: 'FUEL CAPACITY' },
+                { icon: '🛞', val: '6 SETS', lbl: 'TIRE SETS' },
+                { icon: '⏱️', val: '~48 MIN', lbl: 'FUEL STINTS' },
+                { icon: '🔧', val: 'S-CURVES RHYTHM', lbl: 'HIGH APEX PRECISION' },
+                { icon: '⚖️', val: 'FAIR SHARE RULE', lbl: 'EACH DRIVER >= 1 STINT' },
+                { icon: '⚡', val: '1 FAST REPAIR', lbl: 'AVAILABLE IN RACE' }
+            ],
+            highlights: 'Technical figure-eight layout, rhythm-demanding first sector S-curves, and high-commitment 130R flat out.',
+            detailsUrl: 'events/suzuka-1000km.html'
+        },
+        'spa-24hr': {
+            name: '24 HOURS OF SPA',
+            trackName: 'CIRCUIT DE SPA-FRANCORCHAMPS',
+            trackSpecs: '4.352 MILES • 19 TURNS • GRAND PRIX',
+            trackImg: 'assets/league-posters/SPA.png',
+            date: 'JULY 10–12, 2026',
+            schedule: { practice: '11:00 GMT', qualifying: '12:30 GMT', greenFlag: '13:00 GMT' },
+            classes: ['GT3 CLASS', '3-4 DRIVERS PER CAR'],
+            metrics: [
+                { icon: '⛽', val: '100%', lbl: 'FUEL CAPACITY' },
+                { icon: '🛞', val: 'UNLIMITED', lbl: 'TIRE ALLOCATION' },
+                { icon: '⏱️', val: '~60 MIN', lbl: 'STINT LENGTH' },
+                { icon: '🔧', val: 'WEATHER RADAR', lbl: 'DYNAMIC ARDENNES RAIN' },
+                { icon: '⚖️', val: 'FAIR SHARE RULE', lbl: 'PRO RATED DRIVE TIME' },
+                { icon: '⚡', val: '1 FAST REPAIR', lbl: 'AVAILABLE IN RACE' }
+            ],
+            highlights: 'Steep compression up Eau Rouge and Raidillon, long Kemmel Straight slipstream battles, and tricky Blanchimont sweepers.',
+            detailsUrl: 'events/spa-24hr.html'
+        },
+        'watkins-glen-6h': {
+            name: 'WATKINS GLEN 6 HOUR',
+            trackName: 'WATKINS GLEN INTERNATIONAL',
+            trackSpecs: '3.400 MILES • 11 TURNS • BOOT LAYOUT',
+            trackImg: 'assets/league-posters/The Glen.png',
+            date: 'JUNE 19–21, 2026',
+            schedule: { practice: '15:00 GMT', qualifying: '16:30 GMT', greenFlag: '17:00 GMT' },
+            classes: ['GTP + LMP2 + GT3', '2-3 DRIVERS PER CAR'],
+            metrics: [
+                { icon: '⛽', val: '100%', lbl: 'FUEL CAPACITY' },
+                { icon: '🛞', val: 'UNLIMITED', lbl: 'TIRE SETS' },
+                { icon: '⏱️', val: '~45 MIN', lbl: 'FUEL STINTS' },
+                { icon: '🔧', val: 'THE BUS STOP', lbl: 'CURB STRIKE STABILITY' },
+                { icon: '⚖️', val: 'FAIR SHARE RULE', lbl: 'MIN 2 DRIVERS' },
+                { icon: '⚡', val: '1 FAST REPAIR', lbl: 'AVAILABLE IN RACE' }
+            ],
+            highlights: 'Uphill esses, rapid braking into the Bus Stop chicane, and long technical sweepers through the Boot.',
+            detailsUrl: 'events/watkins-glen-6h.html'
+        },
+        'daytona-24': {
+            name: '24 HOURS OF DAYTONA',
+            trackName: 'DAYTONA INTERNATIONAL SPEEDWAY',
+            trackSpecs: '3.560 MILES • 12 TURNS • ROAD COURSE',
+            trackImg: 'assets/tracks/daytona.png',
+            date: 'JANUARY 23–25, 2026',
+            schedule: { practice: '17:00 GMT', qualifying: '18:30 GMT', greenFlag: '19:00 GMT' },
+            classes: ['GTP + LMP2 + GT3', '3-4 DRIVERS PER CAR'],
+            metrics: [
+                { icon: '⛽', val: '100%', lbl: 'FUEL CAPACITY' },
+                { icon: '🛞', val: 'UNLIMITED', lbl: 'TIRE SETS' },
+                { icon: '⏱️', val: '~45 MIN', lbl: 'FUEL STINTS' },
+                { icon: '🔧', val: 'BUS STOP CHICANE', lbl: 'HIGH SPEED CURBING' },
+                { icon: '⚖️', val: 'FAIR SHARE RULE', lbl: 'MIN 25% DRIVE TIME' },
+                { icon: '⚡', val: '1 FAST REPAIR', lbl: 'AVAILABLE IN RACE' }
+            ],
+            highlights: 'Steep 31-degree banking, technical infield, and high-speed slipstreaming into the Le Mans chicane.',
+            detailsUrl: 'events/past/daytona-24.html'
+        }
+    };
+
+    const id = nextEvent.id || '';
+    const profile = EVENT_PROFILES[id] || {
+        name: (nextEvent.name || 'Upcoming Race').toUpperCase(),
+        trackName: (nextEvent.track || nextEvent.name || 'Official Circuit').toUpperCase(),
+        trackSpecs: nextEvent.specs || 'OFFICIAL IRACING EVENT',
+        trackImg: (eventBanners && eventBanners[id]) ? eventBanners[id] : 'assets/tracks/daytona.png',
+        date: (nextEvent.date || 'SEASON 2026').toUpperCase(),
+        schedule: { practice: '17:00 GMT', qualifying: '18:30 GMT', greenFlag: '19:00 GMT' },
+        classes: [nextEvent.classes || 'ENDURANCE MULTICLASS', 'TEAM EVENT'],
+        metrics: [
+            { icon: '⛽', val: '100%', lbl: 'FUEL CAPACITY' },
+            { icon: '🛞', val: 'ALLOCATED', lbl: 'TIRE SETS' },
+            { icon: '⏱️', val: '~45 MIN', lbl: 'FUEL STINTS' },
+            { icon: '🔧', val: 'TEAM STRATEGY', lbl: 'OPTIMIZED TELEMETRY' },
+            { icon: '⚖️', val: 'FAIR SHARE RULE', lbl: 'ALL ENTERED DRIVERS' },
+            { icon: '⚡', val: '1 FAST REPAIR', lbl: 'AVAILABLE IN RACE' }
+        ],
+        highlights: nextEvent.description || 'Full team effort featuring optimized setups, telemetry analysis, and endurance race strategy.',
+        detailsUrl: (staticIds && staticIds.includes(id)) ? getEventLink(id, true) : getEventLink(id)
+    };
+
+    const nameEl = document.getElementById('hero-event-name');
+    if (nameEl) nameEl.textContent = profile.name;
+
+    const dateEl = document.getElementById('hero-event-date-text');
+    if (dateEl) dateEl.textContent = profile.date;
+
+    const schedPrac = document.getElementById('hero-sched-practice');
+    if (schedPrac) schedPrac.textContent = profile.schedule.practice;
+
+    const schedQual = document.getElementById('hero-sched-quali');
+    if (schedQual) schedQual.textContent = profile.schedule.qualifying;
+
+    const schedGreen = document.getElementById('hero-sched-green');
+    if (schedGreen) schedGreen.textContent = profile.schedule.greenFlag;
+
+    const classesEl = document.getElementById('hero-event-classes');
+    if (classesEl && Array.isArray(profile.classes)) {
+        classesEl.innerHTML = profile.classes.map(c => `<span class="class-pill">${c}</span>`).join('');
+    }
+
+    const trackImg = document.getElementById('hero-track-img');
+    if (trackImg) {
+        trackImg.src = profile.trackImg;
+        trackImg.alt = profile.trackName;
+    }
+
+    const trackName = document.getElementById('hero-track-name');
+    if (trackName) trackName.textContent = profile.trackName;
+
+    const trackSpecs = document.getElementById('hero-track-specs');
+    if (trackSpecs) trackSpecs.textContent = profile.trackSpecs;
+
+    const metricsEl = document.getElementById('hero-event-metrics');
+    if (metricsEl && Array.isArray(profile.metrics)) {
+        metricsEl.innerHTML = profile.metrics.map(m => `
+            <div class="metric-badge-item">
+                <div class="metric-icon">${m.icon}</div>
+                <div class="metric-text">
+                    <span class="metric-val">${m.val}</span>
+                    <span class="metric-lbl">${m.lbl}</span>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    const highlightsEl = document.getElementById('hero-track-highlights');
+    if (highlightsEl) {
+        highlightsEl.innerHTML = `<strong>TRACK HIGHLIGHTS:</strong> ${profile.highlights}`;
+    }
+
+    const heroLink = document.getElementById('hero-event-link');
+    if (heroLink) {
+        heroLink.href = profile.detailsUrl;
     }
 }
 
@@ -851,12 +1077,11 @@ function renderEventsUI(upcomingEvents, pastEvents = null, featuredOverride = nu
         }
         
         if (heroLink) {
-            if (nextEvent.isLeague) {
-                heroLink.href = `league-detail.html?id=${nextEvent.id}`;
-            } else {
-                heroLink.href = staticIds.includes(nextEvent.id) ? getEventLink(nextEvent.id, true) : getEventLink(nextEvent.id);
-            }
+            heroLink.href = staticIds.includes(nextEvent.id) ? getEventLink(nextEvent.id, true) : getEventLink(nextEvent.id);
         }
+
+        // Populate all details in the Next Event Dashboard Card (Track img, specs, schedule, metrics)
+        populateNextEventDashboard(nextEvent, staticIds, eventBanners);
 
         // Show Live Telemetry button only for Spa 24HR
         const telemetryBtn = document.getElementById('hero-telemetry-btn');

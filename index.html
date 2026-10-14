@@ -62,7 +62,7 @@
     <link rel="icon" type="image/png" href="assets/G_2.png">
 </head>
 <body>
-    <nav id="navbar">
+        <nav id="navbar" class="scrolled">
         <div class="container nav-content">
             <a href="index.html" class="logo-brand">
                 <img src="assets/G_2.png" decoding="async" width="36" height="36" alt="GRiD UP" style="height: 36px; width: auto; vertical-align: middle;">
@@ -83,9 +83,8 @@
                 <li><a href="index.html" class="active">HOME</a></li>
                 <li><a href="events.html">EVENTS</a></li>
                 <li><a href="roster.html">DRIVERS</a></li>
-                <li><a href="reports.html">REPORTS</a></li>
                 <li><a href="trophy-room.html">TROPHY ROOM</a></li>
-                <li><a href="#about">ABOUT</a></li>
+                <li><a href="index.html#about">ABOUT</a></li>
             </ul>
 
             <div class="nav-actions">
@@ -213,22 +212,22 @@
                         <!-- Event Main Split (Details + Track Map) -->
                         <div class="mockup-event-split">
                             <div class="mockup-event-info">
-                                <h2 class="mockup-event-heading" id="hero-event-name">VIR 120! – GT CHALLENGE</h2>
+                                <h2 class="mockup-event-heading" id="hero-event-name">8 HOURS OF INDIANAPOLIS</h2>
                                 
-                                <div class="mockup-event-date">
+                                <div class="mockup-event-date" id="hero-event-date">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                                    <span>SAT, 23 MAY 2026</span>
+                                    <span id="hero-event-date-text">SAT, 17 OCT 2026</span>
                                 </div>
 
-                                <div class="mockup-event-schedule">
-                                    <div class="schedule-item"><span class="sched-label">Practice:</span> <span class="sched-val">17:00 GMT</span></div>
-                                    <div class="schedule-item"><span class="sched-label">Qualifying:</span> <span class="sched-val">18:30 GMT</span></div>
-                                    <div class="schedule-item"><span class="sched-label">Green Flag:</span> <span class="sched-val highlight-green">19:00 GMT</span></div>
+                                <div class="mockup-event-schedule" id="hero-event-schedule">
+                                    <div class="schedule-item"><span class="sched-label">Practice:</span> <span class="sched-val" id="hero-sched-practice">17:00 GMT</span></div>
+                                    <div class="schedule-item"><span class="sched-label">Qualifying:</span> <span class="sched-val" id="hero-sched-quali">18:30 GMT</span></div>
+                                    <div class="schedule-item"><span class="sched-label">Green Flag:</span> <span class="sched-val highlight-green" id="hero-sched-green">19:00 GMT</span></div>
                                 </div>
 
-                                <div class="mockup-event-classes">
-                                    <span class="class-pill">GT3 + GT4 MULTICLASS</span>
-                                    <span class="class-pill">1-2 DRIVERS PER CAR</span>
+                                <div class="mockup-event-classes" id="hero-event-classes">
+                                    <span class="class-pill">GT3 CLASS</span>
+                                    <span class="class-pill">2+ DRIVERS PER CAR</span>
                                 </div>
 
                                 <!-- Embedded Live Countdown -->
@@ -245,35 +244,35 @@
 
                             <div class="mockup-track-preview">
                                 <div class="track-img-wrap">
-                                    <img src="assets/league-posters/Virginia.png" alt="Virginia International Raceway" class="track-graphic">
+                                    <img src="assets/league-posters/Indy.png" alt="Track Graphic" class="track-graphic" id="hero-track-img">
                                 </div>
                                 <div class="track-meta">
-                                    <div class="track-name">VIRGINIA INTERNATIONAL RACEWAY</div>
-                                    <div class="track-specs">3.27 MILES • 17 TURNS • FULL COURSE</div>
+                                    <div class="track-name" id="hero-track-name">INDIANAPOLIS MOTOR SPEEDWAY</div>
+                                    <div class="track-specs" id="hero-track-specs">2.439 MILES • 14 TURNS • ROAD COURSE</div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- 6 Metric Badges / Rules Grid -->
-                        <div class="mockup-event-metrics-grid">
+                        <div class="mockup-event-metrics-grid" id="hero-event-metrics">
                             <div class="metric-badge-item">
                                 <div class="metric-icon">⛽</div>
                                 <div class="metric-text">
-                                    <span class="metric-val">60%</span>
+                                    <span class="metric-val">100%</span>
                                     <span class="metric-lbl">FUEL CAPACITY</span>
                                 </div>
                             </div>
                             <div class="metric-badge-item">
                                 <div class="metric-icon">🛞</div>
                                 <div class="metric-text">
-                                    <span class="metric-val">2 ADDED</span>
+                                    <span class="metric-val">4 SETS</span>
                                     <span class="metric-lbl">TIRE SETS</span>
                                 </div>
                             </div>
                             <div class="metric-badge-item">
                                 <div class="metric-icon">⏱️</div>
                                 <div class="metric-text">
-                                    <span class="metric-val">~30 MIN</span>
+                                    <span class="metric-val">~45 MIN</span>
                                     <span class="metric-lbl">FUEL STINTS</span>
                                 </div>
                             </div>
@@ -281,29 +280,29 @@
                                 <div class="metric-icon">🔧</div>
                                 <div class="metric-text">
                                     <span class="metric-val">TIRE STRATEGY</span>
-                                    <span class="metric-lbl">NO TIRE CHANGE EVERY STOP</span>
+                                    <span class="metric-lbl">DOUBLE STINT TIRES</span>
                                 </div>
                             </div>
                             <div class="metric-badge-item">
                                 <div class="metric-icon">⚖️</div>
                                 <div class="metric-text">
                                     <span class="metric-val">FAIR SHARE RULE</span>
-                                    <span class="metric-lbl">EACH DRIVER &gt;= 1 STINT OR DQ</span>
+                                    <span class="metric-lbl">MIN 2 DRIVERS PER CAR</span>
                                 </div>
                             </div>
                             <div class="metric-badge-item">
                                 <div class="metric-icon">⚡</div>
                                 <div class="metric-text">
                                     <span class="metric-val">1 FAST REPAIR</span>
-                                    <span class="metric-lbl">PER ENTERED CAR</span>
+                                    <span class="metric-lbl">AVAILABLE IN RACE</span>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Track Highlights & Actions Footer -->
                         <div class="mockup-event-footer-bar">
-                            <div class="track-highlights-text">
-                                <strong>TRACK HIGHLIGHTS:</strong> Demanding climbing esses, high-speed back straight braking zone, technical rollercoaster descent and precision cambered sweepers.
+                            <div class="track-highlights-text" id="hero-track-highlights">
+                                <strong>TRACK HIGHLIGHTS:</strong> Demanding front stretch of the Brickyard oval into heavy braking turn 1, technical infield snake complex, and high-speed banking transition.
                             </div>
                             <div class="event-action-buttons">
                                 <button id="watch-live-btn" onclick="openStreamsModal()" class="btn-live-stream" style="display: none;">
@@ -312,7 +311,7 @@
                                 <a href="telemetry.html" id="hero-telemetry-btn" class="btn-live-telemetry" style="display: none;">
                                     ⚡ LIVE TELEMETRY
                                 </a>
-                                <a href="events.html" id="hero-event-link" class="btn-view-details">
+                                <a href="events/indy-8h.html" id="hero-event-link" class="btn-view-details">
                                     VIEW EVENT DETAILS →
                                 </a>
                             </div>
@@ -348,11 +347,6 @@
                                 <span class="ql-text">Driver Profiles</span>
                                 <span class="ql-arrow">→</span>
                             </a>
-                            <a href="reports.html" class="quick-link-item">
-                                <span class="ql-icon">📰</span>
-                                <span class="ql-text">Race Reports</span>
-                                <span class="ql-arrow">→</span>
-                            </a>
                             <a href="trophy-room.html" class="quick-link-item">
                                 <span class="ql-icon">🏆</span>
                                 <span class="ql-text">Trophy Room</span>
@@ -360,47 +354,38 @@
                             </a>
                             <a href="team-app.html" class="quick-link-item">
                                 <span class="ql-icon">👥</span>
-                                <span class="ql-text">Team Information</span>
+                                <span class="ql-text">Apply To Team</span>
                                 <span class="ql-arrow">→</span>
                             </a>
                         </div>
                     </div>
 
-                    <!-- Card 2: LATEST NEWS -->
-                    <div class="mockup-card mockup-latest-news-card">
+                    <!-- Card 2: COMMUNITY & TEAM DISCORD -->
+                    <div class="mockup-card mockup-community-card">
                         <div class="mockup-card-header">
                             <div class="mockup-card-title-group">
-                                <span class="card-title-icon">🏁</span>
-                                <span class="mockup-card-title">LATEST NEWS</span>
+                                <span class="card-title-icon">💬</span>
+                                <span class="mockup-card-title">TEAM DISCORD</span>
                             </div>
-                            <a href="reports.html" class="news-header-link">VIEW ALL →</a>
+                            <a href="https://discord.gg/gridup" target="_blank" rel="noopener" class="news-header-link">JOIN NOW →</a>
                         </div>
 
-                        <div class="latest-news-list">
-                            <a href="reports.html" class="news-item">
-                                <div class="news-thumb-wrap">
-                                    <img src="assets/reports/virginia-120.png" alt="Virginia 120" class="news-thumb">
+                        <div class="community-card-body" style="padding: 1.25rem 1rem; text-align: left;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.85rem;">
+                                <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(168, 85, 247, 0.15); display: flex; align-items: center; justify-content: center; border: 1px solid rgba(168, 85, 247, 0.3);">
+                                    <svg width="22" height="22" viewBox="0 0 127.14 96.36" fill="#a855f7"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a67.55,67.55,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.31,60,73.31,53s5-12.74,11.43-12.74S96.2,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
                                 </div>
-                                <div class="news-content">
-                                    <span class="news-date">MAY 2026</span>
-                                    <h4 class="news-title">Virginia 120 Race Recap</h4>
-                                    <p class="news-excerpt">GT3 &amp; GT4 squads take on the full course at VIR in a thrilling 2-hour multiclass endurance battle.</p>
+                                <div>
+                                    <div style="font-family: var(--font-heading); font-size: 0.95rem; font-weight: 800; color: #fff; letter-spacing: 0.5px;">GRiD UP SIM RACING</div>
+                                    <div style="font-size: 0.75rem; color: #a855f7; font-weight: 600;">● Active Community</div>
                                 </div>
-                            </a>
-
-                            <a href="reports.html" class="news-item">
-                                <div class="news-thumb-wrap">
-                                    <img src="assets/reports/spa-recap-thumbnail.jpg" alt="Spa 24H" class="news-thumb">
-                                </div>
-                                <div class="news-content">
-                                    <span class="news-date">RECENT FINISH</span>
-                                    <h4 class="news-title">Spa 24H Endurance Campaign</h4>
-                                    <p class="news-excerpt">Full race debrief, setup telemetry and stint breakdowns from the Ardennes endurance classic.</p>
-                                </div>
+                            </div>
+                            <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; margin: 0 0 1rem;">Connect with team drivers, get race strategies, setup telemetry files, and join practice sessions.</p>
+                            <a href="https://discord.gg/gridup" target="_blank" rel="noopener" class="btn-mockup-secondary" style="width: 100%; justify-content: center; padding: 0.55rem 1rem; font-size: 0.75rem;">
+                                CONNECT ON DISCORD
                             </a>
                         </div>
                     </div>
-                </div>
 
             </div>
         </div>
