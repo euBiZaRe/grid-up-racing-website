@@ -64,8 +64,12 @@
 <body>
     <nav id="navbar">
         <div class="container nav-content">
-            <a href="index.html" class="logo">
-                <img src="assets/logo.png" decoding="async" width="160" height="38" alt="GRiD UP" style="height: 38px; vertical-align: middle;">
+            <a href="index.html" class="logo-brand">
+                <img src="assets/G_2.png" decoding="async" width="36" height="36" alt="GRiD UP" style="height: 36px; width: auto; vertical-align: middle;">
+                <div class="brand-text-wrap">
+                    <div class="brand-title"><span class="brand-white">GRID</span> <span class="brand-purple">UP</span></div>
+                    <div class="brand-sub">SIM RACING</div>
+                </div>
             </a>
             
             <div class="menu-toggle" aria-label="Toggle navigation">
@@ -74,176 +78,377 @@
                 <span></span>
             </div>
 
-            <!-- Header Options as requested in Image 2 -->
+            <!-- Redesigned Navbar Links matching Mockup -->
             <ul class="nav-links">
                 <li><a href="index.html" class="active">HOME</a></li>
                 <li><a href="events.html">EVENTS</a></li>
-                <li><a href="reports.html">NEWS</a></li>
-                <li><a href="roster.html">ROSTER</a></li>
-                <li><a href="telemetry.html">TELEMETRY</a></li>
-                <li><a href="team-app.html">APPLY</a></li>
-                <li><a href="shop.html">SHOP</a></li>
-                <li><a href="https://discord.gg/gridup" target="_blank" rel="noopener"><img src="assets/discord_header.png" alt="Discord" loading="lazy" decoding="async" style="height: 25px; vertical-align: middle;"></a></li>
-                <li><a href="login.html" id="login-link" class="btn btn-outline" style="padding: 0.45rem 1.25rem; font-size: 0.75rem; margin-left: 0.5rem; border-radius: 50px;">Login</a></li>
+                <li><a href="roster.html">DRIVERS</a></li>
+                <li><a href="reports.html">REPORTS</a></li>
+                <li><a href="trophy-room.html">TROPHY ROOM</a></li>
+                <li><a href="#about">ABOUT</a></li>
             </ul>
+
+            <div class="nav-actions">
+                <a href="login.html" id="login-link" class="btn-nav-login">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    LOGIN
+                </a>
+                <a href="https://discord.gg/gridup" target="_blank" rel="noopener" class="btn-nav-join">
+                    <svg width="14" height="14" viewBox="0 0 127.14 96.36" fill="currentColor"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a67.55,67.55,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.31,60,73.31,53s5-12.74,11.43-12.74S96.2,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
+                    JOIN THE TEAM
+                </a>
+            </div>
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <section id="home" class="hero">
-        <video autoplay muted loop playsinline preload="none" class="hero-img" poster="assets/bg-banner.png" disablePictureInPicture>
-            <source src="assets/hero-background.mp4" type="video/mp4">
-        </video>
-        <div class="hero-overlay"></div>
-        <div class="hero-content container">
-            <h1 id="hero-event-name" class="glow-text">GRiD UP</h1>
-            <p style="font-family: var(--font-heading); font-size: 1rem; color: var(--text-main); margin-bottom: 2.5rem; letter-spacing: 6px; opacity: 0.85; text-transform: uppercase;">
-                SIM RACING ENDURANCE
-            </p>
-            
-            <!-- Dynamic Countdown -->
-            <div id="countdown" class="reveal active">
-                <p id="hero-event-subtitle" style="color: var(--primary); font-weight: 700; text-transform: uppercase; margin-bottom: 1rem; letter-spacing: 2px; font-size: 0.85rem;">
-                    Next Major Race: Loading...
+    <!-- Redesigned Hero Section -->
+    <section id="home" class="mockup-hero">
+        <div class="mockup-hero-bg"></div>
+        <div class="mockup-hero-overlay"></div>
+        
+        <div class="container mockup-hero-container">
+            <!-- Top Right Kicker from Mockup -->
+            <div class="mockup-hero-kicker-top">
+                LONGER RACES. DEEPER STRATEGY. REAL TEAMWORK.
+            </div>
+
+            <!-- Left Content Area -->
+            <div class="mockup-hero-left">
+                <div class="mockup-hero-badge">
+                    <span class="badge-dot"></span> IRACING ENDURANCE TEAM
+                </div>
+                
+                <h1 class="mockup-hero-title">
+                    GRID UP <span class="purple-neon-text">SIM RACING</span>
+                </h1>
+
+                <div class="mockup-hero-tagline">
+                    ENDURANCE / TEAMWORK / RESULTS
+                </div>
+
+                <p class="mockup-hero-desc">
+                    A competitive iRacing endurance team built on performance, progress and a passion for long-format racing.
                 </p>
-                <div class="countdown-container">
-                    <div class="countdown-box">
-                        <span id="days" class="countdown-number">00</span>
-                        <span class="countdown-label">Days</span>
+
+                <div class="mockup-hero-actions">
+                    <a href="#next-event" class="btn-mockup-primary">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        VIEW UPCOMING EVENTS <span class="arrow">→</span>
+                    </a>
+                    <a href="https://discord.gg/gridup" target="_blank" rel="noopener" class="btn-mockup-secondary">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        JOIN THE TEAM
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4 Feature Pillars Strip directly below Hero -->
+    <section class="mockup-features-strip">
+        <div class="container">
+            <div class="mockup-features-grid">
+                <div class="mockup-feature-card">
+                    <div class="mockup-feature-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                     </div>
-                    <div class="countdown-box">
-                        <span id="hours" class="countdown-number">00</span>
-                        <span class="countdown-label">Hours</span>
+                    <div class="mockup-feature-content">
+                        <h3>ENDURANCE FOCUSED</h3>
+                        <p>120 minutes, 6 hours, 12 hours+ / Real team racing, real strategy.</p>
                     </div>
-                    <div class="countdown-box">
-                        <span id="minutes" class="countdown-number">00</span>
-                        <span class="countdown-label">Mins</span>
+                </div>
+
+                <div class="mockup-feature-card">
+                    <div class="mockup-feature-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                     </div>
-                    <div class="countdown-box">
-                        <span id="seconds" class="countdown-number">00</span>
-                        <span class="countdown-label">Secs</span>
+                    <div class="mockup-feature-content">
+                        <h3>TEAM DRIVEN</h3>
+                        <p>Built around respect, consistency and improvement.</p>
+                    </div>
+                </div>
+
+                <div class="mockup-feature-card">
+                    <div class="mockup-feature-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                    </div>
+                    <div class="mockup-feature-content">
+                        <h3>DETAILED REPORTS</h3>
+                        <p>Race recaps, results and performance insights.</p>
+                    </div>
+                </div>
+
+                <div class="mockup-feature-card">
+                    <div class="mockup-feature-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="m9 12 2 2 4-4"></path></svg>
+                    </div>
+                    <div class="mockup-feature-content">
+                        <h3>PROFESSIONAL STANDARDS</h3>
+                        <p>Fair play, clean racing and a welcoming community.</p>
                     </div>
                 </div>
             </div>
+        </div>
+    </section>
 
-            <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 3rem; flex-wrap: wrap; align-items: center;">
-                <a href="events.html" id="hero-event-link" class="btn">View Event</a>
-                <button id="watch-live-btn" onclick="openStreamsModal()" class="btn" style="display: none; background: linear-gradient(135deg, #cc0000, #ff3333); color: #fff; box-shadow: 0 0 25px rgba(255,0,0,0.5); animation: livePulse 2s infinite; font-weight: 800; letter-spacing: 2px; border: none;">
-                    <span style="display: inline-block; width: 10px; height: 10px; background: #fff; border-radius: 50%; margin-right: 8px; animation: liveDot 1s infinite;"></span>
-                    WATCH LIVE
-                </button>
-                <a href="telemetry.html" id="hero-telemetry-btn" class="btn btn-outline" style="display: none; border-color: var(--primary); color: var(--primary); letter-spacing: 2px;">
-                    ⚡ LIVE TELEMETRY
-                </a>
-                <a href="results.html" class="btn btn-outline">Race Results</a>
-                <a href="#contact" class="btn btn-outline">Join Us</a>
+    <!-- Main Dashboard Section (Split Layout: Next Event + Sidebar) -->
+    <section id="next-event" class="mockup-main-dashboard">
+        <div class="container">
+            <div class="mockup-dashboard-layout">
+                
+                <!-- LEFT COLUMN: NEXT EVENT CARD -->
+                <div class="mockup-left-col">
+                    <div class="mockup-card mockup-next-event-card">
+                        <!-- Card Header -->
+                        <div class="mockup-card-header">
+                            <div class="mockup-card-title-group">
+                                <span class="card-title-icon">🏁</span>
+                                <span class="mockup-card-title">NEXT EVENT</span>
+                            </div>
+                            <span class="mockup-badge-upcoming">
+                                <span class="pulsing-dot"></span> UPCOMING
+                            </span>
+                        </div>
+
+                        <!-- Event Main Split (Details + Track Map) -->
+                        <div class="mockup-event-split">
+                            <div class="mockup-event-info">
+                                <h2 class="mockup-event-heading" id="hero-event-name">VIR 120! – GT CHALLENGE</h2>
+                                
+                                <div class="mockup-event-date">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                                    <span>SAT, 23 MAY 2026</span>
+                                </div>
+
+                                <div class="mockup-event-schedule">
+                                    <div class="schedule-item"><span class="sched-label">Practice:</span> <span class="sched-val">17:00 GMT</span></div>
+                                    <div class="schedule-item"><span class="sched-label">Qualifying:</span> <span class="sched-val">18:30 GMT</span></div>
+                                    <div class="schedule-item"><span class="sched-label">Green Flag:</span> <span class="sched-val highlight-green">19:00 GMT</span></div>
+                                </div>
+
+                                <div class="mockup-event-classes">
+                                    <span class="class-pill">GT3 + GT4 MULTICLASS</span>
+                                    <span class="class-pill">1-2 DRIVERS PER CAR</span>
+                                </div>
+
+                                <!-- Embedded Live Countdown -->
+                                <div id="countdown" class="mockup-countdown-wrap">
+                                    <p id="hero-event-subtitle" style="display: none;">Next Major Race</p>
+                                    <div class="mockup-countdown-grid">
+                                        <div class="cd-box"><span id="days" class="cd-num">00</span><span class="cd-lbl">DAYS</span></div>
+                                        <div class="cd-box"><span id="hours" class="cd-num">00</span><span class="cd-lbl">HOURS</span></div>
+                                        <div class="cd-box"><span id="minutes" class="cd-num">00</span><span class="cd-lbl">MINS</span></div>
+                                        <div class="cd-box"><span id="seconds" class="cd-num">00</span><span class="cd-lbl">SECS</span></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mockup-track-preview">
+                                <div class="track-img-wrap">
+                                    <img src="assets/league-posters/Virginia.png" alt="Virginia International Raceway" class="track-graphic">
+                                </div>
+                                <div class="track-meta">
+                                    <div class="track-name">VIRGINIA INTERNATIONAL RACEWAY</div>
+                                    <div class="track-specs">3.27 MILES • 17 TURNS • FULL COURSE</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 6 Metric Badges / Rules Grid -->
+                        <div class="mockup-event-metrics-grid">
+                            <div class="metric-badge-item">
+                                <div class="metric-icon">⛽</div>
+                                <div class="metric-text">
+                                    <span class="metric-val">60%</span>
+                                    <span class="metric-lbl">FUEL CAPACITY</span>
+                                </div>
+                            </div>
+                            <div class="metric-badge-item">
+                                <div class="metric-icon">🛞</div>
+                                <div class="metric-text">
+                                    <span class="metric-val">2 ADDED</span>
+                                    <span class="metric-lbl">TIRE SETS</span>
+                                </div>
+                            </div>
+                            <div class="metric-badge-item">
+                                <div class="metric-icon">⏱️</div>
+                                <div class="metric-text">
+                                    <span class="metric-val">~30 MIN</span>
+                                    <span class="metric-lbl">FUEL STINTS</span>
+                                </div>
+                            </div>
+                            <div class="metric-badge-item">
+                                <div class="metric-icon">🔧</div>
+                                <div class="metric-text">
+                                    <span class="metric-val">TIRE STRATEGY</span>
+                                    <span class="metric-lbl">NO TIRE CHANGE EVERY STOP</span>
+                                </div>
+                            </div>
+                            <div class="metric-badge-item">
+                                <div class="metric-icon">⚖️</div>
+                                <div class="metric-text">
+                                    <span class="metric-val">FAIR SHARE RULE</span>
+                                    <span class="metric-lbl">EACH DRIVER &gt;= 1 STINT OR DQ</span>
+                                </div>
+                            </div>
+                            <div class="metric-badge-item">
+                                <div class="metric-icon">⚡</div>
+                                <div class="metric-text">
+                                    <span class="metric-val">1 FAST REPAIR</span>
+                                    <span class="metric-lbl">PER ENTERED CAR</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Track Highlights & Actions Footer -->
+                        <div class="mockup-event-footer-bar">
+                            <div class="track-highlights-text">
+                                <strong>TRACK HIGHLIGHTS:</strong> Demanding climbing esses, high-speed back straight braking zone, technical rollercoaster descent and precision cambered sweepers.
+                            </div>
+                            <div class="event-action-buttons">
+                                <button id="watch-live-btn" onclick="openStreamsModal()" class="btn-live-stream" style="display: none;">
+                                    <span class="live-dot-pulse"></span> WATCH LIVE BROADCAST
+                                </button>
+                                <a href="telemetry.html" id="hero-telemetry-btn" class="btn-live-telemetry" style="display: none;">
+                                    ⚡ LIVE TELEMETRY
+                                </a>
+                                <a href="events.html" id="hero-event-link" class="btn-view-details">
+                                    VIEW EVENT DETAILS →
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hidden Carousel Track fallback so dynamic event loader works without errors -->
+                    <div style="display: none;">
+                        <div id="dynamic-upcoming-track"></div>
+                        <div id="results-track"></div>
+                    </div>
+                </div>
+
+                <!-- RIGHT COLUMN: SIDEBAR -->
+                <div class="mockup-right-col">
+                    <!-- Card 1: QUICK LINKS -->
+                    <div class="mockup-card mockup-quick-links-card">
+                        <div class="mockup-card-header">
+                            <div class="mockup-card-title-group">
+                                <span class="card-title-icon">⚡</span>
+                                <span class="mockup-card-title">QUICK LINKS</span>
+                            </div>
+                        </div>
+                        
+                        <div class="quick-links-list">
+                            <a href="events.html" class="quick-link-item">
+                                <span class="ql-icon">📅</span>
+                                <span class="ql-text">Events Calendar</span>
+                                <span class="ql-arrow">→</span>
+                            </a>
+                            <a href="roster.html" class="quick-link-item">
+                                <span class="ql-icon">🏎️</span>
+                                <span class="ql-text">Driver Profiles</span>
+                                <span class="ql-arrow">→</span>
+                            </a>
+                            <a href="reports.html" class="quick-link-item">
+                                <span class="ql-icon">📰</span>
+                                <span class="ql-text">Race Reports</span>
+                                <span class="ql-arrow">→</span>
+                            </a>
+                            <a href="trophy-room.html" class="quick-link-item">
+                                <span class="ql-icon">🏆</span>
+                                <span class="ql-text">Trophy Room</span>
+                                <span class="ql-arrow">→</span>
+                            </a>
+                            <a href="team-app.html" class="quick-link-item">
+                                <span class="ql-icon">👥</span>
+                                <span class="ql-text">Team Information</span>
+                                <span class="ql-arrow">→</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: LATEST NEWS -->
+                    <div class="mockup-card mockup-latest-news-card">
+                        <div class="mockup-card-header">
+                            <div class="mockup-card-title-group">
+                                <span class="card-title-icon">🏁</span>
+                                <span class="mockup-card-title">LATEST NEWS</span>
+                            </div>
+                            <a href="reports.html" class="news-header-link">VIEW ALL →</a>
+                        </div>
+
+                        <div class="latest-news-list">
+                            <a href="reports.html" class="news-item">
+                                <div class="news-thumb-wrap">
+                                    <img src="assets/reports/virginia-120.png" alt="Virginia 120" class="news-thumb">
+                                </div>
+                                <div class="news-content">
+                                    <span class="news-date">MAY 2026</span>
+                                    <h4 class="news-title">Virginia 120 Race Recap</h4>
+                                    <p class="news-excerpt">GT3 &amp; GT4 squads take on the full course at VIR in a thrilling 2-hour multiclass endurance battle.</p>
+                                </div>
+                            </a>
+
+                            <a href="reports.html" class="news-item">
+                                <div class="news-thumb-wrap">
+                                    <img src="assets/reports/spa-recap-thumbnail.jpg" alt="Spa 24H" class="news-thumb">
+                                </div>
+                                <div class="news-content">
+                                    <span class="news-date">RECENT FINISH</span>
+                                    <h4 class="news-title">Spa 24H Endurance Campaign</h4>
+                                    <p class="news-excerpt">Full race debrief, setup telemetry and stint breakdowns from the Ardennes endurance classic.</p>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </section>
 
     <!-- Authentic Section from Image 1: Everything Is Racing, GRiD UP -->
-    <section id="about" class="section reveal" style="padding: 5rem 0;">
+    <section id="about" class="section reveal" style="padding: 4rem 0 5rem;">
         <div class="container" style="text-align: center;">
-            <h2 style="margin-bottom: 2.5rem; color: var(--primary); font-size: clamp(1.6rem, 3.5vw, 2.2rem); letter-spacing: 3px;">
+            <h2 style="margin-bottom: 2rem; color: var(--primary-light); font-size: clamp(1.6rem, 3.5vw, 2.2rem); letter-spacing: 3px;">
                 EVERYTHING IS RACING, GRiD UP
             </h2>
-            <div class="glass-premium" style="max-width: 850px; margin: 0 auto; padding: 3.5rem 3rem; text-align: center;">
-                <p style="color: var(--text-main); font-size: 1.05rem; line-height: 1.8; margin: 0; font-weight: 400;">
+            <div class="glass-premium" style="max-width: 850px; margin: 0 auto; padding: 3rem 2.5rem; text-align: center; border: 1px solid var(--glass-border); border-radius: 16px;">
+                <p style="color: var(--text-main); font-size: 1.05rem; line-height: 1.8; margin-bottom: 2rem; font-weight: 400;">
                     A Sim Racing community focused on a balance of tough competition and comradery. Open to everyone from seasoned veterans to beginners. We strive to be the place for those who are serious about their race craft without taking themselves too seriously.
                 </p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Upcoming Events Section -->
-    <section id="upcoming" class="section reveal" style="position: relative; overflow: hidden; padding-top: 2rem;">
-        <div class="container">
-            <h2 style="color: var(--primary); margin-bottom: 2rem; text-align: center; letter-spacing: 2px;">
-                Upcoming Races
-            </h2>
-            
-            <div class="carousel-wrapper">
-                <div class="carousel-nav">
-                    <button class="carousel-btn prev-btn" aria-label="Previous race">←</button>
-                    <button class="carousel-btn next-btn" aria-label="Next race">→</button>
-                </div>
-                <div class="upcoming-races-container">
-                    <div class="carousel-track" id="dynamic-upcoming-track">
-                        <p style="text-align: center; color: var(--text-muted); width: 100%;">Loading upcoming events...</p>
-                    </div>
-                </div>
-            </div>
-
-            <div style="text-align: center; margin-top: 2rem;">
-                <a href="events.html" class="btn btn-outline" style="padding: 0.65rem 1.6rem; font-size: 0.85rem;">View All Events</a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Recent Results Section -->
-    <section id="results" class="section reveal" style="position: relative; overflow: hidden; background: rgba(0,210,255,0.015); border-top: 1px solid rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.04);">
-        <div class="container">
-            <h2 style="color: var(--primary); margin-bottom: 0.5rem; text-align: center; letter-spacing: 2px;">
-                Recent Results
-            </h2>
-            <p style="color: var(--text-muted); text-align: center; margin-bottom: 2.5rem; font-size: 0.9rem; letter-spacing: 1px;">
-                The latest triumphs from the GRiD UP squad
-            </p>
-            
-            <div class="carousel-wrapper">
-                <div class="carousel-nav">
-                    <button class="carousel-btn prev-btn" aria-label="Previous result">←</button>
-                    <button class="carousel-btn next-btn" aria-label="Next result">→</button>
-                </div>
-                <div class="upcoming-races-container">
-                    <div class="carousel-track" id="results-track">
-                        <p style="text-align: center; color: var(--text-muted); width: 100%;">Loading recent finishes...</p>
-                    </div>
-                </div>
-            </div>
-
-            <div style="text-align: center; margin-top: 2rem;">
-                <a href="results.html" class="btn btn-outline" style="padding: 0.65rem 1.6rem; font-size: 0.85rem;">View All Results</a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Contact & Discord Section -->
-    <section id="contact" class="section reveal" style="padding-bottom: 6rem;">
-        <div class="container" style="text-align: center;">
-            <h2 style="margin-bottom: 1rem; color: var(--primary); letter-spacing: 2px;">Get on the Grid</h2>
-            <p style="color: var(--text-muted); margin-bottom: 2.5rem; max-width: 600px; margin-left: auto; margin-right: auto;">Inquiries for recruitment and partnerships are always open.</p>
-            <a href="https://discord.gg/gridup" target="_blank" rel="noopener" class="discord-hero-btn" aria-label="Join GRiD UP Discord">
-                <div class="discord-hero-icon">
-                    <svg width="28" height="28" viewBox="0 0 127.14 96.36" fill="currentColor">
-                        <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a67.55,67.55,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.31,60,73.31,53s5-12.74,11.43-12.74S96.2,46,96.12,53,91.08,65.69,84.69,65.69Z"/>
-                    </svg>
-                </div>
-                <div class="discord-hero-info">
-                    <span class="discord-hero-tag">Official Community</span>
-                    <span class="discord-hero-link">/gridup</span>
-                </div>
-                <div class="discord-hero-arrow">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                        <polyline points="12 5 19 12 12 19"></polyline>
-                    </svg>
-                </div>
-            </a>
-        </div>
-    </section>
-
-    <footer>
-        <div class="container">
-            <div style="display: flex; justify-content: center; gap: 1.5rem; margin-bottom: 1.5rem;">
-                <a href="https://discord.gg/gridup" target="_blank" rel="noopener" style="opacity: 0.6; transition: opacity 0.3s ease;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 127.14 96.36" fill="#ffffff"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a67.55,67.55,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.31,60,73.31,53s5-12.74,11.43-12.74S96.2,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
-                </a>
-                <a href="https://www.youtube.com/@griduptv" target="_blank" rel="noopener" style="opacity: 0.6; transition: opacity 0.3s ease;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="#ffffff" style="margin-top: -1px;"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+                <a href="https://discord.gg/gridup" target="_blank" rel="noopener" class="btn-mockup-primary" style="display: inline-flex; margin: 0 auto;">
+                    JOIN OUR DISCORD COMMUNITY
                 </a>
             </div>
-            <p style="color: var(--text-muted); font-size: 0.8rem; margin: 0; padding-bottom: 1rem;">&copy; 2026 GRiD UP SIM RACING. ALL RIGHTS RESERVED.</p>
+        </div>
+    </section>
+
+    <!-- Mockup Footer -->
+    <footer class="mockup-footer">
+        <div class="container mockup-footer-container">
+            <div class="footer-left">
+                <div class="footer-brand">
+                    <span class="brand-white">GRID</span> <span class="brand-purple">UP</span>
+                    <span class="footer-sub">SIM RACING</span>
+                </div>
+                <p class="footer-desc">Competitive iRacing Endurance Squad</p>
+            </div>
+
+            <div class="footer-center">
+                <div class="footer-motto">DRIVE / STRATEGISE / ACHIEVE</div>
+            </div>
+
+            <div class="footer-right">
+                <div class="footer-socials">
+                    <a href="https://discord.gg/gridup" target="_blank" rel="noopener" aria-label="Discord">
+                        <svg width="22" height="22" viewBox="0 0 127.14 96.36" fill="currentColor"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a67.55,67.55,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.31,60,73.31,53s5-12.74,11.43-12.74S96.2,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
+                    </a>
+                    <a href="https://www.youtube.com/@griduptv" target="_blank" rel="noopener" aria-label="YouTube">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+                    </a>
+                </div>
+                <p class="copyright-text">&copy; 2026 GRiD UP SIM RACING. ALL RIGHTS RESERVED.</p>
+            </div>
         </div>
     </footer>
 

@@ -1,19 +1,9 @@
 // ==========================================
-// Dynamic Day-of-Week Theme System
-// Automatically sets one of 7 bespoke motorsport styles
+// Signature Endurance Purple Brand Theme System
+// Locks the website to the purple endurance design from the mockup
 // ==========================================
 (function applyDailyTheme() {
-    const dayThemes = [
-        'theme-sunday',    // 0: Monaco Crimson / Apex Red
-        'theme-monday',    // 1: Cyan Precision / Velocity Blue
-        'theme-tuesday',   // 2: Nürburgring Emerald / British Racing Green
-        'theme-wednesday', // 3: Cyber Violet / Synthwave Night
-        'theme-thursday',  // 4: McLaren Amber / Turbo Orange
-        'theme-friday',    // 5: Acid Lime / Podium Neon
-        'theme-saturday'   // 6: Gold Trophy / Daytona Gold
-    ];
-    const currentDay = new Date().getDay();
-    const activeTheme = dayThemes[currentDay];
+    const activeTheme = 'theme-purple';
     
     // Apply theme attribute immediately to avoid flash of default color
     if (document.body) {
