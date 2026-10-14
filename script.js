@@ -930,8 +930,26 @@ function populateEventsTicker(upcomingEvents, staticIds = []) {
         `;
     }).join('');
 
+    const recentResultsHtml = `
+        <a href="events/road-america-6h.html" class="ticker-event-item">
+            <span class="ticker-result-badge gold">🏆 P1 WIN</span>
+            <span class="ticker-item-name">ROAD AMERICA 6H</span>
+            <span class="ticker-item-divider">•</span>
+            <span class="ticker-item-date">JULY 24–26, 2026</span>
+        </a>
+        <span class="ticker-separator">✦</span>
+        <a href="events/past/daytona-24.html" class="ticker-event-item">
+            <span class="ticker-result-badge silver">🥈 P2 PODIUM</span>
+            <span class="ticker-item-name">24 HOURS OF DAYTONA</span>
+            <span class="ticker-item-divider">•</span>
+            <span class="ticker-item-date">JAN 23–25, 2026</span>
+        </a>
+        <span class="ticker-separator">✦</span>
+    `;
+
+    const totalHtml = itemsHtml + recentResultsHtml;
     // Duplicate once for seamless infinite continuous marquee loop
-    tickerContent.innerHTML = itemsHtml + itemsHtml;
+    tickerContent.innerHTML = totalHtml + totalHtml;
 }
 
 // Extracted UI rendering logic to allow calling from cache or Firestore
@@ -1617,6 +1635,51 @@ function renderRecentResultsUI(results) {
     }
     resultsTrack.dataset.renderedFingerprint = resultsFingerprint;
     resultsTrack.innerHTML = '';
+
+    // Dynamically update the Homepage Past 2 Races Results Card if present
+    const mockupResultsList = document.getElementById('mockup-recent-results-list');
+    if (mockupResultsList && Array.isArray(results) && results.length > 0) {
+        const top2 = results.slice(0, 2);
+        mockupResultsList.innerHTML = top2.map(d => {
+            const pos = String(d.position || '').toUpperCase();
+            const isP1 = pos === 'P1' || pos === '1' || pos === '1ST';
+            const isP2 = pos === 'P2' || pos === '2' || pos === '2ND';
+            const badgeClass = isP1 ? 'p1-badge' : (isP2 ? 'p2-badge' : 'p1-badge');
+            const cardClass = isP1 ? 'p1-card' : (isP2 ? 'p2-card' : '');
+            const badgeIcon = isP1 ? '🥇' : (isP2 ? '🥈' : '🏆');
+            const driversStr = Array.isArray(d.drivers) ? d.drivers.join(' • ') : (d.drivers || 'GRiD UP Team Entry');
+            const eventTitle = (d.trackName || d.eventName || 'Race Event').toUpperCase();
+            const dateStr = (d.raceDate || d.date || 'Season 2026').toUpperCase();
+            const carClass = d.carUsed || d.car || 'GT3';
+            const link = d.eventId ? getEventLink(d.eventId) : 'trophy-room.html';
+
+            return `
+                <div class="result-entry-card ${cardClass}">
+                    <div class="result-entry-top">
+                        <div class="result-pos-badge ${badgeClass}">
+                            <span class="pos-icon">${badgeIcon}</span>
+                            <span class="pos-text">${pos || 'FINISH'}</span>
+                        </div>
+                        <div class="result-event-date">${dateStr}</div>
+                    </div>
+                    <div class="result-event-title">${eventTitle}</div>
+                    <div class="result-meta-line">
+                        <span class="result-tag">${carClass}</span>
+                        ${d.split ? `<span class="result-split">${d.split}</span>` : ''}
+                    </div>
+                    <div class="result-drivers-line">
+                        <span class="drivers-label">DRIVERS:</span>
+                        <span class="drivers-names">${driversStr}</span>
+                    </div>
+                    <div class="result-footer-link">
+                        <a href="${link}" class="result-link-btn">
+                            RACE RECAP & STATS →
+                        </a>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
     
     results.forEach(d => {
         const card = document.createElement('div');

@@ -2643,6 +2643,192 @@ body[data-theme="theme-purple"]::before, body::before {
     color: #ffffff;
 }
 
+/* ===================================================
+   RECENT RACE RESULTS CARD & ENTRIES
+   =================================================== */
+.mockup-recent-results-card {
+    margin-top: 1.5rem;
+}
+
+.recent-results-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.15rem;
+    padding: 1.25rem 1.4rem;
+}
+
+.result-entry-card {
+    background: rgba(7, 9, 14, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.result-entry-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(139, 92, 246, 0.4);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.result-entry-card.p1-card {
+    border-left: 3px solid #eab308;
+}
+
+.result-entry-card.p2-card {
+    border-left: 3px solid #94a3b8;
+}
+
+.result-entry-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.result-pos-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: 6px;
+    font-family: var(--font-heading);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.p1-badge {
+    background: rgba(234, 179, 8, 0.15);
+    border: 1px solid rgba(234, 179, 8, 0.4);
+    color: #facc15;
+    box-shadow: 0 0 10px rgba(234, 179, 8, 0.2);
+}
+
+.p2-badge {
+    background: rgba(148, 163, 184, 0.15);
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    color: #e2e8f0;
+}
+
+.result-event-date {
+    font-family: var(--font-heading);
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.result-event-title {
+    font-family: var(--font-heading);
+    font-size: 1.05rem;
+    font-weight: 900;
+    letter-spacing: 0.8px;
+    color: #ffffff;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+}
+
+.result-meta-line {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.85rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.result-tag {
+    background: rgba(139, 92, 246, 0.15);
+    color: var(--primary-light);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    letter-spacing: 1px;
+}
+
+.result-car {
+    color: var(--text-muted);
+}
+
+.result-split {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.68rem;
+}
+
+.result-drivers-line {
+    font-size: 0.72rem;
+    line-height: 1.4;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.drivers-label {
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.7);
+    margin-right: 0.35rem;
+    font-family: var(--font-heading);
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+}
+
+.drivers-names {
+    color: #e2e8f0;
+}
+
+.result-footer-link {
+    margin-top: auto;
+}
+
+.result-link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-family: var(--font-heading);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    color: var(--primary-light);
+    text-decoration: none;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.result-link-btn:hover {
+    color: #ffffff;
+    transform: translateX(3px);
+}
+
+/* Ticker result badges */
+.ticker-result-badge {
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.ticker-result-badge.gold {
+    background: rgba(234, 179, 8, 0.2);
+    border: 1px solid rgba(234, 179, 8, 0.5);
+    color: #facc15;
+}
+
+.ticker-result-badge.silver {
+    background: rgba(148, 163, 184, 0.2);
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    color: #f1f5f9;
+}
+
 /* Right Sidebar: Quick Links */
 .quick-links-list {
     display: flex;
@@ -2875,6 +3061,9 @@ body[data-theme="theme-purple"]::before, body::before {
         padding: 4.5rem 0 3.5rem;
     }
     .mockup-event-split {
+        grid-template-columns: 1fr;
+    }
+    .recent-results-grid {
         grid-template-columns: 1fr;
     }
     .mockup-event-metrics-grid {
