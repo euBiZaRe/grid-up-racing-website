@@ -1100,6 +1100,12 @@ footer {
         animation: none !important;
         transition: none !important;
     }
+    /* Preserve continuous marquee ticker scrolling so event calendar/results don't freeze/truncate */
+    .ticker-content,
+    #events-ticker-content {
+        animation: tickerScroll 110s linear infinite !important;
+        -webkit-animation: tickerScroll 110s linear infinite !important;
+    }
 }
 
 /* Form & Application Card Styles */
@@ -1982,21 +1988,34 @@ body[data-theme="theme-purple"]::before, body::before {
     white-space: nowrap;
     will-change: transform;
     animation: tickerScroll 110s linear infinite;
+    -webkit-animation: tickerScroll 110s linear infinite;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
-    transform: translateZ(0);
+    transform: translate3d(0, 0, 0);
+    -webkit-transform: translate3d(0, 0, 0);
 }
 
-.ticker-track:hover .ticker-content {
-    animation-play-state: paused;
+@media (hover: hover) and (pointer: fine) {
+    .ticker-track:hover .ticker-content {
+        animation-play-state: paused;
+    }
 }
 
 @keyframes tickerScroll {
     0% {
-        transform: translateX(0);
+        transform: translate3d(0, 0, 0);
     }
     100% {
-        transform: translateX(-50%);
+        transform: translate3d(-50%, 0, 0);
+    }
+}
+
+@-webkit-keyframes tickerScroll {
+    0% {
+        -webkit-transform: translate3d(0, 0, 0);
+    }
+    100% {
+        -webkit-transform: translate3d(-50%, 0, 0);
     }
 }
 

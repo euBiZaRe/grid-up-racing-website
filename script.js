@@ -1017,6 +1017,12 @@ function populateEventsTicker(upcomingEvents, staticIds = []) {
     if (!tickerContent) return;
     if (!Array.isArray(upcomingEvents) || upcomingEvents.length === 0) return;
 
+    const signature = upcomingEvents.map(e => e.id || e.name).join('|');
+    if (tickerContent.dataset.renderedSignature === signature) {
+        return; // Avoid unnecessary re-render that resets CSS animation position
+    }
+    tickerContent.dataset.renderedSignature = signature;
+
     const itemsHtml = `
         <span class="ticker-section-pill upcoming-section">📅 UPCOMING RACES</span>
     ` + upcomingEvents.map(e => {
