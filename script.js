@@ -663,7 +663,7 @@ function populateNextEventDashboard(nextEvent, staticIds = [], eventBanners = {}
             name: '8 HOURS OF INDIANAPOLIS',
             trackName: 'INDIANAPOLIS MOTOR SPEEDWAY',
             trackSpecs: '2.43mi • 14 TURNS • ROAD COURSE',
-            trackImg: 'assets/tracks/indy.png',
+            trackImg: 'assets/tracks/indy-road-course.png',
             date: 'OCTOBER 16–18, 2026',
             schedule: { practice: '17:00 GMT', qualifying: '18:30 GMT', greenFlag: '19:00 GMT' },
             classes: ['GT3 CLASS', '2+ DRIVERS PER CAR'],
@@ -682,7 +682,7 @@ function populateNextEventDashboard(nextEvent, staticIds = [], eventBanners = {}
             name: '8 HOURS OF INDIANAPOLIS',
             trackName: 'INDIANAPOLIS MOTOR SPEEDWAY',
             trackSpecs: '2.43mi • 14 TURNS • ROAD COURSE',
-            trackImg: 'assets/tracks/indy.png',
+            trackImg: 'assets/tracks/indy-road-course.png',
             date: 'OCTOBER 16–18, 2026',
             schedule: { practice: '17:00 GMT', qualifying: '18:30 GMT', greenFlag: '19:00 GMT' },
             classes: ['GT3 CLASS', '2+ DRIVERS PER CAR'],
@@ -938,11 +938,39 @@ function populateEventsTicker(upcomingEvents, staticIds = []) {
             <span class="ticker-item-date">JULY 24–26, 2026</span>
         </a>
         <span class="ticker-separator">✦</span>
+        <a href="events/indy-500.html" class="ticker-event-item">
+            <span class="ticker-result-badge gold">🥇 P1 WIN</span>
+            <span class="ticker-item-name">INDY 500</span>
+            <span class="ticker-item-divider">•</span>
+            <span class="ticker-item-date">MAY 5–18, 2026</span>
+        </a>
+        <span class="ticker-separator">✦</span>
         <a href="events/past/daytona-24.html" class="ticker-event-item">
             <span class="ticker-result-badge silver">🥈 P2 PODIUM</span>
-            <span class="ticker-item-name">24 HOURS OF DAYTONA</span>
+            <span class="ticker-item-name">24H DAYTONA</span>
             <span class="ticker-item-divider">•</span>
-            <span class="ticker-item-date">JAN 23–25, 2026</span>
+            <span class="ticker-item-date">JAN 16–18, 2026</span>
+        </a>
+        <span class="ticker-separator">✦</span>
+        <a href="events/nurburgring-24h.html" class="ticker-event-item">
+            <span class="ticker-result-badge silver">🥈 P2 PODIUM</span>
+            <span class="ticker-item-name">24H NÜRBURGRING</span>
+            <span class="ticker-item-divider">•</span>
+            <span class="ticker-item-date">MAY 1–3, 2026</span>
+        </a>
+        <span class="ticker-separator">✦</span>
+        <a href="events/suzuka-1000km.html" class="ticker-event-item">
+            <span class="ticker-result-badge silver">🥈 P2 PODIUM</span>
+            <span class="ticker-item-name">SUZUKA 1000KM</span>
+            <span class="ticker-item-divider">•</span>
+            <span class="ticker-item-date">SEPT 10–15, 2026</span>
+        </a>
+        <span class="ticker-separator">✦</span>
+        <a href="events/past/iracing-roar.html" class="ticker-event-item">
+            <span class="ticker-result-badge bronze">🥉 P3 PODIUM</span>
+            <span class="ticker-item-name">IRACING ROAR</span>
+            <span class="ticker-item-divider">•</span>
+            <span class="ticker-item-date">JAN 9–10, 2026</span>
         </a>
         <span class="ticker-separator">✦</span>
     `;
@@ -2460,3 +2488,28 @@ function closeStreamsModal() {
 // Initialize Site-Wide Credits
 document.addEventListener('DOMContentLoaded', injectCredits);
 window.addEventListener('load', injectCredits);
+
+// Client-side podium filter handler for the homepage dashboard
+window.filterPodiumResults = function(filter) {
+    const buttons = document.querySelectorAll('.podium-filter-btn');
+    buttons.forEach(btn => {
+        if (btn.dataset.filter === filter) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+
+    const cards = document.querySelectorAll('#mockup-recent-results-list .result-entry-card');
+    cards.forEach(card => {
+        if (filter === 'ALL') {
+            card.style.display = 'flex';
+        } else if (filter === 'P1') {
+            card.style.display = card.classList.contains('p1-card') ? 'flex' : 'none';
+        } else if (filter === 'P2') {
+            card.style.display = card.classList.contains('p2-card') ? 'flex' : 'none';
+        } else if (filter === 'P3') {
+            card.style.display = card.classList.contains('p3-card') ? 'flex' : 'none';
+        }
+    });
+};

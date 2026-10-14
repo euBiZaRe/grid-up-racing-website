@@ -2805,6 +2805,85 @@ body[data-theme="theme-purple"]::before, body::before {
     transform: translateX(3px);
 }
 
+/* P3 Bronze styling */
+.result-entry-card.p3-card {
+    border-left: 3px solid #d97706;
+}
+
+.p3-badge {
+    background: rgba(217, 119, 6, 0.15);
+    border: 1px solid rgba(217, 119, 6, 0.4);
+    color: #fbbf24;
+    box-shadow: 0 0 10px rgba(217, 119, 6, 0.2);
+}
+
+/* Podium filter pill buttons */
+.podium-filter-bar {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.75rem 1.4rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.2);
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.podium-filter-btn {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+    font-family: var(--font-heading);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 0.35rem 0.85rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.podium-filter-btn:hover {
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.podium-filter-btn.active {
+    background: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+    box-shadow: 0 0 12px rgba(139, 92, 246, 0.35);
+}
+
+.podium-footer-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.4rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.15);
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.podium-footer-link {
+    font-family: var(--font-heading);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    color: var(--primary-light);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.podium-footer-link:hover {
+    color: #ffffff;
+}
+
+#upcoming-results {
+    scroll-margin-top: 90px;
+}
+
 /* Ticker result badges */
 .ticker-result-badge {
     padding: 0.15rem 0.45rem;
@@ -2827,6 +2906,12 @@ body[data-theme="theme-purple"]::before, body::before {
     background: rgba(148, 163, 184, 0.2);
     border: 1px solid rgba(148, 163, 184, 0.4);
     color: #f1f5f9;
+}
+
+.ticker-result-badge.bronze {
+    background: rgba(217, 119, 6, 0.2);
+    border: 1px solid rgba(217, 119, 6, 0.5);
+    color: #fbbf24;
 }
 
 /* Right Sidebar: Quick Links */
