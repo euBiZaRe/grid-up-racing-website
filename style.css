@@ -2050,6 +2050,64 @@ body[data-theme="theme-purple"]::before, body::before {
     user-select: none;
 }
 
+.ticker-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.12rem 0.45rem;
+    border-radius: 4px;
+    font-family: var(--font-heading);
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    line-height: 1.1;
+}
+
+.ticker-tag.upcoming {
+    background: rgba(56, 189, 248, 0.18);
+    border: 1px solid rgba(56, 189, 248, 0.5);
+    color: #38bdf8;
+    text-shadow: 0 0 6px rgba(56, 189, 248, 0.4);
+}
+
+.ticker-tag.result {
+    background: rgba(234, 179, 8, 0.18);
+    border: 1px solid rgba(234, 179, 8, 0.5);
+    color: #facc15;
+    text-shadow: 0 0 6px rgba(234, 179, 8, 0.4);
+}
+
+.ticker-section-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.22rem 0.7rem;
+    margin: 0 0.5rem;
+    border-radius: 9999px;
+    font-family: var(--font-heading);
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    user-select: none;
+}
+
+.ticker-section-pill.upcoming-section {
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.22), rgba(14, 165, 233, 0.08));
+    border: 1px solid rgba(56, 189, 248, 0.55);
+    color: #7dd3fc;
+    box-shadow: 0 0 12px rgba(14, 165, 233, 0.25);
+}
+
+.ticker-section-pill.results-section {
+    background: linear-gradient(135deg, rgba(234, 179, 8, 0.22), rgba(234, 179, 8, 0.08));
+    border: 1px solid rgba(234, 179, 8, 0.55);
+    color: #fde047;
+    box-shadow: 0 0 12px rgba(234, 179, 8, 0.25);
+}
+
+
 /* ===================================================
    MOCKUP HERO SECTION
    =================================================== */
@@ -2418,7 +2476,7 @@ body[data-theme="theme-purple"]::before, body::before {
 }
 .timeslots-header {
     display: grid;
-    grid-template-columns: 1.15fr 1.55fr 0.8fr;
+    grid-template-columns: 1fr 1.35fr;
     gap: 0.5rem;
     align-items: center;
     padding: 0.55rem 0.85rem;
@@ -2434,9 +2492,9 @@ body[data-theme="theme-purple"]::before, body::before {
     align-items: center;
     gap: 0.35rem;
 }
-.timeslots-header .ts-col-duration {
+.timeslots-header .ts-col-date {
     text-align: right;
-    padding-right: 0.4rem;
+    padding-right: 0.25rem;
 }
 .sort-icon {
     opacity: 0.7;
@@ -2457,10 +2515,10 @@ body[data-theme="theme-purple"]::before, body::before {
 }
 .timeslot-row {
     display: grid;
-    grid-template-columns: 1.15fr 1.55fr 0.8fr;
+    grid-template-columns: 1fr 1.35fr;
     gap: 0.5rem;
     align-items: center;
-    padding: 0.6rem 0.85rem;
+    padding: 0.65rem 0.85rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.04);
     transition: background 0.15s ease;
 }
@@ -2501,9 +2559,11 @@ body[data-theme="theme-purple"]::before, body::before {
 .timeslot-col.col-date {
     display: flex;
     flex-direction: column;
+    align-items: flex-end;
+    text-align: right;
 }
 .timeslot-date-title {
-    font-size: 0.82rem;
+    font-size: 0.84rem;
     font-weight: 600;
     color: #f1f5f9;
 }
@@ -2512,28 +2572,6 @@ body[data-theme="theme-purple"]::before, body::before {
     font-weight: 700;
     color: #cbd5e1;
     margin-top: 2px;
-}
-.timeslot-col.col-duration {
-    display: flex;
-    justify-content: flex-end;
-}
-.duration-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 9999px;
-    padding: 0.22rem 0.65rem;
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: #f1f5f9;
-    white-space: nowrap;
-}
-.duration-badge svg {
-    width: 12px;
-    height: 12px;
-    opacity: 0.8;
 }
 .mockup-event-classes {
     display: flex;

@@ -1006,12 +1006,6 @@ function renderHeroTimeslots(slots) {
                     <div class="timeslot-date-title">${dateFormatted}</div>
                     <div class="timeslot-slot-tag">Timeslot #${slotNum}</div>
                 </div>
-                <div class="timeslot-col col-duration">
-                    <span class="duration-badge">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                        ${duration}
-                    </span>
-                </div>
             </div>
         `;
     }).join('');
@@ -1023,13 +1017,15 @@ function populateEventsTicker(upcomingEvents, staticIds = []) {
     if (!tickerContent) return;
     if (!Array.isArray(upcomingEvents) || upcomingEvents.length === 0) return;
 
-    const itemsHtml = upcomingEvents.map(e => {
+    const itemsHtml = `
+        <span class="ticker-section-pill upcoming-section">📅 UPCOMING RACES</span>
+    ` + upcomingEvents.map(e => {
         const link = (staticIds && staticIds.includes(e.id)) ? getEventLink(e.id, true) : getEventLink(e.id);
         const name = (e.name || 'Upcoming Race').toUpperCase();
         const date = (e.date || 'Season 2026').toUpperCase();
         return `
             <a href="${link}" class="ticker-event-item">
-                <span class="ticker-item-flag">🏁</span>
+                <span class="ticker-tag upcoming">UPCOMING</span>
                 <span class="ticker-item-name">${name}</span>
                 <span class="ticker-item-divider">•</span>
                 <span class="ticker-item-date">${date}</span>
@@ -1039,7 +1035,9 @@ function populateEventsTicker(upcomingEvents, staticIds = []) {
     }).join('');
 
     const recentResultsHtml = `
+        <span class="ticker-section-pill results-section">🏆 PODIUM RESULTS</span>
         <a href="events/road-america-6h.html" class="ticker-event-item">
+            <span class="ticker-tag result">RESULT</span>
             <span class="ticker-result-badge gold">🏆 P1 WIN</span>
             <span class="ticker-item-name">ROAD AMERICA 6H</span>
             <span class="ticker-item-divider">•</span>
@@ -1047,6 +1045,7 @@ function populateEventsTicker(upcomingEvents, staticIds = []) {
         </a>
         <span class="ticker-separator">✦</span>
         <a href="events/indy-500.html" class="ticker-event-item">
+            <span class="ticker-tag result">RESULT</span>
             <span class="ticker-result-badge gold">🥇 P1 WIN</span>
             <span class="ticker-item-name">INDY 500</span>
             <span class="ticker-item-divider">•</span>
@@ -1054,6 +1053,7 @@ function populateEventsTicker(upcomingEvents, staticIds = []) {
         </a>
         <span class="ticker-separator">✦</span>
         <a href="events/past/daytona-24.html" class="ticker-event-item">
+            <span class="ticker-tag result">RESULT</span>
             <span class="ticker-result-badge silver">🥈 P2 PODIUM</span>
             <span class="ticker-item-name">24H DAYTONA</span>
             <span class="ticker-item-divider">•</span>
@@ -1061,6 +1061,7 @@ function populateEventsTicker(upcomingEvents, staticIds = []) {
         </a>
         <span class="ticker-separator">✦</span>
         <a href="events/nurburgring-24h.html" class="ticker-event-item">
+            <span class="ticker-tag result">RESULT</span>
             <span class="ticker-result-badge silver">🥈 P2 PODIUM</span>
             <span class="ticker-item-name">24H NÜRBURGRING</span>
             <span class="ticker-item-divider">•</span>
@@ -1068,6 +1069,7 @@ function populateEventsTicker(upcomingEvents, staticIds = []) {
         </a>
         <span class="ticker-separator">✦</span>
         <a href="events/suzuka-1000km.html" class="ticker-event-item">
+            <span class="ticker-tag result">RESULT</span>
             <span class="ticker-result-badge silver">🥈 P2 PODIUM</span>
             <span class="ticker-item-name">SUZUKA 1000KM</span>
             <span class="ticker-item-divider">•</span>
@@ -1075,6 +1077,7 @@ function populateEventsTicker(upcomingEvents, staticIds = []) {
         </a>
         <span class="ticker-separator">✦</span>
         <a href="events/past/iracing-roar.html" class="ticker-event-item">
+            <span class="ticker-tag result">RESULT</span>
             <span class="ticker-result-badge bronze">🥉 P3 PODIUM</span>
             <span class="ticker-item-name">IRACING ROAR</span>
             <span class="ticker-item-divider">•</span>
