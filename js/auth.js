@@ -877,15 +877,11 @@ function showMaintenanceScreen() {
     if (!overlay) {
         overlay = document.createElement('div');
         overlay.id = 'gridup-maintenance-overlay';
-        overlay.style.cssText = 'position:fixed;inset:0;z-index:999999;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;margin:0;padding:0;cursor:default;';
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:999999;background:#000;overflow:hidden;margin:0;padding:0;cursor:default;';
         document.body.appendChild(overlay);
     }
     
-    overlay.innerHTML = `
-        <div style="width:100vw;height:100vh;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;margin:0;padding:0;">
-            <img src="/assets/maintenance.jpg?v=20261013" alt="Site Offline" style="width:100%;height:100%;max-width:100vw;max-height:100vh;object-fit:contain;background:#000;display:block;pointer-events:none;user-select:none;" />
-        </div>
-    `;
+    overlay.innerHTML = '';
     document.body.style.overflow = 'hidden';
 }
 
