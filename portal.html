@@ -5758,6 +5758,15 @@
 
             if (!currentEvent || !currentTeam) return;
 
+            // Load from localStorage cache first for instant render
+            try {
+                const cached = localStorage.getItem(`gridup_checklist_${currentEvent}_${currentTeam}`);
+                if (cached) {
+                    window.currentChecklistData = JSON.parse(cached);
+                    renderCaptainChecklistUI();
+                }
+            } catch (_) {}
+
             try {
                 const docRef = db.collection("race_lineups")
                                  .doc(currentEvent)
@@ -5769,12 +5778,13 @@
                 window.unsubCaptainChecklist = docRef.onSnapshot(doc => {
                     if (doc && doc.exists) {
                         window.currentChecklistData = doc.data() || { items: {} };
-                    } else {
-                        window.currentChecklistData = { items: {}, notes: '' };
+                        try {
+                            localStorage.setItem(`gridup_checklist_${currentEvent}_${currentTeam}`, JSON.stringify(window.currentChecklistData));
+                        } catch (_) {}
                     }
                     renderCaptainChecklistUI();
                 }, err => {
-                    console.warn("Checklist snapshot warning:", err);
+                    console.warn("Checklist snapshot warning (rules may need publishing in Firebase Console):", err);
                     renderCaptainChecklistUI();
                 });
             } catch (err) {
@@ -5981,6 +5991,11 @@
             window.currentChecklistData.updatedBy = myName;
             renderCaptainChecklistUI();
 
+            // Cache in localStorage immediately so state is preserved locally
+            try {
+                localStorage.setItem(`gridup_checklist_${currentEvent}_${currentTeam}`, JSON.stringify(window.currentChecklistData));
+            } catch (_) {}
+
             try {
                 const docRef = db.collection("race_lineups")
                                  .doc(currentEvent)
@@ -6001,11 +6016,13 @@
                     updatedBy: myName
                 }, { merge: true });
             } catch (err) {
-                console.error("Error saving checklist item:", err);
-                alert("Failed to save checklist item. Please check your network connection.");
-                // Rollback
-                window.currentChecklistData.items[itemKey] = currentItem;
-                renderCaptainChecklistUI();
+                console.error("Error saving checklist item to Firestore:", err);
+                const isPermDenied = err && (err.code === 'permission-denied' || String(err.message).toLowerCase().includes('permission'));
+                if (isPermDenied) {
+                    alert("Permission Notice: Your checklist change has been saved in this browser, but Firestore rules must be published in Firebase Console -> Firestore Database -> Rules for teammates to see it live.");
+                } else {
+                    alert("Failed to sync checklist item: " + (err.message || "Please check connection."));
+                }
             }
         }
 
@@ -6031,6 +6048,15 @@
                            (window.auth && window.auth.currentUser && window.auth.currentUser.displayName) || 
                            'Captain';
 
+            if (window.currentChecklistData) {
+                window.currentChecklistData.notes = notesVal;
+                window.currentChecklistData.notesUpdatedAt = new Date();
+                window.currentChecklistData.notesUpdatedBy = myName;
+            }
+            try {
+                localStorage.setItem(`gridup_checklist_${currentEvent}_${currentTeam}`, JSON.stringify(window.currentChecklistData));
+            } catch (_) {}
+
             try {
                 const docRef = db.collection("race_lineups")
                                  .doc(currentEvent)
@@ -6047,20 +6073,19 @@
                     updatedBy: myName
                 }, { merge: true });
 
-                if (window.currentChecklistData) {
-                    window.currentChecklistData.notes = notesVal;
-                    window.currentChecklistData.notesUpdatedAt = new Date();
-                    window.currentChecklistData.notesUpdatedBy = myName;
-                }
-
                 const notesStatus = document.getElementById('checklist-notes-status');
                 if (notesStatus) {
                     notesStatus.textContent = `Briefing saved just now by ${myName}`;
                     notesStatus.style.color = '#10b981';
                 }
             } catch (err) {
-                console.error("Error saving captain notes:", err);
-                alert("Could not save captain notes. Please try again.");
+                console.error("Error saving captain notes to Firestore:", err);
+                const isPermDenied = err && (err.code === 'permission-denied' || String(err.message).toLowerCase().includes('permission'));
+                if (isPermDenied) {
+                    alert("Permission Notice: Briefing notes saved in this browser, but Firestore rules must be published in Firebase Console -> Firestore Database -> Rules for teammates to see it live.");
+                } else {
+                    alert("Could not save captain notes: " + (err.message || "Please try again."));
+                }
             } finally {
                 if (saveBtn) {
                     saveBtn.disabled = false;
