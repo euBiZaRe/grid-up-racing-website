@@ -454,33 +454,26 @@ function renderSeriesButtons() {
 function getTrackSvg(trackKey) {
     const track = (window.TRACK_OUTLINES && window.TRACK_OUTLINES[trackKey]) || {
         name: 'Circuit',
+        fullName: 'Circuit',
         length: '5.000 km',
         viewBox: '0 0 100 60',
         svgPath: 'M 15 35 Q 12 18 30 16 L 75 16 Q 92 18 90 35 Q 88 50 72 48 L 52 44 L 32 48 Q 15 50 15 35 Z'
     };
 
-    if (track.image) {
-        return `
-            <div class="trophy-track-box">
-                <img src="${track.image}" alt="${track.name}" class="track-svg track-img" loading="lazy" />
-                <div class="track-info">
-                    <span class="track-name">${track.name}</span>
-                    <span class="track-length">${track.length}</span>
-                </div>
-            </div>
-        `;
-    }
-
+    const displayName = track.name || 'Circuit';
+    const fullName = track.fullName || displayName;
+    const length = track.length || '';
     const vb = track.viewBox || '0 0 100 60';
+    const svgPath = track.svgPath || '';
 
     return `
-        <div class="trophy-track-box">
-            <svg viewBox="${vb}" class="track-svg" preserveAspectRatio="xMidYMid meet">
-                <path d="${track.svgPath}" class="track-path" vector-effect="non-scaling-stroke" />
+        <div class="trophy-track-box" title="${escapeHtml(fullName)}">
+            <svg viewBox="${vb}" class="track-svg" preserveAspectRatio="xMidYMid meet" style="overflow:visible;">
+                <path d="${svgPath}" class="track-path" vector-effect="non-scaling-stroke" />
             </svg>
             <div class="track-info">
-                <span class="track-name">${track.name}</span>
-                <span class="track-length">${track.length}</span>
+                <span class="track-name" title="${escapeHtml(fullName)}">${escapeHtml(displayName)}</span>
+                <span class="track-length">${escapeHtml(length)}</span>
             </div>
         </div>
     `;

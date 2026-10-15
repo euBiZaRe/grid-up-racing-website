@@ -924,21 +924,6 @@ function getTrackSvg(trackKey) {
     const vb = track.viewBox || '0 0 100 60';
     const svgPath = track.svgPath || '';
 
-    if (track.image) {
-        return `
-            <div class="trophy-track-box" title="${escapeHtml(fullName)}">
-                <img src="${track.image}" alt="${escapeHtml(displayName)}" class="track-svg track-img" loading="lazy" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='block';" />
-                <svg viewBox="${vb}" class="track-svg track-svg-fallback" preserveAspectRatio="xMidYMid meet" style="display:none; overflow:visible;">
-                    <path d="${svgPath}" class="track-path" vector-effect="non-scaling-stroke" />
-                </svg>
-                <div class="track-info">
-                    <span class="track-name" title="${escapeHtml(fullName)}">${escapeHtml(displayName)}</span>
-                    <span class="track-length">${escapeHtml(length)}</span>
-                </div>
-            </div>
-        `;
-    }
-
     return `
         <div class="trophy-track-box" title="${escapeHtml(fullName)}">
             <svg viewBox="${vb}" class="track-svg" preserveAspectRatio="xMidYMid meet" style="overflow:visible;">
