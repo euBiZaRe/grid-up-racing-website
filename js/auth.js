@@ -25,15 +25,15 @@ if (typeof firebase !== 'undefined') {
 
 // Hardcoded Verified Admin UIDs failsafe (guarantees access even if Firestore rules or network restricts settings/admins)
 const MASTER_ADMIN = 'B0t4f4nqqpZIQKpT8Ed97xka5gM2'; // Matty Roberts (Protected Master)
-const KNOWN_ADMIN_UIDS = [
+const KNOWN_ADMIN_UIDS = Object.freeze([
     'B0t4f4nqqpZIQKpT8Ed97xka5gM2', // Matty Roberts (Master)
-    'uYUa2WYZ5TPg98v1e6jQzzrItR53', // Andrew Fabian (Team Admin)
-    'BnojTKUFKUUKDFFpnUGEdueLhkN2', // Martyn Cook (Team Admin)
-    '2TfuhZVILNQerQK9SYL1304jYp83'  // Adam Jones (Team Admin)
-];
+    'uYUa2WYZ5TPg98vle6jQzzrItR53', // Andrew Fabian (Team Admin)
+    '8nojtKUFKUUKDFFpnU6EdueLhkN2', // Martyn Cook (Team Admin)
+    '2TfuhZVILNQerQK95YL1304jYp83'  // Adam Jones (Team Admin)
+]);
 if (typeof window !== 'undefined') {
-    window.MASTER_ADMIN = MASTER_ADMIN;
-    window.KNOWN_ADMIN_UIDS = KNOWN_ADMIN_UIDS;
+    Object.defineProperty(window, 'MASTER_ADMIN', { value: MASTER_ADMIN, writable: false, configurable: false });
+    Object.defineProperty(window, 'KNOWN_ADMIN_UIDS', { value: KNOWN_ADMIN_UIDS, writable: false, configurable: false });
 }
 
 // Global Auth State

@@ -14,9 +14,9 @@ service cloud.firestore {
       return isAuthenticated() && (
         request.auth.uid in [
           'B0t4f4nqqpZIQKpT8Ed97xka5gM2',
-          'uYUa2WYZ5TPg98v1e6jQzzrItR53',
-          'BnojTKUFKUUKDFFpnUGEdueLhkN2',
-          '2TfuhZVILNQerQK9SYL1304jYp83'
+          'uYUa2WYZ5TPg98vle6jQzzrItR53',
+          '8nojtKUFKUUKDFFpnU6EdueLhkN2',
+          '2TfuhZVILNQerQK95YL1304jYp83'
         ]
       );
     }
@@ -45,16 +45,16 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Admins registry is readable by authenticated users and writable only by admins
+    // Admins registry is readable by authenticated users and writable strictly by hardcoded admins
     match /settings/admins {
       allow read: if isAuthenticated();
-      allow write: if isAdmin();
+      allow write: if isHardcodedAdmin();
     }
 
-    // Other general settings
+    // Other general settings (excluding protected admins registry)
     match /settings/{docId} {
       allow read: if isAuthenticated();
-      allow write: if isAdmin();
+      allow write: if isAdmin() && docId != 'admins';
     }
 
     // ===============================================================
@@ -62,18 +62,21 @@ service cloud.firestore {
     // ===============================================================
 
     match /users/{userId} {
-      // Profiles are publicly readable for driver directories & standings
-      allow read: if true;
+      // Profiles are restricted to authenticated users to prevent scraping of PII
+      allow read: if isAuthenticated();
       
-      // Creating a profile: owner can create, but CANNOT elevate itself
-      allow create: if isOwner(userId) &&
+      // Creating a profile: owner can create, but CANNOT elevate itself. Only hardcoded admins can set admin/role fields.
+      allow create: if (
+        isOwner(userId) &&
         !('isAdmin' in request.resource.data) &&
-        !('role' in request.resource.data);
+        !('role' in request.resource.data)
+      ) || isHardcodedAdmin();
 
-      // Updating a profile: owner can update if isAdmin and role are not modified, OR admin
-      allow update: if (isOwner(userId) &&
-        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isAdmin', 'role'])) ||
-        isAdmin();
+      // Updating a profile: owner or admin can update, but isAdmin and role can ONLY be modified by hardcoded admins
+      allow update: if isHardcodedAdmin() || (
+        (isOwner(userId) || isAdmin()) &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isAdmin', 'role'])
+      );
 
       // Only admins can delete profiles
       allow delete: if isAdmin();

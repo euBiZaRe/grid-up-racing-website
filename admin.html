@@ -4663,7 +4663,7 @@ body.meeting-mode-active .btn-summary-confirm {
                 const uids = doc.exists ? (doc.data().uids || []) : [];
                 
                 const masterUid = 'B0t4f4nqqpZIQKpT8Ed97xka5gM2';
-                const knownAdmins = (typeof KNOWN_ADMIN_UIDS !== 'undefined') ? KNOWN_ADMIN_UIDS : ['B0t4f4nqqpZIQKpT8Ed97xka5gM2', 'uYUa2WYZ5TPg98v1e6jQzzrItR53', 'BnojTKUFKUUKDFFpnUGEdueLhkN2', '2TfuhZVILNQerQK9SYL1304jYp83'];
+                const knownAdmins = (typeof KNOWN_ADMIN_UIDS !== 'undefined') ? KNOWN_ADMIN_UIDS : ['B0t4f4nqqpZIQKpT8Ed97xka5gM2', 'uYUa2WYZ5TPg98vle6jQzzrItR53', '8nojtKUFKUUKDFFpnU6EdueLhkN2', '2TfuhZVILNQerQK95YL1304jYp83'];
                 const allAdminUids = Array.from(new Set([masterUid, ...knownAdmins, ...uids]));
 
                 // Fetch user profiles for all admin UIDs concurrently
@@ -7231,7 +7231,7 @@ body.meeting-mode-active .btn-summary-confirm {
             const accessDenied = document.getElementById('access-denied');
             const userInfo = document.getElementById('admin-user-info');
 
-            const hardcodedAdmins = (typeof KNOWN_ADMIN_UIDS !== 'undefined') ? KNOWN_ADMIN_UIDS : ['B0t4f4nqqpZIQKpT8Ed97xka5gM2', 'uYUa2WYZ5TPg98v1e6jQzzrItR53', 'BnojTKUFKUUKDFFpnUGEdueLhkN2', '2TfuhZVILNQerQK9SYL1304jYp83'];
+            const hardcodedAdmins = (typeof KNOWN_ADMIN_UIDS !== 'undefined') ? KNOWN_ADMIN_UIDS : ['B0t4f4nqqpZIQKpT8Ed97xka5gM2', 'uYUa2WYZ5TPg98vle6jQzzrItR53', '8nojtKUFKUUKDFFpnU6EdueLhkN2', '2TfuhZVILNQerQK95YL1304jYp83'];
             const isHardcodedAdmin = Boolean(user && user.uid && hardcodedAdmins.includes(user.uid));
             const isVerifiedAdmin = Boolean(user && ((data && data.isAdmin === true && isHardcodedAdmin) || (typeof IS_ADMIN !== 'undefined' && IS_ADMIN)));
 
@@ -7259,7 +7259,7 @@ body.meeting-mode-active .btn-summary-confirm {
         // Dedicated onAuthReady hook to guarantee instant unlocking upon auth resolution
         function onAuthReady(user) {
             if (user) {
-                const hardcodedAdmins = (typeof KNOWN_ADMIN_UIDS !== 'undefined') ? KNOWN_ADMIN_UIDS : ['B0t4f4nqqpZIQKpT8Ed97xka5gM2', 'uYUa2WYZ5TPg98v1e6jQzzrItR53', 'BnojTKUFKUUKDFFpnUGEdueLhkN2', '2TfuhZVILNQerQK9SYL1304jYp83'];
+                const hardcodedAdmins = (typeof KNOWN_ADMIN_UIDS !== 'undefined') ? KNOWN_ADMIN_UIDS : ['B0t4f4nqqpZIQKpT8Ed97xka5gM2', 'uYUa2WYZ5TPg98vle6jQzzrItR53', '8nojtKUFKUUKDFFpnU6EdueLhkN2', '2TfuhZVILNQerQK95YL1304jYp83'];
                 const isAdmin = hardcodedAdmins.includes(user.uid) || (typeof IS_ADMIN !== 'undefined' && IS_ADMIN);
                 if (isAdmin) {
                     onAuthEnriched(user, { isAdmin: true });
@@ -7294,7 +7294,7 @@ body.meeting-mode-active .btn-summary-confirm {
             try {
                 const currentUser = (typeof auth !== 'undefined' && auth.currentUser) ? auth.currentUser : (typeof AUTH_USER !== 'undefined' ? AUTH_USER : null);
                 const cached = JSON.parse(localStorage.getItem('gridup_auth_cache') || '{}');
-                const hardcodedAdmins = (typeof KNOWN_ADMIN_UIDS !== 'undefined') ? KNOWN_ADMIN_UIDS : ['B0t4f4nqqpZIQKpT8Ed97xka5gM2', 'uYUa2WYZ5TPg98v1e6jQzzrItR53', 'BnojTKUFKUUKDFFpnUGEdueLhkN2', '2TfuhZVILNQerQK9SYL1304jYp83'];
+                const hardcodedAdmins = (typeof KNOWN_ADMIN_UIDS !== 'undefined') ? KNOWN_ADMIN_UIDS : ['B0t4f4nqqpZIQKpT8Ed97xka5gM2', 'uYUa2WYZ5TPg98vle6jQzzrItR53', '8nojtKUFKUUKDFFpnU6EdueLhkN2', '2TfuhZVILNQerQK95YL1304jYp83'];
                 
                 const activeUser = currentUser || (cached.user ? cached.user : null);
                 const isKnownAdmin = Boolean(activeUser && activeUser.uid && hardcodedAdmins.includes(activeUser.uid));
