@@ -15,6 +15,25 @@ except ImportError:
 
 # File paths
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Automatically load .env if present
+def load_env():
+    for p in [os.path.join(BASE_DIR, '.env'), os.path.expanduser('~/.env')]:
+        if os.path.exists(p):
+            try:
+                with open(p, 'r', encoding='utf-8') as f:
+                    for line in f:
+                        line = line.strip()
+                        if line and not line.startswith('#') and '=' in line:
+                            k, v = line.split('=', 1)
+                            k = k.strip()
+                            v = v.strip().strip('"').strip("'")
+                            if k not in os.environ and v:
+                                os.environ[k] = v
+            except Exception:
+                pass
+
+load_env()
 DRIVERS_JSON = os.path.join(BASE_DIR, "scripts", "drivers.json")
 DRIVER_STATS_JSON = os.path.join(BASE_DIR, "driver_stats_2.json")
 TEMPLATE_PATH = os.path.join(BASE_DIR, "drivers", "driver-template.html")
