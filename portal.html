@@ -484,6 +484,129 @@
             border-color: var(--card-border-hover, rgba(0, 207, 255, 0.5)) !important;
             box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 20px var(--card-glow, rgba(0, 207, 255, 0.25)) !important;
         }
+
+        /* Captain Checklist Tab Styles */
+        .checklist-item-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.25rem;
+            padding: 1.25rem 1.5rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.02);
+            transition: all 0.25s ease;
+        }
+        .checklist-item-card:hover {
+            border-color: rgba(255, 255, 255, 0.16);
+            background: rgba(255, 255, 255, 0.035);
+        }
+        .checklist-item-card.is-checked {
+            border-color: rgba(16, 185, 129, 0.35);
+            background: rgba(16, 185, 129, 0.04);
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.08);
+        }
+        .checklist-check-btn {
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 1.15rem;
+            text-align: left;
+            color: inherit;
+            flex: 1;
+            transition: opacity 0.2s;
+        }
+        .checklist-check-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.85;
+        }
+        .checklist-check-circle {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            color: transparent;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.03);
+        }
+        .checklist-item-card.is-checked .checklist-check-circle {
+            background: #10b981;
+            border-color: #10b981;
+            color: #fff;
+            box-shadow: 0 0 16px rgba(16, 185, 129, 0.5);
+        }
+        .checklist-check-btn:not(:disabled):hover .checklist-check-circle {
+            border-color: var(--primary, #00cfff);
+            box-shadow: 0 0 12px rgba(0, 207, 255, 0.3);
+            transform: scale(1.05);
+        }
+        .checklist-item-card.is-checked .checklist-check-btn:not(:disabled):hover .checklist-check-circle {
+            background: #059669;
+            border-color: #059669;
+            box-shadow: 0 0 18px rgba(5, 150, 105, 0.6);
+        }
+        .checklist-item-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #fff;
+            margin: 0 0 4px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .checklist-item-card.is-checked .checklist-item-title {
+            color: #e2e8f0;
+        }
+        .checklist-item-sub {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin: 0;
+            line-height: 1.4;
+        }
+        .checklist-item-meta {
+            margin-top: 6px;
+            font-size: 0.72rem;
+            color: #10b981;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .checklist-item-meta.pending {
+            color: var(--text-muted);
+        }
+        .checklist-action-link {
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 0.55rem 1.15rem;
+            border-radius: 8px;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        @media (max-width: 640px) {
+            .checklist-item-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            .checklist-action-link {
+                width: 100%;
+                justify-content: center;
+            }
+        }
     </style>
 
 
@@ -1296,6 +1419,7 @@
                 <button type="button" class="portal-nav-tab active" onclick="switchTab('wall')"><i class="fas fa-comments"></i> <span>Communications</span></button>
                 <button type="button" class="portal-nav-tab" onclick="switchTab('setups')"><i class="fas fa-sliders-h"></i> <span>Setup Library</span></button>
                 <button type="button" class="portal-nav-tab" onclick="switchTab('telemetry')"><i class="fas fa-stopwatch"></i> <span>Lap Times</span></button>
+                <button type="button" class="portal-nav-tab" onclick="switchTab('checklist')"><i class="fas fa-clipboard-check"></i> <span>Captain Checklist</span> <span id="checklist-nav-badge" class="badge" style="display:none; margin-left: 6px; font-size: 0.65rem; padding: 2px 7px; border-radius: 10px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #34d399; font-weight: 800;">0/4</span></button>
                 <!-- Stint Strategy (temporarily hidden) -->
                 <!-- <button type="button" class="portal-nav-tab" onclick="switchTab('stints')"><i class="fas fa-flag-checkered"></i> <span>Stint Strategy</span></button> -->
             </div>
@@ -1533,9 +1657,83 @@
 
                     </div>
 
+                    <!-- Captain Checklist Tab -->
+                    <div id="tab-checklist" class="tab-content glass checklist-tab" style="display: none; padding: 2.5rem; border-radius: 14px;">
+                        
+                        <!-- Top Header -->
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; flex-wrap: wrap; gap: 1.5rem;">
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem; flex-wrap: wrap;">
+                                    <h2 style="font-size: 1.5rem; color: var(--primary); font-family: var(--font-heading); margin: 0; display: inline-flex; align-items: center; gap: 10px;">
+                                        <i class="fas fa-clipboard-check"></i> RACE DAY READINESS CHECKLIST
+                                    </h2>
+                                    <span id="checklist-captain-badge" class="captain-badge" style="font-size: 0.72rem; padding: 3px 9px;">
+                                        <i class="fas fa-user-shield"></i> Captain: Loading...
+                                    </span>
+                                    <span id="checklist-auth-badge" class="badge" style="font-size: 0.68rem; padding: 3px 9px; border-radius: 6px; font-weight: 800;">
+                                        Checking permissions...
+                                    </span>
+                                </div>
+                                <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0; max-width: 680px; line-height: 1.5;">
+                                    Pre-race checklist for Team Captains and squad drivers. Ensure all strategy files, team liveries, setup packages, and telemetry benchmarks are locked in before race start.
+                                </p>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                                <button type="button" onclick="loadCaptainChecklist(true)" class="btn btn-outline" style="padding: 0.55rem 0.9rem; font-size: 0.8rem; border-radius: 8px;" title="Refresh Checklist">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                            </div>
+                        </div>
 
+                        <!-- Readiness Progress Card -->
+                        <div class="glass" style="margin-bottom: 2rem; padding: 1.25rem 1.5rem; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255, 255, 255, 0.02);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: #fff;">Race Readiness Progress</span>
+                                    <span id="checklist-completion-pill" class="badge" style="font-size: 0.7rem; font-weight: 800; padding: 3px 10px; border-radius: 20px; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #f59e0b;">
+                                        0 / 4 Completed (0%)
+                                    </span>
+                                </div>
+                                <div id="checklist-last-updated" style="font-size: 0.72rem; color: var(--text-muted); font-family: monospace;">
+                                    Last updated: Just now
+                                </div>
+                            </div>
+                            <div style="width: 100%; height: 10px; background: rgba(255, 255, 255, 0.06); border-radius: 6px; overflow: hidden; position: relative;">
+                                <div id="checklist-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #f59e0b, #10b981); border-radius: 6px; transition: width 0.4s ease, background 0.4s ease;"></div>
+                            </div>
+                            <div id="checklist-ready-banner" style="display: none; margin-top: 1rem; padding: 0.85rem 1.25rem; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 8px; color: #34d399; font-weight: 700; font-size: 0.85rem;">
+                                <i class="fas fa-check-double" style="margin-right: 8px; font-size: 1.1rem;"></i>
+                                <span>All 4 pre-flight checks verified! Squad is 100% cleared and race ready.</span>
+                            </div>
+                        </div>
 
-                </div>
+                        <!-- Checklist Items Container -->
+                        <div id="checklist-items-container" style="display: flex; flex-direction: column; gap: 1rem;">
+                            <!-- Injected dynamically via renderCaptainChecklistUI() -->
+                            <div style="text-align: center; color: var(--text-muted); padding: 3rem 1rem;">
+                                <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 0.8rem; color: var(--primary);"></i>
+                                <p>Loading checklist status...</p>
+                            </div>
+                        </div>
+
+                        <!-- Captain Briefing & Directives Section -->
+                        <div class="glass" style="margin-top: 2rem; padding: 1.5rem; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255, 255, 255, 0.02);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; flex-wrap: wrap; gap: 0.5rem;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-bullhorn" style="color: var(--primary);"></i>
+                                    <span style="font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #fff;">Captain Briefing Notes & Directives</span>
+                                </div>
+                                <span id="checklist-notes-status" style="font-size: 0.72rem; color: var(--text-muted); font-style: italic;"></span>
+                            </div>
+                            <textarea id="checklist-captain-notes" rows="4" placeholder="Enter captain instructions, Discord comms channel, driver swap procedures, pit stop delta targets, or weather reminders for the squad..." style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; padding: 0.85rem; font-size: 0.85rem; resize: vertical; font-family: inherit; line-height: 1.5; outline: none;"></textarea>
+                            <div id="checklist-notes-actions" style="display: flex; justify-content: flex-end; margin-top: 0.75rem; gap: 0.75rem;">
+                                <button type="button" id="btn-save-captain-notes" onclick="saveCaptainNotes()" class="btn btn-primary" style="padding: 0.5rem 1.25rem; font-size: 0.8rem; border-radius: 8px;">
+                                    <i class="fas fa-save" style="margin-right: 6px;"></i> Save Briefing Notes
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
 
                     <!-- Stint Strategy Tab -->
                     <div id="tab-stints" class="tab-content glass" style="display: none; padding: 2.5rem; border-radius: 12px;">
@@ -2103,6 +2301,7 @@
 
             if (tabId === 'setups') loadSetups();
             if (tabId === 'telemetry') loadTelemetry();
+            if (tabId === 'checklist') loadCaptainChecklist();
             if (tabId === 'stints') initPortalStintView();
 
             try {
@@ -2484,10 +2683,15 @@
             await ensureDriverStatsCache();
             await loadLineup(team.teamData, eventObj);
             loadMessages();
+            listenCaptainChecklist();
             switchTab(activeTab);
         }
 
         window.returnToPortalDashboard = function() {
+            if (typeof unsubCaptainChecklist === 'function') {
+                try { unsubCaptainChecklist(); } catch (_) {}
+                unsubCaptainChecklist = null;
+            }
             try {
                 sessionStorage.setItem('gridup_manual_dashboard', 'true');
                 localStorage.setItem('gridup_manual_dashboard', 'true');
@@ -5463,6 +5667,407 @@
 
         }
 
+
+        /* ==========================================================================
+           CAPTAIN RACE DAY READINESS CHECKLIST MODULE
+           ========================================================================== */
+
+        window.currentChecklistData = {
+            items: {},
+            notes: '',
+            updatedAt: null,
+            updatedBy: null
+        };
+        window.unsubCaptainChecklist = null;
+
+        const CHECKLIST_DEFINITIONS = [
+            {
+                key: 'iraceplan',
+                title: 'iRacePlan Strategy',
+                subtitle: 'Calculate fuel burn rates, pit window intervals, minimum pit delta, and driver rotation schedules.',
+                badge: 'STRATEGY',
+                icon: 'fas fa-chart-pie',
+                actionType: 'link',
+                actionLabel: 'Open iRacePlan',
+                actionUrl: 'https://iraceplan.com/'
+            },
+            {
+                key: 'livery',
+                title: 'Car Livery & Trading Paints',
+                subtitle: 'Ensure the official team livery is favorited and selected for this chassis on Trading Paints so all drivers render uniformly.',
+                badge: 'LIVERY',
+                icon: 'fas fa-paint-brush',
+                actionType: 'link',
+                actionLabel: 'Trading Paints',
+                actionUrl: 'https://www.tradingpaints.com/'
+            },
+            {
+                key: 'setup',
+                title: 'Team Setup Baseline',
+                subtitle: 'Confirm the squad\'s competition baseline setup is loaded, event-approved, and tested in the Setup Library.',
+                badge: 'BASELINE',
+                icon: 'fas fa-sliders-h',
+                actionType: 'tab',
+                actionTarget: 'setups',
+                actionLabel: 'Setup Library'
+            },
+            {
+                key: 'practice_g61',
+                title: 'Practice w/ Garage 61',
+                subtitle: 'Verify all squad drivers have logged practice telemetry, checked pace deltas, and verified fuel usage.',
+                badge: 'TELEMETRY',
+                icon: 'fas fa-stopwatch',
+                actionType: 'tab',
+                actionTarget: 'telemetry',
+                actionLabel: 'Lap Times'
+            }
+        ];
+
+        function isUserCaptainOrAdmin() {
+            if (isAdminUser) return true;
+            if (window.userProfile && (window.userProfile.role === 'admin' || window.userProfile.role === 'owner' || window.userProfile.isAdmin)) {
+                return true;
+            }
+
+            const captain = (window.currentTeamData && window.currentTeamData.captain) ? String(window.currentTeamData.captain).trim() : '';
+            if (!captain || captain.toLowerCase() === 'none' || captain.toLowerCase() === 'tbd') {
+                // If no captain is designated, allow squad members to collaborate and sign off
+                return true;
+            }
+
+            const myName = (window.userProfile && window.userProfile.driverName) || 
+                           window.currentDriverName || 
+                           (window.auth && window.auth.currentUser && window.auth.currentUser.displayName) || '';
+
+            const aliases = [
+                myName,
+                window.userProfile && window.userProfile.driverName,
+                window.currentDriverName,
+                window.auth && window.auth.currentUser && window.auth.currentUser.displayName
+            ].filter(Boolean).map(n => n.trim().toLowerCase());
+
+            const cLower = captain.toLowerCase();
+            return aliases.some(a => a === cLower || a.includes(cLower) || cLower.includes(a));
+        }
+
+        function listenCaptainChecklist() {
+            if (window.unsubCaptainChecklist) {
+                try { window.unsubCaptainChecklist(); } catch (_) {}
+                window.unsubCaptainChecklist = null;
+            }
+
+            if (!currentEvent || !currentTeam) return;
+
+            try {
+                const docRef = db.collection("race_lineups")
+                                 .doc(currentEvent)
+                                 .collection("teams")
+                                 .doc(currentTeam)
+                                 .collection("checklist")
+                                 .doc("status");
+
+                window.unsubCaptainChecklist = docRef.onSnapshot(doc => {
+                    if (doc && doc.exists) {
+                        window.currentChecklistData = doc.data() || { items: {} };
+                    } else {
+                        window.currentChecklistData = { items: {}, notes: '' };
+                    }
+                    renderCaptainChecklistUI();
+                }, err => {
+                    console.warn("Checklist snapshot warning:", err);
+                    renderCaptainChecklistUI();
+                });
+            } catch (err) {
+                console.error("Error setting up checklist listener:", err);
+            }
+        }
+
+        async function loadCaptainChecklist(forceRefresh = false) {
+            if (!currentEvent || !currentTeam) return;
+            if (forceRefresh || !window.unsubCaptainChecklist) {
+                listenCaptainChecklist();
+            } else {
+                renderCaptainChecklistUI();
+            }
+        }
+
+        function renderCaptainChecklistUI() {
+            const data = window.currentChecklistData || { items: {} };
+            const items = data.items || {};
+
+            let completedCount = 0;
+            CHECKLIST_DEFINITIONS.forEach(def => {
+                if (items[def.key] && items[def.key].completed) completedCount++;
+            });
+            const totalItems = CHECKLIST_DEFINITIONS.length;
+            const percentage = Math.round((completedCount / totalItems) * 100);
+
+            // 1. Update Navigation Tab Badge
+            const navBadge = document.getElementById('checklist-nav-badge');
+            if (navBadge) {
+                navBadge.style.display = 'inline-block';
+                navBadge.textContent = `${completedCount}/${totalItems}${completedCount === totalItems ? ' ✓' : ''}`;
+                if (completedCount === totalItems) {
+                    navBadge.style.background = 'rgba(16, 185, 129, 0.25)';
+                    navBadge.style.borderColor = '#10b981';
+                    navBadge.style.color = '#34d399';
+                } else {
+                    navBadge.style.background = 'rgba(245, 158, 11, 0.15)';
+                    navBadge.style.borderColor = 'rgba(245, 158, 11, 0.35)';
+                    navBadge.style.color = '#f59e0b';
+                }
+            }
+
+            // 2. Captain Badge & Authorization Pill
+            const captain = (window.currentTeamData && window.currentTeamData.captain) || 'None Designated';
+            const capBadge = document.getElementById('checklist-captain-badge');
+            if (capBadge) {
+                capBadge.innerHTML = `<i class="fas fa-user-shield"></i> Captain: ${escapeHtml(captain)}`;
+            }
+
+            const canEdit = isUserCaptainOrAdmin();
+            const authBadge = document.getElementById('checklist-auth-badge');
+            if (authBadge) {
+                if (canEdit) {
+                    authBadge.style.background = 'rgba(16, 185, 129, 0.15)';
+                    authBadge.style.borderColor = 'rgba(16, 185, 129, 0.35)';
+                    authBadge.style.color = '#34d399';
+                    authBadge.innerHTML = `<i class="fas fa-shield-alt"></i> Captain / Admin Authorized`;
+                } else {
+                    authBadge.style.background = 'rgba(255, 255, 255, 0.06)';
+                    authBadge.style.borderColor = 'rgba(255, 255, 255, 0.12)';
+                    authBadge.style.color = 'var(--text-muted)';
+                    authBadge.innerHTML = `<i class="fas fa-eye"></i> Driver View Mode (Captain Sign-off Only)`;
+                }
+            }
+
+            // 3. Progress Bar & Readiness Pill
+            const compPill = document.getElementById('checklist-completion-pill');
+            if (compPill) {
+                compPill.textContent = `${completedCount} / ${totalItems} Completed (${percentage}%)`;
+                if (completedCount === totalItems) {
+                    compPill.style.background = 'rgba(16, 185, 129, 0.15)';
+                    compPill.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+                    compPill.style.color = '#34d399';
+                } else {
+                    compPill.style.background = 'rgba(245, 158, 11, 0.15)';
+                    compPill.style.borderColor = 'rgba(245, 158, 11, 0.4)';
+                    compPill.style.color = '#f59e0b';
+                }
+            }
+
+            const progBar = document.getElementById('checklist-progress-bar');
+            if (progBar) {
+                progBar.style.width = `${percentage}%`;
+                progBar.style.background = completedCount === totalItems ? '#10b981' : 'linear-gradient(90deg, #f59e0b, #10b981)';
+            }
+
+            const readyBanner = document.getElementById('checklist-ready-banner');
+            if (readyBanner) {
+                readyBanner.style.display = completedCount === totalItems ? 'flex' : 'none';
+            }
+
+            const updatedElem = document.getElementById('checklist-last-updated');
+            if (updatedElem) {
+                if (data.updatedAt) {
+                    const dt = data.updatedAt.toDate ? data.updatedAt.toDate() : new Date(data.updatedAt);
+                    const by = data.updatedBy ? ` by ${escapeHtml(data.updatedBy)}` : '';
+                    updatedElem.textContent = `Last sign-off: ${formatTimeAgo(dt)}${by}`;
+                } else {
+                    updatedElem.textContent = 'Awaiting initial sign-off';
+                }
+            }
+
+            // 4. Render Checklist Items Cards
+            const container = document.getElementById('checklist-items-container');
+            if (container) {
+                let itemsHtml = '';
+                CHECKLIST_DEFINITIONS.forEach(def => {
+                    const itemData = items[def.key] || {};
+                    const isChecked = Boolean(itemData.completed);
+
+                    let signedOffMeta = '';
+                    if (isChecked) {
+                        let timeStr = 'Recently';
+                        if (itemData.completedAt) {
+                            const dt = itemData.completedAt.toDate ? itemData.completedAt.toDate() : new Date(itemData.completedAt);
+                            timeStr = formatTimeAgo(dt);
+                        }
+                        signedOffMeta = `<div class="checklist-item-meta"><i class="fas fa-check-circle"></i> Signed off by <strong>${escapeHtml(itemData.completedBy || 'Captain')}</strong> • ${timeStr}</div>`;
+                    } else {
+                        signedOffMeta = `<div class="checklist-item-meta pending"><i class="far fa-circle"></i> Pending verification & sign-off</div>`;
+                    }
+
+                    let actionBtn = '';
+                    if (def.actionType === 'link') {
+                        actionBtn = `<a href="${def.actionUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-outline checklist-action-link" style="border-color: rgba(255,255,255,0.18); color: #e2e8f0;"><i class="${def.icon}"></i> <span>${def.actionLabel}</span> <i class="fas fa-external-link-alt" style="font-size: 0.65rem; margin-left: 3px; color: var(--text-muted);"></i></a>`;
+                    } else if (def.actionType === 'tab') {
+                        actionBtn = `<button type="button" onclick="switchTab('${def.actionTarget}')" class="btn btn-outline checklist-action-link" style="border-color: rgba(255,255,255,0.18); color: #e2e8f0;"><i class="${def.icon}"></i> <span>${def.actionLabel}</span> <i class="fas fa-arrow-right" style="font-size: 0.65rem; margin-left: 3px; color: var(--text-muted);"></i></button>`;
+                    }
+
+                    const disabledAttr = canEdit ? '' : 'disabled title="Only the designated Team Captain or Admins can sign off this item"';
+
+                    itemsHtml += `
+                        <div class="checklist-item-card ${isChecked ? 'is-checked' : ''}" id="checklist-card-${def.key}">
+                            <button type="button" class="checklist-check-btn" onclick="toggleCaptainChecklistItem('${def.key}')" ${disabledAttr}>
+                                <div class="checklist-check-circle" title="${isChecked ? 'Click to uncheck' : 'Click to sign off'}">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                                <div>
+                                    <div class="checklist-item-title">
+                                        <span>${def.title}</span>
+                                        <span class="badge" style="font-size: 0.62rem; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.06); color: var(--text-muted); font-weight: 800;">${def.badge}</span>
+                                        ${isChecked ? `<span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399; font-size: 0.62rem; padding: 2px 7px; border-radius: 4px;"><i class="fas fa-check"></i> READY</span>` : ''}
+                                    </div>
+                                    <p class="checklist-item-sub">${def.subtitle}</p>
+                                    ${signedOffMeta}
+                                </div>
+                            </button>
+                            <div style="flex-shrink: 0;">
+                                ${actionBtn}
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = itemsHtml;
+            }
+
+            // 5. Briefing Notes & Directives
+            const notesInput = document.getElementById('checklist-captain-notes');
+            if (notesInput && (!notesInput.dataset.focused || notesInput.dataset.focused !== 'true')) {
+                notesInput.value = data.notes || '';
+            }
+            if (notesInput) {
+                notesInput.readOnly = !canEdit;
+                notesInput.onfocus = () => { notesInput.dataset.focused = 'true'; };
+                notesInput.onblur = () => { notesInput.dataset.focused = 'false'; };
+            }
+            const saveNotesBtn = document.getElementById('btn-save-captain-notes');
+            if (saveNotesBtn) {
+                saveNotesBtn.style.display = canEdit ? 'inline-flex' : 'none';
+            }
+            const notesStatus = document.getElementById('checklist-notes-status');
+            if (notesStatus && data.notesUpdatedAt) {
+                const ndt = data.notesUpdatedAt.toDate ? data.notesUpdatedAt.toDate() : new Date(data.notesUpdatedAt);
+                notesStatus.textContent = `Briefing saved ${formatTimeAgo(ndt)} by ${data.notesUpdatedBy || 'Captain'}`;
+            }
+        }
+
+        async function toggleCaptainChecklistItem(itemKey) {
+            if (!isUserCaptainOrAdmin()) {
+                alert("Only the designated Team Captain or Admins can sign off on checklist items.");
+                return;
+            }
+            if (!currentEvent || !currentTeam) return;
+
+            if (!window.currentChecklistData) window.currentChecklistData = { items: {} };
+            if (!window.currentChecklistData.items) window.currentChecklistData.items = {};
+
+            const currentItem = window.currentChecklistData.items[itemKey] || {};
+            const newStatus = !currentItem.completed;
+
+            const myName = (window.userProfile && window.userProfile.driverName) || 
+                           window.currentDriverName || 
+                           (window.auth && window.auth.currentUser && window.auth.currentUser.displayName) || 
+                           'Captain';
+
+            // Optimistic UI update
+            window.currentChecklistData.items[itemKey] = {
+                completed: newStatus,
+                completedBy: myName,
+                completedAt: new Date()
+            };
+            window.currentChecklistData.updatedAt = new Date();
+            window.currentChecklistData.updatedBy = myName;
+            renderCaptainChecklistUI();
+
+            try {
+                const docRef = db.collection("race_lineups")
+                                 .doc(currentEvent)
+                                 .collection("teams")
+                                 .doc(currentTeam)
+                                 .collection("checklist")
+                                 .doc("status");
+
+                await docRef.set({
+                    items: {
+                        [itemKey]: {
+                            completed: newStatus,
+                            completedBy: myName,
+                            completedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        }
+                    },
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedBy: myName
+                }, { merge: true });
+            } catch (err) {
+                console.error("Error saving checklist item:", err);
+                alert("Failed to save checklist item. Please check your network connection.");
+                // Rollback
+                window.currentChecklistData.items[itemKey] = currentItem;
+                renderCaptainChecklistUI();
+            }
+        }
+
+        async function saveCaptainNotes() {
+            if (!isUserCaptainOrAdmin()) {
+                alert("Only the designated Team Captain or Admins can save briefing directives.");
+                return;
+            }
+            if (!currentEvent || !currentTeam) return;
+
+            const notesElem = document.getElementById('checklist-captain-notes');
+            const notesVal = notesElem ? notesElem.value.trim() : '';
+
+            const saveBtn = document.getElementById('btn-save-captain-notes');
+            const origHtml = saveBtn ? saveBtn.innerHTML : '';
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = `<i class="fas fa-spinner fa-spin" style="margin-right: 6px;"></i> Saving...`;
+            }
+
+            const myName = (window.userProfile && window.userProfile.driverName) || 
+                           window.currentDriverName || 
+                           (window.auth && window.auth.currentUser && window.auth.currentUser.displayName) || 
+                           'Captain';
+
+            try {
+                const docRef = db.collection("race_lineups")
+                                 .doc(currentEvent)
+                                 .collection("teams")
+                                 .doc(currentTeam)
+                                 .collection("checklist")
+                                 .doc("status");
+
+                await docRef.set({
+                    notes: notesVal,
+                    notesUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    notesUpdatedBy: myName,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedBy: myName
+                }, { merge: true });
+
+                if (window.currentChecklistData) {
+                    window.currentChecklistData.notes = notesVal;
+                    window.currentChecklistData.notesUpdatedAt = new Date();
+                    window.currentChecklistData.notesUpdatedBy = myName;
+                }
+
+                const notesStatus = document.getElementById('checklist-notes-status');
+                if (notesStatus) {
+                    notesStatus.textContent = `Briefing saved just now by ${myName}`;
+                    notesStatus.style.color = '#10b981';
+                }
+            } catch (err) {
+                console.error("Error saving captain notes:", err);
+                alert("Could not save captain notes. Please try again.");
+            } finally {
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = origHtml;
+                }
+            }
+        }
 
 
         async function initPortal(user) {

@@ -152,6 +152,12 @@ service cloud.firestore {
         allow update: if isAuthenticated() && (resource.data.uploaderUid == request.auth.uid || resource.data.authorUid == request.auth.uid || isAdmin());
         allow delete: if isAuthenticated() && (resource.data.uploaderUid == request.auth.uid || isAdmin());
       }
+
+      match /teams/{teamId}/checklist/{docId} {
+        allow read: if isAuthenticated();
+        allow create, update: if isAuthenticated();
+        allow delete: if isAdmin();
+      }
     }
 
     // Leagues & Registrations
