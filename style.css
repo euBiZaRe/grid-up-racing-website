@@ -3247,6 +3247,8 @@ body[data-theme="theme-purple"]::before, body::before {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    flex: 1 1 0;
+    min-width: 200px;
 }
 .footer-brand {
     font-family: var(--font-heading);
@@ -3270,7 +3272,17 @@ body[data-theme="theme-purple"]::before, body::before {
     margin: 0;
 }
 .footer-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     text-align: center;
+    flex: 0 0 auto;
+}
+.footer-center .bizare-credits {
+    margin-bottom: 0.45rem;
+    font-size: 0.72rem;
+    letter-spacing: 2px;
 }
 .footer-motto {
     font-family: var(--font-heading);
@@ -3285,6 +3297,8 @@ body[data-theme="theme-purple"]::before, body::before {
     flex-direction: column;
     align-items: flex-end;
     gap: 0.75rem;
+    flex: 1 1 0;
+    min-width: 200px;
 }
 .footer-socials {
     display: flex;

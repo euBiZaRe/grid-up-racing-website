@@ -2445,9 +2445,16 @@ function injectCredits() {
     const credits = document.createElement('a');
     credits.href = 'https://bizare.shop/';
     credits.target = '_blank';
+    credits.rel = 'noopener';
     credits.className = 'bizare-credits';
     credits.innerHTML = 'Created by BiZaRe';
-    footer.prepend(credits);
+
+    const footerCenter = footer.querySelector('.footer-center');
+    if (footerCenter) {
+        footerCenter.prepend(credits);
+    } else {
+        footer.prepend(credits);
+    }
 }
 
 // =============================================
