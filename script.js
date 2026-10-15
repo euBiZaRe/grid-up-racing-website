@@ -2385,6 +2385,7 @@ function initializeApp() {
             loadDynamicContent();
             loadRecentResults();
             loadAllResults();
+            syncHomepagePodiums();
             checkLiveStreams();
             // Re-initialize carousel logic after a short delay to catch dynamic elements
             setTimeout(initCarousel, 1000);
@@ -2562,6 +2563,55 @@ function closeStreamsModal() {
 // Initialize Site-Wide Credits
 document.addEventListener('DOMContentLoaded', injectCredits);
 window.addEventListener('load', injectCredits);
+
+// Dynamic Firestore synchronization for homepage official podium finishes
+function syncHomepagePodiums() {
+    const listEl = document.getElementById('mockup-recent-results-list');
+    if (!listEl) return;
+    const dbInstance = (typeof window.db !== 'undefined' && window.db) || (typeof db !== 'undefined' && db);
+    if (!dbInstance || typeof dbInstance.collection !== 'function') return;
+
+    try {
+        dbInstance.collection('event_results').onSnapshot(snapshot => {
+            if (!snapshot || snapshot.empty) return;
+            let p1 = 0, p2 = 0, p3 = 0, total = 0;
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                const team = (data.teamName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                const eventId = (data.eventId || '').toLowerCase();
+                if (!team.includes('gridup') || eventId.startsWith('gtc-')) return;
+                const rawPos = String(data.finishPosition || data.position || data.finish || '').trim().toUpperCase();
+                if (rawPos === 'P1' || rawPos === '1' || rawPos === '1ST' || rawPos === 'FIRST') { p1++; total++; }
+                else if (rawPos === 'P2' || rawPos === '2' || rawPos === '2ND' || rawPos === 'SECOND') { p2++; total++; }
+                else if (rawPos === 'P3' || rawPos === '3' || rawPos === '3RD' || rawPos === 'THIRD') { p3++; total++; }
+            });
+
+            // Update badge count
+            const badge = document.getElementById('podium-badge-count');
+            if (badge) badge.textContent = `${total} PODIUMS RECORDED`;
+
+            // Update filter button labels with live counts
+            const btnP1 = document.querySelector('.podium-filter-btn[data-filter="P1"]');
+            if (btnP1) btnP1.textContent = `🥇 P1 WINS (${p1})`;
+            const btnP2 = document.querySelector('.podium-filter-btn[data-filter="P2"]');
+            if (btnP2) btnP2.textContent = `🥈 P2 PODIUMS (${p2})`;
+            const btnP3 = document.querySelector('.podium-filter-btn[data-filter="P3"]');
+            if (btnP3) btnP3.textContent = `🥉 P3 PODIUMS (${p3})`;
+            const btnAll = document.querySelector('.podium-filter-btn[data-filter="ALL"]');
+            if (btnAll) btnAll.textContent = `ALL PODIUMS (${total})`;
+        }, err => {
+            console.warn('Realtime podium sync error:', err);
+        });
+    } catch (e) {
+        console.warn('Error setting up homepage podium sync:', e);
+    }
+}
+window.syncHomepagePodiums = syncHomepagePodiums;
+document.addEventListener('DOMContentLoaded', () => {
+    if (typeof db !== 'undefined' || typeof window.db !== 'undefined') {
+        syncHomepagePodiums();
+    }
+});
 
 // Client-side podium filter handler for the homepage dashboard
 window.filterPodiumResults = function(filter) {
