@@ -166,7 +166,7 @@ const PAST_EVENT_SOURCES = [
         path: '/events/past/daytona-500.html',
         localPath: 'events/past/daytona-500.html',
         image: '/assets/results/Feb2026.png',
-        trackKey: 'daytona',
+        trackKey: 'daytona-oval',
         season: 2026,
         timestamp: '2026-02-18T20:00:00Z'
     },
