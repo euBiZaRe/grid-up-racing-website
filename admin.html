@@ -6103,9 +6103,9 @@ body.meeting-mode-active .btn-summary-confirm {
             refreshAdminBuilderUI();
         }
 
-        // Known Endurance Roster Members (from team records & drivers.json)
+        // Known Endurance Roster Members & Owners (from team records & drivers.json)
         const KNOWN_ENDURANCE_ROSTER_NAMES = new Set([
-            "andrew fabian", "andrew gould", "anthony savignano", "aron lotthammer",
+            "adam jones", "andrew fabian", "andrew gould", "anthony savignano", "aron lotthammer",
             "aten-wa theba", "bill mcclain", "bret weyand", "chandler english",
             "connor deasey", "daniel tamminga", "david shreve", "eric gentry",
             "faraz ebrahim", "gabe wilmoth", "harrison holliday", "hector hernandez",
@@ -6116,7 +6116,7 @@ body.meeting-mode-active .btn-summary-confirm {
             "terry cantwell", "xavier williams"
         ]);
 
-        // Helper to retrieve all active Endurance Team drivers from Firestore / ROSTER_CACHE / fallback
+        // Helper to retrieve all active Endurance Team drivers & Owners from Firestore / ROSTER_CACHE / fallback
         function getEnduranceRosterDrivers() {
             const list = [];
             const seen = new Set();
@@ -6135,21 +6135,23 @@ body.meeting-mode-active .btn-summary-confirm {
                 const cat = (d.category || '').toLowerCase();
                 const role = (d.role || '').toLowerCase();
 
+                const isOwner = cat.includes('owner') || role.includes('owner') || cat.includes('leadership') || role.includes('leadership') || norm === 'adam jones' || rawName === 'adam jones';
                 const isEndurance = cat.includes('endurance') ||
                                     role.includes('endurance') ||
                                     KNOWN_ENDURANCE_ROSTER_NAMES.has(rawName) ||
                                     KNOWN_ENDURANCE_ROSTER_NAMES.has(norm);
 
-                if (isEndurance && !seen.has(norm)) {
+                if ((isEndurance || isOwner) && !seen.has(norm)) {
                     seen.add(norm);
                     seen.add(rawName);
                     list.push({
                         id: d.id || ('roster_' + norm.replace(/[^a-z0-9]/g, '_')),
                         name: d.name.trim(),
-                        category: d.category || 'GRiD UP Endurance',
-                        role: d.role || 'Endurance Team Driver',
+                        category: isOwner ? (d.category || 'Owner') : (d.category || 'GRiD UP Endurance'),
+                        role: d.role || (isOwner ? 'Owner' : 'Endurance Team Driver'),
                         preferredClass: d.preferredClass || 'GT3',
                         preferredCar: d.preferredCar || d.preferredChassis || '',
+                        isOwner: isOwner,
                         active: true
                     });
                 }
@@ -6163,16 +6165,20 @@ body.meeting-mode-active .btn-summary-confirm {
                 const norm = normalizeDriverName(fd.name) || rawName;
                 const role = (fd.role || '').toLowerCase();
 
-                if ((role.includes('endurance') || KNOWN_ENDURANCE_ROSTER_NAMES.has(rawName) || KNOWN_ENDURANCE_ROSTER_NAMES.has(norm)) && !seen.has(norm)) {
+                const isOwner = role.includes('owner') || role.includes('leadership') || norm === 'adam jones' || rawName === 'adam jones';
+                const isEndurance = role.includes('endurance') || KNOWN_ENDURANCE_ROSTER_NAMES.has(rawName) || KNOWN_ENDURANCE_ROSTER_NAMES.has(norm);
+
+                if ((isEndurance || isOwner) && !seen.has(norm)) {
                     seen.add(norm);
                     seen.add(rawName);
                     list.push({
                         id: 'fb_' + norm.replace(/[^a-z0-9]/g, '_'),
                         name: fd.name.trim(),
-                        category: 'GRiD UP Endurance',
-                        role: fd.role || 'Endurance Team Driver',
+                        category: isOwner ? 'Owner' : 'GRiD UP Endurance',
+                        role: fd.role || (isOwner ? 'Owner' : 'Endurance Team Driver'),
                         preferredClass: 'GT3',
                         preferredCar: '',
+                        isOwner: isOwner,
                         active: true
                     });
                 }
@@ -6203,7 +6209,7 @@ body.meeting-mode-active .btn-summary-confirm {
                 }
             });
 
-            // Get Endurance Team drivers from the team roster
+            // Get Endurance Team drivers & Owners from the team roster
             const enduranceRoster = getEnduranceRosterDrivers();
             const unconfirmedEndurance = [];
             enduranceRoster.forEach(ed => {
@@ -6217,13 +6223,14 @@ body.meeting-mode-active .btn-summary-confirm {
                         preferredClass: ed.preferredClass || (eligibleClasses && eligibleClasses[0]) || 'GT3',
                         preferredChassis: ed.preferredCar || '',
                         isRosterDriver: true,
+                        isOwner: ed.isOwner,
                         category: ed.category,
                         role: ed.role
                     });
                 }
             });
 
-            // Combined pool: all event responses + unnotified Endurance Team roster drivers
+            // Combined pool: all event responses + unnotified Endurance Team & Owner roster members
             const combinedAllDrivers = [...allAvailable, ...unconfirmedEndurance];
 
             // Apply filter tab
@@ -6315,11 +6322,13 @@ body.meeting-mode-active .btn-summary-confirm {
                     }
                 });
 
+                const isOwner = d.isOwner || (d.role && d.role.toLowerCase().includes('owner')) || (d.category && d.category.toLowerCase().includes('owner')) || (driverName.toLowerCase() === 'adam jones');
                 const driverClass = d.preferredClass || (eligibleClasses && eligibleClasses[0]) || 'GT3';
                 const driverChassis = d.preferredChassis || d.preferredCar || d.chassis || d.selectedCar || d.car || '';
                 const isEligible = !driverClass || eligibleClasses.some(ec => ec.toLowerCase() === driverClass.toLowerCase() || (ec === 'Supercars' && driverClass.toLowerCase().includes('supercar')));
                 const safeDriverArg = encodeURIComponent(driverName);
                 const squadShort = assignedTeamName ? assignedTeamName.replace(/^GRiD UP\s*/i, '') : '';
+                const defaultTag = isOwner ? '👑 Owner' : (isUnconfirmed ? 'Endurance Team' : 'Any Car');
 
                 return `
                     <div class="driver-pool-card ${assignedTeamName ? 'is-assigned' : ''}"
@@ -6341,9 +6350,9 @@ body.meeting-mode-active .btn-summary-confirm {
                         </div>
 
                         <div class="driver-card-mid">
-                            <div class="driver-preferred-car" title="Preferred: ${escapeHtml(driverChassis || (isUnconfirmed ? 'Endurance Team' : 'Any Car'))}">
-                                <i class="fas fa-car-side" style="color:var(--primary); font-size:0.65rem;"></i>
-                                <span class="pref-value">${escapeHtml(driverChassis || (isUnconfirmed ? 'Endurance Team' : 'Any Car'))}</span>
+                            <div class="driver-preferred-car" title="Preferred: ${escapeHtml(driverChassis || defaultTag)}">
+                                <i class="fas ${isOwner ? 'fa-crown' : 'fa-car-side'}" style="color:${isOwner ? '#fbbf24' : 'var(--primary)'}; font-size:0.65rem;"></i>
+                                <span class="pref-value" style="${isOwner ? 'color:#fbbf24; font-weight:700;' : ''}">${escapeHtml(driverChassis || defaultTag)}</span>
                             </div>
                             <div style="display:flex; align-items:center; gap:4px; flex-shrink:0;">
                                 <span class="drag-handle-hint"><i class="fas fa-grip-lines"></i> DRAG</span>
