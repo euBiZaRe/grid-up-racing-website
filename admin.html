@@ -1065,6 +1065,11 @@
     background: rgba(245, 158, 11, 0.14);
     border: 1px solid rgba(245, 158, 11, 0.35);
 }
+.driver-status-badge.status-unconfirmed {
+    color: #94a3b8;
+    background: rgba(148, 163, 184, 0.14);
+    border: 1px solid rgba(148, 163, 184, 0.35);
+}
 
 .driver-stats-badges,
 .driver-irating-badge,
@@ -1084,6 +1089,7 @@
 .status-dot.yellow { background: #f59e0b; box-shadow: 0 0 8px rgba(245, 158, 11, 0.6); }
 .status-dot.purple { background: #a855f7; box-shadow: 0 0 8px rgba(168, 85, 247, 0.6); }
 .status-dot.red { background: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.6); }
+.status-dot.slate, .status-dot.gray { background: #94a3b8; box-shadow: 0 0 8px rgba(148, 163, 184, 0.6); }
 
 /* ===================================================
    RIGHT PANEL: GRID / TEAMS (68%)
@@ -2660,10 +2666,12 @@ body.meeting-mode-active .btn-summary-confirm {
 
                         <!-- Filter Chips -->
                         <div class="pool-filter-chips">
-                            <button type="button" class="pool-chip active" data-filter="all" onclick="setDriverPoolFilter('all')">ALL</button>
-                            <button type="button" class="pool-chip" data-filter="available" onclick="setDriverPoolFilter('available')">🟢 AVAILABLE</button>
-                            <button type="button" class="pool-chip" data-filter="assigned" onclick="setDriverPoolFilter('assigned')">🟣 ASSIGNED</button>
-                            <button type="button" class="pool-chip" data-filter="interested" onclick="setDriverPoolFilter('interested')">🟡 INTERESTED</button>
+                            <button type="button" class="pool-chip active" data-filter="all" onclick="setDriverPoolFilter('all')" title="Drivers who submitted availability for this event">RESPONSES</button>
+                            <button type="button" class="pool-chip" data-filter="all_drivers" onclick="setDriverPoolFilter('all_drivers')" title="All Endurance Team drivers from the roster">👥 ALL DRIVERS</button>
+                            <button type="button" class="pool-chip" data-filter="available" onclick="setDriverPoolFilter('available')" title="Available drivers ready to assign">🟢 AVAILABLE</button>
+                            <button type="button" class="pool-chip" data-filter="assigned" onclick="setDriverPoolFilter('assigned')" title="Drivers assigned to squads">🟣 ASSIGNED</button>
+                            <button type="button" class="pool-chip" data-filter="interested" onclick="setDriverPoolFilter('interested')" title="Tentative / Interested drivers">🟡 INTERESTED</button>
+                            <button type="button" class="pool-chip" data-filter="unnotified" onclick="setDriverPoolFilter('unnotified')" title="Endurance Team drivers who haven't submitted availability yet">⚪ NOT NOTIFIED</button>
                         </div>
 
                         <!-- Drop Here To Unassign Zone -->
@@ -5911,9 +5919,11 @@ body.meeting-mode-active .btn-summary-confirm {
                 promises.push(
                     db.collection("drivers").get().then(dSnap => {
                         window._adminDriverRosterMap = {};
+                        window._adminAllRosterDrivers = [];
                         dSnap.forEach(doc => {
                             const d = doc.data();
                             const id = doc.id;
+                            window._adminAllRosterDrivers.push({ id, ...d });
                             window._adminDriverRosterMap[id] = d;
                             if (d.linkedUid) window._adminDriverRosterMap[d.linkedUid] = d;
                             if (d.uid) window._adminDriverRosterMap[d.uid] = d;
@@ -5929,6 +5939,15 @@ body.meeting-mode-active .btn-summary-confirm {
                             }
                         });
                     }).catch(e => console.warn("Could not load drivers for Team Builder iRating:", e))
+                );
+            }
+
+            if (forceReload || !window._fallbackRosterDrivers) {
+                promises.push(
+                    fetch('scripts/drivers.json?v=' + Date.now())
+                        .then(r => r.ok ? r.json() : null)
+                        .then(data => { if (data && Array.isArray(data)) window._fallbackRosterDrivers = data; })
+                        .catch(e => console.warn("Could not load scripts/drivers.json cache:", e))
                 );
             }
 
@@ -6084,6 +6103,86 @@ body.meeting-mode-active .btn-summary-confirm {
             refreshAdminBuilderUI();
         }
 
+        // Known Endurance Roster Members (from team records & drivers.json)
+        const KNOWN_ENDURANCE_ROSTER_NAMES = new Set([
+            "andrew fabian", "andrew gould", "anthony savignano", "aron lotthammer",
+            "aten-wa theba", "bill mcclain", "bret weyand", "chandler english",
+            "connor deasey", "daniel tamminga", "david shreve", "eric gentry",
+            "faraz ebrahim", "gabe wilmoth", "harrison holliday", "hector hernandez",
+            "jason hayden", "jens van der wilt", "johnathan shampine", "keith todd",
+            "kevin miller", "landen hendershot", "levi wolfe", "logan manus",
+            "mark prince", "marko skrnjug", "martyn cook", "matthew graham",
+            "matty roberts", "ric wishon", "stephen smalley", "tanner hupp",
+            "terry cantwell", "xavier williams"
+        ]);
+
+        // Helper to retrieve all active Endurance Team drivers from Firestore / ROSTER_CACHE / fallback
+        function getEnduranceRosterDrivers() {
+            const list = [];
+            const seen = new Set();
+
+            // 1. Live Firestore loaded roster documents
+            const rawDocs = (window._adminAllRosterDrivers && window._adminAllRosterDrivers.length > 0)
+                ? window._adminAllRosterDrivers
+                : (typeof ROSTER_CACHE !== 'undefined' && Object.keys(ROSTER_CACHE).length > 0
+                    ? Object.keys(ROSTER_CACHE).map(id => ({ id, ...ROSTER_CACHE[id] }))
+                    : []);
+
+            rawDocs.forEach(d => {
+                if (!d || !d.name || d.active === false) return;
+                const rawName = d.name.trim().toLowerCase();
+                const norm = normalizeDriverName(d.name) || rawName;
+                const cat = (d.category || '').toLowerCase();
+                const role = (d.role || '').toLowerCase();
+
+                const isEndurance = cat.includes('endurance') ||
+                                    role.includes('endurance') ||
+                                    KNOWN_ENDURANCE_ROSTER_NAMES.has(rawName) ||
+                                    KNOWN_ENDURANCE_ROSTER_NAMES.has(norm);
+
+                if (isEndurance && !seen.has(norm)) {
+                    seen.add(norm);
+                    seen.add(rawName);
+                    list.push({
+                        id: d.id || ('roster_' + norm.replace(/[^a-z0-9]/g, '_')),
+                        name: d.name.trim(),
+                        category: d.category || 'GRiD UP Endurance',
+                        role: d.role || 'Endurance Team Driver',
+                        preferredClass: d.preferredClass || 'GT3',
+                        preferredCar: d.preferredCar || d.preferredChassis || '',
+                        active: true
+                    });
+                }
+            });
+
+            // 2. Supplement from drivers.json fallback
+            const fallbacks = window._fallbackRosterDrivers || [];
+            fallbacks.forEach(fd => {
+                if (!fd || !fd.name) return;
+                const rawName = fd.name.trim().toLowerCase();
+                const norm = normalizeDriverName(fd.name) || rawName;
+                const role = (fd.role || '').toLowerCase();
+
+                if ((role.includes('endurance') || KNOWN_ENDURANCE_ROSTER_NAMES.has(rawName) || KNOWN_ENDURANCE_ROSTER_NAMES.has(norm)) && !seen.has(norm)) {
+                    seen.add(norm);
+                    seen.add(rawName);
+                    list.push({
+                        id: 'fb_' + norm.replace(/[^a-z0-9]/g, '_'),
+                        name: fd.name.trim(),
+                        category: 'GRiD UP Endurance',
+                        role: fd.role || 'Endurance Team Driver',
+                        preferredClass: 'GT3',
+                        preferredCar: '',
+                        active: true
+                    });
+                }
+            });
+
+            // Sort alphabetically by driver name
+            list.sort((a, b) => a.name.localeCompare(b.name));
+            return list;
+        }
+
         // Render Driver Pool
         function renderAdminDriverPool(currentEvent, eligibleClasses, responses) {
             const poolList = document.getElementById('builder-driver-pool-list');
@@ -6093,43 +6192,106 @@ body.meeting-mode-active .btn-summary-confirm {
             const activeId = currentEvent ? currentEvent.id : '';
             const allAvailable = responses.filter(r => r.status === 'signed_up' || r.status === 'interested' || r.status === 'tentative');
 
+            // Build set of driver names who already submitted an availability response
+            const responseNameSet = new Set();
+            responses.forEach(r => {
+                if (r.driverName) {
+                    const raw = r.driverName.trim().toLowerCase();
+                    responseNameSet.add(raw);
+                    const norm = normalizeDriverName(r.driverName);
+                    if (norm) responseNameSet.add(norm);
+                }
+            });
+
+            // Get Endurance Team drivers from the team roster
+            const enduranceRoster = getEnduranceRosterDrivers();
+            const unconfirmedEndurance = [];
+            enduranceRoster.forEach(ed => {
+                const raw = ed.name.trim().toLowerCase();
+                const norm = normalizeDriverName(ed.name);
+                if (!responseNameSet.has(raw) && (!norm || !responseNameSet.has(norm))) {
+                    unconfirmedEndurance.push({
+                        id: ed.id,
+                        driverName: ed.name,
+                        status: 'unconfirmed',
+                        preferredClass: ed.preferredClass || (eligibleClasses && eligibleClasses[0]) || 'GT3',
+                        preferredChassis: ed.preferredCar || '',
+                        isRosterDriver: true,
+                        category: ed.category,
+                        role: ed.role
+                    });
+                }
+            });
+
+            // Combined pool: all event responses + unnotified Endurance Team roster drivers
+            const combinedAllDrivers = [...allAvailable, ...unconfirmedEndurance];
+
             // Apply filter tab
+            const activeFilter = window._driverPoolActiveFilter || 'all';
             let filtered = allAvailable;
-            if (window._driverPoolActiveFilter === 'available') {
+
+            if (activeFilter === 'all_drivers') {
+                filtered = [...combinedAllDrivers];
+                // Sort: confirmed available first, then interested, then unconfirmed roster drivers alphabetically
+                filtered.sort((a, b) => {
+                    const order = { 'signed_up': 1, 'interested': 2, 'tentative': 2, 'unconfirmed': 3 };
+                    const diff = (order[a.status] || 99) - (order[b.status] || 99);
+                    if (diff !== 0) return diff;
+                    return (a.driverName || '').localeCompare(b.driverName || '');
+                });
+            } else if (activeFilter === 'all') {
+                filtered = allAvailable;
+            } else if (activeFilter === 'available') {
                 filtered = allAvailable.filter(r => {
                     const dName = (r.driverName || '').trim().toLowerCase();
                     const isAssigned = (window._adminBuilderCars || []).some(c => (c.drivers || []).some(dn => dn && dn.trim().toLowerCase() === dName));
                     return !isAssigned && r.status === 'signed_up';
                 });
-            } else if (window._driverPoolActiveFilter === 'assigned') {
-                filtered = allAvailable.filter(r => {
+            } else if (activeFilter === 'assigned') {
+                filtered = combinedAllDrivers.filter(r => {
                     const dName = (r.driverName || '').trim().toLowerCase();
                     return (window._adminBuilderCars || []).some(c => (c.drivers || []).some(dn => dn && dn.trim().toLowerCase() === dName));
                 });
-            } else if (window._driverPoolActiveFilter === 'interested') {
+            } else if (activeFilter === 'interested') {
                 filtered = allAvailable.filter(r => r.status === 'interested' || r.status === 'tentative');
+            } else if (activeFilter === 'unnotified') {
+                filtered = [...unconfirmedEndurance].sort((a, b) => (a.driverName || '').localeCompare(b.driverName || ''));
             }
 
             // Apply search query
             if (window._driverPoolSearchQuery) {
-                const q = window._driverPoolSearchQuery;
+                const q = window._driverPoolSearchQuery.toLowerCase();
                 filtered = filtered.filter(r => {
                     const n = (r.driverName || '').toLowerCase();
                     const c = (r.preferredChassis || r.preferredCar || '').toLowerCase();
                     const cl = (r.preferredClass || '').toLowerCase();
-                    return n.includes(q) || c.includes(q) || cl.includes(q);
+                    const role = (r.role || '').toLowerCase();
+                    return n.includes(q) || c.includes(q) || cl.includes(q) || role.includes(q);
                 });
             }
 
             if (countBadge) {
-                countBadge.textContent = `${allAvailable.length} Available`;
+                if (activeFilter === 'all_drivers') {
+                    countBadge.textContent = `${combinedAllDrivers.length} Drivers`;
+                } else if (activeFilter === 'unnotified') {
+                    countBadge.textContent = `${unconfirmedEndurance.length} Not Notified`;
+                } else if (activeFilter === 'assigned') {
+                    const assignedTotal = (window._adminBuilderCars || []).reduce((acc, c) => acc + (c.drivers || []).length, 0);
+                    countBadge.textContent = `${assignedTotal} Assigned`;
+                } else if (activeFilter === 'interested') {
+                    const intCount = allAvailable.filter(r => r.status === 'interested' || r.status === 'tentative').length;
+                    countBadge.textContent = `${intCount} Interested`;
+                } else {
+                    const availCount = allAvailable.filter(r => r.status === 'signed_up').length;
+                    countBadge.textContent = `${availCount} Available`;
+                }
             }
 
             if (filtered.length === 0) {
                 poolList.innerHTML = `
                     <div style="text-align: center; padding: 2rem 1rem; color: var(--text-muted); font-size: 0.8rem;">
                         <i class="fas fa-search" style="font-size: 1.4rem; color: var(--primary); opacity: 0.5; margin-bottom: 0.5rem; display: block;"></i>
-                        No drivers matching "${window._driverPoolSearchQuery || window._driverPoolActiveFilter}"
+                        No drivers matching "${escapeHtml(window._driverPoolSearchQuery || window._driverPoolActiveFilter)}"
                     </div>
                 `;
                 return;
@@ -6138,8 +6300,10 @@ body.meeting-mode-active .btn-summary-confirm {
             poolList.innerHTML = filtered.map(d => {
                 const driverName = (d.driverName || 'Driver').trim();
                 const isInterested = d.status === 'interested' || d.status === 'tentative';
-                const statusDotClass = d.status === 'signed_up' ? 'green' : 'yellow';
-                const statusLabel = d.status === 'signed_up' ? "AVAILABLE" : 'INTERESTED';
+                const isUnconfirmed = d.status === 'unconfirmed' || d.status === 'not_notified';
+                const statusDotClass = d.status === 'signed_up' ? 'green' : (isInterested ? 'yellow' : 'slate');
+                const statusLabel = d.status === 'signed_up' ? "AVAILABLE" : (isInterested ? 'INTERESTED' : 'NOT NOTIFIED');
+                const statusBadgeClass = d.status === 'signed_up' ? 'status-avail' : (isInterested ? 'status-int' : 'status-unconfirmed');
 
                 // Check assigned team
                 let assignedTeamName = null;
@@ -6151,7 +6315,7 @@ body.meeting-mode-active .btn-summary-confirm {
                     }
                 });
 
-                const driverClass = d.preferredClass || 'GT3';
+                const driverClass = d.preferredClass || (eligibleClasses && eligibleClasses[0]) || 'GT3';
                 const driverChassis = d.preferredChassis || d.preferredCar || d.chassis || d.selectedCar || d.car || '';
                 const isEligible = !driverClass || eligibleClasses.some(ec => ec.toLowerCase() === driverClass.toLowerCase() || (ec === 'Supercars' && driverClass.toLowerCase().includes('supercar')));
                 const safeDriverArg = encodeURIComponent(driverName);
@@ -6171,15 +6335,15 @@ body.meeting-mode-active .btn-summary-confirm {
                             <div>
                                 ${assignedTeamName 
                                     ? `<span class="assigned-squad-tag" title="Assigned to ${escapeHtml(assignedTeamName)}"><i class="fas fa-check"></i> ${escapeHtml(squadShort)}</span>`
-                                    : `<span class="driver-status-badge ${d.status === 'signed_up' ? 'status-avail' : 'status-int'}">${statusLabel}</span>`
+                                    : `<span class="driver-status-badge ${statusBadgeClass}">${statusLabel}</span>`
                                 }
                             </div>
                         </div>
 
                         <div class="driver-card-mid">
-                            <div class="driver-preferred-car" title="Preferred: ${escapeHtml(driverChassis || 'Any Car')}">
+                            <div class="driver-preferred-car" title="Preferred: ${escapeHtml(driverChassis || (isUnconfirmed ? 'Endurance Team' : 'Any Car'))}">
                                 <i class="fas fa-car-side" style="color:var(--primary); font-size:0.65rem;"></i>
-                                <span class="pref-value">${escapeHtml(driverChassis || 'Any Car')}</span>
+                                <span class="pref-value">${escapeHtml(driverChassis || (isUnconfirmed ? 'Endurance Team' : 'Any Car'))}</span>
                             </div>
                             <div style="display:flex; align-items:center; gap:4px; flex-shrink:0;">
                                 <span class="drag-handle-hint"><i class="fas fa-grip-lines"></i> DRAG</span>
