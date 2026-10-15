@@ -77,16 +77,18 @@ function inferTrackKey(eventId = '', eventName = '') {
     const s = (eventId + ' ' + eventName).toLowerCase();
     if (s.includes('spa')) return 'spa';
     if (s.includes('brands')) return 'brands-hatch';
+    if (s.includes('daytona-500') || s.includes('daytona 500')) return 'daytona-oval';
     if (s.includes('daytona')) return 'daytona';
     if (s.includes('nurburgring') || s.includes('nürburgring')) return 'nurburgring';
     if (s.includes('monza')) return 'monza';
     if (s.includes('watkins') || s.includes('glen')) return 'watkins-glen';
     if (s.includes('silverstone')) return 'silverstone';
     if (s.includes('sebring')) return 'sebring';
-    if (s.includes('road-america') || s.includes('america')) return 'road-america';
+    if (s.includes('road-america') || s.includes('america') || s.includes('elkhart')) return 'road-america';
+    if (s.includes('road-atlanta') || s.includes('atlanta') || s.includes('petit')) return 'road-atlanta';
     if (s.includes('suzuka')) return 'suzuka';
     if (s.includes('le-mans') || s.includes('lemans') || s.includes('sarthe')) return 'lemans';
-    if (s.includes('indy')) return 'indy';
+    if (s.includes('indy-oval') || s.includes('indy 500') || s.includes('indy-500') || s.includes('indy')) return 'indy';
     if (s.includes('bathurst') || s.includes('panorama')) return 'bathurst';
     if (s.includes('portimao') || s.includes('algarve')) return 'portimao';
     return 'daytona';
@@ -453,13 +455,28 @@ function getTrackSvg(trackKey) {
     const track = (window.TRACK_OUTLINES && window.TRACK_OUTLINES[trackKey]) || {
         name: 'Circuit',
         length: '5.000 km',
+        viewBox: '0 0 100 60',
         svgPath: 'M 15 35 Q 12 18 30 16 L 75 16 Q 92 18 90 35 Q 88 50 72 48 L 52 44 L 32 48 Q 15 50 15 35 Z'
     };
 
+    if (track.image) {
+        return `
+            <div class="trophy-track-box">
+                <img src="${track.image}" alt="${track.name}" class="track-svg track-img" loading="lazy" />
+                <div class="track-info">
+                    <span class="track-name">${track.name}</span>
+                    <span class="track-length">${track.length}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    const vb = track.viewBox || '0 0 100 60';
+
     return `
         <div class="trophy-track-box">
-            <svg viewBox="0 0 100 60" class="track-svg" preserveAspectRatio="xMidYMid meet">
-                <path d="${track.svgPath}" class="track-path" />
+            <svg viewBox="${vb}" class="track-svg" preserveAspectRatio="xMidYMid meet">
+                <path d="${track.svgPath}" class="track-path" vector-effect="non-scaling-stroke" />
             </svg>
             <div class="track-info">
                 <span class="track-name">${track.name}</span>
