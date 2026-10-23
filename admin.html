@@ -2838,7 +2838,10 @@ body.meeting-mode-active .btn-summary-confirm {
                                     Authorized testers can enter the site with the password: <code style="color: var(--primary); background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 4px; font-weight: 700;">griduptest</code>
                                 </p>
                             </div>
-                            <div>
+                            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                                <a href="maintenance.html" target="_blank" class="btn" style="background: rgba(255,255,255,0.08); color: #fff; font-weight: 700; font-size: 0.85rem; padding: 0.75rem 1.25rem; text-decoration: none; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px;">
+                                    👁️ Preview Pitstop Screen
+                                </a>
                                 <button id="btn-toggle-maint" onclick="toggleEmergencyMaintenance()" class="btn" style="background: #ef4444; color: #fff; font-weight: 800; font-size: 0.85rem; padding: 0.75rem 1.5rem; box-shadow: 0 0 20px rgba(239,68,68,0.3);">
                                     Enable Emergency Mode
                                 </button>
@@ -4889,8 +4892,8 @@ body.meeting-mode-active .btn-summary-confirm {
                 await docRef.set({
                     active: newStatus,
                     emergency: true,
-                    title: "WEBSITE CURRENTLY DOWN",
-                    message: newStatus ? "The website is currently down for maintenance and updates. We are working to restore service as quickly as possible." : "",
+                    title: "BOX BOX BOX // Taking a Pitstop",
+                    message: newStatus ? "Sorry, we are taking a pitstop right now! Our engineering crew is currently in the pit stall fine-tuning setups, swapping fresh rubber, and applying platform performance upgrades. We'll be back on track shortly!" : "",
                     estimatedEnd: newStatus ? "Shortly" : "",
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                     updatedBy: (auth.currentUser ? auth.currentUser.uid : 'MasterAdmin')

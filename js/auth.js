@@ -879,7 +879,7 @@ window.addEventListener('keydown', (e) => {
     }
 });
 
-function showMaintenanceScreen() {
+function showMaintenanceScreen(data = {}) {
     // Never block login.html so Master Admin can log in
     if (window.location.pathname.endsWith('login.html')) return;
     
@@ -887,11 +887,76 @@ function showMaintenanceScreen() {
     if (!overlay) {
         overlay = document.createElement('div');
         overlay.id = 'gridup-maintenance-overlay';
-        overlay.style.cssText = 'position:fixed;inset:0;z-index:999999;background:#000;overflow:hidden;margin:0;padding:0;cursor:default;';
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:999999;background:#05070f;overflow-y:auto;overflow-x:hidden;margin:0;padding:0;cursor:default;font-family:"Plus Jakarta Sans",system-ui,-apple-system,sans-serif;';
         document.body.appendChild(overlay);
     }
     
-    overlay.innerHTML = '';
+    const message = (data && data.message) ? data.message : "Our engineering crew is currently in the pit stall fine-tuning setups, swapping fresh rubber, and applying platform performance upgrades. We'll be back on track shortly!";
+    const estimatedEnd = (data && data.estimatedEnd) ? data.estimatedEnd : "Shortly";
+    
+    overlay.innerHTML = `
+        <div style="min-height:100vh;width:100%;display:flex;align-items:center;justify-content:center;position:relative;padding:2rem 1rem;box-sizing:border-box;background-image:linear-gradient(180deg, rgba(5,7,15,0.72) 0%, rgba(5,7,15,0.92) 100%), url('assets/maintenance.jpg');background-size:cover;background-position:center;background-repeat:no-repeat;">
+            <div style="position:absolute;inset:0;background:radial-gradient(circle at center, rgba(0,207,255,0.08) 0%, rgba(5,7,15,0.85) 70%, #05070f 100%);pointer-events:none;"></div>
+            <div style="position:relative;z-index:2;max-width:700px;width:100%;text-align:center;background:rgba(10,15,29,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(0,207,255,0.28);border-radius:24px;padding:3.25rem 2.25rem;box-shadow:0 25px 70px rgba(0,0,0,0.85), 0 0 50px rgba(0,207,255,0.12);box-sizing:border-box;">
+                
+                <div style="display:inline-flex;align-items:center;justify-content:center;gap:12px;margin-bottom:1.5rem;">
+                    <img src="assets/G_2.png" alt="GRID UP" style="width:44px;height:auto;filter:drop-shadow(0 0 16px rgba(0,207,255,0.45));">
+                    <span style="font-family:'Orbitron',sans-serif;font-size:1.6rem;font-weight:900;letter-spacing:2.5px;color:#ffffff;">GRID <span style="color:#00cfff;text-shadow:0 0 15px rgba(0,207,255,0.45);">UP</span></span>
+                </div>
+
+                <div>
+                    <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(239,68,68,0.14);border:1px solid rgba(239,68,68,0.4);padding:6px 18px;border-radius:999px;font-size:0.76rem;font-weight:800;letter-spacing:1.5px;color:#fca5a5;text-transform:uppercase;margin-bottom:1.25rem;">
+                        <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ef4444;box-shadow:0 0 10px #ef4444;"></span>
+                        Box Box Box // Pit Lane Active
+                    </div>
+                </div>
+
+                <h1 style="font-family:'Orbitron',sans-serif;font-size:clamp(1.75rem, 4.5vw, 2.35rem);font-weight:900;line-height:1.22;letter-spacing:0.5px;color:#ffffff;margin:0 0 1.15rem 0;text-transform:uppercase;">
+                    Sorry, we are taking a <span style="background:linear-gradient(135deg, #00cfff 0%, #38bdf8 50%, #818cf8 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">pitstop</span> right now!
+                </h1>
+
+                <p style="color:#cbd5e1;font-size:1.05rem;line-height:1.65;margin:0 auto 1.85rem auto;max-width:560px;font-weight:400;">
+                    ${typeof escapeHtml === 'function' ? escapeHtml(message) : message}
+                </p>
+
+                <div style="background:rgba(15,23,42,0.7);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:0.95rem 1.25rem;margin-bottom:2.25rem;display:flex;align-items:center;justify-content:space-around;flex-wrap:wrap;gap:12px;font-size:0.82rem;color:#94a3b8;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span style="color:#10b981;font-weight:bold;">✔</span> Fresh Tires Fitted
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span style="color:#00cfff;font-weight:bold;">⚡</span> Refueling Rig Active
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span style="color:#eab308;font-weight:bold;">⏱</span> Back on Track: <strong style="color:#fff;margin-left:4px;">${typeof escapeHtml === 'function' ? escapeHtml(estimatedEnd) : estimatedEnd}</strong>
+                    </div>
+                </div>
+
+                <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:2rem;">
+                    <a href="https://discord.gg/gridup" target="_blank" rel="noopener noreferrer" style="background:linear-gradient(135deg, #5865F2 0%, #4752C4 100%);color:#fff;text-decoration:none;padding:0.85rem 1.85rem;border-radius:12px;font-size:0.88rem;font-weight:700;display:inline-flex;align-items:center;gap:10px;box-shadow:0 4px 18px rgba(88,101,242,0.35);">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+                        Join Discord for Updates
+                    </a>
+                    <a href="/login.html" style="background:rgba(255,255,255,0.05);color:#e2e8f0;border:1px solid rgba(255,255,255,0.15);text-decoration:none;padding:0.85rem 1.6rem;border-radius:12px;font-size:0.88rem;font-weight:700;">
+                        Admin Login
+                    </a>
+                </div>
+
+                <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:1.5rem;">
+                    <button type="button" onclick="const p = document.getElementById('maint-crew-panel'); p.style.display = (p.style.display === 'none' || !p.style.display) ? 'block' : 'none'; if(p.style.display==='block') document.getElementById('maint-password-input').focus();" style="background:none;border:none;color:#64748b;font-size:0.78rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">
+                        🔒 Crew & Tester Access
+                    </button>
+                    <div id="maint-crew-panel" style="display:none;margin:1rem auto 0 auto;max-width:320px;">
+                        <div style="display:flex;gap:8px;">
+                            <input type="password" id="maint-password-input" placeholder="Enter crew password" onkeydown="if(event.key==='Enter') window.unlockMaintenanceWithPassword()" style="flex:1;background:rgba(15,23,42,0.9);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:8px 12px;color:#fff;font-size:0.82rem;outline:none;">
+                            <button type="button" onclick="window.unlockMaintenanceWithPassword()" style="background:#00cfff;border:none;color:#05070f;border-radius:8px;padding:8px 16px;font-size:0.82rem;font-weight:800;cursor:pointer;">Unlock</button>
+                        </div>
+                        <div id="maint-password-error" style="display:none;color:#f87171;font-size:0.75rem;margin-top:6px;"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    `;
     document.body.style.overflow = 'hidden';
 }
 
