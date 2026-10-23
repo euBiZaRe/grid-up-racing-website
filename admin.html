@@ -4899,6 +4899,7 @@ body.meeting-mode-active .btn-summary-confirm {
                     updatedBy: (auth.currentUser ? auth.currentUser.uid : 'MasterAdmin')
                 }, { merge: true });
 
+                localStorage.setItem('gridup_maint_active', newStatus ? 'true' : 'false');
                 alert(newStatus ? "Emergency Maintenance Mode is now ACTIVE!" : "Maintenance Mode has been DEACTIVATED. Site is now live for all visitors.");
                 checkMaintenanceStatusInAdmin();
             } catch (e) {

@@ -1,3 +1,44 @@
+// ===============================================================
+// INSTANT MAINTENANCE INTERCEPTOR
+// If maintenance mode is active, completely block website display
+// and redirect visitor to maintenance.html
+// ===============================================================
+(function() {
+    if (typeof window === 'undefined') return;
+    const path = window.location.pathname;
+    if (path.endsWith('maintenance.html') || path.endsWith('login.html')) return;
+
+    try {
+        const cached = JSON.parse(localStorage.getItem('gridup_auth_cache') || '{}');
+        const uid = cached.user ? cached.user.uid : null;
+        const admins = ['B0t4f4nqqpZIQKpT8Ed97xka5gM2', '8nojtKUFKUUKDFFpnU6EdueLhkN2', 'uYUa2WYZ5TPg98vle6jQzzrItR53', '2TfuhZVILNQerQK95YL1304jYp83'];
+        if (uid && admins.includes(uid)) return;
+    } catch(_) {}
+
+    // 1. Instant Cache Interceptor
+    if (localStorage.getItem('gridup_maint_active') === 'true') {
+        document.documentElement.style.display = 'none';
+        window.location.replace('maintenance.html');
+        return;
+    }
+
+    // 2. Pre-flight REST API check
+    try {
+        fetch('https://firestore.googleapis.com/v1/projects/grid-up/databases/(default)/documents/settings/maintenance')
+            .then(r => r.ok ? r.json() : null)
+            .then(d => {
+                if (d && d.fields && d.fields.active && d.fields.active.booleanValue === true) {
+                    localStorage.setItem('gridup_maint_active', 'true');
+                    document.documentElement.style.display = 'none';
+                    window.location.replace('maintenance.html');
+                } else if (d && d.fields && d.fields.active && d.fields.active.booleanValue === false) {
+                    localStorage.setItem('gridup_maint_active', 'false');
+                }
+            })
+            .catch(() => {});
+    } catch(_) {}
+})();
+
 // GRiD UP - Authentication & Profile Claiming Engine
 // Powered by Firebase
 
@@ -258,11 +299,18 @@ async function enrichAuthData(user) {
             // Check Maintenance Mode
             if (maintDoc && maintDoc.exists && maintDoc.data().active === true) {
                 window.GRIDUP_MAINTENANCE_ACTIVE = true;
+                localStorage.setItem('gridup_maint_active', 'true');
                 if (!IS_ADMIN) {
-                    showMaintenanceScreen(maintDoc.data());
+                    if (!window.location.pathname.endsWith('maintenance.html') && !window.location.pathname.endsWith('login.html')) {
+                        document.documentElement.style.display = 'none';
+                        window.location.replace('maintenance.html');
+                        return;
+                    }
                 } else {
                     showAdminMaintenanceNotice();
                 }
+            } else if (maintDoc && maintDoc.exists && maintDoc.data().active === false) {
+                localStorage.setItem('gridup_maint_active', 'false');
             }
 
             // Check Verification
@@ -723,51 +771,43 @@ async function loadRaceLineup(slug) {
 // System Security & Maintenance Mode Control
 // ==========================================
 async function checkPublicMaintenanceMode() {
+    const path = window.location.pathname;
+    if (path.endsWith('maintenance.html') || path.endsWith('login.html')) return;
+
+    // Check if current user is Master Admin or Known Admin
+    const cached = JSON.parse(localStorage.getItem('gridup_auth_cache') || '{}');
+    const currentUid = (window.auth && window.auth.currentUser) ? window.auth.currentUser.uid : (cached.user ? cached.user.uid : null);
+    if (currentUid && (currentUid === MASTER_ADMIN || KNOWN_ADMIN_UIDS.includes(currentUid))) {
+        removeMaintenanceLockStyle();
+        showAdminMaintenanceNotice(true);
+        const existingOverlay = document.getElementById('gridup-maintenance-overlay');
+        if (existingOverlay) existingOverlay.remove();
+        document.body.style.overflow = '';
+        return;
+    }
+
     if (!db) {
-        setTimeout(checkPublicMaintenanceMode, 400);
+        setTimeout(checkPublicMaintenanceMode, 300);
         return;
     }
     try {
         const maintDoc = await db.collection("settings").doc("maintenance").get();
         if (maintDoc.exists && maintDoc.data().active === true) {
             window.GRIDUP_MAINTENANCE_ACTIVE = true;
+            localStorage.setItem('gridup_maint_active', 'true');
             
-            // 1. Check if user has entered the test access password
-            if (sessionStorage.getItem('gridup_maint_unlock') === 'true' || localStorage.getItem('gridup_maint_unlock') === 'true') {
-                removeMaintenanceLockStyle();
-                showUnlockedMaintenanceNotice();
-                const existingOverlay = document.getElementById('gridup-maintenance-overlay');
-                if (existingOverlay) existingOverlay.remove();
-                document.body.style.overflow = '';
-                return;
-            }
-
-            // 2. Check if current user is Master Admin (only Master Admin can see site without password)
-            const cached = JSON.parse(localStorage.getItem('gridup_auth_cache') || '{}');
-            const currentUid = (window.auth && window.auth.currentUser) ? window.auth.currentUser.uid : (cached.user ? cached.user.uid : null);
-            if (currentUid && currentUid === MASTER_ADMIN) {
-                removeMaintenanceLockStyle();
-                showAdminMaintenanceNotice(true);
-                const existingOverlay = document.getElementById('gridup-maintenance-overlay');
-                if (existingOverlay) existingOverlay.remove();
-                document.body.style.overflow = '';
-                return;
-            }
-
-            // 3. Lock down DOM: hide all underlying page elements so inspecting DOM yields blank screen
-            applyMaintenanceLockStyle();
-
-            // 4. Display Emergency Maintenance screen with password entry
-            showMaintenanceScreen(maintDoc.data());
+            // Immediately hide page and redirect to maintenance.html
+            document.documentElement.style.display = 'none';
+            window.location.replace('maintenance.html');
+            return;
         } else {
             window.GRIDUP_MAINTENANCE_ACTIVE = false;
+            localStorage.setItem('gridup_maint_active', 'false');
             removeMaintenanceLockStyle();
             const overlay = document.getElementById('gridup-maintenance-overlay');
             if (overlay) overlay.remove();
             const notice = document.getElementById('admin-maint-notice');
             if (notice) notice.remove();
-            const unlockNotice = document.getElementById('maint-unlocked-notice');
-            if (unlockNotice) unlockNotice.remove();
             document.body.style.overflow = '';
         }
     } catch (_) {}

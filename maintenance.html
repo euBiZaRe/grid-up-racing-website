@@ -325,5 +325,37 @@
         </div>
 
     </main>
+
+    <script>
+        // Automatic Site Restoration & Dynamic Message Sync
+        async function checkMaintenanceStatus() {
+            try {
+                const res = await fetch('https://firestore.googleapis.com/v1/projects/grid-up/databases/(default)/documents/settings/maintenance');
+                if (!res.ok) return;
+                const data = await res.json();
+                const fields = (data && data.fields) ? data.fields : {};
+                const isActive = fields.active && fields.active.booleanValue === true;
+                
+                // If maintenance mode was disabled in admin panel, take visitor back to the live site!
+                if (!isActive) {
+                    localStorage.setItem('gridup_maint_active', 'false');
+                    window.location.replace('index.html');
+                    return;
+                }
+
+                if (fields.message && fields.message.stringValue) {
+                    const msgEl = document.getElementById('maint-message');
+                    if (msgEl) msgEl.textContent = fields.message.stringValue;
+                }
+                if (fields.estimatedEnd && fields.estimatedEnd.stringValue) {
+                    const estEl = document.getElementById('maint-estimated');
+                    if (estEl) estEl.textContent = fields.estimatedEnd.stringValue;
+                }
+            } catch(e) {}
+        }
+
+        checkMaintenanceStatus();
+        setInterval(checkMaintenanceStatus, 7000);
+    </script>
 </body>
 </html>

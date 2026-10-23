@@ -1,6 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Instant Maintenance Guard -->
+    <script>
+      (function() {
+        try {
+          var c = JSON.parse(localStorage.getItem('gridup_auth_cache') || '{}');
+          var u = c.user ? c.user.uid : null;
+          var admins = ['B0t4f4nqqpZIQKpT8Ed97xka5gM2', '8nojtKUFKUUKDFFpnU6EdueLhkN2', 'uYUa2WYZ5TPg98vle6jQzzrItR53', '2TfuhZVILNQerQK95YL1304jYp83'];
+          if (u && admins.indexOf(u) !== -1) return;
+        } catch(e) {}
+        if (localStorage.getItem('gridup_maint_active') === 'true') {
+          document.documentElement.style.display = 'none';
+          window.location.replace('maintenance.html');
+        }
+      })();
+    </script>
         <!-- Google tag (gtag.js) - Deferred initialization for Lighthouse performance -->
     <script>
       window.dataLayer = window.dataLayer || [];
