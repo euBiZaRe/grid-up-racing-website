@@ -1023,73 +1023,48 @@ function populateEventsTicker(upcomingEvents, staticIds = []) {
     }
     tickerContent.dataset.renderedSignature = signature;
 
-    const itemsHtml = `
-        <span class="ticker-section-pill upcoming-section">📅 UPCOMING RACES</span>
-    ` + upcomingEvents.map(e => {
+    const itemsHtml = upcomingEvents.map((e, idx) => {
         const link = (staticIds && staticIds.includes(e.id)) ? getEventLink(e.id, true) : getEventLink(e.id);
         const name = (e.name || 'Upcoming Race').toUpperCase();
         const date = (e.date || 'Season 2026').toUpperCase();
+        const tagText = idx === 0 ? '📅 NEXT MAJOR' : '📅 UPCOMING';
         return `
-            <a href="${link}" class="ticker-event-item">
-                <span class="ticker-tag upcoming">UPCOMING</span>
-                <span class="ticker-item-name">${name}</span>
-                <span class="ticker-item-divider">•</span>
-                <span class="ticker-item-date">${date}</span>
+            <a href="${link}" class="ticker-item">
+                <span class="ticker-tag tag-next">${tagText}</span>
+                <span class="ticker-text">${name} — ${date}</span>
             </a>
-            <span class="ticker-separator">✦</span>
         `;
     }).join('');
 
     const recentResultsHtml = `
-        <span class="ticker-section-pill results-section">🏆 PODIUM RESULTS</span>
-        <a href="events/road-america-6h.html" class="ticker-event-item">
-            <span class="ticker-tag result">RESULT</span>
-            <span class="ticker-result-badge gold">🏆 P1 WIN</span>
-            <span class="ticker-item-name">ROAD AMERICA 6H</span>
-            <span class="ticker-item-divider">•</span>
-            <span class="ticker-item-date">JULY 24–26, 2026</span>
+        <a href="events/petit-le-mans.html" class="ticker-item">
+            <span class="ticker-tag tag-p1">🏆 P1 WIN</span>
+            <span class="ticker-text">PETIT LE MANS — LMP2 CLASS (Chandler English • Andrew Gould • Bret Weyand)</span>
         </a>
-        <span class="ticker-separator">✦</span>
-        <a href="events/indy-500.html" class="ticker-event-item">
-            <span class="ticker-tag result">RESULT</span>
-            <span class="ticker-result-badge gold">🥇 P1 WIN</span>
-            <span class="ticker-item-name">INDY 500</span>
-            <span class="ticker-item-divider">•</span>
-            <span class="ticker-item-date">MAY 5–18, 2026</span>
+        <a href="events/road-america-6h.html" class="ticker-item">
+            <span class="ticker-tag tag-p1">🥇 P1 WIN</span>
+            <span class="ticker-text">ROAD AMERICA 6 HOUR — GTP (Faraz Ebrahim • Anthony Savignano)</span>
         </a>
-        <span class="ticker-separator">✦</span>
-        <a href="events/past/daytona-24.html" class="ticker-event-item">
-            <span class="ticker-tag result">RESULT</span>
-            <span class="ticker-result-badge silver">🥈 P2 PODIUM</span>
-            <span class="ticker-item-name">24H DAYTONA</span>
-            <span class="ticker-item-divider">•</span>
-            <span class="ticker-item-date">JAN 16–18, 2026</span>
+        <a href="events/past/daytona-24.html" class="ticker-item">
+            <span class="ticker-tag tag-p2">🥈 P2 PODIUM</span>
+            <span class="ticker-text">24 HOURS OF DAYTONA — LMP2 (A. Fabian • M. Cook • J. Reid • A. Cortez)</span>
         </a>
-        <span class="ticker-separator">✦</span>
-        <a href="events/nurburgring-24h.html" class="ticker-event-item">
-            <span class="ticker-tag result">RESULT</span>
-            <span class="ticker-result-badge silver">🥈 P2 PODIUM</span>
-            <span class="ticker-item-name">24H NÜRBURGRING</span>
-            <span class="ticker-item-divider">•</span>
-            <span class="ticker-item-date">MAY 1–3, 2026</span>
+        <a href="events/indy-500.html" class="ticker-item">
+            <span class="ticker-tag tag-p1">🥇 P1 WIN</span>
+            <span class="ticker-text">INDY 500 — DALLARA IR18 (Alex Cortez)</span>
         </a>
-        <span class="ticker-separator">✦</span>
-        <a href="events/suzuka-1000km.html" class="ticker-event-item">
-            <span class="ticker-tag result">RESULT</span>
-            <span class="ticker-result-badge silver">🥈 P2 PODIUM</span>
-            <span class="ticker-item-name">SUZUKA 1000KM</span>
-            <span class="ticker-item-divider">•</span>
-            <span class="ticker-item-date">SEPT 10–15, 2026</span>
+        <a href="events/nurburgring-24h.html" class="ticker-item">
+            <span class="ticker-tag tag-p2">🥈 P2 PODIUM</span>
+            <span class="ticker-text">24H NÜRBURGRING — GT3 (A. Cortez • C. Deasey • J. Reid • L. Wilt)</span>
         </a>
-        <span class="ticker-separator">✦</span>
-        <a href="events/past/iracing-roar.html" class="ticker-event-item">
-            <span class="ticker-tag result">RESULT</span>
-            <span class="ticker-result-badge bronze">🥉 P3 PODIUM</span>
-            <span class="ticker-item-name">IRACING ROAR</span>
-            <span class="ticker-item-divider">•</span>
-            <span class="ticker-item-date">JAN 9–10, 2026</span>
+        <a href="events/suzuka-1000km.html" class="ticker-item">
+            <span class="ticker-tag tag-p2">🥈 P2 PODIUM</span>
+            <span class="ticker-text">SUZUKA 1000KM — GT3 (M. Roberts • F. Ebrahim • T. Cantwell)</span>
         </a>
-        <span class="ticker-separator">✦</span>
+        <a href="events/past/iracing-roar.html" class="ticker-item">
+            <span class="ticker-tag tag-p3">🥉 P3 PODIUM</span>
+            <span class="ticker-text">IRACING ROAR — GT4 (Terry Cantwell)</span>
+        </a>
     `;
 
     const totalHtml = itemsHtml + recentResultsHtml;
