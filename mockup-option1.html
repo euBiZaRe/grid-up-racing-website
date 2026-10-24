@@ -12,70 +12,70 @@
 
     <style>
         /* ===============================================================
-           DYNAMIC PALETTES: Switchable Live for User Evaluation
+           DYNAMIC PALETTES: Clean Motorsport Purple Options
            =============================================================== */
         :root {
-            /* Palette A: Precision Racing Cyan & Titanium (Default) */
-            --bg-base: #06080e;
-            --bg-card: rgba(12, 17, 28, 0.75);
-            --bg-card-hover: rgba(18, 25, 42, 0.9);
+            /* Palette 1: Clean Electric Iris & Titanium (Default) */
+            --bg-base: #07070d;
+            --bg-card: rgba(16, 15, 26, 0.78);
+            --bg-card-hover: rgba(23, 21, 38, 0.92);
             --border-subtle: rgba(255, 255, 255, 0.08);
-            --border-accent: rgba(0, 207, 255, 0.35);
-            --accent-primary: #00cfff;
-            --accent-glow: rgba(0, 207, 255, 0.35);
-            --accent-gradient: linear-gradient(135deg, #00cfff 0%, #0284c7 100%);
-            --accent-secondary: #38bdf8;
-            --highlight-metric: #f59e0b; /* Clean amber telemetry */
+            --border-accent: rgba(139, 92, 246, 0.38);
+            --accent-primary: #8b5cf6; /* Clean Electric Iris */
+            --accent-glow: rgba(139, 92, 246, 0.35);
+            --accent-gradient: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+            --accent-secondary: #c4b5fd;
+            --highlight-metric: #38bdf8; /* Precision cyan telemetry */
             --text-heading: #ffffff;
             --text-body: #cbd5e1;
-            --text-muted: #64748b;
-            --track-stroke: #00cfff;
+            --text-muted: #71717a;
+            --track-stroke: #8b5cf6;
             --card-radius: 16px;
         }
 
-        /* Palette B: Works Crimson & Slate (Porsche / Le Mans Works) */
-        html[data-palette="crimson"] {
-            --bg-base: #07090d;
-            --bg-card: rgba(17, 20, 28, 0.78);
-            --bg-card-hover: rgba(24, 28, 40, 0.92);
-            --border-subtle: rgba(255, 255, 255, 0.09);
-            --border-accent: rgba(239, 68, 68, 0.4);
-            --accent-primary: #f43f5e;
-            --accent-glow: rgba(244, 63, 94, 0.35);
-            --accent-gradient: linear-gradient(135deg, #f43f5e 0%, #be123c 100%);
+        /* Palette 2: Royal GT Amethyst (Deep Executive Motorsport) */
+        html[data-palette="royal"] {
+            --bg-base: #06050b;
+            --bg-card: rgba(17, 14, 28, 0.82);
+            --bg-card-hover: rgba(25, 20, 42, 0.95);
+            --border-subtle: rgba(255, 255, 255, 0.07);
+            --border-accent: rgba(124, 58, 237, 0.45);
+            --accent-primary: #7c3aed;
+            --accent-glow: rgba(124, 58, 237, 0.35);
+            --accent-gradient: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+            --accent-secondary: #a78bfa;
+            --highlight-metric: #f59e0b; /* Amber telemetry */
+            --track-stroke: #7c3aed;
+        }
+
+        /* Palette 3: Hypercar Orchid & Cyan (Dual-Tone Telemetry Contrast) */
+        html[data-palette="orchid"] {
+            --bg-base: #080710;
+            --bg-card: rgba(18, 15, 30, 0.8);
+            --bg-card-hover: rgba(26, 21, 44, 0.94);
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-accent: rgba(168, 85, 247, 0.4);
+            --accent-primary: #a855f7;
+            --accent-glow: rgba(168, 85, 247, 0.35);
+            --accent-gradient: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%);
             --accent-secondary: #38bdf8;
-            --highlight-metric: #fbbf24;
-            --track-stroke: #f43f5e;
+            --highlight-metric: #06b6d4;
+            --track-stroke: #a855f7;
         }
 
-        /* Palette C: Stealth Titanium & Electric Azure (BMW M / Aston Martin) */
-        html[data-palette="azure"] {
-            --bg-base: #05070b;
-            --bg-card: rgba(13, 19, 32, 0.8);
-            --bg-card-hover: rgba(19, 29, 48, 0.94);
-            --border-subtle: rgba(255, 255, 255, 0.08);
-            --border-accent: rgba(56, 189, 248, 0.4);
-            --accent-primary: #38bdf8;
-            --accent-glow: rgba(56, 189, 248, 0.35);
-            --accent-gradient: linear-gradient(135deg, #38bdf8 0%, #1d4ed8 100%);
-            --accent-secondary: #10b981;
-            --highlight-metric: #10b981;
-            --track-stroke: #38bdf8;
-        }
-
-        /* Palette D: Monolithic Titanium & Gold (Luxury Factory Motorsport) */
-        html[data-palette="gold"] {
-            --bg-base: #06070a;
-            --bg-card: rgba(16, 18, 24, 0.8);
-            --bg-card-hover: rgba(24, 27, 36, 0.95);
-            --border-subtle: rgba(255, 255, 255, 0.08);
-            --border-accent: rgba(245, 158, 11, 0.4);
-            --accent-primary: #f59e0b;
-            --accent-glow: rgba(245, 158, 11, 0.35);
-            --accent-gradient: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+        /* Palette 4: Stealth Minimalist Slate & Soft Violet */
+        html[data-palette="stealth"] {
+            --bg-base: #090a0f;
+            --bg-card: rgba(15, 17, 26, 0.82);
+            --bg-card-hover: rgba(22, 25, 38, 0.94);
+            --border-subtle: rgba(255, 255, 255, 0.07);
+            --border-accent: rgba(167, 139, 250, 0.35);
+            --accent-primary: #9d72ff;
+            --accent-glow: rgba(157, 114, 255, 0.28);
+            --accent-gradient: linear-gradient(135deg, #9d72ff 0%, #6366f1 100%);
             --accent-secondary: #e2e8f0;
             --highlight-metric: #10b981;
-            --track-stroke: #f59e0b;
+            --track-stroke: #9d72ff;
         }
 
         * {
@@ -723,24 +723,24 @@
     <!-- Live Color Palette Switcher (For User Testing) -->
     <div class="palette-toolbar">
         <div class="toolbar-title">
-            <span>🎨 CHOOSE MOTORSPORT PALETTE:</span>
+            <span>🎨 CLEAN PURPLE VARIATIONS:</span>
         </div>
         <div class="palette-btn-group">
-            <button class="palette-btn active" onclick="setPalette('cyan')">
-                <span class="swatch" style="background: #00cfff;"></span>
-                Palette A: Precision Cyan & Titanium (F1 / Petronas)
+            <button class="palette-btn active" onclick="setPalette('iris')">
+                <span class="swatch" style="background: #8b5cf6;"></span>
+                1. Electric Iris & Platinum (Default)
             </button>
-            <button class="palette-btn" onclick="setPalette('crimson')">
-                <span class="swatch" style="background: #f43f5e;"></span>
-                Palette B: Works Crimson & Slate (Porsche / Le Mans)
+            <button class="palette-btn" onclick="setPalette('royal')">
+                <span class="swatch" style="background: #7c3aed;"></span>
+                2. Royal GT Amethyst
             </button>
-            <button class="palette-btn" onclick="setPalette('azure')">
-                <span class="swatch" style="background: #38bdf8;"></span>
-                Palette C: Stealth Azure & Titanium (BMW / Aston Martin)
+            <button class="palette-btn" onclick="setPalette('orchid')">
+                <span class="swatch" style="background: #a855f7;"></span>
+                3. Hypercar Orchid & Cyan
             </button>
-            <button class="palette-btn" onclick="setPalette('gold')">
-                <span class="swatch" style="background: #f59e0b;"></span>
-                Palette D: Hypercar Gold & Titanium (Luxury Works)
+            <button class="palette-btn" onclick="setPalette('stealth')">
+                <span class="swatch" style="background: #9d72ff;"></span>
+                4. Stealth Slate & Violet
             </button>
         </div>
     </div>
@@ -968,7 +968,7 @@
             document.querySelectorAll('.palette-btn').forEach(b => b.classList.remove('active'));
             event.target.closest('.palette-btn').classList.add('active');
             
-            if (name === 'cyan') {
+            if (name === 'iris') {
                 document.documentElement.removeAttribute('data-palette');
             } else {
                 document.documentElement.setAttribute('data-palette', name);
