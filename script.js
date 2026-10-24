@@ -654,6 +654,110 @@ async function loadDynamicContent() {
     }
 }
 
+// Smart Track Image Resolver to ensure every circuit gets its authentic track outline
+function resolveTrackImage(trackName, eventId) {
+    if (typeof eventBanners !== 'undefined' && eventBanners && eventBanners[eventId]) {
+        return eventBanners[eventId];
+    }
+    const t = (trackName || '').toLowerCase();
+    const id = (eventId || '').toLowerCase();
+
+    if (t.includes('nurburg') || t.includes('nürburg') || t.includes('nordschleife') || t.includes('gesamtstrecke') || id.includes('nurburg')) {
+        return 'assets/tracks/nurburgring.png';
+    }
+    if (t.includes('bathurst') || t.includes('mount panorama') || id.includes('bathurst')) {
+        return 'assets/tracks/bathurst.png';
+    }
+    if (t.includes('spa') || t.includes('francorchamps') || id.includes('spa')) {
+        return 'assets/tracks/spa.png';
+    }
+    if (t.includes('road america') || id.includes('road-america')) {
+        return 'assets/tracks/road-america.png';
+    }
+    if (t.includes('road atlanta') || t.includes('petit le mans') || id.includes('petit-le-mans')) {
+        return 'assets/tracks/road-atlanta.png';
+    }
+    if (t.includes('watkins') || id.includes('watkins')) {
+        return 'assets/tracks/watkins-glen.png';
+    }
+    if (t.includes('suzuka') || id.includes('suzuka')) {
+        return 'assets/tracks/suzuka.png';
+    }
+    if (t.includes('daytona') || id.includes('daytona')) {
+        if (t.includes('oval') && !t.includes('road')) return 'assets/tracks/daytona-oval.png';
+        return 'assets/tracks/daytona.png';
+    }
+    if (t.includes('sebring') || id.includes('sebring')) {
+        return 'assets/tracks/sebring.png';
+    }
+    if (t.includes('silverstone') || id.includes('silverstone')) {
+        return 'assets/tracks/silverstone.png';
+    }
+    if (t.includes('monza') || id.includes('monza')) {
+        return 'assets/tracks/monza.png';
+    }
+    if (t.includes('lemans') || t.includes('le mans') || id.includes('lemans')) {
+        return 'assets/tracks/lemans.png';
+    }
+    if (t.includes('indy') || t.includes('indianapolis') || id.includes('indy')) {
+        if (t.includes('oval') && !t.includes('road')) return 'assets/tracks/indy-oval.png';
+        return 'assets/tracks/indy-road-course.png';
+    }
+    if (t.includes('brands hatch') || id.includes('brands-hatch')) {
+        return 'assets/tracks/brands-hatch.png';
+    }
+    if (t.includes('portimao') || t.includes('algarve') || id.includes('portimao')) {
+        return 'assets/tracks/portimao.png';
+    }
+
+    return 'assets/tracks/daytona.png';
+}
+
+function resolveTrackSpecs(trackName, eventSpecs) {
+    if (eventSpecs && eventSpecs !== 'OFFICIAL IRACING EVENT') return eventSpecs;
+    const t = (trackName || '').toLowerCase();
+    if (t.includes('nurburg') || t.includes('nürburg') || t.includes('nordschleife') || t.includes('gesamtstrecke')) {
+        return '15.14mi (24.36km) • 170 TURNS • COMBINED VLN';
+    }
+    if (t.includes('bathurst') || t.includes('mount panorama')) {
+        return '3.86mi • 23 TURNS • MOUNT PANORAMA';
+    }
+    if (t.includes('spa') || t.includes('francorchamps')) {
+        return '4.35mi • 19 TURNS • GRAND PRIX';
+    }
+    if (t.includes('road america')) {
+        return '4.05mi • 14 TURNS • FULL COURSE';
+    }
+    if (t.includes('road atlanta')) {
+        return '2.54mi • 12 TURNS • FULL COURSE';
+    }
+    if (t.includes('watkins')) {
+        return '3.40mi • 11 TURNS • BOOT LAYOUT';
+    }
+    if (t.includes('suzuka')) {
+        return '3.61mi • 18 TURNS • GRAND PRIX';
+    }
+    if (t.includes('daytona')) {
+        return '3.56mi • 12 TURNS • ROAD COURSE';
+    }
+    if (t.includes('sebring')) {
+        return '3.74mi • 17 TURNS • INTERNATIONAL';
+    }
+    if (t.includes('silverstone')) {
+        return '3.66mi • 18 TURNS • GRAND PRIX';
+    }
+    if (t.includes('monza')) {
+        return '3.60mi • 11 TURNS • GRAND PRIX';
+    }
+    if (t.includes('lemans') || t.includes('le mans')) {
+        return '8.47mi • 38 TURNS • CIRCUIT DE LA SARTHE';
+    }
+    if (t.includes('indy') || t.includes('indianapolis')) {
+        return '2.43mi • 14 TURNS • ROAD COURSE';
+    }
+    return eventSpecs || 'OFFICIAL IRACING EVENT';
+}
+
 // Dynamically populates the Next Event dashboard card with real track and event info
 function populateNextEventDashboard(nextEvent, staticIds = [], eventBanners = {}) {
     if (!nextEvent) return;
@@ -715,7 +819,7 @@ function populateNextEventDashboard(nextEvent, staticIds = [], eventBanners = {}
             name: 'BATHURST 1000',
             trackName: 'MOUNT PANORAMA CIRCUIT',
             trackSpecs: '3.86mi • 23 TURNS • MOUNT PANORAMA',
-            trackImg: 'assets/tracks/daytona.png',
+            trackImg: 'assets/tracks/bathurst.png',
             date: 'OCTOBER 09–11, 2026',
             schedule: { practice: '08:00 GMT', qualifying: '09:30 GMT', greenFlag: '10:00 GMT' },
             classes: ['SUPERCAR CLASS', '2 DRIVERS PER CAR'],
@@ -734,7 +838,7 @@ function populateNextEventDashboard(nextEvent, staticIds = [], eventBanners = {}
             name: 'PETIT LE MANS',
             trackName: 'MICHELIN RACEWAY ROAD ATLANTA',
             trackSpecs: '2.54mi • 12 TURNS • FULL COURSE',
-            trackImg: 'assets/league-posters/Atlanta.png',
+            trackImg: 'assets/tracks/road-atlanta.png',
             date: 'OCTOBER 02–04, 2026',
             schedule: { practice: '14:00 GMT', qualifying: '15:30 GMT', greenFlag: '16:00 GMT' },
             classes: ['GTP + LMP2 + GT3', '2-3 DRIVERS PER CAR'],
@@ -791,7 +895,7 @@ function populateNextEventDashboard(nextEvent, staticIds = [], eventBanners = {}
             name: '24 HOURS OF SPA',
             trackName: 'CIRCUIT DE SPA-FRANCORCHAMPS',
             trackSpecs: '4.35mi • 19 TURNS • GRAND PRIX',
-            trackImg: 'assets/league-posters/SPA.png',
+            trackImg: 'assets/tracks/spa.png',
             date: 'JULY 10–12, 2026',
             schedule: { practice: '11:00 GMT', qualifying: '12:30 GMT', greenFlag: '13:00 GMT' },
             classes: ['GT3 CLASS', '3-4 DRIVERS PER CAR'],
@@ -810,7 +914,7 @@ function populateNextEventDashboard(nextEvent, staticIds = [], eventBanners = {}
             name: 'WATKINS GLEN 6 HOUR',
             trackName: 'WATKINS GLEN INTERNATIONAL',
             trackSpecs: '3.40mi • 11 TURNS • BOOT LAYOUT',
-            trackImg: 'assets/league-posters/The Glen.png',
+            trackImg: 'assets/tracks/watkins-glen.png',
             date: 'JUNE 19–21, 2026',
             schedule: { practice: '15:00 GMT', qualifying: '16:30 GMT', greenFlag: '17:00 GMT' },
             classes: ['GTP + LMP2 + GT3', '2-3 DRIVERS PER CAR'],
@@ -824,6 +928,44 @@ function populateNextEventDashboard(nextEvent, staticIds = [], eventBanners = {}
             ],
             highlights: 'Uphill esses, rapid braking into the Bus Stop chicane, and long technical sweepers through the Boot.',
             detailsUrl: 'events/watkins-glen-6h.html'
+        },
+        'nurburgring-24h': {
+            name: 'NÜRBURGRING 24H',
+            trackName: 'NÜRBURGRING COMBINED - GESAMTSTRECKE 24H',
+            trackSpecs: '15.77mi (25.38km) • 170 TURNS • 24H LAYOUT',
+            trackImg: 'assets/tracks/nurburgring.png',
+            date: 'MAY 1–3, 2026',
+            schedule: { practice: '14:00 GMT', qualifying: '15:30 GMT', greenFlag: '16:00 GMT' },
+            classes: ['GT3 + GT4 + TCR + CUP', '3-4 DRIVERS PER CAR'],
+            metrics: [
+                { icon: '⛽', val: '100%', lbl: 'FUEL CAPACITY' },
+                { icon: '🛞', val: 'UNLIMITED', lbl: 'TIRE SETS' },
+                { icon: '⏱️', val: '~55 MIN', lbl: 'FUEL STINTS' },
+                { icon: '🔧', val: 'FLUGPLATZ & KARUSSELL', lbl: 'HIGH COMPRESSION' },
+                { icon: '⚖️', val: 'FAIR SHARE RULE', lbl: 'MIN 25% DRIVE TIME' },
+                { icon: '⚡', val: '1 FAST REPAIR', lbl: 'AVAILABLE IN RACE' }
+            ],
+            highlights: 'The legendary Green Hell with 170 corners through the Eifel mountains, combining the modern GP-Strecke and the relentless Nordschleife.',
+            detailsUrl: 'events/nurburgring-24h.html'
+        },
+        'nurburgring-vln': {
+            name: 'NÜRBURGRING ENDURANCE SERIES',
+            trackName: 'NÜRBURGRING COMBINED - GESAMTSTRECKE VLN',
+            trackSpecs: '15.14mi (24.36km) • 170 TURNS • VLN LAYOUT',
+            trackImg: 'assets/tracks/nurburgring.png',
+            date: 'SEASON 2026',
+            schedule: { practice: '12:00 GMT', qualifying: '13:30 GMT', greenFlag: '14:00 GMT' },
+            classes: ['GT3 + GT4 + TCR + CUP', '2-4 DRIVERS PER CAR'],
+            metrics: [
+                { icon: '⛽', val: '100%', lbl: 'FUEL CAPACITY' },
+                { icon: '🛞', val: 'UNLIMITED', lbl: 'TIRE SETS' },
+                { icon: '⏱️', val: '~55 MIN', lbl: 'FUEL STINTS' },
+                { icon: '🔧', val: 'DÖTTINGER HÖHE', lbl: 'SLIPSTREAM DRAFTING' },
+                { icon: '⚖️', val: 'FAIR SHARE RULE', lbl: 'MIN 25% DRIVE TIME' },
+                { icon: '⚡', val: '1 FAST REPAIR', lbl: 'AVAILABLE IN RACE' }
+            ],
+            highlights: 'High-commitment crests, Karussell banking, and flat-out speeds down Döttinger Höhe on the world-famous VLN layout.',
+            detailsUrl: 'events/nurburgring-24h.html'
         },
         'daytona-24': {
             name: '24 HOURS OF DAYTONA',
@@ -847,11 +989,15 @@ function populateNextEventDashboard(nextEvent, staticIds = [], eventBanners = {}
     };
 
     const id = nextEvent.id || '';
+    const rawTrackName = nextEvent.track || nextEvent.name || 'Official Circuit';
+    const fallbackImg = resolveTrackImage(rawTrackName, id);
+    const fallbackSpecs = resolveTrackSpecs(rawTrackName, nextEvent.specs);
+
     const profile = EVENT_PROFILES[id] || {
         name: (nextEvent.name || 'Upcoming Race').toUpperCase(),
-        trackName: (nextEvent.track || nextEvent.name || 'Official Circuit').toUpperCase(),
-        trackSpecs: nextEvent.specs || 'OFFICIAL IRACING EVENT',
-        trackImg: (eventBanners && eventBanners[id]) ? eventBanners[id] : 'assets/tracks/daytona.png',
+        trackName: rawTrackName.toUpperCase(),
+        trackSpecs: fallbackSpecs,
+        trackImg: fallbackImg,
         date: (nextEvent.date || 'SEASON 2026').toUpperCase(),
         schedule: { practice: '17:00 GMT', qualifying: '18:30 GMT', greenFlag: '19:00 GMT' },
         classes: [nextEvent.classes || 'ENDURANCE MULTICLASS', 'TEAM EVENT'],
@@ -866,6 +1012,19 @@ function populateNextEventDashboard(nextEvent, staticIds = [], eventBanners = {}
         highlights: nextEvent.description || 'Full team effort featuring optimized setups, telemetry analysis, and endurance race strategy.',
         detailsUrl: (staticIds && staticIds.includes(id)) ? getEventLink(id, true) : getEventLink(id)
     };
+
+    // Safety check: if trackImg is daytona or missing but trackName is Nurburgring or other circuit, resolve accurately
+    if (profile.trackName) {
+        if (!profile.trackImg || profile.trackImg.includes('daytona.png')) {
+            const accuratelyResolved = resolveTrackImage(profile.trackName, id);
+            if (accuratelyResolved && !accuratelyResolved.includes('daytona.png')) {
+                profile.trackImg = accuratelyResolved;
+            }
+        }
+        if (!profile.trackSpecs || profile.trackSpecs === 'OFFICIAL IRACING EVENT') {
+            profile.trackSpecs = resolveTrackSpecs(profile.trackName, profile.trackSpecs);
+        }
+    }
 
     const nameEl = document.getElementById('hero-event-name');
     if (nameEl) nameEl.textContent = profile.name;
