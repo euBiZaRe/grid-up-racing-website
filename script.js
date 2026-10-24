@@ -948,20 +948,51 @@ function populateNextEventDashboard(nextEvent, staticIds = [], eventBanners = {}
             highlights: 'The legendary Green Hell with 170 corners through the Eifel mountains, combining the modern GP-Strecke and the relentless Nordschleife.',
             detailsUrl: 'events/nurburgring-24h.html'
         },
-        'nurburgring-vln': {
-            name: 'NÜRBURGRING ENDURANCE SERIES',
+        'nec-26-w10': {
+            name: 'NÜRBURGRING ENDURANCE CHAMPIONSHIP',
             trackName: 'NÜRBURGRING COMBINED - GESAMTSTRECKE VLN',
-            trackSpecs: '15.14mi (24.36km) • 170 TURNS • VLN LAYOUT',
+            trackSpecs: '15.14mi (24.36km) • 170 TURNS • COMBINED VLN',
             trackImg: 'assets/tracks/nurburgring.png',
-            date: 'SEASON 2026',
-            schedule: { practice: '12:00 GMT', qualifying: '13:30 GMT', greenFlag: '14:00 GMT' },
-            classes: ['GT3 + GT4 + TCR + CUP', '2-4 DRIVERS PER CAR'],
+            date: 'NOVEMBER 7–8, 2026',
+            schedule: { practice: '06:00 GMT', qualifying: '06:45 GMT', greenFlag: '07:00 GMT' },
+            timeslots: [
+                { slot: 1, utc: '2026-11-07T07:00:00Z', duration: '4 hr' },
+                { slot: 2, utc: '2026-11-07T17:00:00Z', duration: '4 hr' },
+                { slot: 3, utc: '2026-11-08T00:00:00Z', duration: '4 hr' },
+                { slot: 4, utc: '2026-11-08T13:00:00Z', duration: '4 hr' }
+            ],
+            classes: ['GT3', 'PORSCHE CUP', 'GT4', 'TCR', 'BMW M2'],
             metrics: [
                 { icon: '⛽', val: '100%', lbl: 'FUEL CAPACITY' },
                 { icon: '🛞', val: 'UNLIMITED', lbl: 'TIRE SETS' },
                 { icon: '⏱️', val: '~55 MIN', lbl: 'FUEL STINTS' },
                 { icon: '🔧', val: 'DÖTTINGER HÖHE', lbl: 'SLIPSTREAM DRAFTING' },
-                { icon: '⚖️', val: 'FAIR SHARE RULE', lbl: 'MIN 25% DRIVE TIME' },
+                { icon: '⚖️', val: 'FAIR SHARE RULE', lbl: 'MIN 2 DRIVERS PER CAR' },
+                { icon: '⚡', val: '1 FAST REPAIR', lbl: 'AVAILABLE IN RACE' }
+            ],
+            highlights: 'High-commitment crests, Karussell banking, and flat-out speeds down Döttinger Höhe on the world-famous VLN layout.',
+            detailsUrl: 'events/nurburgring-24h.html'
+        },
+        'nurburgring-vln': {
+            name: 'NÜRBURGRING ENDURANCE CHAMPIONSHIP',
+            trackName: 'NÜRBURGRING COMBINED - GESAMTSTRECKE VLN',
+            trackSpecs: '15.14mi (24.36km) • 170 TURNS • COMBINED VLN',
+            trackImg: 'assets/tracks/nurburgring.png',
+            date: 'NOVEMBER 7–8, 2026',
+            schedule: { practice: '06:00 GMT', qualifying: '06:45 GMT', greenFlag: '07:00 GMT' },
+            timeslots: [
+                { slot: 1, utc: '2026-11-07T07:00:00Z', duration: '4 hr' },
+                { slot: 2, utc: '2026-11-07T17:00:00Z', duration: '4 hr' },
+                { slot: 3, utc: '2026-11-08T00:00:00Z', duration: '4 hr' },
+                { slot: 4, utc: '2026-11-08T13:00:00Z', duration: '4 hr' }
+            ],
+            classes: ['GT3', 'PORSCHE CUP', 'GT4', 'TCR', 'BMW M2'],
+            metrics: [
+                { icon: '⛽', val: '100%', lbl: 'FUEL CAPACITY' },
+                { icon: '🛞', val: 'UNLIMITED', lbl: 'TIRE SETS' },
+                { icon: '⏱️', val: '~55 MIN', lbl: 'FUEL STINTS' },
+                { icon: '🔧', val: 'DÖTTINGER HÖHE', lbl: 'SLIPSTREAM DRAFTING' },
+                { icon: '⚖️', val: 'FAIR SHARE RULE', lbl: 'MIN 2 DRIVERS PER CAR' },
                 { icon: '⚡', val: '1 FAST REPAIR', lbl: 'AVAILABLE IN RACE' }
             ],
             highlights: 'High-commitment crests, Karussell banking, and flat-out speeds down Döttinger Höhe on the world-famous VLN layout.',
@@ -993,25 +1024,47 @@ function populateNextEventDashboard(nextEvent, staticIds = [], eventBanners = {}
     const fallbackImg = resolveTrackImage(rawTrackName, id);
     const fallbackSpecs = resolveTrackSpecs(rawTrackName, nextEvent.specs);
 
-    const profile = EVENT_PROFILES[id] || {
-        name: (nextEvent.name || 'Upcoming Race').toUpperCase(),
-        trackName: rawTrackName.toUpperCase(),
-        trackSpecs: fallbackSpecs,
-        trackImg: fallbackImg,
-        date: (nextEvent.date || 'SEASON 2026').toUpperCase(),
-        schedule: { practice: '17:00 GMT', qualifying: '18:30 GMT', greenFlag: '19:00 GMT' },
-        classes: [nextEvent.classes || 'ENDURANCE MULTICLASS', 'TEAM EVENT'],
-        metrics: [
-            { icon: '⛽', val: '100%', lbl: 'FUEL CAPACITY' },
-            { icon: '🛞', val: 'ALLOCATED', lbl: 'TIRE SETS' },
-            { icon: '⏱️', val: '~45 MIN', lbl: 'FUEL STINTS' },
-            { icon: '🔧', val: 'TEAM STRATEGY', lbl: 'OPTIMIZED TELEMETRY' },
-            { icon: '⚖️', val: 'FAIR SHARE RULE', lbl: 'ALL ENTERED DRIVERS' },
-            { icon: '⚡', val: '1 FAST REPAIR', lbl: 'AVAILABLE IN RACE' }
-        ],
-        highlights: nextEvent.description || 'Full team effort featuring optimized setups, telemetry analysis, and endurance race strategy.',
-        detailsUrl: (staticIds && staticIds.includes(id)) ? getEventLink(id, true) : getEventLink(id)
-    };
+    // Dynamic resolution: exact id match, or fuzzy match for NEC / Nürburgring VLN series
+    let profile = EVENT_PROFILES[id];
+    if (!profile) {
+        const idLower = (id || '').toLowerCase();
+        const tLower = (rawTrackName || '').toLowerCase();
+        const nLower = ((nextEvent && nextEvent.name) || '').toLowerCase();
+        if (idLower.includes('nec') || idLower.includes('vln') || tLower.includes('nurburg') || nLower.includes('nurburg') || nLower.includes('endurance championship')) {
+            profile = EVENT_PROFILES['nec-26-w10'] || EVENT_PROFILES['nurburgring-vln'];
+        }
+    }
+
+    if (!profile) {
+        let cleanClasses = ['ENDURANCE MULTICLASS', 'TEAM EVENT'];
+        if (nextEvent.classes) {
+            if (Array.isArray(nextEvent.classes)) {
+                cleanClasses = [...nextEvent.classes, 'TEAM EVENT'];
+            } else if (typeof nextEvent.classes === 'string') {
+                cleanClasses = nextEvent.classes.split(',').map(c => c.trim()).concat(['TEAM EVENT']);
+            }
+        }
+
+        profile = {
+            name: (nextEvent.name || 'Upcoming Race').toUpperCase(),
+            trackName: rawTrackName.toUpperCase(),
+            trackSpecs: fallbackSpecs,
+            trackImg: fallbackImg,
+            date: (nextEvent.date || 'SEASON 2026').toUpperCase(),
+            schedule: { practice: '17:00 GMT', qualifying: '18:30 GMT', greenFlag: '19:00 GMT' },
+            classes: cleanClasses,
+            metrics: [
+                { icon: '⛽', val: '100%', lbl: 'FUEL CAPACITY' },
+                { icon: '🛞', val: 'ALLOCATED', lbl: 'TIRE SETS' },
+                { icon: '⏱️', val: '~45 MIN', lbl: 'FUEL STINTS' },
+                { icon: '🔧', val: 'TEAM STRATEGY', lbl: 'OPTIMIZED TELEMETRY' },
+                { icon: '⚖️', val: 'FAIR SHARE RULE', lbl: 'ALL ENTERED DRIVERS' },
+                { icon: '⚡', val: '1 FAST REPAIR', lbl: 'AVAILABLE IN RACE' }
+            ],
+            highlights: nextEvent.description || 'Full team effort featuring optimized setups, telemetry analysis, and endurance race strategy.',
+            detailsUrl: (staticIds && staticIds.includes(id)) ? getEventLink(id, true) : getEventLink(id)
+        };
+    }
 
     // Safety check: if trackImg is daytona or missing but trackName is Nurburgring or other circuit, resolve accurately
     if (profile.trackName) {
@@ -1041,8 +1094,8 @@ function populateNextEventDashboard(nextEvent, staticIds = [], eventBanners = {}
     const schedGreen = document.getElementById('hero-sched-green');
     if (schedGreen) schedGreen.textContent = profile.schedule ? profile.schedule.greenFlag : '';
 
-    // Render Event Timeslots formatted to user's local timezone
-    renderHeroTimeslots(profile.timeslots || nextEvent.slots);
+    // Render Event Timeslots formatted to user's local timezone (passes nextEvent for context)
+    renderHeroTimeslots(profile.timeslots || nextEvent.slots, nextEvent);
 
     const classesEl = document.getElementById('hero-event-classes');
     if (classesEl && Array.isArray(profile.classes)) {
@@ -1086,7 +1139,7 @@ function populateNextEventDashboard(nextEvent, staticIds = [], eventBanners = {}
 }
 
 // Renders the Event Timeslots list formatted to the user's local timezone
-function renderHeroTimeslots(slots) {
+function renderHeroTimeslots(slots, eventContext) {
     const listEl = document.getElementById('hero-timeslots-list');
     const badgeEl = document.getElementById('hero-tz-badge');
     if (!listEl) return;
@@ -1107,49 +1160,105 @@ function renderHeroTimeslots(slots) {
     }
 
     const defaultSlots = [
-        { slot: 1, utc: '2026-10-16T22:00:00Z', duration: '8 hr' },
-        { slot: 2, utc: '2026-10-17T07:00:00Z', duration: '8 hr' },
-        { slot: 3, utc: '2026-10-17T12:00:00Z', duration: '8 hr' },
-        { slot: 4, utc: '2026-10-17T16:00:00Z', duration: '8 hr' },
-        { slot: 5, utc: '2026-10-18T00:00:00Z', duration: '8 hr' }
+        { slot: 1, utc: '2026-11-07T07:00:00Z', duration: '4 hr' },
+        { slot: 2, utc: '2026-11-07T17:00:00Z', duration: '4 hr' },
+        { slot: 3, utc: '2026-11-08T00:00:00Z', duration: '4 hr' },
+        { slot: 4, utc: '2026-11-08T13:00:00Z', duration: '4 hr' }
     ];
 
-    const activeSlots = (Array.isArray(slots) && slots.length > 0) ? slots : defaultSlots;
+    let rawSlots = slots;
+    if (!Array.isArray(rawSlots) || rawSlots.length === 0) {
+        rawSlots = defaultSlots;
+    }
+
     const now = Date.now();
 
-    listEl.innerHTML = activeSlots.map((s, idx) => {
-        const slotDate = new Date(s.utc || s.date || s.startTime);
-        const slotNum = s.slot || (idx + 1);
-        const duration = s.duration || '8 hr';
+    listEl.innerHTML = rawSlots.map((s, idx) => {
+        let slotNum = idx + 1;
+        let duration = '4 hr';
+        let slotDate = null;
+        let fallbackTimeStr = '';
+        let fallbackDateStr = '';
 
-        // Local time formatting
-        const timeFormatted = slotDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
-        const dateFormatted = slotDate.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+        if (typeof s === 'string') {
+            const numMatch = s.match(/#(\d+)/);
+            if (numMatch) slotNum = parseInt(numMatch[1], 10);
 
-        // Relative remaining time
-        const diffMs = slotDate.getTime() - now;
-        let countdownText = '';
+            const gmtMatch = s.match(/(\d{1,2}:\d{2})\s*GMT/i);
+            const dayMatch = s.match(/(Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday)/i);
+
+            if (eventContext && eventContext.startDate && dayMatch && gmtMatch) {
+                const baseDate = new Date(eventContext.startDate);
+                if (!isNaN(baseDate.getTime())) {
+                    const targetDay = dayMatch[1].toLowerCase();
+                    const daysOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+                    const targetDayIdx = daysOfWeek.indexOf(targetDay);
+                    const baseDayIdx = baseDate.getUTCDay();
+                    let diffDays = targetDayIdx - baseDayIdx;
+                    if (diffDays < -3) diffDays += 7;
+                    if (diffDays > 3) diffDays -= 7;
+
+                    const [h, m] = gmtMatch[1].split(':').map(Number);
+                    const derived = new Date(baseDate);
+                    derived.setUTCDate(derived.getUTCDate() + diffDays);
+                    derived.setUTCHours(h, m, 0, 0);
+                    slotDate = derived;
+                }
+            }
+
+            if (!slotDate || isNaN(slotDate.getTime())) {
+                const direct = new Date(s);
+                if (!isNaN(direct.getTime())) {
+                    slotDate = direct;
+                } else {
+                    fallbackTimeStr = gmtMatch ? `${gmtMatch[1]} GMT` : s;
+                    fallbackDateStr = dayMatch ? dayMatch[1] : (eventContext && eventContext.date ? eventContext.date : 'Upcoming Session');
+                }
+            }
+        } else if (typeof s === 'object' && s !== null) {
+            slotNum = s.slot || (idx + 1);
+            duration = s.duration || '4 hr';
+            const rawVal = s.utc || s.date || s.startTime || s.time || s.datetime;
+            if (rawVal) {
+                const d = new Date(rawVal);
+                if (!isNaN(d.getTime())) slotDate = d;
+            }
+        }
+
+        const isValidDate = slotDate instanceof Date && !isNaN(slotDate.getTime());
+        const timeFormatted = isValidDate
+            ? slotDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })
+            : (fallbackTimeStr || 'TBA');
+        const dateFormatted = isValidDate
+            ? slotDate.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
+            : (fallbackDateStr || 'Upcoming Session');
+
+        // Countdown calculation
+        let countdownText = 'UPCOMING';
         let isActive = false;
 
-        const durHoursMatch = String(duration).match(/(\d+)/);
-        const durHours = durHoursMatch ? parseInt(durHoursMatch[1], 10) : 8;
-        const endMs = slotDate.getTime() + (durHours * 3600 * 1000);
+        if (isValidDate) {
+            const diffMs = slotDate.getTime() - now;
+            const durHoursMatch = String(duration).match(/(\d+)/);
+            const durHours = durHoursMatch ? parseInt(durHoursMatch[1], 10) : 4;
+            const endMs = slotDate.getTime() + (durHours * 3600 * 1000);
 
-        if (diffMs > 0) {
-            const totalHours = Math.floor(diffMs / (1000 * 60 * 60));
-            const days = Math.floor(totalHours / 24);
-            const remHours = totalHours % 24;
-            if (days > 0) {
-                countdownText = `${days}d ${String(remHours).padStart(2, '0')} hrs`;
+            if (diffMs > 0) {
+                const totalHours = Math.floor(diffMs / (1000 * 60 * 60));
+                const days = Math.floor(totalHours / 24);
+                const remHours = totalHours % 24;
+                if (days > 0) {
+                    countdownText = `${days}d ${String(remHours).padStart(2, '0')} hrs`;
+                } else {
+                    const remMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                    countdownText = `${remHours}h ${String(remMins).padStart(2, '0')}m`;
+                }
+            } else if (now <= endMs) {
+                countdownText = 'LIVE NOW';
+                isActive = true;
             } else {
-                const remMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-                countdownText = `${remHours}h ${String(remMins).padStart(2, '0')}m`;
+                countdownText = 'COMPLETED';
             }
-        } else if (now <= endMs) {
-            countdownText = 'LIVE NOW';
-            isActive = true;
-        } else {
-            countdownText = 'COMPLETED';
         }
 
         return `
