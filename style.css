@@ -21,6 +21,15 @@
     --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
+/* Zero-Flash Maintenance Shield */
+html.maint-shield-active body {
+    visibility: hidden !important;
+    background-color: #05070f !important;
+}
+html.maint-shield-active #gridup-maintenance-overlay {
+    visibility: visible !important;
+}
+
 * {
     box-sizing: border-box;
     margin: 0;

@@ -1,12 +1,10 @@
 // ===============================================================
-// INSTANT MAINTENANCE INTERCEPTOR
-// If maintenance mode is active, completely block website display
-// and redirect visitor to maintenance.html
+// INSTANT MAINTENANCE INTERCEPTOR (In-Place, No Redirects)
 // ===============================================================
 (function() {
     if (typeof window === 'undefined') return;
     const path = window.location.pathname;
-    if (path.endsWith('maintenance.html') || path.endsWith('login.html')) return;
+    if (path.endsWith('login.html')) return;
 
     try {
         const cached = JSON.parse(localStorage.getItem('gridup_auth_cache') || '{}');
@@ -15,28 +13,13 @@
         if (uid && admins.includes(uid)) return;
     } catch(_) {}
 
-    // 1. Instant Cache Interceptor
+    // If cached active, lock body immediately so main website never displays
     if (localStorage.getItem('gridup_maint_active') === 'true') {
-        document.documentElement.style.display = 'none';
-        window.location.replace('maintenance.html');
-        return;
+        document.documentElement.classList.add('maint-shield-active');
+        if (typeof applyMaintenanceLockStyle === 'function') {
+            applyMaintenanceLockStyle();
+        }
     }
-
-    // 2. Pre-flight REST API check
-    try {
-        fetch('https://firestore.googleapis.com/v1/projects/grid-up/databases/(default)/documents/settings/maintenance')
-            .then(r => r.ok ? r.json() : null)
-            .then(d => {
-                if (d && d.fields && d.fields.active && d.fields.active.booleanValue === true) {
-                    localStorage.setItem('gridup_maint_active', 'true');
-                    document.documentElement.style.display = 'none';
-                    window.location.replace('maintenance.html');
-                } else if (d && d.fields && d.fields.active && d.fields.active.booleanValue === false) {
-                    localStorage.setItem('gridup_maint_active', 'false');
-                }
-            })
-            .catch(() => {});
-    } catch(_) {}
 })();
 
 // GRiD UP - Authentication & Profile Claiming Engine
@@ -301,16 +284,15 @@ async function enrichAuthData(user) {
                 window.GRIDUP_MAINTENANCE_ACTIVE = true;
                 localStorage.setItem('gridup_maint_active', 'true');
                 if (!IS_ADMIN) {
-                    if (!window.location.pathname.endsWith('maintenance.html') && !window.location.pathname.endsWith('login.html')) {
-                        document.documentElement.style.display = 'none';
-                        window.location.replace('maintenance.html');
-                        return;
-                    }
+                    applyMaintenanceLockStyle();
+                    showMaintenanceScreen(maintDoc.data());
+                    return;
                 } else {
                     showAdminMaintenanceNotice();
                 }
             } else if (maintDoc && maintDoc.exists && maintDoc.data().active === false) {
                 localStorage.setItem('gridup_maint_active', 'false');
+                removeMaintenanceLockStyle();
             }
 
             // Check Verification
@@ -770,9 +752,11 @@ async function loadRaceLineup(slug) {
 // ==========================================
 // System Security & Maintenance Mode Control
 // ==========================================
+let maintSnapshotUnsub = null;
+
 async function checkPublicMaintenanceMode() {
     const path = window.location.pathname;
-    if (path.endsWith('maintenance.html') || path.endsWith('login.html')) return;
+    if (path.endsWith('login.html')) return;
 
     // Check if current user is Master Admin or Known Admin
     const cached = JSON.parse(localStorage.getItem('gridup_auth_cache') || '{}');
@@ -791,42 +775,55 @@ async function checkPublicMaintenanceMode() {
         return;
     }
     try {
-        const maintDoc = await db.collection("settings").doc("maintenance").get();
-        if (maintDoc.exists && maintDoc.data().active === true) {
-            window.GRIDUP_MAINTENANCE_ACTIVE = true;
-            localStorage.setItem('gridup_maint_active', 'true');
-            
-            // Immediately hide page and redirect to maintenance.html
-            document.documentElement.style.display = 'none';
-            window.location.replace('maintenance.html');
-            return;
-        } else {
-            window.GRIDUP_MAINTENANCE_ACTIVE = false;
-            localStorage.setItem('gridup_maint_active', 'false');
-            removeMaintenanceLockStyle();
-            const overlay = document.getElementById('gridup-maintenance-overlay');
-            if (overlay) overlay.remove();
-            const notice = document.getElementById('admin-maint-notice');
-            if (notice) notice.remove();
-            document.body.style.overflow = '';
-        }
+        if (maintSnapshotUnsub) maintSnapshotUnsub();
+        maintSnapshotUnsub = db.collection("settings").doc("maintenance").onSnapshot((maintDoc) => {
+            const currentCached = JSON.parse(localStorage.getItem('gridup_auth_cache') || '{}');
+            const uid = (window.auth && window.auth.currentUser) ? window.auth.currentUser.uid : (currentCached.user ? currentCached.user.uid : null);
+            if (uid && (uid === MASTER_ADMIN || KNOWN_ADMIN_UIDS.includes(uid))) {
+                removeMaintenanceLockStyle();
+                showAdminMaintenanceNotice(true);
+                return;
+            }
+
+            if (maintDoc.exists && maintDoc.data().active === true) {
+                window.GRIDUP_MAINTENANCE_ACTIVE = true;
+                localStorage.setItem('gridup_maint_active', 'true');
+                applyMaintenanceLockStyle();
+                showMaintenanceScreen(maintDoc.data());
+            } else {
+                window.GRIDUP_MAINTENANCE_ACTIVE = false;
+                localStorage.setItem('gridup_maint_active', 'false');
+                removeMaintenanceLockStyle();
+            }
+        }, (err) => {
+            console.warn("Maintenance snapshot warning:", err);
+        });
     } catch (_) {}
 }
 
 function applyMaintenanceLockStyle() {
     if (window.location.pathname.endsWith('login.html')) return;
+    document.documentElement.classList.add('maint-shield-active');
     let lockStyle = document.getElementById('maint-lock-style');
     if (!lockStyle) {
         lockStyle = document.createElement('style');
         lockStyle.id = 'maint-lock-style';
-        lockStyle.textContent = 'body > *:not(#gridup-maintenance-overlay):not(#admin-maint-notice):not(#maint-unlocked-notice) { display: none !important; }';
+        lockStyle.textContent = 'body > *:not(#gridup-maintenance-overlay):not(#admin-maint-notice) { display: none !important; } body { background: #05070f !important; }';
         document.head.appendChild(lockStyle);
     }
 }
 
 function removeMaintenanceLockStyle() {
+    document.documentElement.classList.remove('maint-shield-active');
     const lockStyle = document.getElementById('maint-lock-style');
     if (lockStyle) lockStyle.remove();
+    const shieldStyle = document.getElementById('maint-shield-style');
+    if (shieldStyle) shieldStyle.remove();
+    const overlay = document.getElementById('gridup-maintenance-overlay');
+    if (overlay) overlay.remove();
+    const notice = document.getElementById('admin-maint-notice');
+    if (notice) notice.remove();
+    document.body.style.overflow = '';
 }
 
 function showAdminMaintenanceNotice(isMaster = false) {
