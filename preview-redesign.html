@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GRiD UP SIM RACING — Full Redesign Preview (Palette C: Orchid & Cyan)</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Palette C: Clean Orchid Purple & Cyan Telemetry */
+            --bg-base: #080710;
+            --bg-surface: #0e0c1a;
+            --bg-card: rgba(18, 15, 30, 0.82);
+            --bg-card-hover: rgba(28, 23, 46, 0.95);
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-accent: rgba(168, 85, 247, 0.38);
+            --accent-primary: #a855f7;      /* Clean Orchid Violet */
+            --accent-glow: rgba(168, 85, 247, 0.35);
+            --accent-gradient: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%);
+            --accent-secondary: #38bdf8;    /* Precision Cyan */
+            --highlight-metric: #06b6d4;   /* Telemetry Teal */
+            --highlight-amber: #f59e0b;    /* Warning / Fuel */
+            --highlight-green: #10b981;    /* P1 / Fast Lap */
+            --text-heading: #ffffff;
+            --text-body: #cbd5e1;
+            --text-muted: #71717a;
+            --card-radius: 16px;
+            --font-heading: 'Orbitron', sans-serif;
+            --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.25s ease, border-color 0.25s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.25s ease;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            font-family: var(--font-body);
+            color: var(--text-body);
+            min-height: 100vh;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Subtle Carbon Weave & Motorsport Glow */
+        .carbon-bg {
+            position: fixed;
+            inset: 0;
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(168, 85, 247, 0.12) 0%, transparent 60%),
+                radial-gradient(circle at 100% 70%, rgba(56, 189, 248, 0.06) 0%, transparent 40%),
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1320px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ===============================================================
+           PAGE PREVIEW BANNER (Header Announcement)
+           =============================================================== */
+        .preview-banner {
+            background: linear-gradient(90deg, rgba(168, 85, 247, 0.18), rgba(56, 189, 248, 0.15));
+            border-bottom: 1px solid var(--border-accent);
+            padding: 0.65rem 1.5rem;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            z-index: 100;
+        }
+
+        .preview-badge-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: 0.5px;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            box-shadow: 0 0 12px var(--accent-primary);
+            animation: pulse 1.8s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.8); }
+        }
+
+        .preview-nav-tabs {
+            display: flex;
+            gap: 8px;
+        }
+
+        .preview-tab-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-body);
+            padding: 0.35rem 0.85rem;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .preview-tab-btn:hover, .preview-tab-btn.active {
+            background: var(--accent-primary);
+            color: #000;
+            border-color: var(--accent-primary);
+            font-weight: 800;
+        }
+
+        /* ===============================================================
+           TOP NAVIGATION BAR
+           =============================================================== */
+        .navbar {
+            background: rgba(8, 7, 16, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-subtle);
+            position: sticky;
+            top: 0;
+            z-index: 90;
+            padding: 0.9rem 0;
+        }
+
+        .nav-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .brand-logo-img {
+            width: 38px;
+            height: 38px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 10px rgba(168, 85, 247, 0.4));
+        }
+
+        .brand-title {
+            font-family: var(--font-heading);
+            font-weight: 900;
+            font-size: 1.25rem;
+            letter-spacing: 2px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            line-height: 1;
+        }
+
+        .brand-title .brand-purple {
+            color: var(--accent-primary);
+            text-shadow: 0 0 16px rgba(168, 85, 247, 0.5);
+        }
+
+        .brand-sub {
+            font-family: var(--font-mono);
+            font-size: 0.62rem;
+            color: var(--accent-secondary);
+            letter-spacing: 2px;
+            margin-top: 3px;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 1.8rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            font-family: var(--font-heading);
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--text-body);
+            text-decoration: none;
+            letter-spacing: 1.5px;
+            position: relative;
+            padding: 0.35rem 0;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: #ffffff;
+        }
+
+        .nav-link.active::after, .nav-link:hover::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--accent-primary);
+            box-shadow: 0 0 8px var(--accent-primary);
+            border-radius: 2px;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+        }
+
+        .btn-telemetry-pill {
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            color: var(--accent-secondary);
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 0.45rem 0.9rem;
+            border-radius: 20px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-telemetry-pill:hover {
+            background: rgba(56, 189, 248, 0.2);
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+        }
+
+        .btn-portal-primary {
+            background: var(--accent-gradient);
+            color: #000;
+            font-family: var(--font-heading);
+            font-size: 0.76rem;
+            font-weight: 900;
+            padding: 0.55rem 1.2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 18px rgba(168, 85, 247, 0.35);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-portal-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 24px rgba(168, 85, 247, 0.55);
+        }
+
+        /* ===============================================================
+           TICKER STRIP (Upcoming + Podium Ticker)
+           =============================================================== */
+        .ticker-strip {
+            background: rgba(14, 12, 26, 0.9);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 0.55rem 0;
+            overflow: hidden;
+            white-space: nowrap;
+            position: relative;
+        }
+
+        .ticker-marquee {
+            display: inline-flex;
+            gap: 2rem;
+            animation: marquee 35s linear infinite;
+        }
+
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .ticker-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--text-body);
+        }
+
+        .ticker-tag {
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-weight: 800;
+            font-size: 0.65rem;
+            letter-spacing: 0.5px;
+        }
+
+        .tag-p1 { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+        .tag-p2 { background: rgba(203, 213, 225, 0.15); color: #e2e8f0; border: 1px solid rgba(203, 213, 225, 0.3); }
+        .tag-next { background: rgba(168, 85, 247, 0.2); color: var(--accent-primary); border: 1px solid var(--border-accent); }
+
+        /* ===============================================================
+           HERO SECTION: HYPERCAR COCKPIT & LIVE TELEMETRY HUD
+           =============================================================== */
+        .hero-section {
+            padding: 4.5rem 0 3.5rem;
+            position: relative;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 2.5rem;
+            align-items: center;
+        }
+
+        .hero-badge-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(168, 85, 247, 0.12);
+            border: 1px solid var(--border-accent);
+            padding: 0.4rem 0.9rem;
+            border-radius: 30px;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--accent-primary);
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 1.4rem;
+        }
+
+        .hero-title {
+            font-family: var(--font-heading);
+            font-size: clamp(2.4rem, 4.5vw, 3.8rem);
+            font-weight: 900;
+            line-height: 1.1;
+            letter-spacing: 2px;
+            color: #ffffff;
+            margin-bottom: 1.2rem;
+        }
+
+        .hero-title .glow-word {
+            background: linear-gradient(135deg, #ffffff 0%, var(--accent-primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(168, 85, 247, 0.4);
+        }
+
+        .hero-subtitle {
+            font-family: var(--font-heading);
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--accent-secondary);
+            letter-spacing: 2.5px;
+            margin-bottom: 1.2rem;
+        }
+
+        .hero-desc {
+            font-size: 1.05rem;
+            color: var(--text-body);
+            max-width: 580px;
+            margin-bottom: 2rem;
+            line-height: 1.7;
+        }
+
+        .hero-cta-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-hero-primary {
+            background: var(--accent-gradient);
+            color: #000;
+            font-family: var(--font-heading);
+            font-weight: 900;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            padding: 0.9rem 1.8rem;
+            border-radius: 10px;
+            text-decoration: none;
+            box-shadow: 0 6px 25px rgba(168, 85, 247, 0.4);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-hero-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 32px rgba(168, 85, 247, 0.6);
+        }
+
+        .btn-hero-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-subtle);
+            color: #ffffff;
+            font-family: var(--font-heading);
+            font-weight: 800;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            padding: 0.9rem 1.8rem;
+            border-radius: 10px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-hero-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--border-accent);
+        }
+
+        /* --- Cockpit Telemetry HUD Panel --- */
+        .cockpit-hud-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-accent);
+            border-radius: var(--card-radius);
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.6), inset 0 0 25px rgba(168, 85, 247, 0.08);
+            padding: 1.8rem;
+            backdrop-filter: blur(25px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cockpit-hud-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--accent-primary), var(--accent-secondary), transparent);
+        }
+
+        .hud-top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.4rem;
+            padding-bottom: 0.85rem;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .hud-title-wrap {
+            font-family: var(--font-heading);
+            font-size: 0.82rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            color: #ffffff;
+        }
+
+        .hud-live-badge {
+            background: rgba(6, 182, 212, 0.15);
+            border: 1px solid rgba(6, 182, 212, 0.4);
+            color: var(--highlight-metric);
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .hud-gauges-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.9rem;
+            margin-bottom: 1.4rem;
+        }
+
+        .hud-gauge-box {
+            background: rgba(0, 0, 0, 0.45);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            padding: 1rem 0.85rem;
+            text-align: center;
+        }
+
+        .gauge-num {
+            font-family: var(--font-heading);
+            font-size: 1.65rem;
+            font-weight: 900;
+            color: #ffffff;
+            line-height: 1.1;
+        }
+
+        .gauge-lbl {
+            font-family: var(--font-mono);
+            font-size: 0.62rem;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            margin-top: 4px;
+            font-weight: 700;
+        }
+
+        /* Virtual Pit Wall Telemetry Bar */
+        .hud-pitwall-strip {
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            padding: 0.9rem 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .hud-driver-car {
+            font-size: 0.78rem;
+            color: #ffffff;
+            font-weight: 700;
+        }
+
+        .hud-driver-sub {
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            color: var(--accent-secondary);
+        }
+
+        .hud-svg-track {
+            width: 100px;
+            height: 48px;
+            stroke: var(--accent-primary);
+            fill: none;
+            stroke-width: 3.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            filter: drop-shadow(0 0 6px var(--accent-primary));
+        }
+
+        /* ===============================================================
+           4 FEATURE PILLARS
+           =============================================================== */
+        .pillars-section {
+            padding: 1.5rem 0 3.5rem;
+        }
+
+        .pillars-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.2rem;
+        }
+
+        .pillar-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 14px;
+            padding: 1.5rem 1.25rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pillar-card:hover {
+            border-color: var(--border-accent);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+
+        .pillar-num {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: var(--accent-primary);
+            margin-bottom: 0.6rem;
+            letter-spacing: 1px;
+        }
+
+        .pillar-heading {
+            font-family: var(--font-heading);
+            font-size: 0.9rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+            letter-spacing: 1px;
+        }
+
+        .pillar-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* ===============================================================
+           2-COLUMN DASHBOARD (Next Major Race + Leaderboard)
+           =============================================================== */
+        .dashboard-section {
+            padding: 2rem 0 4.5rem;
+        }
+
+        .dash-layout-grid {
+            display: grid;
+            grid-template-columns: 1.3fr 0.9fr;
+            gap: 2rem;
+        }
+
+        .card-heading-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+        }
+
+        .card-main-title {
+            font-family: var(--font-heading);
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 1.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .title-accent-pill {
+            width: 4px;
+            height: 18px;
+            background: var(--accent-primary);
+            border-radius: 2px;
+            box-shadow: 0 0 10px var(--accent-primary);
+        }
+
+        .link-view-all {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--accent-secondary);
+            text-decoration: none;
+        }
+
+        .link-view-all:hover {
+            color: #fff;
+            text-decoration: underline;
+        }
+
+        /* Main Event Card */
+        .event-feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--card-radius);
+            padding: 2rem;
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .event-feature-card:hover {
+            border-color: var(--border-accent);
+        }
+
+        .event-meta-split {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .event-series-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: var(--accent-primary);
+            letter-spacing: 1px;
+            margin-bottom: 0.6rem;
+        }
+
+        .event-circuit-name {
+            font-family: var(--font-heading);
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+        }
+
+        .event-details-row {
+            display: flex;
+            gap: 1.2rem;
+            font-size: 0.82rem;
+            color: var(--text-body);
+            margin-bottom: 1.2rem;
+        }
+
+        /* Countdown display */
+        .countdown-boxes-row {
+            display: flex;
+            gap: 0.6rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .cd-unit-box {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 0.5rem 0.8rem;
+            text-align: center;
+            min-width: 60px;
+        }
+
+        .cd-num-val {
+            font-family: var(--font-heading);
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: #ffffff;
+            line-height: 1;
+        }
+
+        .cd-lbl-val {
+            font-family: var(--font-mono);
+            font-size: 0.58rem;
+            color: var(--accent-secondary);
+            margin-top: 3px;
+        }
+
+        /* SVG Track Map Area */
+        .track-map-container {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .track-svg-large {
+            width: 100%;
+            height: 140px;
+            stroke: var(--accent-primary);
+            fill: none;
+            stroke-width: 4;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            filter: drop-shadow(0 0 10px rgba(168, 85, 247, 0.4));
+        }
+
+        .track-spec-line {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            margin-top: 0.6rem;
+        }
+
+        /* Event Buttons Row */
+        .event-actions-bar {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1.2rem;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .btn-event-reg {
+            background: var(--accent-gradient);
+            color: #000;
+            font-family: var(--font-heading);
+            font-size: 0.78rem;
+            font-weight: 900;
+            padding: 0.65rem 1.4rem;
+            border-radius: 8px;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.35);
+        }
+
+        .btn-event-telemetry {
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            color: var(--accent-secondary);
+            font-family: var(--font-heading);
+            font-size: 0.78rem;
+            font-weight: 800;
+            padding: 0.65rem 1.2rem;
+            border-radius: 8px;
+            text-decoration: none;
+        }
+
+        /* ===============================================================
+           RIGHT COLUMN: TOP DRIVER LEADERBOARD & PODIUM CARDS
+           =============================================================== */
+        .leaderboard-card-wrap {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--card-radius);
+            padding: 1.6rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .driver-entry-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.85rem 1rem;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            margin-bottom: 0.65rem;
+        }
+
+        .driver-entry-row:hover {
+            border-color: var(--border-accent);
+            background: rgba(28, 23, 46, 0.7);
+        }
+
+        .driver-info-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .driver-pos-badge {
+            font-family: var(--font-heading);
+            font-size: 1rem;
+            font-weight: 900;
+            width: 24px;
+            text-align: center;
+        }
+
+        .driver-pos-1 { color: #fbbf24; text-shadow: 0 0 10px rgba(251, 191, 36, 0.5); }
+        .driver-pos-2 { color: #e2e8f0; }
+        .driver-pos-3 { color: #d97706; }
+
+        .driver-avatar-thumb {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 1.5px solid var(--border-subtle);
+            object-fit: cover;
+        }
+
+        .driver-name-text {
+            font-weight: 800;
+            font-size: 0.92rem;
+            color: #ffffff;
+            line-height: 1.2;
+        }
+
+        .driver-car-meta {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+        }
+
+        .driver-pts-box {
+            text-align: right;
+            font-family: var(--font-heading);
+            font-size: 0.95rem;
+            font-weight: 900;
+            color: #ffffff;
+        }
+
+        .driver-pts-trend {
+            font-size: 0.7rem;
+            color: var(--highlight-green);
+        }
+
+        /* ===============================================================
+           TROPHY ROOM & PODIUM FINISHES SHOWCASE
+           =============================================================== */
+        .trophy-showcase-section {
+            padding: 2rem 0 4rem;
+        }
+
+        .trophies-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.3rem;
+        }
+
+        .trophy-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--card-radius);
+            padding: 1.5rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .trophy-card.gold-finish { border-color: rgba(245, 158, 11, 0.4); }
+        .trophy-card.silver-finish { border-color: rgba(203, 213, 225, 0.35); }
+
+        .trophy-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        .trophy-icon-wrap {
+            font-size: 2.2rem;
+            margin-bottom: 0.8rem;
+            filter: drop-shadow(0 0 12px rgba(245, 158, 11, 0.4));
+        }
+
+        .trophy-rank-tag {
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 0.6rem;
+        }
+
+        .trophy-race-title {
+            font-family: var(--font-heading);
+            font-size: 1rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 0.4rem;
+        }
+
+        .trophy-class-line {
+            font-size: 0.75rem;
+            color: var(--accent-secondary);
+            font-family: var(--font-mono);
+            margin-bottom: 0.6rem;
+        }
+
+        .trophy-drivers-list {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* ===============================================================
+           COMMUNITY & DISCORD BANNER
+           =============================================================== */
+        .community-banner {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.12) 0%, rgba(56, 189, 248, 0.08) 100%);
+            border: 1px solid var(--border-accent);
+            border-radius: var(--card-radius);
+            padding: 3rem 2.5rem;
+            text-align: center;
+            margin: 2rem auto 5rem;
+            max-width: 1000px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .community-title {
+            font-family: var(--font-heading);
+            font-size: clamp(1.6rem, 3vw, 2.2rem);
+            font-weight: 900;
+            color: #ffffff;
+            letter-spacing: 2px;
+            margin-bottom: 1rem;
+        }
+
+        .community-desc {
+            font-size: 0.98rem;
+            color: var(--text-body);
+            max-width: 650px;
+            margin: 0 auto 1.8rem;
+            line-height: 1.7;
+        }
+
+        /* ===============================================================
+           FOOTER
+           =============================================================== */
+        .footer {
+            background: #05040a;
+            border-top: 1px solid var(--border-subtle);
+            padding: 3.5rem 0 2.5rem;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1fr 1fr;
+            gap: 2.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .footer-brand-title {
+            font-family: var(--font-heading);
+            font-size: 1.1rem;
+            font-weight: 900;
+            color: #ffffff;
+            margin-bottom: 0.6rem;
+            letter-spacing: 1.5px;
+        }
+
+        .footer-col-title {
+            font-family: var(--font-heading);
+            font-size: 0.82rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 1.5px;
+            margin-bottom: 1rem;
+        }
+
+        .footer-links-list {
+            list-style: none;
+        }
+
+        .footer-links-list li {
+            margin-bottom: 0.55rem;
+        }
+
+        .footer-links-list a {
+            color: var(--text-muted);
+            text-decoration: none;
+        }
+
+        .footer-links-list a:hover {
+            color: var(--accent-primary);
+        }
+
+        .footer-bottom-bar {
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 1024px) {
+            .hero-grid { grid-template-columns: 1fr; }
+            .dash-layout-grid { grid-template-columns: 1fr; }
+            .pillars-grid { grid-template-columns: repeat(2, 1fr); }
+            .trophies-grid { grid-template-columns: repeat(2, 1fr); }
+            .footer-grid { grid-template-columns: 1fr 1fr; }
+            .nav-links { display: none; }
+        }
+
+        @media (max-width: 640px) {
+            .pillars-grid { grid-template-columns: 1fr; }
+            .trophies-grid { grid-template-columns: 1fr; }
+            .event-meta-split { grid-template-columns: 1fr; }
+            .footer-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="carbon-bg"></div>
+
+    <!-- PREVIEW HEADER CONTROLS (For User Verification) -->
+    <div class="preview-banner">
+        <div class="preview-badge-status">
+            <span class="pulse-dot"></span>
+            <span>DESIGN PROPOSAL PREVIEW — PALETTE C (CLEAN ORCHID & CYAN)</span>
+        </div>
+        <div class="preview-nav-tabs">
+            <a href="#hero" class="preview-tab-btn active">Cockpit Hero</a>
+            <a href="#schedule" class="preview-tab-btn">Next Race</a>
+            <a href="#leaderboard" class="preview-tab-btn">Leaderboard</a>
+            <a href="#trophies" class="preview-tab-btn">Trophy Room</a>
+            <a href="#community" class="preview-tab-btn">Community</a>
+        </div>
+    </div>
+
+    <!-- GLOBAL NAVBAR -->
+    <nav class="navbar">
+        <div class="container nav-inner">
+            <a href="#" class="brand-link">
+                <img src="assets/G_2.png" alt="GRiD UP Logo" class="brand-logo-img">
+                <div>
+                    <div class="brand-title">GRID <span class="brand-purple">UP</span></div>
+                    <div class="brand-sub">SIM RACING // EST. 2024</div>
+                </div>
+            </a>
+
+            <ul class="nav-links">
+                <li><a href="#hero" class="nav-link active">HOME</a></li>
+                <li><a href="#schedule" class="nav-link">EVENTS</a></li>
+                <li><a href="#leaderboard" class="nav-link">DRIVERS</a></li>
+                <li><a href="#trophies" class="nav-link">TROPHY ROOM</a></li>
+                <li><a href="#community" class="nav-link">DISCORD</a></li>
+            </ul>
+
+            <div class="nav-actions">
+                <a href="telemetry.html" class="btn-telemetry-pill">
+                    <span>⚡</span> LIVE TIMING
+                </a>
+                <a href="portal.html" class="btn-portal-primary">
+                    DRIVER PORTAL →
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ROLLING TICKER STRIP -->
+    <div class="ticker-strip">
+        <div class="ticker-marquee">
+            <div class="ticker-item">
+                <span class="ticker-tag tag-p1">🏆 P1 WIN</span>
+                <span>PETIT LE MANS — LMP2 CLASS (Chandler English • Andrew Gould • Bret Weyand)</span>
+            </div>
+            <div class="ticker-item">
+                <span class="ticker-tag tag-next">📅 NEXT MAJOR</span>
+                <span>8 HOURS OF INDIANAPOLIS — OCT 16–18, 2026 (GT3 & GTP)</span>
+            </div>
+            <div class="ticker-item">
+                <span class="ticker-tag tag-p1">🥇 P1 WIN</span>
+                <span>ROAD AMERICA 6 HOUR — GTP (Faraz Ebrahim • Anthony Savignano)</span>
+            </div>
+            <div class="ticker-item">
+                <span class="ticker-tag tag-p2">🥈 P2 PODIUM</span>
+                <span>24 HOURS OF DAYTONA — LMP2 (A. Fabian • M. Cook • J. Reid • A. Cortez)</span>
+            </div>
+            <div class="ticker-item">
+                <span class="ticker-tag tag-p1">🥇 P1 WIN</span>
+                <span>INDY 500 — DALLARA IR18 (Alex Cortez)</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 1. HERO COCKPIT SECTION -->
+    <section class="hero-section" id="hero">
+        <div class="container">
+            <div class="hero-grid">
+                
+                <!-- Left: Hero Headline & Vision -->
+                <div>
+                    <div class="hero-badge-tag">
+                        <span>●</span> IRACING ENDURANCE TEAM // SEASON 2026
+                    </div>
+                    <h1 class="hero-title">
+                        EVERY SECOND <span class="glow-word">COUNTS.</span><br>
+                        GRID UP SIM RACING.
+                    </h1>
+                    <div class="hero-subtitle">
+                        LONGER RACES. DEEPER STRATEGY. REAL TEAMWORK.
+                    </div>
+                    <p class="hero-desc">
+                        A competitive iRacing endurance racing organization engineered for precision. Operating across multi-class endurance majors with real-time telemetry, bespoke car setups, and structured driver stints.
+                    </p>
+                    <div class="hero-cta-group">
+                        <a href="#schedule" class="btn-hero-primary">
+                            UPCOMING RACES <span style="font-size:1.1rem">→</span>
+                        </a>
+                        <a href="#trophies" class="btn-hero-secondary">
+                            OFFICIAL TROPHY ROOM 🏆
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Right: Cockpit Telemetry HUD Card -->
+                <div class="cockpit-hud-card">
+                    <div class="hud-top-bar">
+                        <div class="hud-title-wrap">
+                            <span>INDIANAPOLIS ROAD COURSE</span>
+                        </div>
+                        <div class="hud-live-badge">
+                            <span>●</span> LIVE TELEMETRY
+                        </div>
+                    </div>
+
+                    <!-- HUD Gauges Grid -->
+                    <div class="hud-gauges-grid">
+                        <div class="hud-gauge-box">
+                            <div class="gauge-num" style="color: var(--accent-primary);">284</div>
+                            <div class="gauge-lbl">KPH TOP SPEED</div>
+                        </div>
+                        <div class="hud-gauge-box">
+                            <div class="gauge-num" style="color: #ffffff;">6th</div>
+                            <div class="gauge-lbl">CURRENT GEAR</div>
+                        </div>
+                        <div class="hud-gauge-box">
+                            <div class="gauge-num" style="color: var(--highlight-amber);">14/24</div>
+                            <div class="gauge-lbl">STINT LAP</div>
+                        </div>
+                    </div>
+
+                    <!-- Pit Wall Live Strip -->
+                    <div class="hud-pitwall-strip">
+                        <div>
+                            <div class="hud-driver-car">P1 • M. Roberts (GRID UP #88)</div>
+                            <div class="hud-driver-sub">DELTA: -0.248s • FUEL: 34.2L (SAFE)</div>
+                        </div>
+                        <!-- Mini Track Trace Outline -->
+                        <svg class="hud-svg-track" viewBox="0 0 100 50">
+                            <path d="M 10,25 Q 25,10 50,15 T 85,25 Q 95,35 80,42 T 40,46 Q 20,44 10,25 Z"/>
+                        </svg>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. FOUR ENGINEERING PILLARS -->
+    <section class="pillars-section">
+        <div class="container">
+            <div class="pillars-grid">
+                
+                <div class="pillar-card">
+                    <div class="pillar-num">01 // DISCIPLINE</div>
+                    <div class="pillar-heading">ENDURANCE FOCUSED</div>
+                    <div class="pillar-text">2.4h, 6h, 12h, and 24h Majors. Multi-driver stint rotations planned with mathematical fuel and tire strategies.</div>
+                </div>
+
+                <div class="pillar-card">
+                    <div class="pillar-num">02 // TELEMETRY</div>
+                    <div class="pillar-heading">LIVE PIT WALL</div>
+                    <div class="pillar-text">Direct iRacing SDK telemetry bridge feeding real-time tire temperatures, fuel consumption per lap, and stint delta trackers.</div>
+                </div>
+
+                <div class="pillar-card">
+                    <div class="pillar-num">03 // ENGINEERING</div>
+                    <div class="pillar-heading">BESPOKE SETUPS</div>
+                    <div class="pillar-text">Dedicated in-house setup library optimized for endurance stability, high curb compliance, and low tire degradation.</div>
+                </div>
+
+                <div class="pillar-card">
+                    <div class="pillar-num">04 // STANDARDS</div>
+                    <div class="pillar-heading">CLEAN RACE CRAFT</div>
+                    <div class="pillar-text">High-respect community culture. Post-race telemetry debriefs, driver coaching, and transparent race steward reviews.</div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. MAIN DASHBOARD: NEXT MAJOR EVENT & LEADERBOARD -->
+    <section class="dashboard-section" id="schedule">
+        <div class="container">
+            <div class="dash-layout-grid">
+                
+                <!-- Left Column: Next Event Feature Card -->
+                <div>
+                    <div class="card-heading-bar">
+                        <div class="card-main-title">
+                            <span class="title-accent-pill"></span>
+                            NEXT CHAMPIONSHIP RACE
+                        </div>
+                        <a href="events.html" class="link-view-all">View All 12 Rounds →</a>
+                    </div>
+
+                    <div class="event-feature-card">
+                        <div class="event-meta-split">
+                            <div>
+                                <div class="event-series-pill">
+                                    <span>🏁</span> WORLD ENDURANCE SERIES // GT3 & GTP
+                                </div>
+                                <div class="event-circuit-name">8 Hours of Indianapolis</div>
+                                <div class="event-details-row">
+                                    <span>📅 SAT, OCT 17, 2026</span>
+                                    <span>⏱ 8-HOUR MAJOR</span>
+                                </div>
+
+                                <!-- Countdown -->
+                                <div class="countdown-boxes-row">
+                                    <div class="cd-unit-box">
+                                        <div class="cd-num-val" id="prev-d">02</div>
+                                        <div class="cd-lbl-val">DAYS</div>
+                                    </div>
+                                    <div class="cd-unit-box">
+                                        <div class="cd-num-val" id="prev-h">14</div>
+                                        <div class="cd-lbl-val">HOURS</div>
+                                    </div>
+                                    <div class="cd-unit-box">
+                                        <div class="cd-num-val" id="prev-m">52</div>
+                                        <div class="cd-lbl-val">MINS</div>
+                                    </div>
+                                    <div class="cd-unit-box">
+                                        <div class="cd-num-val" id="prev-s">18</div>
+                                        <div class="cd-lbl-val">SECS</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- SVG Circuit Outline -->
+                            <div class="track-map-container">
+                                <svg class="track-svg-large" viewBox="0 0 100 60">
+                                    <path d="M 15,22 L 75,22 Q 88,24 85,36 L 75,44 Q 65,52 45,46 L 20,40 Q 10,35 15,22 Z"/>
+                                </svg>
+                                <div class="track-spec-line">2.43 MILES • 14 TURNS • ROAD COURSE</div>
+                            </div>
+                        </div>
+
+                        <div class="event-actions-bar">
+                            <a href="portal.html" class="btn-event-reg">REGISTER LINEUP →</a>
+                            <a href="telemetry.html" class="btn-event-telemetry">⚡ LIVE STRATEGY DESK</a>
+                            <span style="font-size: 0.72rem; color: var(--text-muted); margin-left: auto;">5 Official Time Splits</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Top Driver Leaderboard -->
+                <div id="leaderboard">
+                    <div class="card-heading-bar">
+                        <div class="card-main-title">
+                            <span class="title-accent-pill"></span>
+                            TOP DRIVER LEADERBOARD
+                        </div>
+                        <a href="roster.html" class="link-view-all">Full Roster →</a>
+                    </div>
+
+                    <div class="leaderboard-card-wrap">
+                        
+                        <div class="driver-entry-row">
+                            <div class="driver-info-left">
+                                <span class="driver-pos-badge driver-pos-1">1</span>
+                                <img src="assets/G_2.png" alt="Matty Roberts" class="driver-avatar-thumb">
+                                <div>
+                                    <div class="driver-name-text">Matty Roberts</div>
+                                    <div class="driver-car-meta">GRiD UP #88 • 4.8k iR • Pro</div>
+                                </div>
+                            </div>
+                            <div class="driver-pts-box">
+                                2,450 <span class="driver-pts-trend">▲</span>
+                            </div>
+                        </div>
+
+                        <div class="driver-entry-row">
+                            <div class="driver-info-left">
+                                <span class="driver-pos-badge driver-pos-2">2</span>
+                                <img src="assets/G_2.png" alt="Martyn Cook" class="driver-avatar-thumb">
+                                <div>
+                                    <div class="driver-name-text">Martyn Cook</div>
+                                    <div class="driver-car-meta">GRiD UP #42 • 4.2k iR • Pro</div>
+                                </div>
+                            </div>
+                            <div class="driver-pts-box">
+                                2,380 <span class="driver-pts-trend">▲</span>
+                            </div>
+                        </div>
+
+                        <div class="driver-entry-row">
+                            <div class="driver-info-left">
+                                <span class="driver-pos-badge driver-pos-3">3</span>
+                                <img src="assets/G_2.png" alt="Andrew Fabian" class="driver-avatar-thumb">
+                                <div>
+                                    <div class="driver-name-text">Andrew Fabian</div>
+                                    <div class="driver-car-meta">GRiD UP #17 • 3.9k iR • Pro-Am</div>
+                                </div>
+                            </div>
+                            <div class="driver-pts-box">
+                                2,210 <span class="driver-pts-trend">▲</span>
+                            </div>
+                        </div>
+
+                        <div class="driver-entry-row">
+                            <div class="driver-info-left">
+                                <span class="driver-pos-badge" style="color:var(--text-muted)">4</span>
+                                <img src="assets/G_2.png" alt="Adam Jones" class="driver-avatar-thumb">
+                                <div>
+                                    <div class="driver-name-text">Adam Jones</div>
+                                    <div class="driver-car-meta">GRiD UP #09 • 3.6k iR • Pro-Am</div>
+                                </div>
+                            </div>
+                            <div class="driver-pts-box">
+                                2,145 <span style="font-size:0.75rem; color:var(--text-muted)">●</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. OFFICIAL TROPHY ROOM -->
+    <section class="trophy-showcase-section" id="trophies">
+        <div class="container">
+            <div class="card-heading-bar">
+                <div class="card-main-title">
+                    <span class="title-accent-pill"></span>
+                    OFFICIAL TROPHY ROOM & PODIUM FINISHES
+                </div>
+                <a href="trophy-room.html" class="link-view-all">Explore All 8 Podiums →</a>
+            </div>
+
+            <div class="trophies-grid">
+                
+                <div class="trophy-card gold-finish">
+                    <div class="trophy-icon-wrap">🏆</div>
+                    <span class="trophy-rank-tag tag-p1">🥇 P1 WINNER</span>
+                    <div class="trophy-race-title">PETIT LE MANS</div>
+                    <div class="trophy-class-line">LMP2 CLASS • DALLARA P217</div>
+                    <div class="trophy-drivers-list">C. English • A. Gould • B. Weyand</div>
+                </div>
+
+                <div class="trophy-card gold-finish">
+                    <div class="trophy-icon-wrap">🏆</div>
+                    <span class="trophy-rank-tag tag-p1">🥇 P1 WINNER</span>
+                    <div class="trophy-race-title">ROAD AMERICA 6H</div>
+                    <div class="trophy-class-line">GTP CLASS • PORSCHE 963</div>
+                    <div class="trophy-drivers-list">F. Ebrahim • A. Savignano</div>
+                </div>
+
+                <div class="trophy-card silver-finish">
+                    <div class="trophy-icon-wrap">🥈</div>
+                    <span class="trophy-rank-tag tag-p2">🥈 P2 PODIUM</span>
+                    <div class="trophy-race-title">24H DAYTONA</div>
+                    <div class="trophy-class-line">LMP2 CLASS • 3018 SOF</div>
+                    <div class="trophy-drivers-list">A. Fabian • M. Cook • J. Reid • A. Cortez</div>
+                </div>
+
+                <div class="trophy-card silver-finish">
+                    <div class="trophy-icon-wrap">🥈</div>
+                    <span class="trophy-rank-tag tag-p2">🥈 P2 PODIUM</span>
+                    <div class="trophy-race-title">24H NÜRBURGRING</div>
+                    <div class="trophy-class-line">GT3 CLASS • ASTON MARTIN EVO</div>
+                    <div class="trophy-drivers-list">A. Cortez • C. Deasey • J. Reid • L. Wilt</div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. COMMUNITY DISCORD BANNER -->
+    <section class="container" id="community">
+        <div class="community-banner">
+            <h2 class="community-title">READY TO RACE WITH GRiD UP?</h2>
+            <p class="community-desc">
+                Whether you're an endurance veteran or looking to step into competitive team racing, join our Discord community for driver coaching, live setup exchanges, and endurance stint lineups.
+            </p>
+            <a href="https://discord.gg/gridup" target="_blank" rel="noopener" class="btn-hero-primary" style="display:inline-flex;">
+                JOIN OUR DISCORD COMMUNITY →
+            </a>
+        </div>
+    </section>
+
+    <!-- 6. MOTORSPORT FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <div class="footer-brand-title">GRID <span style="color:var(--accent-primary)">UP</span> SIM RACING</div>
+                    <p style="line-height:1.6; max-width:280px; margin-bottom:1rem;">Competitive iRacing endurance racing organization. Driven by strategy, data telemetry, and teamwork.</p>
+                </div>
+                <div>
+                    <div class="footer-col-title">NAVIGATION</div>
+                    <ul class="footer-links-list">
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="events.html">Championship Calendar</a></li>
+                        <li><a href="roster.html">Driver Profiles</a></li>
+                        <li><a href="trophy-room.html">Trophy Room</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="footer-col-title">RACE HUBS</div>
+                    <ul class="footer-links-list">
+                        <li><a href="telemetry.html">Live Telemetry Pit Wall</a></li>
+                        <li><a href="portal.html">Driver Portal</a></li>
+                        <li><a href="setup.html">Car Setup Engineer</a></li>
+                        <li><a href="team-app.html">Driver Application</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="footer-col-title">COMMUNITY</div>
+                    <ul class="footer-links-list">
+                        <li><a href="https://discord.gg/gridup" target="_blank" rel="noopener">Official Discord</a></li>
+                        <li><a href="https://www.youtube.com/@griduptv" target="_blank" rel="noopener">YouTube Highlights</a></li>
+                        <li><a href="https://bizare.shop/" target="_blank" rel="noopener">Created by BiZaRe</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom-bar">
+                <span>&copy; 2026 GRiD UP SIM RACING. ALL RIGHTS RESERVED.</span>
+                <span>SYSTEM VERSION 2.0 • PALETTE C: ORCHID & CYAN</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth countdown ticker simulation
+        let s = 18;
+        setInterval(() => {
+            s--;
+            if (s < 0) s = 59;
+            const el = document.getElementById('prev-s');
+            if (el) el.textContent = s < 10 ? '0' + s : s;
+        }, 1000);
+    </script>
+</body>
+</html>
