@@ -4074,41 +4074,65 @@ body.meeting-mode-active .btn-summary-confirm {
         }
         let UPCOMING_EVENTS = [];
         let ALL_EVENTS = [];
+        let _loadingEventsPromise = null;
+
+        async function ensureEventsLoaded() {
+            if (ALL_EVENTS && ALL_EVENTS.length > 0) {
+                updateSelectors();
+                return ALL_EVENTS;
+            }
+            if (_loadingEventsPromise) return _loadingEventsPromise;
+
+            _loadingEventsPromise = (async () => {
+                try {
+                    let snapshot;
+                    try {
+                        snapshot = await db.collection("events").orderBy("startDate", "asc").get();
+                    } catch (err) {
+                        console.warn("Ordered events query failed, falling back to unordered:", err);
+                        snapshot = await db.collection("events").get();
+                    }
+                    UPCOMING_EVENTS = [];
+                    ALL_EVENTS = [];
+                    const now = new Date();
+                    
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        const eventObj = { id: doc.id, ...data };
+                        ALL_EVENTS.push(eventObj);
+
+                        // Strictly filter upcoming events using robust expiration check
+                        if (isEventUpcoming(eventObj, now)) {
+                            UPCOMING_EVENTS.push(eventObj);
+                        }
+                    });
+                } catch (e) {
+                    console.error("ensureEventsLoaded error:", e);
+                } finally {
+                    updateSelectors();
+                    _loadingEventsPromise = null;
+                }
+                return ALL_EVENTS;
+            })();
+            return _loadingEventsPromise;
+        }
 
         async function loadEvents() {
             const list = document.getElementById('events-manager-list');
             const notice = document.getElementById('migration-notice');
-            if (!list) return;
-
-            list.innerHTML = '<p style="text-align: center; color: var(--text-muted); grid-column: 1/-1;">Loading events...</p>';
-            notice.style.display = 'none';
+            if (list) {
+                list.innerHTML = '<p style="text-align: center; color: var(--text-muted); grid-column: 1/-1;">Loading events...</p>';
+            }
+            if (notice) notice.style.display = 'none';
 
             try {
-                let snapshot;
-                try {
-                    snapshot = await db.collection("events").orderBy("startDate", "asc").get();
-                } catch (err) {
-                    console.warn("Ordered events query failed, falling back to unordered:", err);
-                    snapshot = await db.collection("events").get();
-                }
-                UPCOMING_EVENTS = [];
-                ALL_EVENTS = [];
-                const now = new Date();
-                
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    const eventObj = { id: doc.id, ...data };
-                    ALL_EVENTS.push(eventObj);
+                await ensureEventsLoaded();
 
-                    // Strictly filter upcoming events using robust expiration check
-                    if (isEventUpcoming(eventObj, now)) {
-                        UPCOMING_EVENTS.push(eventObj);
-                    }
-                });
+                if (!list) return;
 
                 if (UPCOMING_EVENTS.length === 0) {
                     list.innerHTML = '';
-                    notice.style.display = 'block';
+                    if (notice) notice.style.display = 'block';
                     return;
                 }
 
@@ -4119,7 +4143,7 @@ body.meeting-mode-active .btn-summary-confirm {
                     card.style.padding = '1.5rem';
                     card.innerHTML = `
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
-                            <div style="font-size: 0.7rem; color: var(--primary); font-weight: 700; text-transform: uppercase;">${event.date}</div>
+                            <div style="font-size: 0.7rem; color: var(--primary); font-weight: 700; text-transform: uppercase;">${event.date || 'TBD'}</div>
                             <div style="font-size: 0.6rem; color: var(--text-muted); font-family: monospace;">${event.id}</div>
                         </div>
                         <h4 style="margin-bottom: 0.5rem;">${event.name}</h4>
@@ -4140,12 +4164,9 @@ body.meeting-mode-active .btn-summary-confirm {
                     list.appendChild(card);
                 });
 
-                // Update selectors if they exist
-                updateSelectors();
-
             } catch (e) {
                 console.error("Error loading events:", e);
-                list.innerHTML = `<p style="color: #ff0055; grid-column: 1/-1;">Error loading events: ${e.message}</p>`;
+                if (list) list.innerHTML = `<p style="color: #ff0055; grid-column: 1/-1;">Error loading events: ${e.message}</p>`;
             }
         }
 
@@ -4156,7 +4177,11 @@ body.meeting-mode-active .btn-summary-confirm {
                 if (!sel) return;
                 
                 const currentVal = sel.value;
-                const baseOption = id === 'availability-event-selector' ? '<option value="matrix">-- Full Matrix View --</option>' : (id === 'report-event-selector' ? '<option value="">-- Choose Event (Optional) --</option>' : '<option value="">-- Choose an Event --</option>');
+                const baseOption = id === 'availability-event-selector' 
+                    ? '<option value="matrix">-- Full Matrix View --</option>' 
+                    : (id === 'report-event-selector' 
+                        ? '<option value="">-- Choose Event (Optional) --</option>' 
+                        : '<option value="">-- Choose Event --</option>');
                 
                 // Use ALL_EVENTS for results, posters, and reports, UPCOMING_EVENTS for lineups/availability
                 const sourceList = (id === 'result-event-selector' || id === 'card-event' || id === 'report-event-selector') ? ALL_EVENTS : UPCOMING_EVENTS;
@@ -4180,7 +4205,19 @@ body.meeting-mode-active .btn-summary-confirm {
                         sel.value = sortedUpcoming[0].id;
                     }
                 } else {
-                    sel.innerHTML = baseOption + sourceList.map(e => `<option value="${e.id}" ${e.id === currentVal ? 'selected' : ''}>${e.name}</option>`).join('');
+                    // For result-event-selector and report-event-selector, sort chronologically so newest/upcoming are at the top
+                    const listToRender = (id === 'result-event-selector' || id === 'report-event-selector')
+                        ? [...sourceList].sort((a, b) => {
+                            const tA = a.startDate ? new Date(a.startDate).getTime() : 0;
+                            const tB = b.startDate ? new Date(b.startDate).getTime() : 0;
+                            return tB - tA; // Newest first
+                        })
+                        : sourceList;
+
+                    sel.innerHTML = baseOption + listToRender.map(e => {
+                        const dateBadge = e.date ? ` (${e.date})` : '';
+                        return `<option value="${e.id}" ${e.id === currentVal ? 'selected' : ''}>${e.name}${dateBadge}</option>`;
+                    }).join('');
                 }
             });
         }
@@ -7246,6 +7283,7 @@ body.meeting-mode-active .btn-summary-confirm {
                 if (userInfo) userInfo.textContent = `Logged in as Admin: ${adminName}`;
                 
                 // Automatically activate tab from URL hash, or default to applications
+                if (typeof ensureEventsLoaded === 'function') ensureEventsLoaded();
                 const currentHash = (window.location.hash ? window.location.hash.replace('#', '').trim() : '');
                 const validTabs = ['applications', 'claims', 'races', 'admins', 'availability', 'roster', 'events', 'leagues', 'race-results', 'streams', 'reports', 'm2rc-schedule', 'm2rc-results', 'm2rc-stewarding', 'm2rc-drivers', 'telemetry-teams'];
                 const targetTab = validTabs.includes(currentHash) ? currentHash : 'applications';
@@ -7282,6 +7320,7 @@ body.meeting-mode-active .btn-summary-confirm {
             const database = (typeof db !== 'undefined' && db) ? db : (typeof window.db !== 'undefined' ? window.db : null);
             if (database) {
                 _adminInitialDataLoaded = true;
+                if (typeof ensureEventsLoaded === 'function') ensureEventsLoaded();
                 const currentHash = (window.location.hash ? window.location.hash.replace('#', '').trim() : '');
                 const validTabs = ['applications', 'claims', 'races', 'admins', 'availability', 'roster', 'events', 'leagues', 'race-results', 'streams', 'reports', 'm2rc-schedule', 'm2rc-results', 'm2rc-stewarding', 'm2rc-drivers', 'telemetry-teams'];
                 const targetTab = validTabs.includes(currentHash) ? currentHash : 'applications';
@@ -7577,7 +7616,14 @@ body.meeting-mode-active .btn-summary-confirm {
         let CURRENT_EVENT_RESULTS_LINEUPS = [];
 
         async function loadEventResults() {
-            const eventId = document.getElementById('result-event-selector').value;
+            if (typeof ensureEventsLoaded === 'function') {
+                await ensureEventsLoaded();
+            }
+            const selector = document.getElementById('result-event-selector');
+            if (selector && selector.options.length <= 1) {
+                if (typeof updateSelectors === 'function') updateSelectors();
+            }
+            const eventId = selector ? selector.value : '';
             const list = document.getElementById('admin-results-list');
             const lineupContainer = document.getElementById('result-lineup-picker-container');
             const lineupPicker = document.getElementById('result-lineup-picker');
