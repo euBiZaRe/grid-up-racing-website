@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GRiD UP — Design Option 1 Interactive Prototype</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* ===============================================================
+           DYNAMIC PALETTES: Switchable Live for User Evaluation
+           =============================================================== */
+        :root {
+            /* Palette A: Precision Racing Cyan & Titanium (Default) */
+            --bg-base: #06080e;
+            --bg-card: rgba(12, 17, 28, 0.75);
+            --bg-card-hover: rgba(18, 25, 42, 0.9);
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-accent: rgba(0, 207, 255, 0.35);
+            --accent-primary: #00cfff;
+            --accent-glow: rgba(0, 207, 255, 0.35);
+            --accent-gradient: linear-gradient(135deg, #00cfff 0%, #0284c7 100%);
+            --accent-secondary: #38bdf8;
+            --highlight-metric: #f59e0b; /* Clean amber telemetry */
+            --text-heading: #ffffff;
+            --text-body: #cbd5e1;
+            --text-muted: #64748b;
+            --track-stroke: #00cfff;
+            --card-radius: 16px;
+        }
+
+        /* Palette B: Works Crimson & Slate (Porsche / Le Mans Works) */
+        html[data-palette="crimson"] {
+            --bg-base: #07090d;
+            --bg-card: rgba(17, 20, 28, 0.78);
+            --bg-card-hover: rgba(24, 28, 40, 0.92);
+            --border-subtle: rgba(255, 255, 255, 0.09);
+            --border-accent: rgba(239, 68, 68, 0.4);
+            --accent-primary: #f43f5e;
+            --accent-glow: rgba(244, 63, 94, 0.35);
+            --accent-gradient: linear-gradient(135deg, #f43f5e 0%, #be123c 100%);
+            --accent-secondary: #38bdf8;
+            --highlight-metric: #fbbf24;
+            --track-stroke: #f43f5e;
+        }
+
+        /* Palette C: Stealth Titanium & Electric Azure (BMW M / Aston Martin) */
+        html[data-palette="azure"] {
+            --bg-base: #05070b;
+            --bg-card: rgba(13, 19, 32, 0.8);
+            --bg-card-hover: rgba(19, 29, 48, 0.94);
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-accent: rgba(56, 189, 248, 0.4);
+            --accent-primary: #38bdf8;
+            --accent-glow: rgba(56, 189, 248, 0.35);
+            --accent-gradient: linear-gradient(135deg, #38bdf8 0%, #1d4ed8 100%);
+            --accent-secondary: #10b981;
+            --highlight-metric: #10b981;
+            --track-stroke: #38bdf8;
+        }
+
+        /* Palette D: Monolithic Titanium & Gold (Luxury Factory Motorsport) */
+        html[data-palette="gold"] {
+            --bg-base: #06070a;
+            --bg-card: rgba(16, 18, 24, 0.8);
+            --bg-card-hover: rgba(24, 27, 36, 0.95);
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-accent: rgba(245, 158, 11, 0.4);
+            --accent-primary: #f59e0b;
+            --accent-glow: rgba(245, 158, 11, 0.35);
+            --accent-gradient: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+            --accent-secondary: #e2e8f0;
+            --highlight-metric: #10b981;
+            --track-stroke: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.2s ease, box-shadow 0.3s ease;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            color: var(--text-body);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Subtle Carbon Weave & Vignette */
+        .carbon-bg {
+            position: fixed;
+            inset: 0;
+            background: 
+                radial-gradient(ellipse at 50% 10%, var(--accent-glow) 0%, transparent 60%),
+                radial-gradient(circle at center, transparent 0%, rgba(5,7,14,0.95) 85%),
+                linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Top Palette Selector Bar (Interactive Review Toolbar) */
+        .palette-toolbar {
+            position: sticky;
+            top: 0;
+            z-index: 9999;
+            background: rgba(10, 14, 24, 0.94);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 0.6rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .toolbar-title {
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .palette-btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .palette-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-body);
+            font-size: 0.74rem;
+            font-weight: 700;
+            padding: 5px 12px;
+            border-radius: 999px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .palette-btn:hover {
+            border-color: var(--accent-primary);
+            color: #fff;
+        }
+
+        .palette-btn.active {
+            background: var(--accent-gradient);
+            color: #05070f;
+            border-color: transparent;
+            font-weight: 800;
+        }
+
+        .swatch {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        /* Main Container */
+        .wrapper {
+            position: relative;
+            z-index: 10;
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1.5rem 4rem 1.5rem;
+        }
+
+        /* Navbar */
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.25rem 0;
+            border-bottom: 1px solid var(--border-subtle);
+            margin-bottom: 2rem;
+        }
+
+        .brand-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .brand-logo-img {
+            width: 36px;
+            height: auto;
+            filter: drop-shadow(0 0 12px var(--accent-glow));
+        }
+
+        .brand-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: #ffffff;
+        }
+
+        .brand-accent {
+            color: var(--accent-primary);
+            text-shadow: 0 0 12px var(--accent-glow);
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 1.75rem;
+            list-style: none;
+        }
+
+        .nav-item a {
+            color: var(--text-body);
+            text-decoration: none;
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            position: relative;
+            padding-bottom: 4px;
+        }
+
+        .nav-item a:hover,
+        .nav-item a.active {
+            color: var(--accent-primary);
+        }
+
+        .nav-item a.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--accent-primary);
+            box-shadow: 0 0 10px var(--accent-primary);
+            border-radius: 2px;
+        }
+
+        .nav-right-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-live-indicator {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #fca5a5;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            letter-spacing: 1px;
+        }
+
+        .btn-live-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #ef4444;
+            box-shadow: 0 0 8px #ef4444;
+            animation: pulse 1.4s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.3; transform: scale(0.85); }
+        }
+
+        .user-pill {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            padding: 5px 14px 5px 6px;
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .user-avatar-mini {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 1px solid var(--accent-primary);
+        }
+
+        /* Hero Telemetry Cockpit Section */
+        .hero-cockpit {
+            position: relative;
+            background: var(--bg-card);
+            border: 1px solid var(--border-accent);
+            border-radius: var(--card-radius);
+            padding: 3rem 2.5rem;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 30px var(--accent-glow);
+            margin-bottom: 2.5rem;
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            align-items: center;
+            gap: 2.5rem;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-accent);
+            padding: 5px 14px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            color: var(--accent-primary);
+            text-transform: uppercase;
+            margin-bottom: 1.25rem;
+        }
+
+        .hero-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(2.2rem, 4.5vw, 3.4rem);
+            font-weight: 900;
+            line-height: 1.12;
+            letter-spacing: 1px;
+            color: var(--text-heading);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+        }
+
+        .hero-title .gradient-span {
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-desc {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            color: var(--text-body);
+            max-width: 520px;
+            margin-bottom: 2rem;
+        }
+
+        .hero-cta-group {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .btn-action-primary {
+            background: var(--accent-gradient);
+            color: #05070f;
+            text-decoration: none;
+            padding: 0.85rem 1.85rem;
+            border-radius: 10px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 20px var(--accent-glow);
+            transition: transform 0.2s, filter 0.2s;
+        }
+
+        .btn-action-primary:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
+        .btn-action-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            border: 1px solid var(--border-subtle);
+            text-decoration: none;
+            padding: 0.85rem 1.6rem;
+            border-radius: 10px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-action-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--border-accent);
+        }
+
+        /* Hero Right: High-Tech Telemetry HUD Visual */
+        .hero-hud-panel {
+            position: relative;
+            background: rgba(6, 10, 18, 0.9);
+            border: 1px solid var(--border-accent);
+            border-radius: 14px;
+            padding: 1.75rem;
+            box-shadow: inset 0 0 25px rgba(0,0,0,0.8);
+        }
+
+        .hud-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-subtle);
+            padding-bottom: 0.75rem;
+            margin-bottom: 1.25rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .hud-live-badge {
+            color: var(--accent-primary);
+            font-weight: bold;
+        }
+
+        .hud-gauges-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .gauge-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            padding: 0.85rem 0.5rem;
+        }
+
+        .gauge-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.75rem;
+            font-weight: 900;
+            color: #fff;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .gauge-label {
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .hud-telemetry-strip {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 0.6rem 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+        }
+
+        .hud-track-mini {
+            height: 48px;
+            width: auto;
+            stroke: var(--track-stroke);
+            stroke-width: 2.5;
+            fill: none;
+            filter: drop-shadow(0 0 6px var(--accent-glow));
+        }
+
+        /* 2-Column Section: Upcoming Race Schedule & Leaderboard */
+        .grid-2col {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .section-heading-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 1.25rem;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.35rem;
+            font-weight: 900;
+            letter-spacing: 1px;
+            color: var(--text-heading);
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title-bar {
+            width: 4px;
+            height: 18px;
+            background: var(--accent-primary);
+            box-shadow: 0 0 10px var(--accent-primary);
+            border-radius: 2px;
+        }
+
+        .section-view-all {
+            color: var(--accent-primary);
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-decoration: none;
+            letter-spacing: 0.5px;
+        }
+
+        /* Race Schedule Cards */
+        .race-cards-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .race-schedule-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--card-radius);
+            padding: 1.5rem;
+            display: grid;
+            grid-template-columns: 1fr 140px;
+            align-items: center;
+            gap: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.25s ease;
+        }
+
+        .race-schedule-card:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--border-accent);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.5), 0 0 20px var(--accent-glow);
+        }
+
+        .race-badge-series {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            color: var(--accent-primary);
+            text-transform: uppercase;
+            margin-bottom: 0.35rem;
+        }
+
+        .race-circuit-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+        }
+
+        .race-meta-row {
+            display: flex;
+            gap: 16px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+        }
+
+        .race-countdown {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--highlight-metric);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .track-map-preview {
+            width: 130px;
+            height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            padding: 8px;
+        }
+
+        .track-svg {
+            max-width: 100%;
+            max-height: 100%;
+            stroke: var(--track-stroke);
+            stroke-width: 3;
+            fill: none;
+            filter: drop-shadow(0 0 6px var(--accent-glow));
+        }
+
+        /* Leaderboard Cards */
+        .leaderboard-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .driver-rank-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 0.9rem 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .driver-rank-card:hover {
+            border-color: var(--border-accent);
+            background: var(--bg-card-hover);
+            transform: translateX(4px);
+        }
+
+        .driver-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .driver-position {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 900;
+            color: var(--accent-primary);
+            width: 24px;
+            text-align: center;
+        }
+
+        .driver-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 1.5px solid var(--border-subtle);
+            object-fit: cover;
+        }
+
+        .driver-name {
+            font-weight: 800;
+            font-size: 0.92rem;
+            color: #ffffff;
+            line-height: 1.2;
+        }
+
+        .driver-team-tag {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .driver-points {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            font-weight: 900;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .points-trend-up {
+            font-size: 0.75rem;
+            color: #10b981;
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 992px) {
+            .hero-cockpit {
+                grid-template-columns: 1fr;
+                padding: 2rem 1.5rem;
+            }
+            .grid-2col {
+                grid-template-columns: 1fr;
+            }
+            .nav-menu {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="carbon-bg"></div>
+
+    <!-- Live Color Palette Switcher (For User Testing) -->
+    <div class="palette-toolbar">
+        <div class="toolbar-title">
+            <span>🎨 CHOOSE MOTORSPORT PALETTE:</span>
+        </div>
+        <div class="palette-btn-group">
+            <button class="palette-btn active" onclick="setPalette('cyan')">
+                <span class="swatch" style="background: #00cfff;"></span>
+                Palette A: Precision Cyan & Titanium (F1 / Petronas)
+            </button>
+            <button class="palette-btn" onclick="setPalette('crimson')">
+                <span class="swatch" style="background: #f43f5e;"></span>
+                Palette B: Works Crimson & Slate (Porsche / Le Mans)
+            </button>
+            <button class="palette-btn" onclick="setPalette('azure')">
+                <span class="swatch" style="background: #38bdf8;"></span>
+                Palette C: Stealth Azure & Titanium (BMW / Aston Martin)
+            </button>
+            <button class="palette-btn" onclick="setPalette('gold')">
+                <span class="swatch" style="background: #f59e0b;"></span>
+                Palette D: Hypercar Gold & Titanium (Luxury Works)
+            </button>
+        </div>
+    </div>
+
+    <div class="wrapper">
+        
+        <!-- Navigation Bar -->
+        <nav class="navbar">
+            <a href="#" class="brand-link">
+                <img src="assets/G_2.png" alt="GRID UP" class="brand-logo-img">
+                <span class="brand-text">GRID <span class="brand-accent">UP</span></span>
+            </a>
+
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="#" class="active">HOME</a></li>
+                <li class="nav-item"><a href="#">RACES</a></li>
+                <li class="nav-item"><a href="#">DRIVERS</a></li>
+                <li class="nav-item"><a href="#">TEAMS</a></li>
+                <li class="nav-item"><a href="#">TROPHY ROOM</a></li>
+                <li class="nav-item"><a href="#">SHOP</a></li>
+            </ul>
+
+            <div class="nav-right-actions">
+                <div class="btn-live-indicator">
+                    <span class="btn-live-dot"></span>
+                    RACE LIVE
+                </div>
+                <div class="user-pill">
+                    <img src="assets/G_2.png" alt="User" class="user-avatar-mini">
+                    <span>M. Cook</span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hypercar Cockpit Hero Section -->
+        <section class="hero-cockpit">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    ⚡ 2026 Season // World Championship
+                </div>
+                <h1 class="hero-title">
+                    The Ultimate <span class="gradient-span">Sim Racing</span> Arena
+                </h1>
+                <p class="hero-desc">
+                    Compete at the pinnacle of competitive sim racing. Tough competition, elite racecraft, and live telemetry engineering across GT3, GTP, and Supercars.
+                </p>
+                <div class="hero-cta-group">
+                    <a href="#" class="btn-action-primary">
+                        ENTER CHAMPIONSHIP →
+                    </a>
+                    <a href="#" class="btn-action-secondary">
+                        LIVE TELEMETRY HUB
+                    </a>
+                </div>
+            </div>
+
+            <!-- Cockpit Telemetry HUD Visual -->
+            <div class="hero-hud-panel">
+                <div class="hud-header">
+                    <span>CIRCUIT DE SPA-FRANCORCHAMPS</span>
+                    <span class="hud-live-badge">● LIVE TIMING</span>
+                </div>
+                <div class="hud-gauges-grid">
+                    <div class="gauge-card">
+                        <div class="gauge-value" style="color: var(--accent-primary);">284</div>
+                        <div class="gauge-label">KPH TOP SPEED</div>
+                    </div>
+                    <div class="gauge-card">
+                        <div class="gauge-value">6th</div>
+                        <div class="gauge-label">CURRENT GEAR</div>
+                    </div>
+                    <div class="gauge-card">
+                        <div class="gauge-value" style="color: var(--highlight-metric);">14/24</div>
+                        <div class="gauge-label">STINT LAP</div>
+                    </div>
+                </div>
+                <div class="hud-telemetry-strip">
+                    <div>
+                        <div style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 2px;">LEAD TELEMETRY</div>
+                        <div style="font-weight: 800; color: #fff;">P1 • M. Roberts (GRID UP)</div>
+                    </div>
+                    <!-- Mini Track SVG -->
+                    <svg class="hud-track-mini" viewBox="0 0 100 60">
+                        <path d="M 10,30 Q 25,10 50,15 T 85,25 Q 95,35 80,45 T 40,50 Q 20,48 10,30 Z"/>
+                    </svg>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2-Column Schedule & Leaderboard Grid -->
+        <div class="grid-2col">
+            
+            <!-- Column 1: Race Schedule Cards with Track Outlines -->
+            <div>
+                <div class="section-heading-row">
+                    <div class="section-title">
+                        <span class="section-title-bar"></span>
+                        Upcoming Championship Races
+                    </div>
+                    <a href="#" class="section-view-all">Full Calendar →</a>
+                </div>
+
+                <div class="race-cards-stack">
+                    
+                    <div class="race-schedule-card">
+                        <div>
+                            <div class="race-badge-series">WORLD CHAMPIONSHIP // GT3</div>
+                            <div class="race-circuit-title">Circuit Paul Ricard</div>
+                            <div class="race-meta-row">
+                                <span>📅 OCT 28, 2026</span>
+                                <span>⏱ 6-Hour Endurance</span>
+                            </div>
+                            <div class="race-countdown">
+                                ⏱ Starts in: 02d 14h 55m
+                            </div>
+                        </div>
+                        <div class="track-map-preview">
+                            <!-- Circuit Paul Ricard Outline -->
+                            <svg class="track-svg" viewBox="0 0 100 60">
+                                <path d="M 15,20 L 75,20 Q 88,22 85,35 L 75,45 Q 65,52 45,45 L 20,40 Q 10,35 15,20 Z"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="race-schedule-card">
+                        <div>
+                            <div class="race-badge-series">ELITE SERIES // GTP HYPERCAR</div>
+                            <div class="race-circuit-title">Road America</div>
+                            <div class="race-meta-row">
+                                <span>📅 NOV 04, 2026</span>
+                                <span>⏱ 4-Hour Stint Challenge</span>
+                            </div>
+                            <div class="race-countdown">
+                                ⏱ Starts in: 09d 08h 12m
+                            </div>
+                        </div>
+                        <div class="track-map-preview">
+                            <!-- Road America Outline -->
+                            <svg class="track-svg" viewBox="0 0 100 60">
+                                <path d="M 15,10 L 80,10 L 85,30 L 60,35 L 55,50 L 25,48 L 15,10 Z"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Column 2: Driver Leaderboard -->
+            <div>
+                <div class="section-heading-row">
+                    <div class="section-title">
+                        <span class="section-title-bar"></span>
+                        Top Driver Leaderboard
+                    </div>
+                    <a href="#" class="section-view-all">View Standings →</a>
+                </div>
+
+                <div class="leaderboard-list">
+                    
+                    <div class="driver-rank-card">
+                        <div class="driver-left">
+                            <span class="driver-position">1</span>
+                            <img src="assets/G_2.png" alt="Driver" class="driver-avatar">
+                            <div>
+                                <div class="driver-name">Matty Roberts</div>
+                                <div class="driver-team-tag">GRiD UP Racing #88 • Pro</div>
+                            </div>
+                        </div>
+                        <div class="driver-points">
+                            2,450 <span class="points-trend-up">▲</span>
+                        </div>
+                    </div>
+
+                    <div class="driver-rank-card">
+                        <div class="driver-left">
+                            <span class="driver-position" style="color: var(--text-body);">2</span>
+                            <img src="assets/G_2.png" alt="Driver" class="driver-avatar">
+                            <div>
+                                <div class="driver-name">Martyn Cook</div>
+                                <div class="driver-team-tag">GRiD UP Racing #42 • Pro</div>
+                            </div>
+                        </div>
+                        <div class="driver-points">
+                            2,380 <span class="points-trend-up">▲</span>
+                        </div>
+                    </div>
+
+                    <div class="driver-rank-card">
+                        <div class="driver-left">
+                            <span class="driver-position" style="color: var(--text-body);">3</span>
+                            <img src="assets/G_2.png" alt="Driver" class="driver-avatar">
+                            <div>
+                                <div class="driver-name">Andrew Fabian</div>
+                                <div class="driver-team-tag">GRiD UP Racing #17 • Pro-Am</div>
+                            </div>
+                        </div>
+                        <div class="driver-points">
+                            2,210 <span class="points-trend-up">▲</span>
+                        </div>
+                    </div>
+
+                    <div class="driver-rank-card">
+                        <div class="driver-left">
+                            <span class="driver-position" style="color: var(--text-muted);">4</span>
+                            <img src="assets/G_2.png" alt="Driver" class="driver-avatar">
+                            <div>
+                                <div class="driver-name">Adam Jones</div>
+                                <div class="driver-team-tag">GRiD UP Racing #09 • Pro-Am</div>
+                            </div>
+                        </div>
+                        <div class="driver-points">
+                            2,145 <span style="font-size:0.75rem; color:var(--text-muted);">●</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        function setPalette(name) {
+            document.querySelectorAll('.palette-btn').forEach(b => b.classList.remove('active'));
+            event.target.closest('.palette-btn').classList.add('active');
+            
+            if (name === 'cyan') {
+                document.documentElement.removeAttribute('data-palette');
+            } else {
+                document.documentElement.setAttribute('data-palette', name);
+            }
+        }
+    </script>
+</body>
+</html>
