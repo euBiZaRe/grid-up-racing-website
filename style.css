@@ -3345,3 +3345,320 @@ body[data-theme="theme-purple"]::before, body::before {
         justify-content: center;
     }
 }
+
+/* ==========================================================================
+   HOMEPAGE LIVE TELEMETRY COCKPIT HUD
+   ========================================================================== */
+.hero-live-telemetry-hud {
+    margin: 1.5rem 0 1.75rem;
+    background: linear-gradient(135deg, rgba(12, 17, 29, 0.96) 0%, rgba(7, 10, 18, 0.98) 100%);
+    border: 1px solid rgba(0, 207, 255, 0.28);
+    border-top: 3px solid #00cfff;
+    border-radius: 14px;
+    padding: 1.25rem 1.4rem;
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.75), 0 0 25px -8px rgba(0, 207, 255, 0.22);
+    position: relative;
+    overflow: hidden;
+    animation: fadeInHud 0.4s ease-out;
+}
+
+@keyframes fadeInHud {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.hero-live-telemetry-hud::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 200px;
+    height: 100%;
+    background: radial-gradient(circle at top right, rgba(0, 207, 255, 0.08), transparent 70%);
+    pointer-events: none;
+}
+
+.tel-hud-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+    padding-bottom: 0.9rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.tel-hud-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.tel-live-beacon {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.45);
+    color: #ff3366;
+    font-family: var(--font-heading);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    padding: 3px 9px;
+    border-radius: 5px;
+    text-transform: uppercase;
+}
+
+.tel-live-beacon .beacon-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #ff3366;
+    box-shadow: 0 0 10px #ff3366;
+    animation: telPulse 1.2s infinite;
+}
+
+@keyframes telPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.tel-driver-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+}
+
+.tel-driver-name {
+    color: #fff;
+    font-family: var(--font-heading);
+    font-weight: 800;
+    letter-spacing: 0.5px;
+}
+
+.tel-car-num {
+    background: rgba(0, 207, 255, 0.15);
+    border: 1px solid rgba(0, 207, 255, 0.4);
+    color: #00cfff;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 800;
+    padding: 1px 7px;
+    border-radius: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 0.5px;
+}
+
+.tel-team-tag {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.tel-hud-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.tel-driver-switcher {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.tel-driver-pill-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: var(--text-muted);
+    font-family: var(--font-heading);
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 4px 9px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tel-driver-pill-btn:hover {
+    background: rgba(0, 207, 255, 0.15);
+    border-color: rgba(0, 207, 255, 0.35);
+    color: #fff;
+}
+
+.tel-driver-pill-btn.active {
+    background: rgba(0, 207, 255, 0.22);
+    border-color: #00cfff;
+    color: #00cfff;
+}
+
+.btn-tel-hud-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0, 207, 255, 0.1);
+    border: 1px solid rgba(0, 207, 255, 0.35);
+    color: #00cfff;
+    font-family: var(--font-heading);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    padding: 5px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn-tel-hud-link:hover {
+    background: #00cfff;
+    color: #050811;
+    box-shadow: 0 0 16px rgba(0, 207, 255, 0.5);
+    transform: translateY(-1px);
+}
+
+.tel-hud-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+
+.tel-metric-box {
+    background: rgba(18, 24, 38, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 104px;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.tel-metric-box:hover {
+    border-color: rgba(0, 207, 255, 0.35);
+    background: rgba(22, 30, 48, 0.75);
+}
+
+.tel-metric-label {
+    font-family: var(--font-heading);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.tel-metric-value-wrap {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin: 0.25rem 0;
+}
+
+.tel-metric-val {
+    font-family: 'Orbitron', var(--font-heading), sans-serif;
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: 0.5px;
+}
+
+.tel-metric-val.pos-val {
+    font-size: 2.2rem;
+    color: #fbbf24;
+    text-shadow: 0 0 16px rgba(251, 191, 36, 0.35);
+}
+
+.tel-metric-val.speed-val {
+    font-size: 2.3rem;
+    color: #ffffff;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.25);
+}
+
+.tel-metric-unit {
+    font-family: var(--font-heading);
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: #00cfff;
+    letter-spacing: 1px;
+}
+
+.tel-metric-value-wrap.gear-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.tel-metric-val.gear-val {
+    font-size: 2.4rem;
+    color: #a855f7;
+    text-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+    min-width: 32px;
+}
+
+.gear-rpm-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.tel-rpm-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: #cbd5e1;
+    font-weight: 700;
+}
+
+.tel-rpm-bar {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.tel-rpm-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981 0%, #fbbf24 65%, #ef4444 95%);
+    transition: width 0.08s ease;
+}
+
+.tel-metric-val.lap-val {
+    font-size: 2rem;
+    color: #38bdf8;
+    text-shadow: 0 0 16px rgba(56, 189, 248, 0.3);
+}
+
+.tel-metric-sub {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+@media (max-width: 900px) {
+    .tel-hud-metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 520px) {
+    .tel-hud-metrics-grid {
+        grid-template-columns: 1fr;
+    }
+    .tel-hud-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .tel-hud-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+

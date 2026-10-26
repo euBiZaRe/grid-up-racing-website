@@ -758,7 +758,16 @@ async function checkPublicMaintenanceMode() {
     const path = window.location.pathname;
     if (path.endsWith('login.html')) return;
 
-    // Check if current user is Master Admin or Known Admin
+    // Check if current user is Master Admin or Known Admin or unlocked
+    if (sessionStorage.getItem('gridup_maint_unlock') === 'true' || localStorage.getItem('gridup_maint_unlock') === 'true') {
+        removeMaintenanceLockStyle();
+        showUnlockedMaintenanceNotice();
+        const existingOverlay = document.getElementById('gridup-maintenance-overlay');
+        if (existingOverlay) existingOverlay.remove();
+        document.body.style.overflow = '';
+        return;
+    }
+
     const cached = JSON.parse(localStorage.getItem('gridup_auth_cache') || '{}');
     const currentUid = (window.auth && window.auth.currentUser) ? window.auth.currentUser.uid : (cached.user ? cached.user.uid : null);
     if (currentUid && (currentUid === MASTER_ADMIN || KNOWN_ADMIN_UIDS.includes(currentUid))) {
@@ -777,6 +786,12 @@ async function checkPublicMaintenanceMode() {
     try {
         if (maintSnapshotUnsub) maintSnapshotUnsub();
         maintSnapshotUnsub = db.collection("settings").doc("maintenance").onSnapshot((maintDoc) => {
+            if (sessionStorage.getItem('gridup_maint_unlock') === 'true' || localStorage.getItem('gridup_maint_unlock') === 'true') {
+                removeMaintenanceLockStyle();
+                showUnlockedMaintenanceNotice();
+                return;
+            }
+
             const currentCached = JSON.parse(localStorage.getItem('gridup_auth_cache') || '{}');
             const uid = (window.auth && window.auth.currentUser) ? window.auth.currentUser.uid : (currentCached.user ? currentCached.user.uid : null);
             if (uid && (uid === MASTER_ADMIN || KNOWN_ADMIN_UIDS.includes(uid))) {

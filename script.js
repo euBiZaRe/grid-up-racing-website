@@ -198,6 +198,9 @@ function updateCountdown(targetTimestamp, endVal = null, broadcastUrl = null, li
         
         // 1. If currently live (between liveStartDate and endDate)
         if (now >= liveStartDate && now <= endDate) {
+            if (typeof initHomepageLiveTelemetry === 'function') {
+                initHomepageLiveTelemetry(true, window.currentNextEvent);
+            }
             if (countdownEl) {
                 // Ensure subtitle says Live
                 const subtitleEl = document.getElementById('hero-event-subtitle');
@@ -230,6 +233,9 @@ function updateCountdown(targetTimestamp, endVal = null, broadcastUrl = null, li
         
         // 2. If completely finished (past end date)
         if (now > endDate) {
+            if (typeof initHomepageLiveTelemetry === 'function') {
+                initHomepageLiveTelemetry(false);
+            }
             if (countdownEl) {
                 const subtitleEl = document.getElementById('hero-event-subtitle');
                 if (subtitleEl) {
@@ -1525,9 +1531,14 @@ function renderEventsUI(upcomingEvents, pastEvents = null, featuredOverride = nu
         // Populate all details in the Next Event Dashboard Card (Track img, specs, schedule, metrics)
         populateNextEventDashboard(nextEvent, staticIds, eventBanners);
 
-        // Show Live Telemetry button only for Spa 24HR
+        window.currentNextEvent = nextEvent;
+        if (typeof initHomepageLiveTelemetry === 'function') {
+            initHomepageLiveTelemetry(isLive, nextEvent);
+        }
+
+        // Show Live Telemetry button if Spa 24HR or if live telemetry is currently active
         const telemetryBtn = document.getElementById('hero-telemetry-btn');
-        if (telemetryBtn) {
+        if (telemetryBtn && !isLive) {
             telemetryBtn.style.display = (nextEvent.id === 'spa-24hr') ? 'inline-flex' : 'none';
         }
 
@@ -2900,3 +2911,473 @@ window.filterPodiumResults = function(filter) {
         }
     });
 };
+
+// ==========================================================================
+// HOMEPAGE LIVE TELEMETRY COCKPIT ENGINE
+// ==========================================================================
+const TELEMETRY_RTDB_URL = "https://grid-up-racedash-default-rtdb.europe-west1.firebasedatabase.app";
+const TELEMETRY_TEAMS = ['gridUp_sim', 'gridUp_black', 'gridUp_blue', 'gridUp_red', 'gridUp_white', 'gridUp_purple', 'gridUp_practice'];
+
+let homeTelemetryApp = null;
+let homeTelemetryDb = null;
+let activeTelemetryStreams = {}; // key: `${teamId}_${mid}` -> { teamId, mid, stream, driverPresence }
+let activeTelemetryDrivers = {}; // key: `${teamId}_${mid}` -> driver presence
+let homeTelemetryListeners = [];
+let homeTelemetryPollTimer = null;
+let selectedTelemetryKey = null;
+let isHomepageTelemetryActive = false;
+let isSimulatingTelemetry = false;
+let simulatedTelemetryInterval = null;
+
+function getHomeTelemetryDb() {
+    if (homeTelemetryDb) return homeTelemetryDb;
+    if (typeof firebase === 'undefined' || typeof firebase.database !== 'function') return null;
+    try {
+        homeTelemetryApp = firebase.apps.find(app => app.name === "home-telemetry");
+        if (!homeTelemetryApp) {
+            homeTelemetryApp = firebase.initializeApp({
+                databaseURL: TELEMETRY_RTDB_URL
+            }, "home-telemetry");
+        }
+        homeTelemetryDb = homeTelemetryApp.database();
+        return homeTelemetryDb;
+    } catch (e) {
+        console.warn("[Telemetry HUD] Failed to initialize Firebase RTDB app:", e);
+        try {
+            if (typeof firebase.database === 'function') {
+                homeTelemetryDb = firebase.database();
+                return homeTelemetryDb;
+            }
+        } catch (err) {}
+        return null;
+    }
+}
+
+function stopHomepageLiveTelemetry() {
+    if (!isHomepageTelemetryActive && !isSimulatingTelemetry) return;
+    isHomepageTelemetryActive = false;
+
+    if (homeTelemetryListeners && homeTelemetryListeners.length > 0) {
+        homeTelemetryListeners.forEach(cleanupFn => {
+            try { cleanupFn(); } catch (e) {}
+        });
+        homeTelemetryListeners = [];
+    }
+
+    if (homeTelemetryPollTimer) {
+        clearInterval(homeTelemetryPollTimer);
+        homeTelemetryPollTimer = null;
+    }
+
+    if (simulatedTelemetryInterval) {
+        clearInterval(simulatedTelemetryInterval);
+        simulatedTelemetryInterval = null;
+    }
+    isSimulatingTelemetry = false;
+
+    activeTelemetryStreams = {};
+    activeTelemetryDrivers = {};
+    selectedTelemetryKey = null;
+
+    const hud = document.getElementById('hero-live-telemetry-hud');
+    if (hud) hud.style.display = 'none';
+
+    const telBtn = document.getElementById('hero-telemetry-btn');
+    if (telBtn) {
+        const nextEvent = window.currentNextEvent;
+        telBtn.style.display = (nextEvent && nextEvent.id === 'spa-24hr') ? 'inline-flex' : 'none';
+    }
+}
+
+function isTelemetryStreamActive(stream, now) {
+    if (!stream) return false;
+    let streamTs = stream.timestamp || (stream.telemetry && stream.telemetry.timestamp) || 0;
+    if (streamTs > 0 && streamTs < 10000000000) {
+        streamTs *= 1000;
+    }
+    const isRecent = streamTs > 0 && (now - streamTs) < 120000; // active within last 2 minutes
+    const isLiveFlag = stream.is_live === true || (stream.session && stream.session.is_live === true);
+    return isRecent && (isLiveFlag || stream.is_live !== false);
+}
+
+function getActiveDriverList() {
+    const now = Date.now();
+    const active = [];
+    Object.keys(activeTelemetryStreams).forEach(key => {
+        const item = activeTelemetryStreams[key];
+        if (!item || !item.stream) return;
+        if (isTelemetryStreamActive(item.stream, now)) {
+            active.push(item);
+        }
+    });
+    return active;
+}
+
+function renderHomepageTelemetryHUD() {
+    const hud = document.getElementById('hero-live-telemetry-hud');
+    if (!hud) return;
+
+    const activeDrivers = getActiveDriverList();
+    const telBtn = document.getElementById('hero-telemetry-btn');
+
+    // ONLY show if a driver has the telemetry tool working
+    if (activeDrivers.length === 0) {
+        hud.style.display = 'none';
+        if (telBtn) {
+            const nextEvent = window.currentNextEvent;
+            telBtn.style.display = (nextEvent && nextEvent.id === 'spa-24hr') ? 'inline-flex' : 'none';
+        }
+        return;
+    }
+
+    hud.style.display = 'block';
+    if (telBtn) {
+        telBtn.style.display = 'inline-flex';
+    }
+
+    let activeItem = activeDrivers.find(d => d.key === selectedTelemetryKey);
+    if (!activeItem) {
+        activeItem = activeDrivers.find(d => {
+            const tel = d.stream?.telemetry || {};
+            return (tel.speed > 0.5) || (tel.drivers && Object.values(tel.drivers).some(drv => drv && drv.isPlayer));
+        }) || activeDrivers[0];
+        selectedTelemetryKey = activeItem.key;
+    }
+
+    const stream = activeItem.stream || {};
+    const tel = stream.telemetry || {};
+    const presence = activeItem.driverPresence || {};
+
+    let targetDriver = null;
+    let isDriverSpectating = false;
+
+    if (tel.isSpectating && tel.drivers) {
+        if (tel.spectatingCarNum) {
+            targetDriver = Object.values(tel.drivers).find(d => d && String(d.carNum) === String(tel.spectatingCarNum));
+        }
+        if (!targetDriver && tel.spectatingDriverName) {
+            targetDriver = Object.values(tel.drivers).find(d => d && d.name === tel.spectatingDriverName);
+        }
+        isDriverSpectating = true;
+    }
+
+    if (!targetDriver && tel.drivers) {
+        targetDriver = Object.values(tel.drivers).find(d => d && d.isPlayer);
+        if (!targetDriver && tel.playerIdx !== undefined && tel.drivers[tel.playerIdx]) {
+            targetDriver = tel.drivers[tel.playerIdx];
+        }
+    }
+
+    const driverName = targetDriver?.name || (isDriverSpectating && tel.spectatingDriverName) || presence.name || tel.driverName || "Active Driver";
+    const carNum = targetDriver?.carNum || (isDriverSpectating && tel.spectatingCarNum) || presence.carNum || tel.carNum || "--";
+
+    let rawSpeed = 0;
+    if (isDriverSpectating && targetDriver && typeof targetDriver.speed === 'number' && targetDriver.speed > 0) {
+        rawSpeed = targetDriver.speed;
+    } else if (typeof tel.speed === 'number') {
+        rawSpeed = tel.speed;
+    }
+
+    const useImperial = localStorage.getItem('use_imperial') === 'true';
+    const speedVal = useImperial ? Math.round(rawSpeed * 2.23694) : Math.round(rawSpeed * 3.6);
+    const speedUnit = useImperial ? "MPH" : "KM/H";
+
+    const gearRaw = (isDriverSpectating && targetDriver && targetDriver.gear !== undefined) ? targetDriver.gear : tel.gear;
+    const gearText = gearRaw === 0 ? "N" : gearRaw === -1 ? "R" : (gearRaw !== undefined && gearRaw !== null ? gearRaw : "N");
+
+    const displayRpm = (isDriverSpectating && targetDriver && targetDriver.rpm !== undefined) ? Math.round(targetDriver.rpm) : (tel.rpm || 0);
+    const rpmPercent = Math.min(100, Math.max(0, Math.round((displayRpm / 9000) * 100)));
+
+    let displayPos = "P-";
+    if (targetDriver) {
+        displayPos = targetDriver.classPos ? `P${targetDriver.classPos}` : (targetDriver.pos ? `P${targetDriver.pos}` : "P-");
+    } else if (tel.position) {
+        displayPos = `P${tel.position}`;
+    }
+
+    const lapVal = (targetDriver && typeof targetDriver.lap === 'number') ? targetDriver.lap : (typeof tel.lap === 'number' ? tel.lap : '-');
+    const fuelVal = (targetDriver && targetDriver.fuel !== undefined) ? targetDriver.fuel : (tel.fuel !== undefined ? tel.fuel : null);
+    const fuelText = fuelVal !== null ? (useImperial ? `${(fuelVal * 0.264172).toFixed(1)} GAL` : `${fuelVal.toFixed(1)} L`) : '--';
+
+    const nameEl = document.getElementById('hero-tel-driver-name');
+    if (nameEl) nameEl.textContent = driverName;
+
+    const numEl = document.getElementById('hero-tel-car-num');
+    if (numEl) numEl.textContent = String(carNum).startsWith('#') ? carNum : `#${carNum}`;
+
+    const teamTagEl = document.getElementById('hero-tel-team-tag');
+    if (teamTagEl) {
+        const teamNames = {
+            gridUp_sim: 'GRiD UP Sim Racing',
+            gridUp_black: 'GRiD UP Black',
+            gridUp_blue: 'GRiD UP Blue',
+            gridUp_red: 'GRiD UP Red',
+            gridUp_white: 'GRiD UP White',
+            gridUp_purple: 'GRiD UP Purple',
+            gridUp_practice: 'GRiD UP Practice Server'
+        };
+        teamTagEl.textContent = teamNames[activeItem.teamId] || 'GRiD UP Racing';
+    }
+
+    const posEl = document.getElementById('hero-tel-pos');
+    if (posEl) posEl.textContent = displayPos;
+
+    const speedEl = document.getElementById('hero-tel-speed');
+    if (speedEl) speedEl.textContent = speedVal;
+
+    const unitEl = document.getElementById('hero-tel-speed-unit');
+    if (unitEl) unitEl.textContent = speedUnit;
+
+    const gearEl = document.getElementById('hero-tel-gear');
+    if (gearEl) gearEl.textContent = gearText;
+
+    const rpmEl = document.getElementById('hero-tel-rpm');
+    if (rpmEl) rpmEl.textContent = `${displayRpm.toLocaleString()} RPM`;
+
+    const rpmBarEl = document.getElementById('hero-tel-rpm-bar');
+    if (rpmBarEl) rpmBarEl.style.width = `${rpmPercent}%`;
+
+    const lapEl = document.getElementById('hero-tel-lap');
+    if (lapEl) lapEl.textContent = (lapVal !== '-' && lapVal !== undefined) ? `LAP ${lapVal}` : 'ON TRACK';
+
+    const fuelEl = document.getElementById('hero-tel-fuel');
+    if (fuelEl) fuelEl.textContent = `FUEL: ${fuelText}`;
+
+    // Multi-driver switcher pills
+    const switcherEl = document.getElementById('hero-tel-driver-switcher');
+    if (switcherEl) {
+        if (activeDrivers.length > 1) {
+            switcherEl.style.display = 'inline-flex';
+            switcherEl.innerHTML = activeDrivers.map(d => {
+                const s = d.stream || {};
+                const t = s.telemetry || {};
+                const dName = t.driverName || d.driverPresence?.name || d.mid.slice(0, 5);
+                const cNum = t.carNum ? `#${t.carNum}` : '';
+                const isActive = d.key === selectedTelemetryKey;
+                return `<button type="button" class="tel-driver-pill-btn ${isActive ? 'active' : ''}" onclick="window.selectHomepageTelemetryDriver('${d.key}')">${cNum} ${dName}</button>`;
+            }).join('');
+        } else {
+            switcherEl.style.display = 'none';
+        }
+    }
+}
+
+function initHomepageLiveTelemetry(isLive, eventObj, forcePreview) {
+    window.currentNextEvent = eventObj || window.currentNextEvent;
+
+    const urlParams = (typeof window !== 'undefined' && window.location) ? new URLSearchParams(window.location.search) : null;
+    const isPreviewRequested = forcePreview || (urlParams && (urlParams.get('telemetry') === 'preview' || urlParams.get('preview') === 'live' || urlParams.get('live') === '1'));
+
+    if (!isLive && !isPreviewRequested) {
+        stopHomepageLiveTelemetry();
+        return;
+    }
+
+    if (isHomepageTelemetryActive) {
+        renderHomepageTelemetryHUD();
+        return;
+    }
+
+    isHomepageTelemetryActive = true;
+
+    // In preview mode without real live drivers, start simulated driver
+    if (isPreviewRequested && !isSimulatingTelemetry) {
+        window.simulateLiveTelemetry(true);
+        return;
+    }
+
+    const db = getHomeTelemetryDb();
+    if (db) {
+        try {
+            TELEMETRY_TEAMS.forEach(teamId => {
+                const streamsRef = db.ref(`teams/${teamId}/streams`);
+                const driversRef = db.ref(`teams/${teamId}/drivers`);
+
+                const onStreamsChange = snapshot => {
+                    const val = snapshot.val() || {};
+                    Object.keys(activeTelemetryStreams).forEach(k => {
+                        if (activeTelemetryStreams[k].teamId === teamId && !val[activeTelemetryStreams[k].mid]) {
+                            delete activeTelemetryStreams[k];
+                        }
+                    });
+
+                    Object.keys(val).forEach(mid => {
+                        const key = `${teamId}_${mid}`;
+                        activeTelemetryStreams[key] = {
+                            key: key,
+                            teamId: teamId,
+                            mid: mid,
+                            stream: val[mid],
+                            driverPresence: activeTelemetryDrivers[key] || {}
+                        };
+                    });
+
+                    renderHomepageTelemetryHUD();
+                };
+
+                const onDriversChange = snapshot => {
+                    const val = snapshot.val() || {};
+                    Object.keys(val).forEach(mid => {
+                        const key = `${teamId}_${mid}`;
+                        activeTelemetryDrivers[key] = val[mid];
+                        if (activeTelemetryStreams[key]) {
+                            activeTelemetryStreams[key].driverPresence = val[mid];
+                        }
+                    });
+                    renderHomepageTelemetryHUD();
+                };
+
+                streamsRef.on('value', onStreamsChange);
+                driversRef.on('value', onDriversChange);
+
+                homeTelemetryListeners.push(() => {
+                    try { streamsRef.off('value', onStreamsChange); } catch (e) {}
+                    try { driversRef.off('value', onDriversChange); } catch (e) {}
+                });
+            });
+        } catch (err) {
+            console.warn("[Telemetry HUD] Error subscribing to RTDB listeners, falling back to REST poll:", err);
+            startHomepageTelemetryRestPolling();
+        }
+    } else {
+        startHomepageTelemetryRestPolling();
+    }
+
+    if (!homeTelemetryPollTimer) {
+        homeTelemetryPollTimer = setInterval(() => {
+            renderHomepageTelemetryHUD();
+        }, 10000);
+    }
+}
+
+async function startHomepageTelemetryRestPolling() {
+    if (homeTelemetryPollTimer) clearInterval(homeTelemetryPollTimer);
+
+    const fetchTeamStreams = async () => {
+        if (!isHomepageTelemetryActive) return;
+        try {
+            const fetchPromises = TELEMETRY_TEAMS.map(teamId =>
+                fetch(`${TELEMETRY_RTDB_URL}/teams/${teamId}/streams.json`)
+                    .then(r => r.ok ? r.json() : null)
+                    .then(val => ({ teamId, val }))
+                    .catch(() => ({ teamId, val: null }))
+            );
+
+            const results = await Promise.all(fetchPromises);
+            results.forEach(({ teamId, val }) => {
+                if (val && typeof val === 'object') {
+                    Object.keys(val).forEach(mid => {
+                        const key = `${teamId}_${mid}`;
+                        activeTelemetryStreams[key] = {
+                            key: key,
+                            teamId: teamId,
+                            mid: mid,
+                            stream: val[mid],
+                            driverPresence: {}
+                        };
+                    });
+                }
+            });
+            renderHomepageTelemetryHUD();
+        } catch (e) {
+            console.warn("[Telemetry HUD] REST poll error:", e);
+        }
+    };
+
+    await fetchTeamStreams();
+    homeTelemetryPollTimer = setInterval(fetchTeamStreams, 5000);
+}
+
+window.simulateLiveTelemetry = function(enable) {
+    if (enable === false) {
+        if (simulatedTelemetryInterval) {
+            clearInterval(simulatedTelemetryInterval);
+            simulatedTelemetryInterval = null;
+        }
+        isSimulatingTelemetry = false;
+        delete activeTelemetryStreams['sim_demo'];
+        renderHomepageTelemetryHUD();
+        console.log("Telemetry simulation stopped.");
+        return;
+    }
+
+    isSimulatingTelemetry = true;
+    isHomepageTelemetryActive = true;
+
+    let mockSpeed = 160;
+    let mockRpm = 6200;
+    let mockGear = 4;
+    let mockLap = 14;
+    let mockFuel = 42.4;
+    let accelerating = true;
+
+    if (simulatedTelemetryInterval) clearInterval(simulatedTelemetryInterval);
+
+    simulatedTelemetryInterval = setInterval(() => {
+        if (accelerating) {
+            mockSpeed += 2.8;
+            mockRpm += 115;
+            if (mockRpm > 8700) {
+                if (mockGear < 6) {
+                    mockGear++;
+                    mockRpm = 6350;
+                } else {
+                    accelerating = false;
+                }
+            }
+        } else {
+            mockSpeed -= 3.5;
+            mockRpm -= 160;
+            if (mockRpm < 5800) {
+                if (mockGear > 3) {
+                    mockGear--;
+                    mockRpm = 8100;
+                } else {
+                    accelerating = true;
+                }
+            }
+        }
+
+        activeTelemetryStreams['sim_demo'] = {
+            key: 'sim_demo',
+            teamId: 'gridUp_sim',
+            mid: 'sim_demo_mid',
+            stream: {
+                is_live: true,
+                timestamp: Date.now(),
+                telemetry: {
+                    driverName: "Matty Roberts",
+                    carNum: "64",
+                    speed: mockSpeed / 3.6,
+                    gear: mockGear,
+                    rpm: Math.round(mockRpm),
+                    position: 2,
+                    classPos: 2,
+                    lap: mockLap,
+                    fuel: mockFuel,
+                    is_live: true,
+                    timestamp: Date.now()
+                }
+            },
+            driverPresence: {
+                name: "Matty Roberts",
+                carNum: "64",
+                status: "online"
+            }
+        };
+
+        selectedTelemetryKey = 'sim_demo';
+        renderHomepageTelemetryHUD();
+    }, 150);
+
+    console.log("Live Telemetry simulation running. Call simulateLiveTelemetry(false) to stop.");
+};
+
+window.selectHomepageTelemetryDriver = function(key) {
+    selectedTelemetryKey = key;
+    renderHomepageTelemetryHUD();
+};
+
+window.initHomepageLiveTelemetry = initHomepageLiveTelemetry;
+window.stopHomepageLiveTelemetry = stopHomepageLiveTelemetry;
+

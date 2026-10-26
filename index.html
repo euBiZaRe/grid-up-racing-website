@@ -471,6 +471,73 @@
                             </div>
                         </div>
 
+                        <!-- LIVE TELEMETRY COCKPIT HUD (Visible ONLY when event is live & driver telemetry is active) -->
+                        <div class="hero-live-telemetry-hud" id="hero-live-telemetry-hud" style="display: none;">
+                            <div class="tel-hud-header">
+                                <div class="tel-hud-title-wrap">
+                                    <span class="tel-live-beacon">
+                                        <span class="beacon-dot"></span> LIVE TELEMETRY
+                                    </span>
+                                    <div class="tel-driver-meta" id="hero-tel-driver-meta">
+                                        <span class="tel-driver-name" id="hero-tel-driver-name">--</span>
+                                        <span class="tel-car-num" id="hero-tel-car-num">#--</span>
+                                        <span class="tel-team-tag" id="hero-tel-team-tag">GRiD UP Sim Racing</span>
+                                    </div>
+                                </div>
+                                <div class="tel-hud-actions">
+                                    <div class="tel-driver-switcher" id="hero-tel-driver-switcher" style="display: none;"></div>
+                                    <a href="telemetry.html" class="btn-tel-hud-link" title="Open full telemetry dashboard">
+                                        FULL DASHBOARD <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="tel-hud-metrics-grid">
+                                <!-- Position -->
+                                <div class="tel-metric-box metric-pos">
+                                    <div class="tel-metric-label">POSITION</div>
+                                    <div class="tel-metric-value-wrap">
+                                        <span class="tel-metric-val pos-val" id="hero-tel-pos">P-</span>
+                                    </div>
+                                    <div class="tel-metric-sub" id="hero-tel-class-pos">CLASS RANK</div>
+                                </div>
+
+                                <!-- Live Speed -->
+                                <div class="tel-metric-box metric-speed">
+                                    <div class="tel-metric-label">LIVE SPEED</div>
+                                    <div class="tel-metric-value-wrap">
+                                        <span class="tel-metric-val speed-val" id="hero-tel-speed">0</span>
+                                        <span class="tel-metric-unit" id="hero-tel-speed-unit">KM/H</span>
+                                    </div>
+                                    <div class="tel-metric-sub" id="hero-tel-speed-sub">RADAR TRACKED</div>
+                                </div>
+
+                                <!-- Gear & RPM Engine -->
+                                <div class="tel-metric-box metric-gear">
+                                    <div class="tel-metric-label">GEAR & ENGINE</div>
+                                    <div class="tel-metric-value-wrap gear-wrap">
+                                        <span class="tel-metric-val gear-val" id="hero-tel-gear">N</span>
+                                        <div class="gear-rpm-wrap">
+                                            <span class="tel-rpm-val" id="hero-tel-rpm">0 RPM</span>
+                                            <div class="tel-rpm-bar">
+                                                <div class="tel-rpm-bar-fill" id="hero-tel-rpm-bar" style="width: 0%;"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tel-metric-sub" id="hero-tel-gear-sub">POWERTRAIN</div>
+                                </div>
+
+                                <!-- Lap & Status -->
+                                <div class="tel-metric-box metric-lap">
+                                    <div class="tel-metric-label">LAP / FUEL</div>
+                                    <div class="tel-metric-value-wrap">
+                                        <span class="tel-metric-val lap-val" id="hero-tel-lap">L-</span>
+                                    </div>
+                                    <div class="tel-metric-sub" id="hero-tel-fuel">FUEL: --</div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Track Highlights & Actions Footer -->
                         <div class="mockup-event-footer-bar">
                             <div class="track-highlights-text" id="hero-track-highlights">
@@ -897,8 +964,9 @@
 
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-    <script defer src="script.js?v=32"></script>
+    <script defer src="script.js?v=33"></script>
     <script defer src="js/auth.js?v=11"></script>
 </body>
 </html>
