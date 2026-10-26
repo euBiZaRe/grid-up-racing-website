@@ -1502,6 +1502,17 @@ function renderEventsUI(upcomingEvents, pastEvents = null, featuredOverride = nu
                 heroSubtitle.classList.remove('animate-pulse');
             }
         }
+
+        const heroStatusBadge = document.getElementById('hero-event-status-badge');
+        if (heroStatusBadge) {
+            if (isLive) {
+                heroStatusBadge.className = 'mockup-badge-live';
+                heroStatusBadge.innerHTML = '<span class="pulsing-dot-red"></span> LIVE NOW';
+            } else {
+                heroStatusBadge.className = 'mockup-badge-upcoming';
+                heroStatusBadge.innerHTML = '<span class="pulsing-dot"></span> UPCOMING';
+            }
+        }
         
         if (heroTitle) {
             heroTitle.textContent = (nextEvent.name || 'TBA').toUpperCase();

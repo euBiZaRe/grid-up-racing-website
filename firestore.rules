@@ -87,7 +87,7 @@ service cloud.firestore {
     // ===============================================================
 
     match /claims/{claimId} {
-      allow read: if true;
+      allow read: if isAuthenticated();
       allow create: if isAuthenticated() &&
         request.resource.data.discordId == request.auth.uid &&
         request.resource.data.status == 'pending';
@@ -145,7 +145,10 @@ service cloud.firestore {
 
       match /teams/{teamId}/messages/{msgId} {
         allow read: if isAuthenticated();
-        allow create: if isAuthenticated();
+        allow create: if isAuthenticated() && (
+          (!('uid' in request.resource.data) || request.resource.data.uid == request.auth.uid) &&
+          (!('senderUid' in request.resource.data) || request.resource.data.senderUid == request.auth.uid)
+        );
         allow update, delete: if isAdmin();
       }
 

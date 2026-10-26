@@ -237,12 +237,38 @@ class TelemetryBridge:
             self.log(f"WebSocket server failed to bind: {e}")
             return
 
+        def is_safe_websocket_origin(origin):
+            if not origin or origin == "null":
+                return True
+            try:
+                parsed = urllib.parse.urlparse(origin)
+                host = (parsed.hostname or "").lower()
+                if host in ("localhost", "127.0.0.1"):
+                    return True
+                if host in ("gridupracing.co.uk", "grid-up-racing.web.app", "grid-up-racing.firebaseapp.com", "gridup.online"):
+                    return True
+                if host.endswith(".gridupracing.co.uk") or host.endswith(".gridup.online") or host.endswith(".github.io"):
+                    return True
+                return False
+            except Exception:
+                return False
+
         def handle_client(client_socket):
             try:
                 request = client_socket.recv(4096).decode('utf-8', errors='ignore')
                 if "Upgrade: websocket" not in request:
                     client_socket.close()
                     return
+
+                # CSWSH Protection: Validate Origin header if present
+                origin_match = re.search(r"(?i)^Origin:\s*(\S+)", request, re.MULTILINE)
+                if origin_match:
+                    origin = origin_match.group(1).strip()
+                    if not is_safe_websocket_origin(origin):
+                        self.log(f"[WebSocket] Blocked untrusted cross-origin connection from: {origin}")
+                        client_socket.sendall(b"HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n")
+                        client_socket.close()
+                        return
 
                 key_match = re.search(r"Sec-WebSocket-Key:\s*(\S+)", request)
                 if not key_match:
@@ -265,6 +291,12 @@ class TelemetryBridge:
                 with self.clients_lock:
                     self.clients.add(client_socket)
                 self.log("Client connected to local telemetry WebSocket.")
+
+                try:
+                    sync_payload = self.get_setup_engineer_sync_payload()
+                    self.broadcast(sync_payload)
+                except Exception as e:
+                    pass
 
                 while self.running:
                     header = client_socket.recv(2)
@@ -374,8 +406,127 @@ class TelemetryBridge:
             self.log(f"Machine ID Locked: {self.config['machineId']}")
             if self.status_callback:
                 self.status_callback("config", self.config)
+        elif action == "get_car_setup":
+            snap = self.get_car_setup_snapshot(force_refresh=True)
+            self.broadcast({
+                "type": "car_setup_response",
+                "car_setup": snap,
+                "is_live": bool(self.ir.is_connected),
+                "v": BRIDGE_VERSION
+            })
+        elif action == "get_setup_engineer_state":
+            self.broadcast(self.get_setup_engineer_sync_payload(force_refresh=True))
+
+    def get_setup_engineer_sync_payload(self, force_refresh=False):
+        saved_sessions = []
+        try:
+            logs_dir = os.path.join(BASE_DIR, "race_logs")
+            if os.path.exists(logs_dir):
+                files = [
+                    os.path.join(logs_dir, f)
+                    for f in os.listdir(logs_dir)
+                    if f.startswith("session_") and f.endswith(".json")
+                ]
+                files.sort(key=lambda p: os.path.getmtime(p), reverse=True)
+                for fpath in files[:15]:
+                    try:
+                        with open(fpath, "r", encoding="utf-8") as fh:
+                            saved_sessions.append(json.load(fh))
+                    except Exception:
+                        pass
+        except Exception:
+            pass
+
+        active_log = getattr(self, "race_log", None)
+        return {
+            "type": "setup_engineer_sync",
+            "v": BRIDGE_VERSION,
+            "is_live": bool(self.ir.is_connected),
+            "active_car_setup": self.get_car_setup_snapshot(force_refresh=force_refresh),
+            "active_race_log": active_log,
+            "saved_sessions": saved_sessions,
+        }
 
     # --- Telemetry Processing & Sync ---
+    def get_car_setup_snapshot(self, force_refresh=False):
+        now = time.time()
+        if (
+            not force_refresh
+            and hasattr(self, "_cached_car_setup")
+            and self._cached_car_setup is not None
+            and (now - getattr(self, "_cached_car_setup_ts", 0)) < 2.0
+        ):
+            return self._cached_car_setup
+
+        if not self.ir.is_connected:
+            return None
+
+        try:
+            raw_car_setup = None
+            try:
+                raw_car_setup = self.ir['CarSetup']
+            except Exception:
+                raw_car_setup = None
+
+            driver_info = None
+            try:
+                driver_info = self.ir['DriverInfo']
+            except Exception:
+                driver_info = None
+
+            setup_name = "iRacing Garage Setup"
+            setup_modified = False
+            setup_load_type = "user"
+            car_screen_name = "Unknown Car"
+            car_path = ""
+            my_idx = self.get_safe('PlayerCarIdx', -1)
+
+            if isinstance(driver_info, dict):
+                setup_name = driver_info.get('DriverSetupName') or setup_name
+                setup_modified = bool(driver_info.get('DriverSetupIsModified', 0))
+                setup_load_type = driver_info.get('DriverSetupLoadTypeName') or setup_load_type
+                for d in driver_info.get('Drivers', []):
+                    if isinstance(d, dict) and d.get('CarIdx') == my_idx:
+                        car_screen_name = d.get('CarScreenName') or car_screen_name
+                        car_path = d.get('CarPath') or car_path
+                        break
+
+            live_dc = {
+                'dcBrakeBias': self.get_safe('dcBrakeBias', None),
+                'dcAntiRollFront': self.get_safe('dcAntiRollFront', None),
+                'dcAntiRollRear': self.get_safe('dcAntiRollRear', None),
+                'dcABS': self.get_safe('dcABS', None),
+                'dcTractionControl': self.get_safe('dcTractionControl', None),
+                'dcWingSetting': self.get_safe('dcWingSetting', None),
+                'LFcoldPressure': round(self.get_safe('LFcoldPressure', 0), 1),
+                'RFcoldPressure': round(self.get_safe('RFcoldPressure', 0), 1),
+                'LRcoldPressure': round(self.get_safe('LRcoldPressure', 0), 1),
+                'RRcoldPressure': round(self.get_safe('RRcoldPressure', 0), 1),
+                'LFrideHeight': round(self.get_safe('LFrideHeight', 0) * 1000, 1) if self.get_safe('LFrideHeight', 0) < 1.0 else round(self.get_safe('LFrideHeight', 0), 1),
+                'RFrideHeight': round(self.get_safe('RFrideHeight', 0) * 1000, 1) if self.get_safe('RFrideHeight', 0) < 1.0 else round(self.get_safe('RFrideHeight', 0), 1),
+                'LRrideHeight': round(self.get_safe('LRrideHeight', 0) * 1000, 1) if self.get_safe('LRrideHeight', 0) < 1.0 else round(self.get_safe('LRrideHeight', 0), 1),
+                'RRrideHeight': round(self.get_safe('RRrideHeight', 0) * 1000, 1) if self.get_safe('RRrideHeight', 0) < 1.0 else round(self.get_safe('RRrideHeight', 0), 1),
+                'FuelLevel': round(self.get_safe('FuelLevel', 0), 2),
+            }
+
+            snapshot = {
+                'setupName': str(setup_name),
+                'isModified': setup_modified,
+                'loadType': str(setup_load_type),
+                'carScreenName': str(car_screen_name),
+                'carPath': str(car_path),
+                'updateCount': raw_car_setup.get('UpdateCount', 0) if isinstance(raw_car_setup, dict) else 0,
+                'garageYaml': raw_car_setup if isinstance(raw_car_setup, dict) else {},
+                'liveInCar': live_dc,
+                'capturedAt': now,
+            }
+            self._cached_car_setup = snapshot
+            self._cached_car_setup_ts = now
+            return snapshot
+        except Exception as e:
+            self.log(f"CarSetup snapshot warning: {e}")
+            return None
+
     def get_safe(self, key, default_val=0):
         try:
             if key in self.ir.var_headers_names:
@@ -666,7 +817,8 @@ class TelemetryBridge:
                 'driverName': target_name,
                 'carNum': target_car_num,
                 'bestLap': target_best_lap,
-                'lastLap': target_last_lap
+                'lastLap': target_last_lap,
+                'car_setup': self.get_car_setup_snapshot()
             }
 
             session = {
@@ -1017,10 +1169,12 @@ class TelemetryBridge:
                     'trackId': session_data.get('trackId', 1),
                     'trackName': session_data.get('trackName', 'iRacing'),
                     'sessionType': session_type,
+                    'carName': player_car,
                     'date': time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()),
                     'driverName': self.config['driverName'],
                     'teamId': self.config['teamId']
                 },
+                'car_setup': self.get_car_setup_snapshot(force_refresh=True),
                 'laps': [],
                 'stints': [],
                 'events': [],
@@ -1058,19 +1212,46 @@ class TelemetryBridge:
                 fuel_used = prev_fuel - current_fuel
         elif hasattr(self, 'stint_start_fuel') and self.stint_start_fuel > current_fuel:
             fuel_used = self.stint_start_fuel - current_fuel
-            
+
+        car_setup_snap = self.get_car_setup_snapshot(force_refresh=True)
+        if car_setup_snap:
+            self.race_log['car_setup'] = car_setup_snap
+
         lap_entry = {
             'lap_num': lap_num,
             'lap_time': round(lap_time, 3),
             'fuel_level': round(current_fuel, 2),
             'fuel_used': round(max(0.0, fuel_used), 3),
             'position': telemetry.get('position', 0),
+            'track_temp': telemetry.get('track_temp'),
+            'air_temp': telemetry.get('air_temp'),
+            'tyres': telemetry.get('tyres', {}),
+            'setup_name': car_setup_snap.get('setupName') if isinstance(car_setup_snap, dict) else 'iRacing Garage Setup',
+            'setup_modified': bool(car_setup_snap.get('isModified')) if isinstance(car_setup_snap, dict) else False,
+            'car_setup': car_setup_snap,
             'timestamp': time.time()
         }
         self.race_log['laps'].append(lap_entry)
         self.current_stint_laps.append(lap_entry)
-        self.log(f"Logged Lap {lap_num}: {lap_time}s (Fuel Remaining: {current_fuel}L)")
+        self.log(f"Logged Lap {lap_num}: {lap_time}s (Fuel Remaining: {current_fuel}L, Setup: {lap_entry['setup_name']})")
         self.send_local_post("/api/bridge/end_lap", {"lapTime": lap_time})
+
+        # Persist incremental race_log checkpoint so Setup Engineer always sees completed laps
+        try:
+            sid = self.race_log['session_info']['sid']
+            logs_dir = os.path.join(BASE_DIR, "race_logs")
+            if not os.path.exists(logs_dir):
+                os.makedirs(logs_dir)
+            log_file = os.path.join(logs_dir, f"session_{sid}.json")
+            with open(log_file, "w", encoding="utf-8") as f:
+                json.dump(self.race_log, f, indent=4)
+        except Exception:
+            pass
+
+        try:
+            self.broadcast(self.get_setup_engineer_sync_payload(force_refresh=False))
+        except Exception:
+            pass
 
     def check_stint_transition(self, telemetry):
         if not hasattr(self, 'race_log') or self.race_log is None:
@@ -1434,13 +1615,17 @@ class TelemetryBridge:
             hostname_lower = hostname.lower()
             if hostname_lower in ('localhost', '0.0.0.0', '127.0.0.1', '::1', '169.254.169.254'):
                 return False
-            try:
-                ip = ipaddress.ip_address(hostname_lower)
-                if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved:
+            if hostname_lower.endswith('.local') or hostname_lower.endswith('.internal'):
+                return False
+
+            # Strict DNS resolution and private network check (SSRF / DNS rebinding prevention)
+            addr_info = socket.getaddrinfo(hostname_lower, 443, proto=socket.IPPROTO_TCP)
+            for family, socktype, proto, canonname, sockaddr in addr_info:
+                ip_str = sockaddr[0]
+                ip_obj = ipaddress.ip_address(ip_str)
+                if ip_obj.is_private or ip_obj.is_loopback or ip_obj.is_link_local or ip_obj.is_reserved:
                     return False
-            except ValueError:
-                if hostname_lower.endswith('.local') or hostname_lower.endswith('.internal'):
-                    return False
+
             return True
         except Exception:
             return False

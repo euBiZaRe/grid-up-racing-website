@@ -15,6 +15,10 @@ const host = process.env.HOST || '127.0.0.1';
 const DASH_TOKEN = process.env.DASH_TOKEN || '';
 
 const ALLOWED_ORIGINS = new Set([
+  'https://gridupracing.co.uk',
+  'https://www.gridupracing.co.uk',
+  'https://grid-up-racing.web.app',
+  'https://grid-up-racing.firebaseapp.com',
   'https://gridup.online',
   'https://www.gridup.online',
   'https://eubizare.github.io',
