@@ -2158,6 +2158,18 @@
                     <p style="font-size: 0.7rem; color: var(--text-muted); margin: 8px 0 0;">
                         Auto-detected by your driver profile name in the telemetry app.
                     </p>
+
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+                        <div>
+                            <div style="font-size: 0.75rem; font-weight: 700; color: #fff;">Telemetry Tool Updates</div>
+                            <div style="font-size: 0.7rem; color: var(--text-muted);">Sync the latest recorder and OTA logic</div>
+                        </div>
+                        <button type="button" id="btn-device-check-update" onclick="checkTelemetryRecorderUpdate()" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.5rem 0.9rem; border-color: rgba(16, 185, 129, 0.4); color: #10b981; background: rgba(16, 185, 129, 0.1); display: flex; align-items: center; gap: 6px; cursor: pointer; transition: all 0.2s;">
+                            <i class="fas fa-sync-alt" id="device-update-icon"></i>
+                            <span id="device-update-text">Check for Updates</span>
+                        </button>
+                    </div>
+                    <div id="device-update-status" style="display: none; margin-top: 10px; font-size: 0.75rem; padding: 0.6rem 0.8rem; border-radius: 6px; line-height: 1.4;"></div>
                 </div>
 
                 <!-- Detected Devices List -->
@@ -3379,6 +3391,112 @@
             setActiveMachineId(val);
             alert('Telemetry Recorder Machine ID updated: ' + val);
             closeSetupModals();
+        }
+
+        async function checkTelemetryRecorderUpdate() {
+            const btn = document.getElementById('btn-device-check-update');
+            const icon = document.getElementById('device-update-icon');
+            const text = document.getElementById('device-update-text');
+            const statusBox = document.getElementById('device-update-status');
+
+            if (btn) btn.disabled = true;
+            if (text) text.textContent = 'Checking...';
+            if (icon) icon.className = 'fas fa-sync-alt fa-spin';
+            if (statusBox) {
+                statusBox.style.display = 'block';
+                statusBox.style.background = 'rgba(59, 130, 246, 0.1)';
+                statusBox.style.color = '#60a5fa';
+                statusBox.style.border = '1px solid rgba(59, 130, 246, 0.2)';
+                statusBox.textContent = 'Connecting to local telemetry recorder on ws://127.0.0.1:23099...';
+            }
+
+            let resolved = false;
+
+            function finish(msg, type) {
+                if (resolved) return;
+                resolved = true;
+                if (btn) btn.disabled = false;
+                if (text) text.textContent = 'Check for Updates';
+                if (icon) icon.className = 'fas fa-sync-alt';
+
+                if (statusBox) {
+                    statusBox.style.display = 'block';
+                    if (type === 'success') {
+                        statusBox.style.background = 'rgba(16, 185, 129, 0.1)';
+                        statusBox.style.color = '#34d399';
+                        statusBox.style.border = '1px solid rgba(16, 185, 129, 0.25)';
+                    } else if (type === 'error') {
+                        statusBox.style.background = 'rgba(239, 68, 68, 0.1)';
+                        statusBox.style.color = '#f87171';
+                        statusBox.style.border = '1px solid rgba(239, 68, 68, 0.25)';
+                    } else {
+                        statusBox.style.background = 'rgba(59, 130, 246, 0.1)';
+                        statusBox.style.color = '#60a5fa';
+                        statusBox.style.border = '1px solid rgba(59, 130, 246, 0.2)';
+                    }
+                    statusBox.textContent = msg;
+                }
+
+                if (typeof showPortalGlobalToast === 'function') {
+                    showPortalGlobalToast(msg, type === 'error' ? 'error' : 'success');
+                }
+            }
+
+            try {
+                const ws = new WebSocket('ws://127.0.0.1:23099');
+                const timer = setTimeout(() => {
+                    try { ws.close(); } catch(e) {}
+                    fallbackCloud();
+                }, 3000);
+
+                ws.onopen = () => {
+                    try {
+                        ws.send(JSON.stringify({ action: "check_update" }));
+                    } catch(e) {
+                        clearTimeout(timer);
+                        fallbackCloud();
+                    }
+                };
+
+                ws.onmessage = (evt) => {
+                    clearTimeout(timer);
+                    try {
+                        const data = JSON.parse(evt.data);
+                        if (data.type === 'update_check_result') {
+                            ws.close();
+                            if (data.error) {
+                                finish(data.message || 'Update check encountered an error.', 'error');
+                            } else if (data.updated) {
+                                finish(data.message || `Telemetry logic updated to v${data.current_version}!`, 'success');
+                            } else {
+                                finish(data.message || `Telemetry Recorder is up to date (v${data.current_version}).`, 'success');
+                            }
+                        }
+                    } catch(e) {
+                        fallbackCloud();
+                    }
+                };
+
+                ws.onerror = () => {
+                    clearTimeout(timer);
+                    fallbackCloud();
+                };
+            } catch(err) {
+                fallbackCloud();
+            }
+
+            async function fallbackCloud() {
+                if (resolved) return;
+                try {
+                    const resp = await fetch('https://raw.githubusercontent.com/euBiZaRe/grid-up-racing-website/master/telemetry-app/version.json?_nocache=' + Date.now());
+                    if (!resp.ok) throw new Error('Cloud check failed');
+                    const manifest = await resp.json();
+                    const ver = manifest.logic_version || '1.6.1';
+                    finish(`Latest official Telemetry Logic is v${ver}. (Local desktop recorder offline - start it on your PC to auto-update).`, 'info');
+                } catch(e) {
+                    finish('Could not contact local Telemetry Recorder or update server.', 'error');
+                }
+            }
         }
 
         function initTelemetryDeviceDetector() {

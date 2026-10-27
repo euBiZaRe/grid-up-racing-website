@@ -1125,6 +1125,15 @@
                         <span>Lap Analysis</span>
                     </a>
                 </div>
+
+                <!-- Check for Updates Button -->
+                <div>
+                    <label class="selector-label">Telemetry Tool</label>
+                    <button type="button" id="btn-check-updates" onclick="checkTelemetryUpdates()" class="btn btn-outline" style="display: flex; align-items: center; justify-content: center; gap: 8px; height: 42px; border-radius: 12px; font-weight: 700; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; padding: 0 1.25rem; background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.4); color: #10b981; transition: all 0.3s ease; cursor: pointer;">
+                        <i data-lucide="refresh-cw" id="update-icon" style="width: 15px; height: 15px;"></i>
+                        <span id="update-btn-text">Check for Updates</span>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -2854,6 +2863,129 @@
                 }
             });
             traceAnimFrame = requestAnimationFrame(traceAnimLoop);
+        }
+
+        // =========================================================================
+        // TELEMETRY RECORDER OTA UPDATE CHECK ENGINE
+        // =========================================================================
+        function showTelemetryToast(message, type = 'info') {
+            let toast = document.getElementById('telemetry-global-toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'telemetry-global-toast';
+                toast.style.position = 'fixed';
+                toast.style.bottom = '2rem';
+                toast.style.right = '2rem';
+                toast.style.zIndex = '99999';
+                toast.style.padding = '0.9rem 1.4rem';
+                toast.style.borderRadius = '12px';
+                toast.style.fontSize = '0.85rem';
+                toast.style.fontWeight = '700';
+                toast.style.display = 'flex';
+                toast.style.alignItems = 'center';
+                toast.style.gap = '10px';
+                toast.style.boxShadow = '0 12px 30px rgba(0,0,0,0.6)';
+                toast.style.transition = 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
+                toast.style.backdropFilter = 'blur(10px)';
+                document.body.appendChild(toast);
+            }
+            const isSuccess = (type === 'success');
+            const isInfo = (type === 'info');
+            if (isSuccess) {
+                toast.style.background = 'rgba(16, 185, 129, 0.95)';
+                toast.style.border = '1px solid #34d399';
+            } else if (isInfo) {
+                toast.style.background = 'rgba(59, 130, 246, 0.95)';
+                toast.style.border = '1px solid #60a5fa';
+            } else {
+                toast.style.background = 'rgba(239, 68, 68, 0.95)';
+                toast.style.border = '1px solid #f87171';
+            }
+            toast.style.color = '#fff';
+            toast.innerHTML = `<span>${escapeHtml(message)}</span>`;
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateY(0) scale(1)';
+            clearTimeout(toast._timer);
+            toast._timer = setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(15px) scale(0.95)';
+            }, 4500);
+        }
+
+        async function checkTelemetryUpdates() {
+            const btn = document.getElementById('btn-check-updates');
+            const icon = document.getElementById('update-icon');
+            const text = document.getElementById('update-btn-text');
+            if (btn) btn.disabled = true;
+            if (text) text.textContent = 'Checking...';
+            if (icon) icon.style.animation = 'spin 1s linear infinite';
+
+            let resolved = false;
+
+            function finish(msg, type) {
+                if (resolved) return;
+                resolved = true;
+                if (btn) btn.disabled = false;
+                if (text) text.textContent = 'Check for Updates';
+                if (icon) icon.style.animation = '';
+                if (msg) showTelemetryToast(msg, type || 'info');
+            }
+
+            try {
+                const ws = new WebSocket('ws://127.0.0.1:23099');
+                const timeoutTimer = setTimeout(() => {
+                    try { ws.close(); } catch(e) {}
+                    fallbackCloudCheck();
+                }, 3200);
+
+                ws.onopen = () => {
+                    try {
+                        ws.send(JSON.stringify({ action: "check_update" }));
+                    } catch(e) {
+                        clearTimeout(timeoutTimer);
+                        fallbackCloudCheck();
+                    }
+                };
+
+                ws.onmessage = (evt) => {
+                    clearTimeout(timeoutTimer);
+                    try {
+                        const data = JSON.parse(evt.data);
+                        if (data.type === 'update_check_result') {
+                            ws.close();
+                            if (data.error) {
+                                finish(data.message || 'Update check encountered an error.', 'error');
+                            } else if (data.updated) {
+                                finish(data.message || `Telemetry logic updated to v${data.current_version}!`, 'success');
+                            } else {
+                                finish(data.message || `GRiD UP Telemetry is up to date (v${data.current_version}).`, 'success');
+                            }
+                        }
+                    } catch(e) {
+                        fallbackCloudCheck();
+                    }
+                };
+
+                ws.onerror = () => {
+                    clearTimeout(timeoutTimer);
+                    fallbackCloudCheck();
+                };
+            } catch(err) {
+                fallbackCloudCheck();
+            }
+
+            async function fallbackCloudCheck() {
+                if (resolved) return;
+                try {
+                    const resp = await fetch('https://raw.githubusercontent.com/euBiZaRe/grid-up-racing-website/master/telemetry-app/version.json?_nocache=' + Date.now());
+                    if (!resp.ok) throw new Error('Cloud check HTTP error ' + resp.status);
+                    const manifest = await resp.json();
+                    const ver = manifest.logic_version || '1.6.1';
+                    finish(`Latest official Telemetry Logic is v${ver}. (Local Telemetry Recorder not detected on this PC - start the app to apply OTA updates).`, 'info');
+                } catch(e) {
+                    finish('Could not contact local Telemetry Recorder or update server.', 'error');
+                }
+            }
         }
 
         // Trigger on DOM Loaded

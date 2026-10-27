@@ -426,6 +426,90 @@ class TelemetryBridge:
             })
         elif action == "get_setup_engineer_state":
             self.broadcast(self.get_setup_engineer_sync_payload(force_refresh=True))
+        elif action in ("check_update", "check_updates"):
+            self.check_and_apply_remote_update()
+
+    def check_and_apply_remote_update(self):
+        def worker():
+            try:
+                self.log("[OTA] Checking for remote updates from GitHub...")
+                manifest_url = f"https://raw.githubusercontent.com/euBiZaRe/grid-up-racing-website/master/telemetry-app/version.json?_nocache={int(time.time())}"
+                req = urllib.request.Request(manifest_url, headers={'User-Agent': 'GRiD-UP-Telemetry-Client/1.0'})
+                with urllib.request.urlopen(req, timeout=5.0) as resp:
+                    manifest = json.loads(resp.read().decode('utf-8'))
+
+                remote_logic = str(manifest.get('logic_version', '0.0.0')).strip()
+                notes = manifest.get('notes', '')
+
+                def parse_v(v):
+                    return tuple(int(p) for p in re.findall(r'\d+', str(v))) or (0, 0, 0)
+
+                current_v = parse_v(BRIDGE_VERSION)
+                target_v = parse_v(remote_logic)
+
+                if target_v > current_v:
+                    self.log(f"[OTA] Newer telemetry logic found: v{remote_logic} (current: v{BRIDGE_VERSION}). Downloading...")
+                    logic_url = f"https://raw.githubusercontent.com/euBiZaRe/grid-up-racing-website/master/telemetry-app/bridge_logic.py?_nocache={int(time.time())}"
+                    req_logic = urllib.request.Request(logic_url, headers={'User-Agent': 'GRiD-UP-Telemetry-Client/1.0'})
+                    with urllib.request.urlopen(req_logic, timeout=10.0) as resp_logic:
+                        code_bytes = resp_logic.read()
+                        code_text = code_bytes.decode('utf-8')
+
+                    compile(code_text, '<ota_download>', 'exec')
+
+                    local_app_dir = os.path.join(os.environ.get('LOCALAPPDATA', os.path.expanduser('~')), 'GRiD_UP_Telemetry')
+                    os.makedirs(local_app_dir, exist_ok=True)
+                    cached_path = os.path.join(local_app_dir, 'bridge_logic.py')
+                    version_path = os.path.join(local_app_dir, 'version.json')
+
+                    with open(cached_path, 'w', encoding='utf-8') as f:
+                        f.write(code_text)
+
+                    with open(version_path, 'w', encoding='utf-8') as f:
+                        json.dump({'logic_version': remote_logic, 'updated_at': time.time(), 'notes': notes}, f, indent=2)
+
+                    self.log(f"[OTA] Logic successfully downloaded and cached as v{remote_logic}.")
+                    res_payload = {
+                        "type": "update_check_result",
+                        "has_update": True,
+                        "updated": True,
+                        "current_version": remote_logic,
+                        "remote_version": remote_logic,
+                        "notes": notes,
+                        "message": f"Successfully updated to v{remote_logic} from GitHub! New algorithms active."
+                    }
+                else:
+                    self.log(f"[OTA] Telemetry logic is up to date (v{BRIDGE_VERSION}).")
+                    res_payload = {
+                        "type": "update_check_result",
+                        "has_update": False,
+                        "updated": False,
+                        "current_version": BRIDGE_VERSION,
+                        "remote_version": remote_logic,
+                        "notes": notes,
+                        "message": f"GRiD UP Telemetry is fully up to date (v{BRIDGE_VERSION})."
+                    }
+
+                self.broadcast(res_payload)
+                if self.status_callback:
+                    self.status_callback("update_result", res_payload)
+
+            except Exception as e:
+                err_msg = f"Update check failed: {e}"
+                self.log(f"[OTA] {err_msg}")
+                fail_payload = {
+                    "type": "update_check_result",
+                    "has_update": False,
+                    "updated": False,
+                    "error": True,
+                    "current_version": BRIDGE_VERSION,
+                    "message": err_msg
+                }
+                self.broadcast(fail_payload)
+                if self.status_callback:
+                    self.status_callback("update_result", fail_payload)
+
+        threading.Thread(target=worker, daemon=True).start()
 
     def get_setup_engineer_sync_payload(self, force_refresh=False):
         saved_sessions = []
