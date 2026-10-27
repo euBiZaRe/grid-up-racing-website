@@ -195,12 +195,14 @@ function updateCountdown(targetTimestamp, endVal = null, broadcastUrl = null, li
     function update() {
         const now = new Date().getTime();
         const countdownEl = document.getElementById('countdown');
+        const distance = targetDate - now;
         
         const hasLiveTelemetry = (typeof getActiveDriverList === 'function' && getActiveDriverList().length > 0) || Boolean(window.isSimulatingTelemetry);
 
         // 1. ONLY show Live state if telemetry is actively being streamed by a driver
         if (hasLiveTelemetry) {
             if (countdownEl) {
+                countdownEl.style.display = 'block';
                 const subtitleEl = document.getElementById('hero-event-subtitle');
                 if (subtitleEl && !subtitleEl.textContent.startsWith('LIVE NOW')) {
                     subtitleEl.textContent = `LIVE NOW: ${window.currentNextEvent?.name || 'RACE DAY'}`;
@@ -242,6 +244,7 @@ function updateCountdown(targetTimestamp, endVal = null, broadcastUrl = null, li
                     subtitleEl.style.color = 'var(--text-muted)';
                     subtitleEl.classList.remove('animate-pulse');
                 }
+                countdownEl.style.display = 'block';
                 countdownEl.innerHTML = "<div style='color: var(--text-muted); font-size: 1rem; letter-spacing: 2px;'>CHECK RECENT RESULTS BELOW</div>";
             }
             
@@ -256,8 +259,20 @@ function updateCountdown(targetTimestamp, endVal = null, broadcastUrl = null, li
             return true; // Stop timer
         }
         
-        // 3. Upcoming (before start date) - run standard countdown
-        const distance = targetDate - now;
+        // 3. Race is live or countdown reached 0 (distance <= 0 or now >= liveStartDate)
+        // Cleanly hide the countdown so negative time is never displayed
+        if (distance <= 0 || now >= liveStartDate) {
+            if (countdownEl) {
+                countdownEl.innerHTML = '';
+                countdownEl.style.display = 'none';
+            }
+            return false; // Keep running the timer until endDate to trigger transition
+        }
+        
+        // 4. Upcoming (before start date) - run standard countdown
+        if (countdownEl) {
+            countdownEl.style.display = 'block';
+        }
         const days = Math.floor(distance / (1000 * 60 * 60 * 24));
         const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
@@ -287,10 +302,10 @@ function updateCountdown(targetTimestamp, endVal = null, broadcastUrl = null, li
             }
         }
         
-        if (daysEl) daysEl.innerText = days.toString().padStart(2, '0');
-        if (hoursEl) hoursEl.innerText = hours.toString().padStart(2, '0');
-        if (minutesEl) minutesEl.innerText = minutes.toString().padStart(2, '0');
-        if (secondsEl) secondsEl.innerText = seconds.toString().padStart(2, '0');
+        if (daysEl) daysEl.innerText = Math.max(0, days).toString().padStart(2, '0');
+        if (hoursEl) hoursEl.innerText = Math.max(0, hours).toString().padStart(2, '0');
+        if (minutesEl) minutesEl.innerText = Math.max(0, minutes).toString().padStart(2, '0');
+        if (secondsEl) secondsEl.innerText = Math.max(0, seconds).toString().padStart(2, '0');
         return false;
     }
 
@@ -3288,14 +3303,29 @@ function renderHomepageTelemetryHUD() {
 
         // Restore countdown timer if it was showing LIVE NOW / RACE DAY
         if (countdownEl && (countdownEl.querySelector('.glow-text.animate-pulse') || countdownEl.querySelector('.live-player-container'))) {
-            countdownEl.innerHTML = `
-                <div class="mockup-countdown-grid">
-                    <div class="cd-box"><span id="days" class="cd-num">00</span><span class="cd-lbl">DAYS</span></div>
-                    <div class="cd-box"><span id="hours" class="cd-num">00</span><span class="cd-lbl">HOURS</span></div>
-                    <div class="cd-box"><span id="minutes" class="cd-num">00</span><span class="cd-lbl">MINS</span></div>
-                    <div class="cd-box"><span id="seconds" class="cd-num">00</span><span class="cd-lbl">SECS</span></div>
-                </div>
-            `;
+            const parseDateLocal = (d) => {
+                if (!d) return null;
+                if (typeof d.toDate === 'function') return d.toDate();
+                if (d.seconds) return new Date(d.seconds * 1000);
+                return new Date(d);
+            };
+            const eventStart = window.currentNextEvent ? parseDateLocal(window.currentNextEvent.startDate) : null;
+            const isFuture = eventStart && (eventStart.getTime() > Date.now());
+
+            if (isFuture) {
+                countdownEl.style.display = 'block';
+                countdownEl.innerHTML = `
+                    <div class="mockup-countdown-grid">
+                        <div class="cd-box"><span id="days" class="cd-num">00</span><span class="cd-lbl">DAYS</span></div>
+                        <div class="cd-box"><span id="hours" class="cd-num">00</span><span class="cd-lbl">HOURS</span></div>
+                        <div class="cd-box"><span id="minutes" class="cd-num">00</span><span class="cd-lbl">MINS</span></div>
+                        <div class="cd-box"><span id="seconds" class="cd-num">00</span><span class="cd-lbl">SECS</span></div>
+                    </div>
+                `;
+            } else {
+                countdownEl.innerHTML = '';
+                countdownEl.style.display = 'none';
+            }
             if (window.currentNextEvent) {
                 updateCountdown(window.currentNextEvent.startDate, window.currentNextEvent.endDate, window.currentNextEvent.broadcastUrl, window.currentNextEvent.practiceStart);
             }
