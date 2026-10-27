@@ -4335,7 +4335,7 @@ body.meeting-mode-active .btn-summary-confirm {
         }
 
         // Master Catalog of Tracks with Subfolder and Layout Support
-        const TRACK_LAYOUTS_CATALOG = [
+        let TRACK_LAYOUTS_CATALOG = [
             // --- European Circuits ---
             {
                 id: 'spa-gp',
@@ -4960,6 +4960,19 @@ body.meeting-mode-active .btn-summary-confirm {
                 keywords: 'martinsville paperclip virginia grandfather clock short track'
             }
         ];
+
+        // Asynchronously load the complete 424-layout catalog
+        if (typeof fetch === 'function') {
+            fetch('js/track-catalog.json')
+                .then(r => r.json())
+                .then(data => {
+                    if (Array.isArray(data) && data.length > 0) {
+                        TRACK_LAYOUTS_CATALOG = data;
+                        console.log(`[Admin] Loaded complete track layout catalog (${data.length} layouts)`);
+                    }
+                })
+                .catch(() => {});
+        }
 
         let currentTrackCategoryFilter = 'ALL';
         let currentSelectedTrackItem = null;

@@ -645,6 +645,18 @@ async function loadDynamicContent() {
     }
 }
 
+// Asynchronously load complete track catalog
+if (typeof fetch === 'function') {
+    fetch('js/track-catalog.json')
+        .then(r => r.json())
+        .then(data => {
+            if (Array.isArray(data) && data.length > 0) {
+                window.GLOBAL_TRACK_CATALOG = data;
+            }
+        })
+        .catch(() => {});
+}
+
 // Smart Track Image Resolver to ensure every circuit gets its authentic track outline
 // Supports subfolders (e.g. assets/tracks/oulton-park/fosters.png), layout variants, and flat fallbacks
 function resolveTrackImage(trackName, eventId, explicitTrackImg) {
@@ -660,6 +672,19 @@ function resolveTrackImage(trackName, eventId, explicitTrackImg) {
     // Direct path detection
     if (t.startsWith('assets/tracks/') && (t.endsWith('.png') || t.endsWith('.svg'))) {
         return trackName;
+    }
+
+    // Catalog lookup if available
+    if (window.GLOBAL_TRACK_CATALOG && Array.isArray(window.GLOBAL_TRACK_CATALOG)) {
+        const catMatch = window.GLOBAL_TRACK_CATALOG.find(entry => 
+            entry.displayName.toLowerCase() === t ||
+            entry.id.toLowerCase() === t ||
+            (entry.track.toLowerCase() === t) ||
+            (t.includes(entry.track.toLowerCase()) && t.includes(entry.layout.toLowerCase()))
+        );
+        if (catMatch) {
+            return catMatch.subfolderPath;
+        }
     }
 
     // Nürburgring Layouts
