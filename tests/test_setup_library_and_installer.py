@@ -230,7 +230,44 @@ class TestSetupLibraryAndInstaller(unittest.TestCase):
                 f"Valid public HTTPS URL was incorrectly rejected: {url}"
             )
 
+    def test_websocket_origin_security(self):
+        """Verify WebSocket server rejects untrusted origins (CSWSH) and permits official team origins."""
+        malicious_origins = [
+            "null",
+            "https://evil.com",
+            "https://attacker.github.io",
+            "https://fake-gridup.com",
+            "http://malicious-site.org",
+            "https://phishing.gridupracing.com",
+            "http://localhost:8080.evil.com"
+        ]
+        for origin in malicious_origins:
+            self.assertFalse(
+                self.bridge.is_safe_websocket_origin(origin),
+                f"Malicious origin was not rejected: {origin}"
+            )
+
+        valid_origins = [
+            None,
+            "",
+            "http://localhost",
+            "http://localhost:3000",
+            "http://127.0.0.1:5500",
+            "https://gridupracing.co.uk",
+            "https://portal.gridupracing.co.uk",
+            "https://grid-up-racing.web.app",
+            "https://grid-up-racing.firebaseapp.com",
+            "https://gridup.online",
+            "https://eubizare.github.io"
+        ]
+        for origin in valid_origins:
+            self.assertTrue(
+                self.bridge.is_safe_websocket_origin(origin),
+                f"Valid official origin was incorrectly rejected: {origin}"
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
+
 

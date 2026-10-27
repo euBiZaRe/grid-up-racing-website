@@ -225,6 +225,32 @@ class TelemetryBridge:
         if self.status_callback:
             self.status_callback("log", message)
 
+    def is_safe_websocket_origin(self, origin):
+        if not origin:
+            # Local non-browser client without Origin header (e.g. CLI, python script)
+            return True
+        if origin == "null":
+            # Reject sandboxed iframes or opaque origin attempts
+            return False
+        try:
+            parsed = urllib.parse.urlparse(origin)
+            if parsed.scheme.lower() not in ("http", "https"):
+                return False
+            # Accessing parsed.port validates that the port (if present) is a valid integer, preventing parser confusion
+            _ = parsed.port
+            host = (parsed.hostname or "").lower()
+            if not host:
+                return False
+            if host in ("localhost", "127.0.0.1"):
+                return True
+            if host in ("gridupracing.co.uk", "grid-up-racing.web.app", "grid-up-racing.firebaseapp.com", "gridup.online", "eubizare.github.io"):
+                return True
+            if host.endswith(".gridupracing.co.uk") or host.endswith(".gridup.online"):
+                return True
+            return False
+        except Exception:
+            return False
+
     # --- WebSocket Server Implementation ---
     def start_websocket_server(self):
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -237,26 +263,6 @@ class TelemetryBridge:
             self.log(f"WebSocket server failed to bind: {e}")
             return
 
-        def is_safe_websocket_origin(origin):
-            if not origin:
-                # Local non-browser client without Origin header (e.g. CLI, python script)
-                return True
-            if origin == "null":
-                # Reject sandboxed iframes or opaque origin attempts
-                return False
-            try:
-                parsed = urllib.parse.urlparse(origin)
-                host = (parsed.hostname or "").lower()
-                if host in ("localhost", "127.0.0.1"):
-                    return True
-                if host in ("gridupracing.co.uk", "grid-up-racing.web.app", "grid-up-racing.firebaseapp.com", "gridup.online", "eubizare.github.io"):
-                    return True
-                if host.endswith(".gridupracing.co.uk") or host.endswith(".gridup.online"):
-                    return True
-                return False
-            except Exception:
-                return False
-
         def handle_client(client_socket):
             try:
                 request = client_socket.recv(4096).decode('utf-8', errors='ignore')
@@ -268,7 +274,7 @@ class TelemetryBridge:
                 origin_match = re.search(r"(?i)^Origin:\s*(\S+)", request, re.MULTILINE)
                 if origin_match:
                     origin = origin_match.group(1).strip()
-                    if not is_safe_websocket_origin(origin):
+                    if not self.is_safe_websocket_origin(origin):
                         self.log(f"[WebSocket] Blocked untrusted cross-origin connection from: {origin}")
                         client_socket.sendall(b"HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n")
                         client_socket.close()

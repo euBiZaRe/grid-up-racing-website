@@ -1179,6 +1179,16 @@
 
     <!-- Realtime Telemetry Sync Logic -->
     <script>
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
         // ===== TRACK MAP ENGINE (60fps Progress-Interpolated) =====
         let serverTimeOffset = 0;
         let trackMapData = null;
@@ -1528,7 +1538,7 @@
             let html = '<div class="track-map-legend-item"><div class="track-map-legend-dot" style="background: #f59e0b; box-shadow: 0 0 6px #f59e0b;"></div> You</div>';
             html += '<div class="track-map-legend-item"><div class="track-map-legend-dot" style="background: #ef4444;"></div> S/F Line</div>';
             Object.keys(classes).forEach(name => {
-                html += `<div class="track-map-legend-item"><div class="track-map-legend-dot" style="background: #${classes[name]};"></div> ${name}</div>`;
+                html += `<div class="track-map-legend-item"><div class="track-map-legend-dot" style="background: #${escapeHtml(classes[name])};"></div> ${escapeHtml(name)}</div>`;
             });
             legend.innerHTML = html;
         }
@@ -1782,7 +1792,7 @@
                         <div class="empty-wrapper">
                             <i data-lucide="activity" class="empty-icon" style="width: 48px; height: 48px;"></i>
                             <div class="empty-title">No Active Streams</div>
-                            <div class="empty-desc">No drivers are currently streaming telemetry on team "${teamId}". Run the recorder client and drive in iRacing to go live!</div>
+                            <div class="empty-desc">No drivers are currently streaming telemetry on team "${escapeHtml(teamId)}". Run the recorder client and drive in iRacing to go live!</div>
                         </div>
                     `;
                     lucide.createIcons();
@@ -2012,7 +2022,7 @@
                     }
 
                     driversHtml += `
-                        <div class="telemetry-driver-card" id="card-${mid}">
+                        <div class="telemetry-driver-card" id="card-${escapeHtml(mid)}">
                             <!-- Card Header -->
                             <div class="card-header">
                                 <div class="driver-info-block">
@@ -2021,13 +2031,13 @@
                                     </div>
                                     <div>
                                         <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                                            <h3 class="driver-name">${driverName}</h3>
+                                            <h3 class="driver-name">${escapeHtml(driverName)}</h3>
                                             ${isDriverSpectating ? `
                                                 <span class="spectating-badge"><i data-lucide="eye" style="width: 10px; height: 10px;"></i> Spectating</span>
                                             ` : ''}
                                         </div>
                                         <div class="driver-metadata">
-                                            <span class="car-num-tag">Car #${carNum}</span>
+                                            <span class="car-num-tag">Car #${escapeHtml(carNum)}</span>
                                             <span style="font-size: 0.65rem; color: #10b981; font-weight: bold; display: flex; align-items: center; gap: 4px;">
                                                 <span class="live-dot" style="margin-right: 0;"></span> Live
                                             </span>
@@ -2035,10 +2045,10 @@
                                     </div>
                                 </div>
                                 <div class="session-info">
-                                    <span class="session-sid">Session ID: ${session.sid || "N/A"}</span>
+                                    <span class="session-sid">Session ID: ${escapeHtml(session.sid || "N/A")}</span>
                                     <div class="session-track">
                                         <i data-lucide="map" style="width: 12px; height: 12px;"></i>
-                                        <span>${session.trackName || "iRacing UI"}</span>
+                                        <span>${escapeHtml(session.trackName || "iRacing UI")}</span>
                                     </div>
                                 </div>
                             </div>
@@ -2155,9 +2165,9 @@
                         
                         standingsRows += `
                             <tr class="${rowClass}">
-                                <td style="text-align: center; font-weight: bold;">${d.classPos || d.pos}</td>
-                                <td><span class="car-num-tag">${d.carNum}</span></td>
-                                <td><div style="display:flex; align-items:center; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${classIndicator}${d.name}</div></td>
+                                <td style="text-align: center; font-weight: bold;">${escapeHtml(d.classPos || d.pos)}</td>
+                                <td><span class="car-num-tag">${escapeHtml(d.carNum)}</span></td>
+                                <td><div style="display:flex; align-items:center; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${classIndicator}${escapeHtml(d.name)}</div></td>
                                 <td style="text-align: center;">${d.lap || 0}</td>
                                 <td style="text-align: right;" class="laptime-mono">${formatLapTime(d.lastLap)}</td>
                                 <td style="text-align: right; color:#f3f4f6;" class="laptime-mono">${formatLapTime(d.bestLap)}</td>
@@ -2327,10 +2337,10 @@
 
                         relativeRows += `
                             <tr class="${rowClass}">
-                                <td style="text-align: center; font-weight: bold;">${displayPos}</td>
-                                <td><span class="car-num-tag">${d.carNum || '-'}</span></td>
-                                <td><div style="display:flex; align-items:center; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:${driverNameColor}; font-weight:${m.isPlayer ? '800' : '500'};">${classIndicator}${d.name}${pitBadge}</div></td>
-                                <td style="text-align: center; font-weight: bold; color: ${gapColor}; font-family: monospace;">${gapStr}</td>
+                                <td style="text-align: center; font-weight: bold;">${escapeHtml(displayPos)}</td>
+                                <td><span class="car-num-tag">${escapeHtml(d.carNum || '-')}</span></td>
+                                <td><div style="display:flex; align-items:center; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:${driverNameColor}; font-weight:${m.isPlayer ? '800' : '500'};">${classIndicator}${escapeHtml(d.name)}${pitBadge}</div></td>
+                                <td style="text-align: center; font-weight: bold; color: ${gapColor}; font-family: monospace;">${escapeHtml(gapStr)}</td>
                             </tr>
                         `;
                     });
@@ -2771,7 +2781,7 @@
             
             let html = '';
             filteredOptions.forEach(opt => {
-                html += `<option value="${opt.value}">${opt.text}</option>`;
+                html += `<option value="${escapeHtml(opt.value)}">${escapeHtml(opt.text)}</option>`;
             });
             
             teamSelect.innerHTML = html;
