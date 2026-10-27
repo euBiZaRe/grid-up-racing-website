@@ -3426,6 +3426,66 @@ body[data-theme="theme-purple"]::before, body::before {
     50% { opacity: 0.4; transform: scale(0.85); }
 }
 
+.tel-team-selector-wrap {
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+}
+
+.tel-team-select-dropdown {
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(0, 207, 255, 0.35);
+    color: #00cfff;
+    font-family: var(--font-heading);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    padding: 4px 26px 4px 9px;
+    border-radius: 6px;
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2300cfff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    transition: all 0.2s ease;
+}
+
+.tel-team-select-dropdown:hover,
+.tel-team-select-dropdown:focus {
+    border-color: #00cfff;
+    box-shadow: 0 0 12px rgba(0, 207, 255, 0.35);
+}
+
+.tel-team-select-dropdown option {
+    background: #0b101b;
+    color: #fff;
+    font-size: 0.85rem;
+    padding: 8px;
+}
+
+.tel-no-stream-msg {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 1.1rem 1.3rem;
+    background: rgba(15, 23, 42, 0.75);
+    border: 1px dashed rgba(255, 255, 255, 0.16);
+    border-radius: 10px;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    font-family: 'JetBrains Mono', monospace;
+    margin: 0.5rem 0 1rem;
+    animation: fadeInHud 0.3s ease-out;
+}
+
+.tel-no-stream-msg svg {
+    color: #fbbf24;
+    flex-shrink: 0;
+}
+
 .tel-driver-meta {
     display: inline-flex;
     align-items: center;

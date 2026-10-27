@@ -2916,6 +2916,17 @@ window.filterPodiumResults = function(filter) {
 // HOMEPAGE LIVE TELEMETRY COCKPIT ENGINE
 // ==========================================================================
 const TELEMETRY_RTDB_URL = "https://grid-up-racedash-default-rtdb.europe-west1.firebasedatabase.app";
+const DEFAULT_TELEMETRY_TEAMS = [
+    { id: 'gridUp_sim', name: 'GRiD UP Sim Racing', color: '#00cfff' },
+    { id: 'gridUp_black', name: 'GRiD UP Black', color: '#222222' },
+    { id: 'gridUp_blue', name: 'GRiD UP Blue', color: '#0066ff' },
+    { id: 'gridUp_red', name: 'GRiD UP Red', color: '#ff0033' },
+    { id: 'gridUp_white', name: 'GRiD UP White', color: '#ffffff' },
+    { id: 'gridUp_purple', name: 'GRiD UP Purple', color: '#a855f7' },
+    { id: 'gridUp_practice', name: 'Practice Server', color: '#fbbf24' }
+];
+
+let availableTelemetryTeams = [...DEFAULT_TELEMETRY_TEAMS];
 const TELEMETRY_TEAMS = ['gridUp_sim', 'gridUp_black', 'gridUp_blue', 'gridUp_red', 'gridUp_white', 'gridUp_purple', 'gridUp_practice'];
 
 let homeTelemetryApp = null;
@@ -2924,6 +2935,8 @@ let activeTelemetryStreams = {}; // key: `${teamId}_${mid}` -> { teamId, mid, st
 let activeTelemetryDrivers = {}; // key: `${teamId}_${mid}` -> driver presence
 let homeTelemetryListeners = [];
 let homeTelemetryPollTimer = null;
+let selectedTelemetryTeamId = null;
+let userManuallySelectedTeam = false;
 let selectedTelemetryKey = null;
 let isHomepageTelemetryActive = false;
 let isSimulatingTelemetry = false;
@@ -2953,6 +2966,58 @@ function getHomeTelemetryDb() {
     }
 }
 
+function syncAvailableTelemetryTeams() {
+    const db = getHomeTelemetryDb();
+    if (db) {
+        db.ref('teams/meta_teams').once('value', snapshot => {
+            const data = snapshot.val();
+            if (data && typeof data === 'object') {
+                const list = [];
+                Object.keys(data).forEach(key => {
+                    const t = data[key];
+                    if (t.enabled !== false) {
+                        list.push({
+                            id: key,
+                            name: t.name || key,
+                            color: t.color || '#00cfff',
+                            order: t.order || 99
+                        });
+                    }
+                });
+                list.sort((a, b) => a.order - b.order);
+                if (list.length > 0) {
+                    availableTelemetryTeams = list;
+                    updateHomepageTeamDropdown();
+                }
+            }
+        });
+    } else {
+        fetch(`${TELEMETRY_RTDB_URL}/teams/meta_teams.json`)
+            .then(r => r.ok ? r.json() : null)
+            .then(data => {
+                if (data && typeof data === 'object') {
+                    const list = [];
+                    Object.keys(data).forEach(key => {
+                        const t = data[key];
+                        if (t.enabled !== false) {
+                            list.push({
+                                id: key,
+                                name: t.name || key,
+                                color: t.color || '#00cfff',
+                                order: t.order || 99
+                            });
+                        }
+                    });
+                    list.sort((a, b) => a.order - b.order);
+                    if (list.length > 0) {
+                        availableTelemetryTeams = list;
+                        updateHomepageTeamDropdown();
+                    }
+                }
+            }).catch(() => {});
+    }
+}
+
 function stopHomepageLiveTelemetry() {
     if (!isHomepageTelemetryActive && !isSimulatingTelemetry) return;
     isHomepageTelemetryActive = false;
@@ -2978,6 +3043,7 @@ function stopHomepageLiveTelemetry() {
     activeTelemetryStreams = {};
     activeTelemetryDrivers = {};
     selectedTelemetryKey = null;
+    userManuallySelectedTeam = false;
 
     const hud = document.getElementById('hero-live-telemetry-hud');
     if (hud) hud.style.display = 'none';
@@ -3013,6 +3079,21 @@ function getActiveDriverList() {
     return active;
 }
 
+function updateHomepageTeamDropdown(activeTeamIds) {
+    const selectEl = document.getElementById('hero-tel-team-select');
+    if (!selectEl) return;
+
+    const optionsHtml = availableTelemetryTeams.map(t => {
+        const isActive = activeTeamIds.has(t.id);
+        const prefix = isActive ? '🟢 ' : '';
+        const suffix = isActive ? ' (Active)' : '';
+        return `<option value="${t.id}" ${t.id === selectedTelemetryTeamId ? 'selected' : ''}>${prefix}${t.name}${suffix}</option>`;
+    }).join('');
+
+    selectEl.innerHTML = optionsHtml;
+    selectEl.value = selectedTelemetryTeamId;
+}
+
 function renderHomepageTelemetryHUD() {
     const hud = document.getElementById('hero-live-telemetry-hud');
     if (!hud) return;
@@ -3020,7 +3101,7 @@ function renderHomepageTelemetryHUD() {
     const activeDrivers = getActiveDriverList();
     const telBtn = document.getElementById('hero-telemetry-btn');
 
-    // ONLY show if a driver has the telemetry tool working
+    // ONLY show if at least one driver has the telemetry tool working
     if (activeDrivers.length === 0) {
         hud.style.display = 'none';
         if (telBtn) {
@@ -3035,12 +3116,51 @@ function renderHomepageTelemetryHUD() {
         telBtn.style.display = 'inline-flex';
     }
 
-    let activeItem = activeDrivers.find(d => d.key === selectedTelemetryKey);
+    const activeTeamIds = new Set(activeDrivers.map(d => d.teamId));
+
+    // If user hasn't manually locked a team, or current team has no active drivers, default to first active team
+    if (!selectedTelemetryTeamId || (!activeTeamIds.has(selectedTelemetryTeamId) && !userManuallySelectedTeam)) {
+        selectedTelemetryTeamId = activeDrivers[0].teamId;
+    }
+
+    updateHomepageTeamDropdown(activeTeamIds);
+
+    const teamActiveDrivers = activeDrivers.filter(d => d.teamId === selectedTelemetryTeamId);
+    const noStreamMsg = document.getElementById('hero-tel-no-stream-msg');
+    const metricsGrid = document.getElementById('hero-tel-metrics-grid');
+    const switcherEl = document.getElementById('hero-tel-driver-switcher');
+
+    // If the user selected a team that currently has no active drivers streaming
+    if (teamActiveDrivers.length === 0) {
+        if (noStreamMsg) {
+            noStreamMsg.style.display = 'flex';
+            const selectedTeamObj = availableTelemetryTeams.find(t => t.id === selectedTelemetryTeamId);
+            const teamName = selectedTeamObj ? selectedTeamObj.name : selectedTelemetryTeamId;
+            noStreamMsg.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span>No active telemetry streams for <strong>${teamName}</strong>. Select another team above or run the telemetry tool in iRacing.</span>
+            `;
+        }
+        if (metricsGrid) metricsGrid.style.display = 'none';
+        if (switcherEl) switcherEl.style.display = 'none';
+
+        const nameEl = document.getElementById('hero-tel-driver-name');
+        if (nameEl) nameEl.textContent = 'No Driver Streaming';
+        const numEl = document.getElementById('hero-tel-car-num');
+        if (numEl) numEl.textContent = '#--';
+        return;
+    }
+
+    // Team has active drivers! Show metrics grid and hide empty notice
+    if (noStreamMsg) noStreamMsg.style.display = 'none';
+    if (metricsGrid) metricsGrid.style.display = 'grid';
+
+    let activeItem = teamActiveDrivers.find(d => d.key === selectedTelemetryKey);
     if (!activeItem) {
-        activeItem = activeDrivers.find(d => {
+        activeItem = teamActiveDrivers.find(d => {
             const tel = d.stream?.telemetry || {};
             return (tel.speed > 0.5) || (tel.drivers && Object.values(tel.drivers).some(drv => drv && drv.isPlayer));
-        }) || activeDrivers[0];
+        }) || teamActiveDrivers[0];
         selectedTelemetryKey = activeItem.key;
     }
 
@@ -3105,20 +3225,6 @@ function renderHomepageTelemetryHUD() {
     const numEl = document.getElementById('hero-tel-car-num');
     if (numEl) numEl.textContent = String(carNum).startsWith('#') ? carNum : `#${carNum}`;
 
-    const teamTagEl = document.getElementById('hero-tel-team-tag');
-    if (teamTagEl) {
-        const teamNames = {
-            gridUp_sim: 'GRiD UP Sim Racing',
-            gridUp_black: 'GRiD UP Black',
-            gridUp_blue: 'GRiD UP Blue',
-            gridUp_red: 'GRiD UP Red',
-            gridUp_white: 'GRiD UP White',
-            gridUp_purple: 'GRiD UP Purple',
-            gridUp_practice: 'GRiD UP Practice Server'
-        };
-        teamTagEl.textContent = teamNames[activeItem.teamId] || 'GRiD UP Racing';
-    }
-
     const posEl = document.getElementById('hero-tel-pos');
     if (posEl) posEl.textContent = displayPos;
 
@@ -3143,12 +3249,11 @@ function renderHomepageTelemetryHUD() {
     const fuelEl = document.getElementById('hero-tel-fuel');
     if (fuelEl) fuelEl.textContent = `FUEL: ${fuelText}`;
 
-    // Multi-driver switcher pills
-    const switcherEl = document.getElementById('hero-tel-driver-switcher');
+    // Multi-driver switcher pills for current team
     if (switcherEl) {
-        if (activeDrivers.length > 1) {
+        if (teamActiveDrivers.length > 1) {
             switcherEl.style.display = 'inline-flex';
-            switcherEl.innerHTML = activeDrivers.map(d => {
+            switcherEl.innerHTML = teamActiveDrivers.map(d => {
                 const s = d.stream || {};
                 const t = s.telemetry || {};
                 const dName = t.driverName || d.driverPresence?.name || d.mid.slice(0, 5);
@@ -3173,6 +3278,8 @@ function initHomepageLiveTelemetry(isLive, eventObj, forcePreview) {
         return;
     }
 
+    syncAvailableTelemetryTeams();
+
     if (isHomepageTelemetryActive) {
         renderHomepageTelemetryHUD();
         return;
@@ -3180,7 +3287,6 @@ function initHomepageLiveTelemetry(isLive, eventObj, forcePreview) {
 
     isHomepageTelemetryActive = true;
 
-    // In preview mode without real live drivers, start simulated driver
     if (isPreviewRequested && !isSimulatingTelemetry) {
         window.simulateLiveTelemetry(true);
         return;
@@ -3288,6 +3394,18 @@ async function startHomepageTelemetryRestPolling() {
     homeTelemetryPollTimer = setInterval(fetchTeamStreams, 5000);
 }
 
+window.selectHomepageTelemetryTeam = function(teamId) {
+    selectedTelemetryTeamId = teamId;
+    userManuallySelectedTeam = true;
+    selectedTelemetryKey = null;
+    renderHomepageTelemetryHUD();
+};
+
+window.selectHomepageTelemetryDriver = function(key) {
+    selectedTelemetryKey = key;
+    renderHomepageTelemetryHUD();
+};
+
 window.simulateLiveTelemetry = function(enable) {
     if (enable === false) {
         if (simulatedTelemetryInterval) {
@@ -3295,7 +3413,11 @@ window.simulateLiveTelemetry = function(enable) {
             simulatedTelemetryInterval = null;
         }
         isSimulatingTelemetry = false;
-        delete activeTelemetryStreams['sim_demo'];
+        delete activeTelemetryStreams['sim_demo_sim'];
+        delete activeTelemetryStreams['sim_demo_red'];
+        delete activeTelemetryStreams['sim_demo_blue'];
+        delete activeTelemetryStreams['sim_demo_purple'];
+        userManuallySelectedTeam = false;
         renderHomepageTelemetryHUD();
         console.log("Telemetry simulation stopped.");
         return;
@@ -3304,78 +3426,79 @@ window.simulateLiveTelemetry = function(enable) {
     isSimulatingTelemetry = true;
     isHomepageTelemetryActive = true;
 
-    let mockSpeed = 160;
-    let mockRpm = 6200;
-    let mockGear = 4;
-    let mockLap = 14;
-    let mockFuel = 42.4;
-    let accelerating = true;
+    // Multi-team simulation parameters
+    const mockTeams = {
+        gridUp_sim: { driver: 'Matty Roberts', carNum: '64', speed: 175, gear: 4, rpm: 6400, pos: 2, classPos: 2, lap: 14, fuel: 42.4, accel: true },
+        gridUp_red: { driver: 'Andrew Fabian', carNum: '22', speed: 282, gear: 6, rpm: 8450, pos: 1, classPos: 1, lap: 15, fuel: 31.8, accel: false },
+        gridUp_blue: { driver: 'Martyn Cook', carNum: '88', speed: 215, gear: 5, rpm: 7100, pos: 4, classPos: 4, lap: 14, fuel: 48.0, accel: true },
+        gridUp_purple: { driver: 'Adam Jones', carNum: '77', speed: 245, gear: 5, rpm: 7800, pos: 3, classPos: 3, lap: 14, fuel: 37.2, accel: true }
+    };
 
     if (simulatedTelemetryInterval) clearInterval(simulatedTelemetryInterval);
 
     simulatedTelemetryInterval = setInterval(() => {
-        if (accelerating) {
-            mockSpeed += 2.8;
-            mockRpm += 115;
-            if (mockRpm > 8700) {
-                if (mockGear < 6) {
-                    mockGear++;
-                    mockRpm = 6350;
-                } else {
-                    accelerating = false;
+        Object.keys(mockTeams).forEach(tId => {
+            const m = mockTeams[tId];
+            if (m.accel) {
+                m.speed += 2.6;
+                m.rpm += 115;
+                if (m.rpm > 8700) {
+                    if (m.gear < 6) {
+                        m.gear++;
+                        m.rpm = 6350;
+                    } else {
+                        m.accel = false;
+                    }
+                }
+            } else {
+                m.speed -= 3.4;
+                m.rpm -= 160;
+                if (m.rpm < 5800) {
+                    if (m.gear > 3) {
+                        m.gear--;
+                        m.rpm = 8100;
+                    } else {
+                        m.accel = true;
+                    }
                 }
             }
-        } else {
-            mockSpeed -= 3.5;
-            mockRpm -= 160;
-            if (mockRpm < 5800) {
-                if (mockGear > 3) {
-                    mockGear--;
-                    mockRpm = 8100;
-                } else {
-                    accelerating = true;
-                }
-            }
-        }
 
-        activeTelemetryStreams['sim_demo'] = {
-            key: 'sim_demo',
-            teamId: 'gridUp_sim',
-            mid: 'sim_demo_mid',
-            stream: {
-                is_live: true,
-                timestamp: Date.now(),
-                telemetry: {
-                    driverName: "Matty Roberts",
-                    carNum: "64",
-                    speed: mockSpeed / 3.6,
-                    gear: mockGear,
-                    rpm: Math.round(mockRpm),
-                    position: 2,
-                    classPos: 2,
-                    lap: mockLap,
-                    fuel: mockFuel,
+            activeTelemetryStreams[`sim_${tId}`] = {
+                key: `sim_${tId}`,
+                teamId: tId,
+                mid: `mid_${tId}`,
+                stream: {
                     is_live: true,
-                    timestamp: Date.now()
+                    timestamp: Date.now(),
+                    telemetry: {
+                        driverName: m.driver,
+                        carNum: m.carNum,
+                        speed: m.speed / 3.6,
+                        gear: m.gear,
+                        rpm: Math.round(m.rpm),
+                        position: m.pos,
+                        classPos: m.classPos,
+                        lap: m.lap,
+                        fuel: m.fuel,
+                        is_live: true,
+                        timestamp: Date.now()
+                    }
+                },
+                driverPresence: {
+                    name: m.driver,
+                    carNum: m.carNum,
+                    status: "online"
                 }
-            },
-            driverPresence: {
-                name: "Matty Roberts",
-                carNum: "64",
-                status: "online"
-            }
-        };
+            };
+        });
 
-        selectedTelemetryKey = 'sim_demo';
+        if (!selectedTelemetryTeamId) {
+            selectedTelemetryTeamId = 'gridUp_sim';
+        }
         renderHomepageTelemetryHUD();
     }, 150);
 
-    console.log("Live Telemetry simulation running. Call simulateLiveTelemetry(false) to stop.");
-};
-
-window.selectHomepageTelemetryDriver = function(key) {
-    selectedTelemetryKey = key;
-    renderHomepageTelemetryHUD();
+    console.log("Live Telemetry multi-team simulation running. Call simulateLiveTelemetry(false) to stop.");
 };
 
 window.initHomepageLiveTelemetry = initHomepageLiveTelemetry;

@@ -478,10 +478,18 @@
                                     <span class="tel-live-beacon">
                                         <span class="beacon-dot"></span> LIVE TELEMETRY
                                     </span>
+                                    
+                                    <!-- Team Switcher Selector -->
+                                    <div class="tel-team-selector-wrap">
+                                        <label for="hero-tel-team-select" class="sr-only">Select Team</label>
+                                        <select id="hero-tel-team-select" class="tel-team-select-dropdown" aria-label="Select Team" onchange="window.selectHomepageTelemetryTeam(this.value)">
+                                            <option value="gridUp_sim">GRiD UP Sim Racing</option>
+                                        </select>
+                                    </div>
+
                                     <div class="tel-driver-meta" id="hero-tel-driver-meta">
                                         <span class="tel-driver-name" id="hero-tel-driver-name">--</span>
                                         <span class="tel-car-num" id="hero-tel-car-num">#--</span>
-                                        <span class="tel-team-tag" id="hero-tel-team-tag">GRiD UP Sim Racing</span>
                                     </div>
                                 </div>
                                 <div class="tel-hud-actions">
@@ -492,7 +500,13 @@
                                 </div>
                             </div>
 
-                            <div class="tel-hud-metrics-grid">
+                            <!-- Team Empty Stream Notice (Shown when selected team is offline) -->
+                            <div id="hero-tel-no-stream-msg" class="tel-no-stream-msg" style="display: none;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                <span>No active telemetry streams for this team. Switch teams above or start the telemetry app in iRacing.</span>
+                            </div>
+
+                            <div class="tel-hud-metrics-grid" id="hero-tel-metrics-grid">
                                 <!-- Position -->
                                 <div class="tel-metric-box metric-pos">
                                     <div class="tel-metric-label">POSITION</div>
