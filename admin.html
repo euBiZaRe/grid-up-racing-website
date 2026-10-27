@@ -2908,52 +2908,71 @@ body.meeting-mode-active .btn-summary-confirm {
                         <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">EVENT NAME</label>
                         <input type="text" id="edit-event-name" class="btn btn-outline" style="width:100%; text-align:left;" placeholder="e.g. Spa 24hr">
                     </div>
+                    <!-- Searchable Track & Layout Combobox -->
                     <div>
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                            <label style="font-size: 0.7rem; color: var(--primary); letter-spacing: 1px; font-weight: 700;">TRACK SELECTION (WITH VERIFIED TRACK MAP)</label>
+                            <label style="font-size: 0.7rem; color: var(--primary); letter-spacing: 1px; font-weight: 700;">TRACK &amp; LAYOUT SELECTION</label>
                             <span id="track-verified-pill" style="font-size: 0.65rem; background: rgba(0, 207, 255, 0.15); color: var(--primary); padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(0,207,255,0.3); font-weight: 600;">VERIFIED MAP</span>
                         </div>
-                        <select id="edit-event-track-select" class="btn btn-outline" onchange="onAdminTrackSelectChange(this.value)" style="width: 100%; text-align: left; background: #0b111e; color: #fff; border: 1px solid rgba(0,207,255,0.4); padding: 0.75rem; border-radius: 8px; font-size: 0.9rem; cursor: pointer;">
-                            <optgroup label="🏁 European Circuits">
-                                <option value="Circuit de Spa-Francorchamps" data-img="assets/tracks/spa.png" data-specs="4.35mi • 19 TURNS • GRAND PRIX">Circuit de Spa-Francorchamps</option>
-                                <option value="Nürburgring Combined / 24h" data-img="assets/tracks/nurburgring-24h.png" data-specs="15.14mi (24.36km) • 170 TURNS • COMBINED VLN">Nürburgring Combined / 24h</option>
-                                <option value="Nürburgring Nordschleife" data-img="assets/tracks/nordschleife.png" data-specs="12.93mi • 154 TURNS • NORDSCHLEIFE">Nürburgring Nordschleife</option>
-                                <option value="Oulton Park Circuit" data-img="assets/tracks/oulton-park.png" data-specs="2.69mi (4.33km) • 17 TURNS • INTERNATIONAL">Oulton Park Circuit</option>
-                                <option value="Silverstone Circuit" data-img="assets/tracks/silverstone.png" data-specs="3.66mi • 18 TURNS • GRAND PRIX">Silverstone Circuit</option>
-                                <option value="Brands Hatch Circuit" data-img="assets/tracks/brands-hatch.png" data-specs="2.43mi • 9 TURNS • GRAND PRIX">Brands Hatch Circuit</option>
-                                <option value="Circuit de la Sarthe (Le Mans)" data-img="assets/tracks/lemans.png" data-specs="8.47mi • 38 TURNS • 24 HEURES DU MANS">Circuit de la Sarthe (Le Mans)</option>
-                                <option value="Autodromo Nazionale Monza" data-img="assets/tracks/monza.png" data-specs="3.60mi • 11 TURNS • GRAND PRIX">Autodromo Nazionale Monza</option>
-                                <option value="Portimão (Autódromo do Algarve)" data-img="assets/tracks/portimao.png" data-specs="2.89mi • 15 TURNS • GRAND PRIX">Portimão (Autódromo do Algarve)</option>
-                            </optgroup>
-                            <optgroup label="🏁 North American Circuits">
-                                <option value="Daytona International Speedway" data-img="assets/tracks/daytona.png" data-specs="3.56mi • 12 TURNS • ROAD COURSE">Daytona International Speedway (Road Course)</option>
-                                <option value="Daytona International Speedway (Oval)" data-img="assets/tracks/daytona-oval.png" data-specs="2.50mi • 4 TURNS • TRI-OVAL">Daytona International Speedway (Tri-Oval)</option>
-                                <option value="Sebring International Raceway" data-img="assets/tracks/sebring.png" data-specs="3.74mi • 17 TURNS • INTERNATIONAL">Sebring International Raceway</option>
-                                <option value="Road America" data-img="assets/tracks/road-america.png" data-specs="4.05mi • 14 TURNS • FULL COURSE">Road America</option>
-                                <option value="Michelin Raceway Road Atlanta" data-img="assets/tracks/road-atlanta.png" data-specs="2.54mi • 12 TURNS • FULL COURSE">Michelin Raceway Road Atlanta</option>
-                                <option value="Watkins Glen International" data-img="assets/tracks/watkins-glen.png" data-specs="3.40mi • 11 TURNS • BOOT LAYOUT">Watkins Glen International</option>
-                                <option value="Indianapolis Motor Speedway (Road Course)" data-img="assets/tracks/indy-road-course.png" data-specs="2.43mi • 14 TURNS • ROAD COURSE">Indianapolis Motor Speedway (Road Course)</option>
-                                <option value="Indianapolis Motor Speedway (Oval)" data-img="assets/tracks/indy-oval.png" data-specs="2.50mi • 4 TURNS • RECTANGULAR OVAL">Indianapolis Motor Speedway (Oval)</option>
-                            </optgroup>
-                            <optgroup label="🏁 Asia-Pacific Circuits">
-                                <option value="Mount Panorama Circuit (Bathurst)" data-img="assets/tracks/bathurst.png" data-specs="3.86mi • 23 TURNS • MOUNT PANORAMA">Mount Panorama Circuit (Bathurst)</option>
-                                <option value="Suzuka International Racing Course" data-img="assets/tracks/suzuka.png" data-specs="3.61mi • 18 TURNS • GRAND PRIX">Suzuka International Racing Course</option>
-                            </optgroup>
-                            <optgroup label="🏁 Other / Custom Track">
-                                <option value="__CUSTOM__" data-img="assets/tracks/generic-circuit.png" data-specs="CUSTOM CIRCUIT • EVENT SPEC">Custom Track Name (Not in Catalog)...</option>
-                            </optgroup>
-                        </select>
-                        <div id="custom-track-input-wrap" style="display: none; margin-top: 0.5rem;">
-                            <input type="text" id="edit-event-custom-track" class="btn btn-outline" style="width: 100%; text-align: left; background: #0b111e; color: #fff; border: 1px dashed var(--primary); padding: 0.75rem;" placeholder="Type custom track name (e.g. Fuji Speedway)">
-                        </div>
-                        <input type="hidden" id="edit-event-track">
-                        <!-- Visual Track Map Live Preview -->
-                        <div id="admin-track-preview-box" style="margin-top: 0.75rem; display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; background: rgba(0, 207, 255, 0.05); border: 1px solid rgba(0, 207, 255, 0.2); border-radius: 10px;">
-                            <img id="admin-track-preview-img" src="assets/tracks/spa.png" alt="Track Map Preview" style="width: 80px; height: 50px; object-fit: contain; filter: drop-shadow(0 0 6px rgba(0,207,255,0.4)); flex-shrink: 0; background: rgba(0,0,0,0.4); padding: 4px; border-radius: 6px;">
-                            <div style="overflow: hidden;">
-                                <div id="admin-track-preview-name" style="font-size: 0.85rem; font-weight: 700; color: #fff; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">Circuit de Spa-Francorchamps</div>
-                                <div id="admin-track-preview-specs" style="font-size: 0.72rem; color: var(--primary); font-family: monospace; margin-top: 2px;">4.35mi • 19 TURNS • GRAND PRIX</div>
+                        
+                        <!-- Search Bar -->
+                        <div style="position: relative;" id="admin-track-combobox-wrap">
+                            <div style="display: flex; align-items: center; background: #070d18; border: 1px solid rgba(0,207,255,0.35); border-radius: 8px; padding: 0.25rem 0.75rem; box-shadow: inset 0 2px 6px rgba(0,0,0,0.6);">
+                                <i class="fas fa-search" style="color: var(--primary); margin-right: 0.75rem; font-size: 0.9rem;"></i>
+                                <input type="text" id="admin-track-search-input" placeholder="Type to search tracks or layouts (e.g. Spa, Nurburgring 24h, Oulton Fosters, Daytona Oval)..." 
+                                    style="width: 100%; background: transparent; border: none; color: #fff; font-size: 0.88rem; padding: 0.6rem 0; outline: none;" 
+                                    onfocus="openTrackDropdown()" oninput="filterTrackCatalog(this.value)" autocomplete="off">
+                                <button type="button" id="admin-track-clear-search-btn" onclick="clearTrackSearch()" style="background: none; border: none; color: #64748b; cursor: pointer; padding: 4px; font-size: 0.85rem; display: none;">
+                                    <i class="fas fa-times-circle"></i>
+                                </button>
                             </div>
+
+                            <!-- Category Filter Chips -->
+                            <div style="display: flex; gap: 6px; margin-top: 6px; overflow-x: auto; padding-bottom: 2px;">
+                                <button type="button" class="btn-track-filter-chip active" onclick="setTrackFilterCategory('ALL', this)" style="font-size: 0.68rem; padding: 2px 8px; border-radius: 4px; background: rgba(0,207,255,0.2); color: var(--primary); border: 1px solid rgba(0,207,255,0.4); cursor: pointer;">All</button>
+                                <button type="button" class="btn-track-filter-chip" onclick="setTrackFilterCategory('EUROPE', this)" style="font-size: 0.68rem; padding: 2px 8px; border-radius: 4px; background: rgba(255,255,255,0.05); color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); cursor: pointer;">🇪🇺 Europe</button>
+                                <button type="button" class="btn-track-filter-chip" onclick="setTrackFilterCategory('NORTH_AMERICA', this)" style="font-size: 0.68rem; padding: 2px 8px; border-radius: 4px; background: rgba(255,255,255,0.05); color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); cursor: pointer;">🇺🇸 North America</button>
+                                <button type="button" class="btn-track-filter-chip" onclick="setTrackFilterCategory('ASIA_PACIFIC', this)" style="font-size: 0.68rem; padding: 2px 8px; border-radius: 4px; background: rgba(255,255,255,0.05); color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); cursor: pointer;">🌏 Asia-Pacific</button>
+                                <button type="button" class="btn-track-filter-chip" onclick="setTrackFilterCategory('OVAL', this)" style="font-size: 0.68rem; padding: 2px 8px; border-radius: 4px; background: rgba(255,255,255,0.05); color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); cursor: pointer;">🏁 Ovals</button>
+                            </div>
+
+                            <!-- Search Dropdown List -->
+                            <div id="admin-track-search-results" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; max-height: 280px; overflow-y: auto; background: #080e1a; border: 1px solid rgba(0,207,255,0.3); border-radius: 8px; z-index: 10001; box-shadow: 0 12px 30px rgba(0,0,0,0.85); backdrop-filter: blur(10px);">
+                                <!-- Items dynamically rendered here -->
+                            </div>
+                        </div>
+
+                        <!-- Hidden Form Inputs for compatibility -->
+                        <input type="hidden" id="edit-event-track">
+                        <input type="hidden" id="edit-event-track-img">
+                        <input type="hidden" id="edit-event-track-specs">
+                        <input type="hidden" id="edit-event-track-layout">
+
+                        <!-- Custom Track Input Wrap (if custom is chosen) -->
+                        <div id="custom-track-input-wrap" style="display: none; margin-top: 0.75rem; background: rgba(255,165,0,0.05); padding: 0.75rem; border-radius: 8px; border: 1px dashed rgba(255,165,0,0.3);">
+                            <div style="font-size: 0.7rem; color: #ffa500; font-weight: 700; margin-bottom: 0.4rem; letter-spacing: 0.5px;">CUSTOM TRACK &amp; LAYOUT SPECIFICATION</div>
+                            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 0.5rem;">
+                                <input type="text" id="edit-event-custom-track" class="btn btn-outline" style="width: 100%; text-align: left; background: #0b111e; color: #fff; padding: 0.6rem; font-size: 0.85rem;" placeholder="Track Name (e.g. Fuji Speedway)">
+                                <input type="text" id="edit-event-custom-layout" class="btn btn-outline" style="width: 100%; text-align: left; background: #0b111e; color: #fff; padding: 0.6rem; font-size: 0.85rem;" placeholder="Layout (e.g. GP)">
+                            </div>
+                        </div>
+
+                        <!-- Visual Track Map Live Preview Card -->
+                        <div id="admin-track-preview-box" style="margin-top: 0.75rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.85rem 1rem; background: rgba(0, 207, 255, 0.05); border: 1px solid rgba(0, 207, 255, 0.2); border-radius: 10px;">
+                            <div style="display: flex; align-items: center; gap: 1rem; min-width: 0;">
+                                <img id="admin-track-preview-img" src="assets/tracks/spa.png" alt="Track Map Preview" 
+                                    style="width: 85px; height: 55px; object-fit: contain; filter: drop-shadow(0 0 6px rgba(0,207,255,0.4)); flex-shrink: 0; background: rgba(0,0,0,0.5); padding: 4px; border-radius: 6px;"
+                                    onerror="if (this.dataset.fallback && this.src !== this.dataset.fallback) this.src = this.dataset.fallback; else if (!this.src.includes('generic-circuit.png')) this.src = 'assets/tracks/generic-circuit.png';">
+                                <div style="overflow: hidden;">
+                                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                        <span id="admin-track-preview-name" style="font-size: 0.9rem; font-weight: 700; color: #fff; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">Circuit de Spa-Francorchamps</span>
+                                        <span id="admin-track-preview-layout-badge" style="font-size: 0.65rem; padding: 1px 6px; background: rgba(0,207,255,0.2); color: var(--primary); border: 1px solid rgba(0,207,255,0.4); border-radius: 4px; font-weight: 600;">Grand Prix Pits</span>
+                                    </div>
+                                    <div id="admin-track-preview-specs" style="font-size: 0.72rem; color: var(--primary); font-family: monospace; margin-top: 3px;">4.35mi (7.00km) • 19 TURNS • GRAND PRIX</div>
+                                    <div id="admin-track-preview-path" style="font-size: 0.65rem; color: #64748b; font-family: monospace; margin-top: 1px;">assets/tracks/spa/gp.png</div>
+                                </div>
+                            </div>
+                            <button type="button" onclick="focusTrackSearch()" class="btn btn-outline" style="font-size: 0.7rem; padding: 0.4rem 0.75rem; white-space: nowrap; flex-shrink: 0;">Change</button>
                         </div>
                     </div>
                     <div>
@@ -4315,46 +4334,851 @@ body.meeting-mode-active .btn-summary-confirm {
             }
         }
 
-        function onAdminTrackSelectChange(val) {
-            const select = document.getElementById('edit-event-track-select');
-            const customWrap = document.getElementById('custom-track-input-wrap');
-            const customInput = document.getElementById('edit-event-custom-track');
-            const hiddenTrack = document.getElementById('edit-event-track');
-            const previewImg = document.getElementById('admin-track-preview-img');
-            const previewName = document.getElementById('admin-track-preview-name');
-            const previewSpecs = document.getElementById('admin-track-preview-specs');
-            const verifiedPill = document.getElementById('track-verified-pill');
+        // Master Catalog of Tracks with Subfolder and Layout Support
+        const TRACK_LAYOUTS_CATALOG = [
+            // --- European Circuits ---
+            {
+                id: 'spa-gp',
+                track: 'Circuit de Spa-Francorchamps',
+                layout: 'Grand Prix Pits',
+                displayName: 'Spa-Francorchamps (Grand Prix Pits)',
+                subfolderPath: 'assets/tracks/spa/gp.png',
+                fallbackPath: 'assets/tracks/spa.png',
+                specs: '4.35mi (7.00km) • 19 TURNS • GRAND PRIX',
+                category: 'EUROPE',
+                keywords: 'spa francorchamps belgium gp grand prix pits eau rouge raidillon blanchimont'
+            },
+            {
+                id: 'spa-endurance',
+                track: 'Circuit de Spa-Francorchamps',
+                layout: 'Endurance (Classic)',
+                displayName: 'Spa-Francorchamps (Endurance Pits)',
+                subfolderPath: 'assets/tracks/spa/endurance.png',
+                fallbackPath: 'assets/tracks/spa.png',
+                specs: '4.35mi (7.00km) • 19 TURNS • 24H ENDURANCE',
+                category: 'EUROPE',
+                keywords: 'spa francorchamps endurance 24h classic'
+            },
+            {
+                id: 'nurburgring-24h',
+                track: 'Nürburgring Combined',
+                layout: 'Gesamtstrecke 24h',
+                displayName: 'Nürburgring Combined (Gesamtstrecke 24h)',
+                subfolderPath: 'assets/tracks/nurburgring/24h.png',
+                fallbackPath: 'assets/tracks/nurburgring-24h.png',
+                specs: '15.77mi (25.38km) • 170 TURNS • 24H GESAMTSTRECKE',
+                category: 'EUROPE',
+                keywords: 'nurburgring nürburgring combined 24h gesamtstrecke nordschleife gp green hell germany'
+            },
+            {
+                id: 'nurburgring-vln',
+                track: 'Nürburgring Combined',
+                layout: 'Gesamtstrecke VLN / NLS',
+                displayName: 'Nürburgring Combined (VLN / NLS)',
+                subfolderPath: 'assets/tracks/nurburgring/vln.png',
+                fallbackPath: 'assets/tracks/nurburgring-vln.png',
+                specs: '15.14mi (24.36km) • 170 TURNS • VLN / NLS',
+                category: 'EUROPE',
+                keywords: 'nurburgring nürburgring vln nls nec endurance combined'
+            },
+            {
+                id: 'nurburgring-nordschleife',
+                track: 'Nürburgring Nordschleife',
+                layout: 'Nordschleife (Full Course)',
+                displayName: 'Nürburgring Nordschleife (Full)',
+                subfolderPath: 'assets/tracks/nurburgring/nordschleife.png',
+                fallbackPath: 'assets/tracks/nordschleife.png',
+                specs: '12.93mi (20.83km) • 154 TURNS • NORDSCHLEIFE',
+                category: 'EUROPE',
+                keywords: 'nordschleife nurburgring nürburgring full tourist north loop'
+            },
+            {
+                id: 'nurburgring-gp',
+                track: 'Nürburgring Grand-Prix-Strecke',
+                layout: 'Grand Prix',
+                displayName: 'Nürburgring GP-Strecke (Grand Prix)',
+                subfolderPath: 'assets/tracks/nurburgring/gp.png',
+                fallbackPath: 'assets/tracks/nurburgring.png',
+                specs: '3.19mi (5.14km) • 16 TURNS • GRAND PRIX',
+                category: 'EUROPE',
+                keywords: 'nurburgring gp grand prix strecke sprint'
+            },
+            {
+                id: 'oulton-park-intl',
+                track: 'Oulton Park Circuit',
+                layout: 'International Circuit',
+                displayName: 'Oulton Park (International Circuit)',
+                subfolderPath: 'assets/tracks/oulton-park/international.png',
+                fallbackPath: 'assets/tracks/oulton-park.png',
+                specs: '2.69mi (4.33km) • 17 TURNS • INTERNATIONAL',
+                category: 'EUROPE',
+                keywords: 'oulton park international circuit uk cheshire cascades druids lodge shell oils'
+            },
+            {
+                id: 'oulton-park-fosters',
+                track: 'Oulton Park Circuit',
+                layout: 'Fosters Circuit',
+                displayName: 'Oulton Park (Fosters Circuit)',
+                subfolderPath: 'assets/tracks/oulton-park/fosters.png',
+                fallbackPath: 'assets/tracks/oulton-park.png',
+                specs: '1.66mi (2.67km) • 7 TURNS • FOSTERS',
+                category: 'EUROPE',
+                keywords: 'oulton park fosters short national uk'
+            },
+            {
+                id: 'oulton-park-island',
+                track: 'Oulton Park Circuit',
+                layout: 'Island Circuit',
+                displayName: 'Oulton Park (Island Circuit)',
+                subfolderPath: 'assets/tracks/oulton-park/island.png',
+                fallbackPath: 'assets/tracks/oulton-park.png',
+                specs: '2.26mi (3.64km) • 11 TURNS • ISLAND',
+                category: 'EUROPE',
+                keywords: 'oulton park island circuit'
+            },
+            {
+                id: 'silverstone-gp',
+                track: 'Silverstone Circuit',
+                layout: 'Grand Prix Circuit',
+                displayName: 'Silverstone Circuit (Grand Prix)',
+                subfolderPath: 'assets/tracks/silverstone/gp.png',
+                fallbackPath: 'assets/tracks/silverstone.png',
+                specs: '3.66mi (5.89km) • 18 TURNS • GRAND PRIX',
+                category: 'EUROPE',
+                keywords: 'silverstone gp grand prix britain uk copse maggotts becketts stowe'
+            },
+            {
+                id: 'silverstone-national',
+                track: 'Silverstone Circuit',
+                layout: 'National Circuit',
+                displayName: 'Silverstone Circuit (National)',
+                subfolderPath: 'assets/tracks/silverstone/national.png',
+                fallbackPath: 'assets/tracks/silverstone.png',
+                specs: '1.64mi (2.64km) • 6 TURNS • NATIONAL',
+                category: 'EUROPE',
+                keywords: 'silverstone national short brooklands luffield'
+            },
+            {
+                id: 'silverstone-intl',
+                track: 'Silverstone Circuit',
+                layout: 'International Circuit',
+                displayName: 'Silverstone Circuit (International)',
+                subfolderPath: 'assets/tracks/silverstone/international.png',
+                fallbackPath: 'assets/tracks/silverstone.png',
+                specs: '2.25mi (3.62km) • 10 TURNS • INTERNATIONAL',
+                category: 'EUROPE',
+                keywords: 'silverstone international arena'
+            },
+            {
+                id: 'brands-hatch-gp',
+                track: 'Brands Hatch Circuit',
+                layout: 'Grand Prix Circuit',
+                displayName: 'Brands Hatch (Grand Prix)',
+                subfolderPath: 'assets/tracks/brands-hatch/gp.png',
+                fallbackPath: 'assets/tracks/brands-hatch.png',
+                specs: '2.43mi (3.92km) • 9 TURNS • GRAND PRIX',
+                category: 'EUROPE',
+                keywords: 'brands hatch grand prix gp uk kent paddock hill bend druids'
+            },
+            {
+                id: 'brands-hatch-indy',
+                track: 'Brands Hatch Circuit',
+                layout: 'Indy Circuit',
+                displayName: 'Brands Hatch (Indy Circuit)',
+                subfolderPath: 'assets/tracks/brands-hatch/indy.png',
+                fallbackPath: 'assets/tracks/brands-hatch.png',
+                specs: '1.20mi (1.93km) • 6 TURNS • INDY',
+                category: 'EUROPE',
+                keywords: 'brands hatch indy short club uk'
+            },
+            {
+                id: 'lemans-24h',
+                track: 'Circuit des 24 Heures du Mans',
+                layout: '24 Heures du Mans (Full Course)',
+                displayName: 'Circuit des 24 Heures du Mans (Full Course)',
+                subfolderPath: 'assets/tracks/lemans/24h.png',
+                fallbackPath: 'assets/tracks/lemans.png',
+                specs: '8.47mi (13.63km) • 38 TURNS • 24 HEURES DU MANS',
+                category: 'EUROPE',
+                keywords: 'lemans le mans sarthe 24h mulsanne porsche curves arnage tetre rouge france'
+            },
+            {
+                id: 'lemans-bugatti',
+                track: 'Circuit des 24 Heures du Mans',
+                layout: 'Bugatti Circuit',
+                displayName: 'Le Mans (Bugatti Circuit)',
+                subfolderPath: 'assets/tracks/lemans/bugatti.png',
+                fallbackPath: 'assets/tracks/lemans.png',
+                specs: '2.60mi (4.19km) • 14 TURNS • BUGATTI',
+                category: 'EUROPE',
+                keywords: 'lemans le mans bugatti motogp permanent'
+            },
+            {
+                id: 'monza-gp',
+                track: 'Autodromo Nazionale Monza',
+                layout: 'Grand Prix Circuit',
+                displayName: 'Autodromo Nazionale Monza (Grand Prix)',
+                subfolderPath: 'assets/tracks/monza/gp.png',
+                fallbackPath: 'assets/tracks/monza.png',
+                specs: '3.60mi (5.79km) • 11 TURNS • GRAND PRIX',
+                category: 'EUROPE',
+                keywords: 'monza autodromo nazionale grand prix gp italy prima variante parabolica ascari curva grande'
+            },
+            {
+                id: 'monza-no-chicane',
+                track: 'Autodromo Nazionale Monza',
+                layout: 'No Chicane (Historic)',
+                displayName: 'Monza (No Chicane)',
+                subfolderPath: 'assets/tracks/monza/no-chicane.png',
+                fallbackPath: 'assets/tracks/monza.png',
+                specs: '3.60mi (5.79km) • 7 TURNS • HISTORIC NO CHICANE',
+                category: 'EUROPE',
+                keywords: 'monza no chicane historic speedway'
+            },
+            {
+                id: 'portimao-gp',
+                track: 'Autódromo Internacional do Algarve',
+                layout: 'Grand Prix Circuit',
+                displayName: 'Portimão (Grand Prix Circuit)',
+                subfolderPath: 'assets/tracks/portimao/gp.png',
+                fallbackPath: 'assets/tracks/portimao.png',
+                specs: '2.89mi (4.65km) • 15 TURNS • GRAND PRIX',
+                category: 'EUROPE',
+                keywords: 'portimao algarve portugal gp grand prix roller coaster'
+            },
+            {
+                id: 'portimao-chicane',
+                track: 'Autódromo Internacional do Algarve',
+                layout: 'Chicane Layout',
+                displayName: 'Portimão (Chicane Layout)',
+                subfolderPath: 'assets/tracks/portimao/chicane.png',
+                fallbackPath: 'assets/tracks/portimao.png',
+                specs: '2.91mi (4.68km) • 16 TURNS • CHICANE',
+                category: 'EUROPE',
+                keywords: 'portimao algarve chicane'
+            },
+            {
+                id: 'catalunya-gp',
+                track: 'Circuit de Barcelona-Catalunya',
+                layout: 'Grand Prix Circuit',
+                displayName: 'Circuit de Barcelona-Catalunya (Grand Prix)',
+                subfolderPath: 'assets/tracks/catalunya/gp.png',
+                fallbackPath: 'assets/tracks/catalunya.png',
+                specs: '2.90mi (4.66km) • 14 TURNS • GRAND PRIX',
+                category: 'EUROPE',
+                keywords: 'catalunya barcelona spain montmelo gp grand prix'
+            },
+            {
+                id: 'catalunya-national',
+                track: 'Circuit de Barcelona-Catalunya',
+                layout: 'National Circuit',
+                displayName: 'Barcelona-Catalunya (National)',
+                subfolderPath: 'assets/tracks/catalunya/national.png',
+                fallbackPath: 'assets/tracks/catalunya.png',
+                specs: '1.85mi (2.98km) • 11 TURNS • NATIONAL',
+                category: 'EUROPE',
+                keywords: 'catalunya national short'
+            },
+            {
+                id: 'imola-gp',
+                track: 'Autodromo Internazionale Enzo e Dino Ferrari',
+                layout: 'Grand Prix Circuit',
+                displayName: 'Imola (Grand Prix Circuit)',
+                subfolderPath: 'assets/tracks/imola/gp.png',
+                fallbackPath: 'assets/tracks/imola.png',
+                specs: '3.05mi (4.91km) • 19 TURNS • GRAND PRIX',
+                category: 'EUROPE',
+                keywords: 'imola enzo dino ferrari tamburello acque minerali rivazza italy'
+            },
+            {
+                id: 'red-bull-ring-gp',
+                track: 'Red Bull Ring',
+                layout: 'Grand Prix Circuit',
+                displayName: 'Red Bull Ring (Grand Prix)',
+                subfolderPath: 'assets/tracks/red-bull-ring/gp.png',
+                fallbackPath: 'assets/tracks/red-bull-ring.png',
+                specs: '2.68mi (4.32km) • 10 TURNS • GRAND PRIX',
+                category: 'EUROPE',
+                keywords: 'red bull ring spielberg austria a1 ring osterreichring gp'
+            },
+            {
+                id: 'hockenheim-gp',
+                track: 'Hockenheimring Baden-Württemberg',
+                layout: 'Grand Prix Circuit',
+                displayName: 'Hockenheimring (Grand Prix)',
+                subfolderPath: 'assets/tracks/hockenheim/gp.png',
+                fallbackPath: 'assets/tracks/hockenheim.png',
+                specs: '2.84mi (4.57km) • 17 TURNS • GRAND PRIX',
+                category: 'EUROPE',
+                keywords: 'hockenheim hockenheimring germany gp motodrom'
+            },
+            {
+                id: 'zandvoort-gp',
+                track: 'Circuit Park Zandvoort',
+                layout: 'Grand Prix Circuit',
+                displayName: 'Circuit Zandvoort (Grand Prix)',
+                subfolderPath: 'assets/tracks/zandvoort/gp.png',
+                fallbackPath: 'assets/tracks/zandvoort.png',
+                specs: '2.64mi (4.26km) • 14 TURNS • GRAND PRIX',
+                category: 'EUROPE',
+                keywords: 'zandvoort netherlands holland banked tarzan hugenholtz'
+            },
+            {
+                id: 'mugello-gp',
+                track: 'Autodromo Internazionale del Mugello',
+                layout: 'Grand Prix Circuit',
+                displayName: 'Mugello Circuit (Grand Prix)',
+                subfolderPath: 'assets/tracks/mugello/gp.png',
+                fallbackPath: 'assets/tracks/mugello.png',
+                specs: '3.26mi (5.25km) • 15 TURNS • GRAND PRIX',
+                category: 'EUROPE',
+                keywords: 'mugello italy tuscany san donato arrabbiata scarperia'
+            },
 
-            if (val === '__CUSTOM__') {
-                if (customWrap) customWrap.style.display = 'block';
-                const customVal = customInput ? customInput.value.trim() : '';
-                if (hiddenTrack) hiddenTrack.value = customVal || 'Custom Circuit';
-                if (previewImg) previewImg.src = 'assets/tracks/generic-circuit.png';
-                if (previewName) previewName.textContent = customVal || 'Custom Circuit';
-                if (previewSpecs) previewSpecs.textContent = 'CUSTOM CIRCUIT • GENERIC MAP';
-                if (verifiedPill) {
-                    verifiedPill.textContent = 'CUSTOM / GENERIC';
-                    verifiedPill.style.color = '#ffa500';
-                    verifiedPill.style.borderColor = 'rgba(255,165,0,0.3)';
-                    verifiedPill.style.background = 'rgba(255,165,0,0.1)';
-                }
-            } else {
-                if (customWrap) customWrap.style.display = 'none';
-                if (hiddenTrack) hiddenTrack.value = val;
-                const opt = select ? select.options[select.selectedIndex] : null;
-                const img = opt?.getAttribute('data-img') || 'assets/tracks/generic-circuit.png';
-                const specs = opt?.getAttribute('data-specs') || 'OFFICIAL IRACING EVENT';
-                if (previewImg) previewImg.src = img;
-                if (previewName) previewName.textContent = val;
-                if (previewSpecs) previewSpecs.textContent = specs;
-                if (verifiedPill) {
-                    verifiedPill.textContent = 'VERIFIED MAP';
-                    verifiedPill.style.color = 'var(--primary)';
-                    verifiedPill.style.borderColor = 'rgba(0,207,255,0.3)';
-                    verifiedPill.style.background = 'rgba(0,207,255,0.15)';
-                }
+            // --- North American Circuits ---
+            {
+                id: 'daytona-road',
+                track: 'Daytona International Speedway',
+                layout: 'Road Course (Rolex 24)',
+                displayName: 'Daytona International Speedway (Road Course)',
+                subfolderPath: 'assets/tracks/daytona/road.png',
+                fallbackPath: 'assets/tracks/daytona.png',
+                specs: '3.56mi (5.73km) • 12 TURNS • ROAD COURSE',
+                category: 'NORTH_AMERICA',
+                keywords: 'daytona rolex 24 24h road course infield bus stop le mans chicane florida nascar imsa'
+            },
+            {
+                id: 'daytona-oval',
+                track: 'Daytona International Speedway',
+                layout: 'Tri-Oval (Daytona 500)',
+                displayName: 'Daytona International Speedway (Tri-Oval)',
+                subfolderPath: 'assets/tracks/daytona/oval.png',
+                fallbackPath: 'assets/tracks/daytona-oval.png',
+                specs: '2.50mi (4.02km) • 4 TURNS • TRI-OVAL',
+                category: 'OVAL',
+                keywords: 'daytona oval tri-oval daytona 500 superspeedway nascar'
+            },
+            {
+                id: 'sebring-intl',
+                track: 'Sebring International Raceway',
+                layout: 'International Course (12 Hours)',
+                displayName: 'Sebring International Raceway (12 Hours)',
+                subfolderPath: 'assets/tracks/sebring/international.png',
+                fallbackPath: 'assets/tracks/sebring.png',
+                specs: '3.74mi (6.02km) • 17 TURNS • INTERNATIONAL',
+                category: 'NORTH_AMERICA',
+                keywords: 'sebring 12 hours international sunset bend concourse runway florida imsa'
+            },
+            {
+                id: 'sebring-club',
+                track: 'Sebring International Raceway',
+                layout: 'Club Course',
+                displayName: 'Sebring International Raceway (Club)',
+                subfolderPath: 'assets/tracks/sebring/club.png',
+                fallbackPath: 'assets/tracks/sebring.png',
+                specs: '1.70mi (2.74km) • 10 TURNS • CLUB',
+                category: 'NORTH_AMERICA',
+                keywords: 'sebring club short'
+            },
+            {
+                id: 'road-america-full',
+                track: 'Road America',
+                layout: 'Full Course',
+                displayName: 'Road America (Full Course)',
+                subfolderPath: 'assets/tracks/road-america/full.png',
+                fallbackPath: 'assets/tracks/road-america.png',
+                specs: '4.05mi (6.52km) • 14 TURNS • FULL COURSE',
+                category: 'NORTH_AMERICA',
+                keywords: 'road america elkhart lake wisconsin kink carousel kettle moraine imsa indycar'
+            },
+            {
+                id: 'road-atlanta-full',
+                track: 'Michelin Raceway Road Atlanta',
+                layout: 'Full Course (Petit Le Mans)',
+                displayName: 'Michelin Raceway Road Atlanta (Full Course)',
+                subfolderPath: 'assets/tracks/road-atlanta/full.png',
+                fallbackPath: 'assets/tracks/road-atlanta.png',
+                specs: '2.54mi (4.09km) • 12 TURNS • FULL COURSE',
+                category: 'NORTH_AMERICA',
+                keywords: 'road atlanta michelin petit le mans esses downhill georgia imsa'
+            },
+            {
+                id: 'watkins-glen-boot',
+                track: 'Watkins Glen International',
+                layout: 'Boot Layout (Full Course)',
+                displayName: 'Watkins Glen International (Boot Layout)',
+                subfolderPath: 'assets/tracks/watkins-glen/boot.png',
+                fallbackPath: 'assets/tracks/watkins-glen-boot.png',
+                specs: '3.40mi (5.47km) • 11 TURNS • BOOT LAYOUT',
+                category: 'NORTH_AMERICA',
+                keywords: 'watkins glen the glen boot full 6 hours six hours new york imsa'
+            },
+            {
+                id: 'watkins-glen-cup',
+                track: 'Watkins Glen International',
+                layout: 'Cup Layout (NASCAR)',
+                displayName: 'Watkins Glen International (Cup Layout)',
+                subfolderPath: 'assets/tracks/watkins-glen/cup.png',
+                fallbackPath: 'assets/tracks/watkins-glen.png',
+                specs: '2.45mi (3.94km) • 7 TURNS • CUP LAYOUT',
+                category: 'NORTH_AMERICA',
+                keywords: 'watkins glen cup nascar short no boot'
+            },
+            {
+                id: 'indy-road',
+                track: 'Indianapolis Motor Speedway',
+                layout: 'Road Course (IndyCar / IMSA)',
+                displayName: 'Indianapolis Motor Speedway (Road Course)',
+                subfolderPath: 'assets/tracks/indy/road-course.png',
+                fallbackPath: 'assets/tracks/indy-road-course.png',
+                specs: '2.43mi (3.91km) • 14 TURNS • ROAD COURSE',
+                category: 'NORTH_AMERICA',
+                keywords: 'indianapolis indy road course ims brickyard indycar imsa'
+            },
+            {
+                id: 'indy-oval',
+                track: 'Indianapolis Motor Speedway',
+                layout: 'Rectangular Oval (Indy 500)',
+                displayName: 'Indianapolis Motor Speedway (Oval)',
+                subfolderPath: 'assets/tracks/indy/oval.png',
+                fallbackPath: 'assets/tracks/indy-oval.png',
+                specs: '2.50mi (4.02km) • 4 TURNS • RECTANGULAR OVAL',
+                category: 'OVAL',
+                keywords: 'indianapolis indy 500 oval brickyard speedway'
+            },
+            {
+                id: 'cota-gp',
+                track: 'Circuit of the Americas (COTA)',
+                layout: 'Grand Prix Course',
+                displayName: 'Circuit of the Americas (Grand Prix)',
+                subfolderPath: 'assets/tracks/cota/gp.png',
+                fallbackPath: 'assets/tracks/cota.png',
+                specs: '3.43mi (5.51km) • 20 TURNS • GRAND PRIX',
+                category: 'NORTH_AMERICA',
+                keywords: 'cota circuit of the americas austin texas f1 fia wec turn 1'
+            },
+            {
+                id: 'laguna-seca',
+                track: 'WeatherTech Raceway Laguna Seca',
+                layout: 'Full Course',
+                displayName: 'WeatherTech Raceway Laguna Seca',
+                subfolderPath: 'assets/tracks/laguna-seca/full.png',
+                fallbackPath: 'assets/tracks/laguna-seca.png',
+                specs: '2.24mi (3.60km) • 11 TURNS • FULL COURSE',
+                category: 'NORTH_AMERICA',
+                keywords: 'laguna seca corkscrew weathertech monterey california indycar imsa'
+            },
+            {
+                id: 'vir-full',
+                track: 'Virginia International Raceway (VIR)',
+                layout: 'Full Course',
+                displayName: 'Virginia International Raceway (Full Course)',
+                subfolderPath: 'assets/tracks/vir/full.png',
+                fallbackPath: 'assets/tracks/vir.png',
+                specs: '3.27mi (5.26km) • 17 TURNS • FULL COURSE',
+                category: 'NORTH_AMERICA',
+                keywords: 'vir virginia international climbing esses oak tree roller coaster imsa'
+            },
+            {
+                id: 'lime-rock-classic',
+                track: 'Lime Rock Park',
+                layout: 'Classic Course',
+                displayName: 'Lime Rock Park (Classic)',
+                subfolderPath: 'assets/tracks/lime-rock/classic.png',
+                fallbackPath: 'assets/tracks/lime-rock.png',
+                specs: '1.53mi (2.46km) • 7 TURNS • CLASSIC',
+                category: 'NORTH_AMERICA',
+                keywords: 'lime rock park connecticut classic sam posey straight'
+            },
+            {
+                id: 'canadian-tire-full',
+                track: 'Canadian Tire Motorsport Park (Mosport)',
+                layout: 'Full Grand Prix Course',
+                displayName: 'Canadian Tire Motorsport Park (Mosport)',
+                subfolderPath: 'assets/tracks/canadian-tire/full.png',
+                fallbackPath: 'assets/tracks/canadian-tire.png',
+                specs: '2.46mi (3.96km) • 10 TURNS • FULL COURSE',
+                category: 'NORTH_AMERICA',
+                keywords: 'canadian tire motorsport park mosport ontario canada andretti clayton moss corner'
+            },
+            {
+                id: 'mid-ohio-full',
+                track: 'Mid-Ohio Sports Car Course',
+                layout: 'Full Course',
+                displayName: 'Mid-Ohio Sports Car Course (Full Course)',
+                subfolderPath: 'assets/tracks/mid-ohio/full.png',
+                fallbackPath: 'assets/tracks/mid-ohio.png',
+                specs: '2.40mi (3.86km) • 15 TURNS • FULL COURSE',
+                category: 'NORTH_AMERICA',
+                keywords: 'mid-ohio mid ohio lexington keyhole carousel thunder valley'
+            },
+            {
+                id: 'sonoma-full',
+                track: 'Sonoma Raceway',
+                layout: 'Full Course',
+                displayName: 'Sonoma Raceway (Full Course)',
+                subfolderPath: 'assets/tracks/sonoma/full.png',
+                fallbackPath: 'assets/tracks/sonoma.png',
+                specs: '2.52mi (4.06km) • 12 TURNS • FULL COURSE',
+                category: 'NORTH_AMERICA',
+                keywords: 'sonoma sears point infineon california carousel'
+            },
+            {
+                id: 'long-beach-gp',
+                track: 'Long Beach Street Circuit',
+                layout: 'Grand Prix Course',
+                displayName: 'Long Beach (Grand Prix Street Circuit)',
+                subfolderPath: 'assets/tracks/long-beach/gp.png',
+                fallbackPath: 'assets/tracks/long-beach.png',
+                specs: '1.97mi (3.17km) • 11 TURNS • STREET CIRCUIT',
+                category: 'NORTH_AMERICA',
+                keywords: 'long beach acura street indycar imsa dolphin fountain hairpin california'
+            },
+
+            // --- Asia-Pacific & South America ---
+            {
+                id: 'bathurst-full',
+                track: 'Mount Panorama Circuit (Bathurst)',
+                layout: 'Full Circuit (Bathurst 12hr)',
+                displayName: 'Mount Panorama Circuit (Bathurst)',
+                subfolderPath: 'assets/tracks/bathurst/full.png',
+                fallbackPath: 'assets/tracks/bathurst.png',
+                specs: '3.86mi (6.21km) • 23 TURNS • MOUNT PANORAMA',
+                category: 'ASIA_PACIFIC',
+                keywords: 'bathurst mount panorama australia 12h cutting dipper conrod straight skyline the mountain'
+            },
+            {
+                id: 'suzuka-gp',
+                track: 'Suzuka International Racing Course',
+                layout: 'Grand Prix Circuit',
+                displayName: 'Suzuka Circuit (Grand Prix)',
+                subfolderPath: 'assets/tracks/suzuka/gp.png',
+                fallbackPath: 'assets/tracks/suzuka.png',
+                specs: '3.61mi (5.81km) • 18 TURNS • GRAND PRIX',
+                category: 'ASIA_PACIFIC',
+                keywords: 'suzuka japan figure 8 spoon 130r degner s curves f1'
+            },
+            {
+                id: 'suzuka-east',
+                track: 'Suzuka International Racing Course',
+                layout: 'East Circuit',
+                displayName: 'Suzuka Circuit (East)',
+                subfolderPath: 'assets/tracks/suzuka/east.png',
+                fallbackPath: 'assets/tracks/suzuka.png',
+                specs: '1.40mi (2.24km) • 8 TURNS • EAST',
+                category: 'ASIA_PACIFIC',
+                keywords: 'suzuka east short'
+            },
+            {
+                id: 'fuji-gp',
+                track: 'Fuji International Speedway',
+                layout: 'Grand Prix (With Chicane)',
+                displayName: 'Fuji International Speedway (Grand Prix)',
+                subfolderPath: 'assets/tracks/fuji/gp.png',
+                fallbackPath: 'assets/tracks/fuji.png',
+                specs: '2.84mi (4.56km) • 16 TURNS • GRAND PRIX',
+                category: 'ASIA_PACIFIC',
+                keywords: 'fuji speedway japan mount fuji main straight dunsfold'
+            },
+            {
+                id: 'interlagos-gp',
+                track: 'Autódromo de Interlagos (José Carlos Pace)',
+                layout: 'Grand Prix Circuit',
+                displayName: 'Interlagos (Grand Prix Circuit)',
+                subfolderPath: 'assets/tracks/interlagos/gp.png',
+                fallbackPath: 'assets/tracks/interlagos.png',
+                specs: '2.68mi (4.31km) • 15 TURNS • GRAND PRIX',
+                category: 'ASIA_PACIFIC',
+                keywords: 'interlagos jose carlos pace sao paulo brazil senna s arquibancadas juncao'
+            },
+
+            // --- Popular Ovals ---
+            {
+                id: 'talladega-oval',
+                track: 'Talladega Superspeedway',
+                layout: 'Tri-Oval',
+                displayName: 'Talladega Superspeedway (Tri-Oval)',
+                subfolderPath: 'assets/tracks/talladega/oval.png',
+                fallbackPath: 'assets/tracks/talladega.png',
+                specs: '2.66mi (4.28km) • 4 TURNS • SUPERSPEEDWAY',
+                category: 'OVAL',
+                keywords: 'talladega superspeedway alabama nascar pack racing big one'
+            },
+            {
+                id: 'charlotte-oval',
+                track: 'Charlotte Motor Speedway',
+                layout: 'Quad-Oval',
+                displayName: 'Charlotte Motor Speedway (Quad-Oval)',
+                subfolderPath: 'assets/tracks/charlotte/oval.png',
+                fallbackPath: 'assets/tracks/charlotte.png',
+                specs: '1.50mi (2.41km) • 4 TURNS • QUAD-OVAL',
+                category: 'OVAL',
+                keywords: 'charlotte quad oval north carolina nascar coca-cola 600'
+            },
+            {
+                id: 'charlotte-roval',
+                track: 'Charlotte Motor Speedway',
+                layout: 'Roval Course',
+                displayName: 'Charlotte Motor Speedway (Roval)',
+                subfolderPath: 'assets/tracks/charlotte/roval.png',
+                fallbackPath: 'assets/tracks/charlotte.png',
+                specs: '2.28mi (3.67km) • 17 TURNS • ROVAL',
+                category: 'NORTH_AMERICA',
+                keywords: 'charlotte roval road course oval hybrid'
+            },
+            {
+                id: 'bristol-oval',
+                track: 'Bristol Motor Speedway',
+                layout: 'Concrete Oval',
+                displayName: 'Bristol Motor Speedway (Concrete Oval)',
+                subfolderPath: 'assets/tracks/bristol/oval.png',
+                fallbackPath: 'assets/tracks/bristol.png',
+                specs: '0.533mi (0.86km) • 4 TURNS • SHORT TRACK',
+                category: 'OVAL',
+                keywords: 'bristol the last great colosseum short track tennessee high banking'
+            },
+            {
+                id: 'darlington-oval',
+                track: 'Darlington Raceway',
+                layout: 'Egg-Shaped Oval',
+                displayName: 'Darlington Raceway (Egg-Oval)',
+                subfolderPath: 'assets/tracks/darlington/oval.png',
+                fallbackPath: 'assets/tracks/darlington.png',
+                specs: '1.366mi (2.20km) • 4 TURNS • EGG-SHAPED OVAL',
+                category: 'OVAL',
+                keywords: 'darlington too tough to tame south carolina throwback lady in black'
+            },
+            {
+                id: 'martinsville-oval',
+                track: 'Martinsville Speedway',
+                layout: 'Paperclip Oval',
+                displayName: 'Martinsville Speedway (Paperclip)',
+                subfolderPath: 'assets/tracks/martinsville/oval.png',
+                fallbackPath: 'assets/tracks/martinsville.png',
+                specs: '0.526mi (0.85km) • 4 TURNS • PAPERCLIP',
+                category: 'OVAL',
+                keywords: 'martinsville paperclip virginia grandfather clock short track'
+            }
+        ];
+
+        let currentTrackCategoryFilter = 'ALL';
+        let currentSelectedTrackItem = null;
+
+        function setTrackFilterCategory(cat, btn) {
+            currentTrackCategoryFilter = cat;
+            document.querySelectorAll('.btn-track-filter-chip').forEach(b => {
+                b.style.background = 'rgba(255,255,255,0.05)';
+                b.style.color = '#94a3b8';
+                b.style.borderColor = 'rgba(255,255,255,0.1)';
+            });
+            if (btn) {
+                btn.style.background = 'rgba(0,207,255,0.2)';
+                btn.style.color = 'var(--primary)';
+                btn.style.borderColor = 'rgba(0,207,255,0.4)';
+            }
+            const q = document.getElementById('admin-track-search-input')?.value || '';
+            filterTrackCatalog(q);
+        }
+
+        function openTrackDropdown() {
+            const dropdown = document.getElementById('admin-track-search-results');
+            if (dropdown) dropdown.style.display = 'block';
+            const q = document.getElementById('admin-track-search-input')?.value || '';
+            filterTrackCatalog(q);
+        }
+
+        function closeTrackDropdown() {
+            const dropdown = document.getElementById('admin-track-search-results');
+            if (dropdown) dropdown.style.display = 'none';
+        }
+
+        function focusTrackSearch() {
+            const inp = document.getElementById('admin-track-search-input');
+            if (inp) {
+                inp.value = '';
+                inp.focus();
+                openTrackDropdown();
             }
         }
+
+        function clearTrackSearch() {
+            const inp = document.getElementById('admin-track-search-input');
+            if (inp) {
+                inp.value = '';
+                inp.focus();
+                filterTrackCatalog('');
+            }
+            const clrBtn = document.getElementById('admin-track-clear-search-btn');
+            if (clrBtn) clrBtn.style.display = 'none';
+        }
+
+        function filterTrackCatalog(query) {
+            const results = document.getElementById('admin-track-search-results');
+            const clrBtn = document.getElementById('admin-track-clear-search-btn');
+            if (!results) return;
+
+            const q = (query || '').toLowerCase().trim();
+            if (clrBtn) clrBtn.style.display = q ? 'block' : 'none';
+
+            let filtered = TRACK_LAYOUTS_CATALOG.filter(item => {
+                if (currentTrackCategoryFilter !== 'ALL' && item.category !== currentTrackCategoryFilter) {
+                    return false;
+                }
+                if (!q) return true;
+                return item.displayName.toLowerCase().includes(q) ||
+                       item.track.toLowerCase().includes(q) ||
+                       item.layout.toLowerCase().includes(q) ||
+                       item.keywords.toLowerCase().includes(q);
+            });
+
+            let html = '';
+            if (filtered.length === 0) {
+                html += `
+                    <div style="padding: 1rem; text-align: center; color: #94a3b8; font-size: 0.8rem;">
+                        No verified track layouts matched "<strong>${escapeHtml(q)}</strong>"
+                    </div>
+                `;
+            } else {
+                filtered.forEach(item => {
+                    const isSelected = currentSelectedTrackItem && currentSelectedTrackItem.id === item.id;
+                    const regionFlag = item.category === 'EUROPE' ? '🇪🇺' : item.category === 'NORTH_AMERICA' ? '🇺🇸' : item.category === 'OVAL' ? '🏁' : '🌏';
+                    html += `
+                        <div class="admin-track-search-row" onclick="selectTrackItem('${item.id}')" 
+                             style="display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.06); cursor: pointer; transition: background 0.15s; background: ${isSelected ? 'rgba(0,207,255,0.12)' : 'transparent'};">
+                            <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                                <img src="${item.subfolderPath}" data-fallback="${item.fallbackPath}" alt="${escapeHtml(item.displayName)}" 
+                                     style="width: 44px; height: 30px; object-fit: contain; background: rgba(0,0,0,0.4); border-radius: 4px; padding: 2px; flex-shrink: 0;"
+                                     onerror="if (this.dataset.fallback && this.src !== this.dataset.fallback) this.src = this.dataset.fallback; else if (!this.src.includes('generic-circuit.png')) this.src = 'assets/tracks/generic-circuit.png';">
+                                <div style="overflow: hidden;">
+                                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                        <span style="font-size: 0.85rem; font-weight: 700; color: #fff;">${escapeHtml(item.track)}</span>
+                                        <span style="font-size: 0.65rem; padding: 1px 6px; background: rgba(0,207,255,0.15); color: var(--primary); border-radius: 4px; border: 1px solid rgba(0,207,255,0.3); font-weight: 600;">${escapeHtml(item.layout)}</span>
+                                    </div>
+                                    <div style="font-size: 0.7rem; color: #64748b; font-family: monospace; margin-top: 2px;">${escapeHtml(item.specs)}</div>
+                                </div>
+                            </div>
+                            <span style="font-size: 0.75rem; margin-left: 8px; flex-shrink: 0;">${regionFlag}</span>
+                        </div>
+                    `;
+                });
+            }
+
+            // Always provide the Custom Track option at the bottom
+            html += `
+                <div class="admin-track-search-row" onclick="selectCustomTrackOption()" 
+                     style="display: flex; align-items: center; gap: 10px; padding: 0.65rem 0.85rem; background: rgba(255,165,0,0.08); border-top: 1px solid rgba(255,165,0,0.25); cursor: pointer;">
+                    <i class="fas fa-edit" style="color: #ffa500; font-size: 0.9rem;"></i>
+                    <div>
+                        <div style="font-size: 0.8rem; font-weight: 700; color: #ffa500;">Custom / Other Track...</div>
+                        <div style="font-size: 0.68rem; color: #cbd5e1;">Type a custom track &amp; layout not in catalog</div>
+                    </div>
+                </div>
+            `;
+
+            results.innerHTML = html;
+        }
+
+        function selectTrackItem(trackId) {
+            const item = TRACK_LAYOUTS_CATALOG.find(t => t.id === trackId);
+            if (!item) return;
+
+            currentSelectedTrackItem = item;
+
+            // Update inputs
+            const hiddenTrack = document.getElementById('edit-event-track');
+            const hiddenTrackImg = document.getElementById('edit-event-track-img');
+            const hiddenTrackSpecs = document.getElementById('edit-event-track-specs');
+            const hiddenTrackLayout = document.getElementById('edit-event-track-layout');
+            const searchInput = document.getElementById('admin-track-search-input');
+            const customWrap = document.getElementById('custom-track-input-wrap');
+
+            if (hiddenTrack) hiddenTrack.value = `${item.track} (${item.layout})`;
+            if (hiddenTrackImg) hiddenTrackImg.value = item.subfolderPath;
+            if (hiddenTrackSpecs) hiddenTrackSpecs.value = item.specs;
+            if (hiddenTrackLayout) hiddenTrackLayout.value = item.layout;
+            if (searchInput) searchInput.value = item.displayName;
+            if (customWrap) customWrap.style.display = 'none';
+
+            // Update Preview Card
+            const previewImg = document.getElementById('admin-track-preview-img');
+            const previewName = document.getElementById('admin-track-preview-name');
+            const previewLayoutBadge = document.getElementById('admin-track-preview-layout-badge');
+            const previewSpecs = document.getElementById('admin-track-preview-specs');
+            const previewPath = document.getElementById('admin-track-preview-path');
+            const verifiedPill = document.getElementById('track-verified-pill');
+
+            if (previewImg) {
+                previewImg.dataset.fallback = item.fallbackPath;
+                previewImg.src = item.subfolderPath;
+            }
+            if (previewName) previewName.textContent = item.track;
+            if (previewLayoutBadge) previewLayoutBadge.textContent = item.layout;
+            if (previewSpecs) previewSpecs.textContent = item.specs;
+            if (previewPath) previewPath.textContent = item.subfolderPath;
+
+            if (verifiedPill) {
+                verifiedPill.textContent = 'VERIFIED MAP';
+                verifiedPill.style.color = 'var(--primary)';
+                verifiedPill.style.borderColor = 'rgba(0,207,255,0.3)';
+                verifiedPill.style.background = 'rgba(0,207,255,0.15)';
+            }
+
+            closeTrackDropdown();
+        }
+
+        function selectCustomTrackOption() {
+            currentSelectedTrackItem = null;
+            const customWrap = document.getElementById('custom-track-input-wrap');
+            const customTrackInput = document.getElementById('edit-event-custom-track');
+            const customLayoutInput = document.getElementById('edit-event-custom-layout');
+            const hiddenTrack = document.getElementById('edit-event-track');
+            const hiddenTrackImg = document.getElementById('edit-event-track-img');
+            const hiddenTrackSpecs = document.getElementById('edit-event-track-specs');
+            const hiddenTrackLayout = document.getElementById('edit-event-track-layout');
+            const searchInput = document.getElementById('admin-track-search-input');
+            const previewImg = document.getElementById('admin-track-preview-img');
+            const previewName = document.getElementById('admin-track-preview-name');
+            const previewLayoutBadge = document.getElementById('admin-track-preview-layout-badge');
+            const previewSpecs = document.getElementById('admin-track-preview-specs');
+            const previewPath = document.getElementById('admin-track-preview-path');
+            const verifiedPill = document.getElementById('track-verified-pill');
+
+            if (customWrap) customWrap.style.display = 'block';
+            const cName = customTrackInput?.value.trim() || 'Custom Circuit';
+            const cLayout = customLayoutInput?.value.trim() || 'Full Course';
+
+            if (hiddenTrack) hiddenTrack.value = `${cName} (${cLayout})`;
+            if (hiddenTrackImg) hiddenTrackImg.value = 'assets/tracks/generic-circuit.png';
+            if (hiddenTrackSpecs) hiddenTrackSpecs.value = 'CUSTOM CIRCUIT • EVENT SPEC';
+            if (hiddenTrackLayout) hiddenTrackLayout.value = cLayout;
+            if (searchInput) searchInput.value = `${cName} (${cLayout})`;
+
+            if (previewImg) {
+                previewImg.dataset.fallback = 'assets/tracks/generic-circuit.png';
+                previewImg.src = 'assets/tracks/generic-circuit.png';
+            }
+            if (previewName) previewName.textContent = cName;
+            if (previewLayoutBadge) previewLayoutBadge.textContent = cLayout;
+            if (previewSpecs) previewSpecs.textContent = 'CUSTOM CIRCUIT • GENERIC MAP';
+            if (previewPath) previewPath.textContent = 'assets/tracks/generic-circuit.png';
+
+            if (verifiedPill) {
+                verifiedPill.textContent = 'CUSTOM / GENERIC';
+                verifiedPill.style.color = '#ffa500';
+                verifiedPill.style.borderColor = 'rgba(255,165,0,0.3)';
+                verifiedPill.style.background = 'rgba(255,165,0,0.1)';
+            }
+
+            closeTrackDropdown();
+        }
+
+        // Global click listener to close track dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            const combobox = document.getElementById('admin-track-combobox-wrap');
+            if (combobox && !combobox.contains(e.target)) {
+                closeTrackDropdown();
+            }
+        });
 
         function showEventModal(event = null) {
             if (typeof event === 'string') {
@@ -4364,66 +5188,106 @@ body.meeting-mode-active .btn-summary-confirm {
             document.getElementById('edit-event-id').disabled = !!event;
             document.getElementById('edit-event-name').value = event ? event.name : '';
             
-            // Populate and sync verified track selector
+            // Populate and sync searchable track & layout combobox
             const trackVal = event ? (event.track || '') : '';
-            const trackSelect = document.getElementById('edit-event-track-select');
-            const customInput = document.getElementById('edit-event-custom-track');
-            let matched = false;
+            const trackImgVal = event ? (event.trackImg || '') : '';
+            const customWrap = document.getElementById('custom-track-input-wrap');
+            const customTrackInput = document.getElementById('edit-event-custom-track');
+            const customLayoutInput = document.getElementById('edit-event-custom-layout');
+            let matchedItem = null;
 
-            if (trackSelect && trackVal) {
+            if (trackVal || trackImgVal) {
                 const tLow = trackVal.toLowerCase();
-                for (let i = 0; i < trackSelect.options.length; i++) {
-                    const opt = trackSelect.options[i];
-                    if (opt.value === '__CUSTOM__') continue;
-                    const oLow = opt.value.toLowerCase();
-                    if (oLow === tLow ||
-                        (tLow.includes('oulton') && oLow.includes('oulton')) ||
-                        (tLow.includes('spa') && oLow.includes('spa')) ||
-                        (tLow.includes('nurburg') && oLow.includes('nürburgring')) ||
-                        (tLow.includes('bathurst') && oLow.includes('bathurst')) ||
-                        (tLow.includes('sebring') && oLow.includes('sebring')) ||
-                        (tLow.includes('daytona') && !tLow.includes('oval') && oLow === 'daytona international speedway') ||
-                        (tLow.includes('daytona') && tLow.includes('oval') && oLow.includes('oval')) ||
-                        ((tLow.includes('lemans') || tLow.includes('le mans')) && oLow.includes('lemans')) ||
-                        (tLow.includes('brands') && oLow.includes('brands')) ||
-                        (tLow.includes('silverstone') && oLow.includes('silverstone')) ||
-                        (tLow.includes('road america') && oLow.includes('road america')) ||
-                        (tLow.includes('road atlanta') && oLow.includes('road atlanta')) ||
-                        (tLow.includes('watkins') && oLow.includes('watkins')) ||
-                        (tLow.includes('suzuka') && oLow.includes('suzuka')) ||
-                        (tLow.includes('monza') && oLow.includes('monza')) ||
-                        (tLow.includes('portimao') && oLow.includes('portimão')) ||
-                        (tLow.includes('indy') && oLow.includes('indianapolis'))) {
-                        trackSelect.selectedIndex = i;
-                        matched = true;
-                        break;
+                const imgLow = trackImgVal.toLowerCase();
+
+                // 1. Try matching by trackImg path
+                if (imgLow) {
+                    matchedItem = TRACK_LAYOUTS_CATALOG.find(t => 
+                        t.subfolderPath.toLowerCase() === imgLow || 
+                        t.fallbackPath.toLowerCase() === imgLow
+                    );
+                }
+
+                // 2. Try matching by exact or partial track/layout name
+                if (!matchedItem && tLow) {
+                    matchedItem = TRACK_LAYOUTS_CATALOG.find(t => 
+                        t.displayName.toLowerCase() === tLow ||
+                        t.track.toLowerCase() === tLow ||
+                        (tLow.includes(t.track.toLowerCase()) && tLow.includes(t.layout.toLowerCase()))
+                    );
+                }
+
+                // 3. Fallback fuzzy keyword match
+                if (!matchedItem && tLow) {
+                    if (tLow.includes('oulton')) {
+                        if (tLow.includes('fosters')) matchedItem = TRACK_LAYOUTS_CATALOG.find(t => t.id === 'oulton-park-fosters');
+                        else if (tLow.includes('island')) matchedItem = TRACK_LAYOUTS_CATALOG.find(t => t.id === 'oulton-park-island');
+                        else matchedItem = TRACK_LAYOUTS_CATALOG.find(t => t.id === 'oulton-park-intl');
+                    } else if (tLow.includes('spa')) {
+                        matchedItem = TRACK_LAYOUTS_CATALOG.find(t => t.id === 'spa-gp');
+                    } else if (tLow.includes('nurburg') || tLow.includes('nürburg') || tLow.includes('nordschleife')) {
+                        if (tLow.includes('24h') || tLow.includes('gesamtstrecke')) matchedItem = TRACK_LAYOUTS_CATALOG.find(t => t.id === 'nurburgring-24h');
+                        else if (tLow.includes('vln') || tLow.includes('nls')) matchedItem = TRACK_LAYOUTS_CATALOG.find(t => t.id === 'nurburgring-vln');
+                        else matchedItem = TRACK_LAYOUTS_CATALOG.find(t => t.id === 'nurburgring-nordschleife');
+                    } else if (tLow.includes('daytona')) {
+                        if (tLow.includes('oval') && !tLow.includes('road')) matchedItem = TRACK_LAYOUTS_CATALOG.find(t => t.id === 'daytona-oval');
+                        else matchedItem = TRACK_LAYOUTS_CATALOG.find(t => t.id === 'daytona-road');
+                    } else if (tLow.includes('watkins')) {
+                        if (tLow.includes('cup')) matchedItem = TRACK_LAYOUTS_CATALOG.find(t => t.id === 'watkins-glen-cup');
+                        else matchedItem = TRACK_LAYOUTS_CATALOG.find(t => t.id === 'watkins-glen-boot');
+                    } else if (tLow.includes('silverstone')) {
+                        if (tLow.includes('national')) matchedItem = TRACK_LAYOUTS_CATALOG.find(t => t.id === 'silverstone-national');
+                        else matchedItem = TRACK_LAYOUTS_CATALOG.find(t => t.id === 'silverstone-gp');
+                    } else if (tLow.includes('brands')) {
+                        matchedItem = TRACK_LAYOUTS_CATALOG.find(t => t.id === 'brands-hatch-gp');
+                    } else if (tLow.includes('monza')) {
+                        matchedItem = TRACK_LAYOUTS_CATALOG.find(t => t.id === 'monza-gp');
+                    } else if (tLow.includes('sebring')) {
+                        matchedItem = TRACK_LAYOUTS_CATALOG.find(t => t.id === 'sebring-intl');
+                    } else if (tLow.includes('indy')) {
+                        matchedItem = TRACK_LAYOUTS_CATALOG.find(t => t.id === 'indy-road');
+                    } else if (tLow.includes('bathurst')) {
+                        matchedItem = TRACK_LAYOUTS_CATALOG.find(t => t.id === 'bathurst-full');
+                    } else if (tLow.includes('suzuka')) {
+                        matchedItem = TRACK_LAYOUTS_CATALOG.find(t => t.id === 'suzuka-gp');
+                    } else if (tLow.includes('lemans') || tLow.includes('le mans')) {
+                        matchedItem = TRACK_LAYOUTS_CATALOG.find(t => t.id === 'lemans-24h');
+                    } else if (tLow.includes('road america')) {
+                        matchedItem = TRACK_LAYOUTS_CATALOG.find(t => t.id === 'road-america-full');
+                    } else if (tLow.includes('road atlanta')) {
+                        matchedItem = TRACK_LAYOUTS_CATALOG.find(t => t.id === 'road-atlanta-full');
+                    } else if (tLow.includes('portimao') || tLow.includes('algarve')) {
+                        matchedItem = TRACK_LAYOUTS_CATALOG.find(t => t.id === 'portimao-gp');
                     }
                 }
             }
 
-            if (matched) {
-                if (customInput) customInput.value = '';
-                onAdminTrackSelectChange(trackSelect.value);
+            if (matchedItem) {
+                selectTrackItem(matchedItem.id);
             } else if (trackVal) {
-                if (trackSelect) trackSelect.value = '__CUSTOM__';
-                if (customInput) customInput.value = trackVal;
-                onAdminTrackSelectChange('__CUSTOM__');
+                // Custom or unmatched track
+                if (customTrackInput) customTrackInput.value = trackVal;
+                if (customLayoutInput) customLayoutInput.value = event?.trackLayout || 'Grand Prix';
+                selectCustomTrackOption();
             } else {
-                if (trackSelect) trackSelect.selectedIndex = 0;
-                if (customInput) customInput.value = '';
-                onAdminTrackSelectChange(trackSelect ? trackSelect.value : 'Circuit de Spa-Francorchamps');
+                // Default new event to Spa
+                selectTrackItem('spa-gp');
             }
 
-            // Bind listener to custom input if not yet bound
-            if (customInput && !customInput._hasInputListener) {
-                customInput._hasInputListener = true;
-                customInput.addEventListener('input', (e) => {
-                    const cVal = e.target.value.trim();
-                    const hiddenTrack = document.getElementById('edit-event-track');
-                    if (hiddenTrack) hiddenTrack.value = cVal || 'Custom Circuit';
-                    const previewName = document.getElementById('admin-track-preview-name');
-                    if (previewName) previewName.textContent = cVal || 'Custom Circuit';
-                });
+            // Sync custom inputs
+            if (customTrackInput && !customTrackInput._hasInputListener) {
+                customTrackInput._hasInputListener = true;
+                const syncCustom = () => {
+                    const cName = customTrackInput.value.trim() || 'Custom Circuit';
+                    const cLayout = customLayoutInput?.value.trim() || 'Full Course';
+                    document.getElementById('edit-event-track').value = `${cName} (${cLayout})`;
+                    document.getElementById('edit-event-track-layout').value = cLayout;
+                    document.getElementById('admin-track-search-input').value = `${cName} (${cLayout})`;
+                    document.getElementById('admin-track-preview-name').textContent = cName;
+                    document.getElementById('admin-track-preview-layout-badge').textContent = cLayout;
+                };
+                customTrackInput.addEventListener('input', syncCustom);
+                if (customLayoutInput) customLayoutInput.addEventListener('input', syncCustom);
             }
 
             document.getElementById('edit-event-date').value = event ? event.date : '';
@@ -4467,14 +5331,10 @@ body.meeting-mode-active .btn-summary-confirm {
         async function saveEvent() {
             const id = document.getElementById('edit-event-id').value.trim();
             const name = document.getElementById('edit-event-name').value.trim();
-            const trackSelect = document.getElementById('edit-event-track-select');
-            let track = trackSelect ? trackSelect.value : '';
-            if (track === '__CUSTOM__') {
-                track = document.getElementById('edit-event-custom-track')?.value.trim() || 'Custom Circuit';
-            }
-            if (!track) {
-                track = document.getElementById('edit-event-track')?.value.trim() || 'Circuit de Spa-Francorchamps';
-            }
+            const track = document.getElementById('edit-event-track')?.value.trim() || 'Circuit de Spa-Francorchamps';
+            const trackImg = document.getElementById('edit-event-track-img')?.value.trim() || 'assets/tracks/spa.png';
+            const trackSpecs = document.getElementById('edit-event-track-specs')?.value.trim() || '4.35mi (7.00km) • 19 TURNS • GRAND PRIX';
+            const trackLayout = document.getElementById('edit-event-track-layout')?.value.trim() || 'Grand Prix';
             const dateStr = document.getElementById('edit-event-date').value.trim();
             const startStr = document.getElementById('edit-event-start').value;
             const endStr = document.getElementById('edit-event-end').value;
@@ -4497,6 +5357,9 @@ body.meeting-mode-active .btn-summary-confirm {
             const eventData = {
                 name: name,
                 track: track,
+                trackImg: trackImg,
+                trackSpecs: trackSpecs,
+                trackLayout: trackLayout,
                 date: dateStr,
                 startDate: new Date(startStr).toISOString(),
                 endDate: endStr ? new Date(endStr).toISOString() : null,

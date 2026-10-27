@@ -646,62 +646,185 @@ async function loadDynamicContent() {
 }
 
 // Smart Track Image Resolver to ensure every circuit gets its authentic track outline
-function resolveTrackImage(trackName, eventId) {
+// Supports subfolders (e.g. assets/tracks/oulton-park/fosters.png), layout variants, and flat fallbacks
+function resolveTrackImage(trackName, eventId, explicitTrackImg) {
+    if (explicitTrackImg && typeof explicitTrackImg === 'string' && explicitTrackImg.startsWith('assets/tracks/') && !explicitTrackImg.includes('daytona.png')) {
+        return explicitTrackImg;
+    }
     if (typeof eventBanners !== 'undefined' && eventBanners && eventBanners[eventId]) {
         return eventBanners[eventId];
     }
     const t = (trackName || '').toLowerCase();
     const id = (eventId || '').toLowerCase();
 
+    // Direct path detection
+    if (t.startsWith('assets/tracks/') && (t.endsWith('.png') || t.endsWith('.svg'))) {
+        return trackName;
+    }
+
+    // Nürburgring Layouts
     if (t.includes('nurburg') || t.includes('nürburg') || t.includes('nordschleife') || t.includes('gesamtstrecke') || id.includes('nurburg')) {
+        if (t.includes('24h') || t.includes('gesamtstrecke')) return 'assets/tracks/nurburgring-24h.png';
+        if (t.includes('vln') || t.includes('nls') || id.includes('vln') || id.includes('nec')) return 'assets/tracks/nurburgring-vln.png';
+        if (t.includes('nordschleife')) return 'assets/tracks/nordschleife.png';
         return 'assets/tracks/nurburgring.png';
     }
-    if (t.includes('bathurst') || t.includes('mount panorama') || id.includes('bathurst')) {
-        return 'assets/tracks/bathurst.png';
+    // Oulton Park Layouts
+    if (t.includes('oulton') || id.includes('oulton')) {
+        if (t.includes('fosters')) return 'assets/tracks/oulton-park/fosters.png';
+        if (t.includes('island')) return 'assets/tracks/oulton-park/island.png';
+        return 'assets/tracks/oulton-park.png';
     }
-    if (t.includes('spa') || t.includes('francorchamps') || id.includes('spa')) {
-        return 'assets/tracks/spa.png';
-    }
-    if (t.includes('road america') || id.includes('road-america')) {
-        return 'assets/tracks/road-america.png';
-    }
-    if (t.includes('road atlanta') || t.includes('petit le mans') || id.includes('petit-le-mans')) {
-        return 'assets/tracks/road-atlanta.png';
-    }
-    if (t.includes('watkins') || id.includes('watkins')) {
-        return 'assets/tracks/watkins-glen.png';
-    }
-    if (t.includes('suzuka') || id.includes('suzuka')) {
-        return 'assets/tracks/suzuka.png';
-    }
+    // Daytona Layouts
     if (t.includes('daytona') || id.includes('daytona')) {
         if (t.includes('oval') && !t.includes('road')) return 'assets/tracks/daytona-oval.png';
         return 'assets/tracks/daytona.png';
     }
-    if (t.includes('sebring') || id.includes('sebring')) {
-        return 'assets/tracks/sebring.png';
-    }
-    if (t.includes('silverstone') || id.includes('silverstone')) {
-        return 'assets/tracks/silverstone.png';
-    }
-    if (t.includes('monza') || id.includes('monza')) {
-        return 'assets/tracks/monza.png';
-    }
-    if (t.includes('lemans') || t.includes('le mans') || id.includes('lemans')) {
-        return 'assets/tracks/lemans.png';
-    }
+    // Indianapolis Layouts
     if (t.includes('indy') || t.includes('indianapolis') || id.includes('indy')) {
         if (t.includes('oval') && !t.includes('road')) return 'assets/tracks/indy-oval.png';
         return 'assets/tracks/indy-road-course.png';
     }
+    // Watkins Glen Layouts
+    if (t.includes('watkins') || id.includes('watkins')) {
+        if (t.includes('cup') || t.includes('nascar')) return 'assets/tracks/watkins-glen/cup.png';
+        return 'assets/tracks/watkins-glen-boot.png';
+    }
+    // Silverstone Layouts
+    if (t.includes('silverstone') || id.includes('silverstone')) {
+        if (t.includes('national')) return 'assets/tracks/silverstone/national.png';
+        if (t.includes('international')) return 'assets/tracks/silverstone/international.png';
+        return 'assets/tracks/silverstone.png';
+    }
+    // Brands Hatch Layouts
     if (t.includes('brands hatch') || id.includes('brands-hatch')) {
+        if (t.includes('indy')) return 'assets/tracks/brands-hatch/indy.png';
         return 'assets/tracks/brands-hatch.png';
     }
+    // Le Mans Layouts
+    if (t.includes('lemans') || t.includes('le mans') || id.includes('lemans')) {
+        if (t.includes('bugatti')) return 'assets/tracks/lemans/bugatti.png';
+        return 'assets/tracks/lemans.png';
+    }
+    // Suzuka Layouts
+    if (t.includes('suzuka') || id.includes('suzuka')) {
+        if (t.includes('east')) return 'assets/tracks/suzuka/east.png';
+        if (t.includes('west')) return 'assets/tracks/suzuka/west.png';
+        return 'assets/tracks/suzuka.png';
+    }
+    // Sebring Layouts
+    if (t.includes('sebring') || id.includes('sebring')) {
+        if (t.includes('club')) return 'assets/tracks/sebring/club.png';
+        return 'assets/tracks/sebring.png';
+    }
+    // Road Atlanta Layouts
+    if (t.includes('road atlanta') || t.includes('petit le mans') || id.includes('petit-le-mans')) {
+        if (t.includes('short')) return 'assets/tracks/road-atlanta/short.png';
+        return 'assets/tracks/road-atlanta.png';
+    }
+    // Portimão
     if (t.includes('portimao') || t.includes('algarve') || id.includes('portimao')) {
+        if (t.includes('chicane')) return 'assets/tracks/portimao/chicane.png';
         return 'assets/tracks/portimao.png';
     }
-    if (t.includes('oulton') || id.includes('oulton')) {
-        return 'assets/tracks/oulton-park.png';
+    // Road America
+    if (t.includes('road america') || id.includes('road-america')) {
+        return 'assets/tracks/road-america.png';
+    }
+    // Bathurst
+    if (t.includes('bathurst') || t.includes('mount panorama') || id.includes('bathurst')) {
+        return 'assets/tracks/bathurst.png';
+    }
+    // Monza
+    if (t.includes('monza') || id.includes('monza')) {
+        return 'assets/tracks/monza.png';
+    }
+    // Catalunya / Barcelona
+    if (t.includes('catalunya') || t.includes('barcelona') || id.includes('catalunya')) {
+        if (t.includes('national')) return 'assets/tracks/catalunya/national.png';
+        return 'assets/tracks/catalunya/gp.png';
+    }
+    // Imola
+    if (t.includes('imola') || id.includes('imola')) {
+        return 'assets/tracks/imola/gp.png';
+    }
+    // COTA
+    if (t.includes('cota') || t.includes('circuit of the americas') || id.includes('cota')) {
+        if (t.includes('national')) return 'assets/tracks/cota/national.png';
+        return 'assets/tracks/cota/gp.png';
+    }
+    // Interlagos
+    if (t.includes('interlagos') || t.includes('pace') || id.includes('interlagos')) {
+        return 'assets/tracks/interlagos/gp.png';
+    }
+    // Laguna Seca
+    if (t.includes('laguna') || id.includes('laguna')) {
+        return 'assets/tracks/laguna-seca/full.png';
+    }
+    // Red Bull Ring
+    if (t.includes('red bull ring') || t.includes('spielberg') || id.includes('red-bull-ring')) {
+        return 'assets/tracks/red-bull-ring/gp.png';
+    }
+    // Hockenheim
+    if (t.includes('hockenheim') || id.includes('hockenheim')) {
+        return 'assets/tracks/hockenheim/gp.png';
+    }
+    // Fuji
+    if (t.includes('fuji') || id.includes('fuji')) {
+        return 'assets/tracks/fuji/gp.png';
+    }
+    // VIR
+    if (t.includes('vir') || t.includes('virginia international') || id.includes('vir')) {
+        return 'assets/tracks/vir/full.png';
+    }
+    // Lime Rock
+    if (t.includes('lime rock') || id.includes('lime-rock')) {
+        return 'assets/tracks/lime-rock/classic.png';
+    }
+    // Zandvoort
+    if (t.includes('zandvoort') || id.includes('zandvoort')) {
+        return 'assets/tracks/zandvoort/gp.png';
+    }
+    // Mugello
+    if (t.includes('mugello') || id.includes('mugello')) {
+        return 'assets/tracks/mugello/gp.png';
+    }
+    // Donington
+    if (t.includes('donington') || id.includes('donington')) {
+        return 'assets/tracks/donington/gp.png';
+    }
+    // Snetterton
+    if (t.includes('snetterton') || id.includes('snetterton')) {
+        return 'assets/tracks/snetterton/300.png';
+    }
+    // Knockhill
+    if (t.includes('knockhill') || id.includes('knockhill')) {
+        return 'assets/tracks/knockhill/international.png';
+    }
+    // Cadwell Park
+    if (t.includes('cadwell') || id.includes('cadwell')) {
+        return 'assets/tracks/cadwell-park/full.png';
+    }
+    // Talladega
+    if (t.includes('talladega') || id.includes('talladega')) {
+        return 'assets/tracks/talladega/oval.png';
+    }
+    // Charlotte
+    if (t.includes('charlotte') || id.includes('charlotte')) {
+        if (t.includes('roval')) return 'assets/tracks/charlotte/roval.png';
+        return 'assets/tracks/charlotte/oval.png';
+    }
+    // Bristol
+    if (t.includes('bristol') || id.includes('bristol')) {
+        return 'assets/tracks/bristol/oval.png';
+    }
+    // Darlington
+    if (t.includes('darlington') || id.includes('darlington')) {
+        return 'assets/tracks/darlington/oval.png';
+    }
+    // Martinsville
+    if (t.includes('martinsville') || id.includes('martinsville')) {
+        return 'assets/tracks/martinsville/oval.png';
     }
 
     return 'assets/tracks/generic-circuit.png';
@@ -1041,7 +1164,7 @@ function populateNextEventDashboard(nextEvent, staticIds = [], eventBanners = {}
 
     const id = nextEvent.id || '';
     const rawTrackName = nextEvent.track || nextEvent.name || 'Official Circuit';
-    const fallbackImg = resolveTrackImage(rawTrackName, id);
+    const fallbackImg = (nextEvent.trackImg && nextEvent.trackImg !== 'assets/tracks/daytona.png') ? nextEvent.trackImg : resolveTrackImage(rawTrackName, id, nextEvent.trackImg);
     const fallbackSpecs = resolveTrackSpecs(rawTrackName, nextEvent.specs);
 
     // Dynamic resolution: exact id match, or fuzzy match for NEC / Nürburgring VLN series
