@@ -24,7 +24,7 @@ else:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 CONFIG_FILE = os.path.join(BASE_DIR, "config.json")
-BRIDGE_VERSION = "1.6.0"
+BRIDGE_VERSION = "1.6.1"
 # Optional shared secret for the local dashboard gateway. Never hardcode it: set the DASH_TOKEN
 # environment variable (same value on the gateway) or "dashToken" in config.json.
 def get_local_dash_token(config=None):

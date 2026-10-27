@@ -1,6 +1,6 @@
 {
-  "logic_version": "1.6.0",
+  "logic_version": "1.6.1",
   "binary_version": "1.5.0",
   "binary_url": "https://raw.githubusercontent.com/euBiZaRe/grid-up-racing-website/master/telemetry-app/GridUpTelemetryRecorder.exe",
-  "notes": "Added native iRacing .sto Setup Installer engine with SHA-256 validation and cloud job queue integration."
+  "notes": "Security hardening: hardened WebSocket origin validation against CSWSH and URL parser confusion."
 }
