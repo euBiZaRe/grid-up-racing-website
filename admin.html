@@ -2909,8 +2909,52 @@ body.meeting-mode-active .btn-summary-confirm {
                         <input type="text" id="edit-event-name" class="btn btn-outline" style="width:100%; text-align:left;" placeholder="e.g. Spa 24hr">
                     </div>
                     <div>
-                        <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">TRACK NAME</label>
-                        <input type="text" id="edit-event-track" class="btn btn-outline" style="width:100%; text-align:left;" placeholder="e.g. Spa-Francorchamps">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <label style="font-size: 0.7rem; color: var(--primary); letter-spacing: 1px; font-weight: 700;">TRACK SELECTION (WITH VERIFIED TRACK MAP)</label>
+                            <span id="track-verified-pill" style="font-size: 0.65rem; background: rgba(0, 207, 255, 0.15); color: var(--primary); padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(0,207,255,0.3); font-weight: 600;">VERIFIED MAP</span>
+                        </div>
+                        <select id="edit-event-track-select" class="btn btn-outline" onchange="onAdminTrackSelectChange(this.value)" style="width: 100%; text-align: left; background: #0b111e; color: #fff; border: 1px solid rgba(0,207,255,0.4); padding: 0.75rem; border-radius: 8px; font-size: 0.9rem; cursor: pointer;">
+                            <optgroup label="🏁 European Circuits">
+                                <option value="Circuit de Spa-Francorchamps" data-img="assets/tracks/spa.png" data-specs="4.35mi • 19 TURNS • GRAND PRIX">Circuit de Spa-Francorchamps</option>
+                                <option value="Nürburgring Combined / 24h" data-img="assets/tracks/nurburgring-24h.png" data-specs="15.14mi (24.36km) • 170 TURNS • COMBINED VLN">Nürburgring Combined / 24h</option>
+                                <option value="Nürburgring Nordschleife" data-img="assets/tracks/nordschleife.png" data-specs="12.93mi • 154 TURNS • NORDSCHLEIFE">Nürburgring Nordschleife</option>
+                                <option value="Oulton Park Circuit" data-img="assets/tracks/oulton-park.png" data-specs="2.69mi (4.33km) • 17 TURNS • INTERNATIONAL">Oulton Park Circuit</option>
+                                <option value="Silverstone Circuit" data-img="assets/tracks/silverstone.png" data-specs="3.66mi • 18 TURNS • GRAND PRIX">Silverstone Circuit</option>
+                                <option value="Brands Hatch Circuit" data-img="assets/tracks/brands-hatch.png" data-specs="2.43mi • 9 TURNS • GRAND PRIX">Brands Hatch Circuit</option>
+                                <option value="Circuit de la Sarthe (Le Mans)" data-img="assets/tracks/lemans.png" data-specs="8.47mi • 38 TURNS • 24 HEURES DU MANS">Circuit de la Sarthe (Le Mans)</option>
+                                <option value="Autodromo Nazionale Monza" data-img="assets/tracks/monza.png" data-specs="3.60mi • 11 TURNS • GRAND PRIX">Autodromo Nazionale Monza</option>
+                                <option value="Portimão (Autódromo do Algarve)" data-img="assets/tracks/portimao.png" data-specs="2.89mi • 15 TURNS • GRAND PRIX">Portimão (Autódromo do Algarve)</option>
+                            </optgroup>
+                            <optgroup label="🏁 North American Circuits">
+                                <option value="Daytona International Speedway" data-img="assets/tracks/daytona.png" data-specs="3.56mi • 12 TURNS • ROAD COURSE">Daytona International Speedway (Road Course)</option>
+                                <option value="Daytona International Speedway (Oval)" data-img="assets/tracks/daytona-oval.png" data-specs="2.50mi • 4 TURNS • TRI-OVAL">Daytona International Speedway (Tri-Oval)</option>
+                                <option value="Sebring International Raceway" data-img="assets/tracks/sebring.png" data-specs="3.74mi • 17 TURNS • INTERNATIONAL">Sebring International Raceway</option>
+                                <option value="Road America" data-img="assets/tracks/road-america.png" data-specs="4.05mi • 14 TURNS • FULL COURSE">Road America</option>
+                                <option value="Michelin Raceway Road Atlanta" data-img="assets/tracks/road-atlanta.png" data-specs="2.54mi • 12 TURNS • FULL COURSE">Michelin Raceway Road Atlanta</option>
+                                <option value="Watkins Glen International" data-img="assets/tracks/watkins-glen.png" data-specs="3.40mi • 11 TURNS • BOOT LAYOUT">Watkins Glen International</option>
+                                <option value="Indianapolis Motor Speedway (Road Course)" data-img="assets/tracks/indy-road-course.png" data-specs="2.43mi • 14 TURNS • ROAD COURSE">Indianapolis Motor Speedway (Road Course)</option>
+                                <option value="Indianapolis Motor Speedway (Oval)" data-img="assets/tracks/indy-oval.png" data-specs="2.50mi • 4 TURNS • RECTANGULAR OVAL">Indianapolis Motor Speedway (Oval)</option>
+                            </optgroup>
+                            <optgroup label="🏁 Asia-Pacific Circuits">
+                                <option value="Mount Panorama Circuit (Bathurst)" data-img="assets/tracks/bathurst.png" data-specs="3.86mi • 23 TURNS • MOUNT PANORAMA">Mount Panorama Circuit (Bathurst)</option>
+                                <option value="Suzuka International Racing Course" data-img="assets/tracks/suzuka.png" data-specs="3.61mi • 18 TURNS • GRAND PRIX">Suzuka International Racing Course</option>
+                            </optgroup>
+                            <optgroup label="🏁 Other / Custom Track">
+                                <option value="__CUSTOM__" data-img="assets/tracks/generic-circuit.png" data-specs="CUSTOM CIRCUIT • EVENT SPEC">Custom Track Name (Not in Catalog)...</option>
+                            </optgroup>
+                        </select>
+                        <div id="custom-track-input-wrap" style="display: none; margin-top: 0.5rem;">
+                            <input type="text" id="edit-event-custom-track" class="btn btn-outline" style="width: 100%; text-align: left; background: #0b111e; color: #fff; border: 1px dashed var(--primary); padding: 0.75rem;" placeholder="Type custom track name (e.g. Fuji Speedway)">
+                        </div>
+                        <input type="hidden" id="edit-event-track">
+                        <!-- Visual Track Map Live Preview -->
+                        <div id="admin-track-preview-box" style="margin-top: 0.75rem; display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; background: rgba(0, 207, 255, 0.05); border: 1px solid rgba(0, 207, 255, 0.2); border-radius: 10px;">
+                            <img id="admin-track-preview-img" src="assets/tracks/spa.png" alt="Track Map Preview" style="width: 80px; height: 50px; object-fit: contain; filter: drop-shadow(0 0 6px rgba(0,207,255,0.4)); flex-shrink: 0; background: rgba(0,0,0,0.4); padding: 4px; border-radius: 6px;">
+                            <div style="overflow: hidden;">
+                                <div id="admin-track-preview-name" style="font-size: 0.85rem; font-weight: 700; color: #fff; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">Circuit de Spa-Francorchamps</div>
+                                <div id="admin-track-preview-specs" style="font-size: 0.72rem; color: var(--primary); font-family: monospace; margin-top: 2px;">4.35mi • 19 TURNS • GRAND PRIX</div>
+                            </div>
+                        </div>
                     </div>
                     <div>
                         <label style="display:block; font-size: 0.7rem; color: var(--primary); margin-bottom: 0.5rem;">DATE DISPLAY</label>
@@ -4271,6 +4315,47 @@ body.meeting-mode-active .btn-summary-confirm {
             }
         }
 
+        function onAdminTrackSelectChange(val) {
+            const select = document.getElementById('edit-event-track-select');
+            const customWrap = document.getElementById('custom-track-input-wrap');
+            const customInput = document.getElementById('edit-event-custom-track');
+            const hiddenTrack = document.getElementById('edit-event-track');
+            const previewImg = document.getElementById('admin-track-preview-img');
+            const previewName = document.getElementById('admin-track-preview-name');
+            const previewSpecs = document.getElementById('admin-track-preview-specs');
+            const verifiedPill = document.getElementById('track-verified-pill');
+
+            if (val === '__CUSTOM__') {
+                if (customWrap) customWrap.style.display = 'block';
+                const customVal = customInput ? customInput.value.trim() : '';
+                if (hiddenTrack) hiddenTrack.value = customVal || 'Custom Circuit';
+                if (previewImg) previewImg.src = 'assets/tracks/generic-circuit.png';
+                if (previewName) previewName.textContent = customVal || 'Custom Circuit';
+                if (previewSpecs) previewSpecs.textContent = 'CUSTOM CIRCUIT • GENERIC MAP';
+                if (verifiedPill) {
+                    verifiedPill.textContent = 'CUSTOM / GENERIC';
+                    verifiedPill.style.color = '#ffa500';
+                    verifiedPill.style.borderColor = 'rgba(255,165,0,0.3)';
+                    verifiedPill.style.background = 'rgba(255,165,0,0.1)';
+                }
+            } else {
+                if (customWrap) customWrap.style.display = 'none';
+                if (hiddenTrack) hiddenTrack.value = val;
+                const opt = select ? select.options[select.selectedIndex] : null;
+                const img = opt?.getAttribute('data-img') || 'assets/tracks/generic-circuit.png';
+                const specs = opt?.getAttribute('data-specs') || 'OFFICIAL IRACING EVENT';
+                if (previewImg) previewImg.src = img;
+                if (previewName) previewName.textContent = val;
+                if (previewSpecs) previewSpecs.textContent = specs;
+                if (verifiedPill) {
+                    verifiedPill.textContent = 'VERIFIED MAP';
+                    verifiedPill.style.color = 'var(--primary)';
+                    verifiedPill.style.borderColor = 'rgba(0,207,255,0.3)';
+                    verifiedPill.style.background = 'rgba(0,207,255,0.15)';
+                }
+            }
+        }
+
         function showEventModal(event = null) {
             if (typeof event === 'string') {
                 event = ALL_EVENTS.find(e => e.id === event) || null;
@@ -4278,7 +4363,69 @@ body.meeting-mode-active .btn-summary-confirm {
             document.getElementById('edit-event-id').value = event ? event.id : '';
             document.getElementById('edit-event-id').disabled = !!event;
             document.getElementById('edit-event-name').value = event ? event.name : '';
-            document.getElementById('edit-event-track').value = event ? (event.track || '') : '';
+            
+            // Populate and sync verified track selector
+            const trackVal = event ? (event.track || '') : '';
+            const trackSelect = document.getElementById('edit-event-track-select');
+            const customInput = document.getElementById('edit-event-custom-track');
+            let matched = false;
+
+            if (trackSelect && trackVal) {
+                const tLow = trackVal.toLowerCase();
+                for (let i = 0; i < trackSelect.options.length; i++) {
+                    const opt = trackSelect.options[i];
+                    if (opt.value === '__CUSTOM__') continue;
+                    const oLow = opt.value.toLowerCase();
+                    if (oLow === tLow ||
+                        (tLow.includes('oulton') && oLow.includes('oulton')) ||
+                        (tLow.includes('spa') && oLow.includes('spa')) ||
+                        (tLow.includes('nurburg') && oLow.includes('nürburgring')) ||
+                        (tLow.includes('bathurst') && oLow.includes('bathurst')) ||
+                        (tLow.includes('sebring') && oLow.includes('sebring')) ||
+                        (tLow.includes('daytona') && !tLow.includes('oval') && oLow === 'daytona international speedway') ||
+                        (tLow.includes('daytona') && tLow.includes('oval') && oLow.includes('oval')) ||
+                        ((tLow.includes('lemans') || tLow.includes('le mans')) && oLow.includes('lemans')) ||
+                        (tLow.includes('brands') && oLow.includes('brands')) ||
+                        (tLow.includes('silverstone') && oLow.includes('silverstone')) ||
+                        (tLow.includes('road america') && oLow.includes('road america')) ||
+                        (tLow.includes('road atlanta') && oLow.includes('road atlanta')) ||
+                        (tLow.includes('watkins') && oLow.includes('watkins')) ||
+                        (tLow.includes('suzuka') && oLow.includes('suzuka')) ||
+                        (tLow.includes('monza') && oLow.includes('monza')) ||
+                        (tLow.includes('portimao') && oLow.includes('portimão')) ||
+                        (tLow.includes('indy') && oLow.includes('indianapolis'))) {
+                        trackSelect.selectedIndex = i;
+                        matched = true;
+                        break;
+                    }
+                }
+            }
+
+            if (matched) {
+                if (customInput) customInput.value = '';
+                onAdminTrackSelectChange(trackSelect.value);
+            } else if (trackVal) {
+                if (trackSelect) trackSelect.value = '__CUSTOM__';
+                if (customInput) customInput.value = trackVal;
+                onAdminTrackSelectChange('__CUSTOM__');
+            } else {
+                if (trackSelect) trackSelect.selectedIndex = 0;
+                if (customInput) customInput.value = '';
+                onAdminTrackSelectChange(trackSelect ? trackSelect.value : 'Circuit de Spa-Francorchamps');
+            }
+
+            // Bind listener to custom input if not yet bound
+            if (customInput && !customInput._hasInputListener) {
+                customInput._hasInputListener = true;
+                customInput.addEventListener('input', (e) => {
+                    const cVal = e.target.value.trim();
+                    const hiddenTrack = document.getElementById('edit-event-track');
+                    if (hiddenTrack) hiddenTrack.value = cVal || 'Custom Circuit';
+                    const previewName = document.getElementById('admin-track-preview-name');
+                    if (previewName) previewName.textContent = cVal || 'Custom Circuit';
+                });
+            }
+
             document.getElementById('edit-event-date').value = event ? event.date : '';
             document.getElementById('edit-event-description').value = event ? (event.description || '') : '';
             document.getElementById('edit-event-broadcast').value = event ? (event.broadcastUrl || '') : '';
@@ -4320,7 +4467,14 @@ body.meeting-mode-active .btn-summary-confirm {
         async function saveEvent() {
             const id = document.getElementById('edit-event-id').value.trim();
             const name = document.getElementById('edit-event-name').value.trim();
-            const track = document.getElementById('edit-event-track').value.trim();
+            const trackSelect = document.getElementById('edit-event-track-select');
+            let track = trackSelect ? trackSelect.value : '';
+            if (track === '__CUSTOM__') {
+                track = document.getElementById('edit-event-custom-track')?.value.trim() || 'Custom Circuit';
+            }
+            if (!track) {
+                track = document.getElementById('edit-event-track')?.value.trim() || 'Circuit de Spa-Francorchamps';
+            }
             const dateStr = document.getElementById('edit-event-date').value.trim();
             const startStr = document.getElementById('edit-event-start').value;
             const endStr = document.getElementById('edit-event-end').value;

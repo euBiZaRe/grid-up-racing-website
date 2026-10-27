@@ -196,15 +196,14 @@ function updateCountdown(targetTimestamp, endVal = null, broadcastUrl = null, li
         const now = new Date().getTime();
         const countdownEl = document.getElementById('countdown');
         
-        // 1. If currently live (between liveStartDate and endDate)
-        if (now >= liveStartDate && now <= endDate) {
-            if (typeof initHomepageLiveTelemetry === 'function') {
-                initHomepageLiveTelemetry(true, window.currentNextEvent);
-            }
+        const hasLiveTelemetry = (typeof getActiveDriverList === 'function' && getActiveDriverList().length > 0) || Boolean(window.isSimulatingTelemetry);
+
+        // 1. ONLY show Live state if telemetry is actively being streamed by a driver
+        if (hasLiveTelemetry) {
             if (countdownEl) {
-                // Ensure subtitle says Live
                 const subtitleEl = document.getElementById('hero-event-subtitle');
                 if (subtitleEl && !subtitleEl.textContent.startsWith('LIVE NOW')) {
+                    subtitleEl.textContent = `LIVE NOW: ${window.currentNextEvent?.name || 'RACE DAY'}`;
                     subtitleEl.style.color = '#ff0055';
                     subtitleEl.classList.add('animate-pulse');
                 }
@@ -271,28 +270,14 @@ function updateCountdown(targetTimestamp, endVal = null, broadcastUrl = null, li
         
         // If elements are missing (e.g. from previous LIVE NOW state), restore the countdown structure
         if (countdownEl && (!daysEl || !hoursEl || !minutesEl || !secondsEl)) {
-            let container = countdownEl.querySelector('.countdown-container');
-            if (!container) {
-                // Restore the entire structure inside #countdown but keep subtitle if it exists
-                const subtitleHtml = document.getElementById('hero-event-subtitle') ? '' : `<p id="hero-event-subtitle" style="color: var(--primary); font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; letter-spacing: 2px;">Next Major Race</p>`;
-                countdownEl.innerHTML = subtitleHtml + `
-                    <div class="countdown-container" style="display: flex; gap: 1.5rem; justify-content: center; background: rgba(0,0,0,0.3); padding: 2rem; border-radius: 24px; border: 1px solid var(--glass-border); backdrop-filter: blur(5px); width: 100%;">
-                        <div class="countdown-box">
-                            <span id="days" class="countdown-number">00</span>
-                            <span class="countdown-label">Days</span>
-                        </div>
-                        <div class="countdown-box">
-                            <span id="hours" class="countdown-number">00</span>
-                            <span class="countdown-label">Hours</span>
-                        </div>
-                        <div class="countdown-box">
-                            <span id="minutes" class="countdown-number">00</span>
-                            <span class="countdown-label">Mins</span>
-                        </div>
-                        <div class="countdown-box">
-                            <span id="seconds" class="countdown-number">00</span>
-                            <span class="countdown-label">Secs</span>
-                        </div>
+            const hasGrid = countdownEl.querySelector('.mockup-countdown-grid') || countdownEl.querySelector('.countdown-container');
+            if (!hasGrid) {
+                countdownEl.innerHTML = `
+                    <div class="mockup-countdown-grid">
+                        <div class="cd-box"><span id="days" class="cd-num">00</span><span class="cd-lbl">DAYS</span></div>
+                        <div class="cd-box"><span id="hours" class="cd-num">00</span><span class="cd-lbl">HOURS</span></div>
+                        <div class="cd-box"><span id="minutes" class="cd-num">00</span><span class="cd-lbl">MINS</span></div>
+                        <div class="cd-box"><span id="seconds" class="cd-num">00</span><span class="cd-lbl">SECS</span></div>
                     </div>
                 `;
                 daysEl = document.getElementById('days');
@@ -715,8 +700,11 @@ function resolveTrackImage(trackName, eventId) {
     if (t.includes('portimao') || t.includes('algarve') || id.includes('portimao')) {
         return 'assets/tracks/portimao.png';
     }
+    if (t.includes('oulton') || id.includes('oulton')) {
+        return 'assets/tracks/oulton-park.png';
+    }
 
-    return 'assets/tracks/daytona.png';
+    return 'assets/tracks/generic-circuit.png';
 }
 
 function resolveTrackSpecs(trackName, eventSpecs) {
@@ -760,6 +748,15 @@ function resolveTrackSpecs(trackName, eventSpecs) {
     }
     if (t.includes('indy') || t.includes('indianapolis')) {
         return '2.43mi • 14 TURNS • ROAD COURSE';
+    }
+    if (t.includes('oulton')) {
+        return '2.69mi (4.33km) • 17 TURNS • INTERNATIONAL';
+    }
+    if (t.includes('brands hatch')) {
+        return '2.43mi • 9 TURNS • GRAND PRIX';
+    }
+    if (t.includes('portimao') || t.includes('algarve')) {
+        return '2.89mi • 15 TURNS • GRAND PRIX';
     }
     return eventSpecs || 'OFFICIAL IRACING EVENT';
 }
@@ -1022,6 +1019,23 @@ function populateNextEventDashboard(nextEvent, staticIds = [], eventBanners = {}
             ],
             highlights: 'Steep 31-degree banking, technical infield, and high-speed slipstreaming into the Le Mans chicane.',
             detailsUrl: 'events/past/daytona-24.html'
+        },
+        'oulton-park': {
+            name: 'OULTON PARK',
+            trackName: 'OULTON PARK CIRCUIT',
+            trackSpecs: '2.69mi (4.33km) • 17 TURNS • INTERNATIONAL',
+            trackImg: 'assets/tracks/oulton-park.png',
+            classes: ['GT3', 'TEAM EVENT'],
+            metrics: [
+                { icon: '⛽', val: '100%', lbl: 'FUEL CAPACITY' },
+                { icon: '🛞', val: 'UNLIMITED', lbl: 'TIRE SETS' },
+                { icon: '⏱️', val: '~45 MIN', lbl: 'FUEL STINTS' },
+                { icon: '🔧', val: 'SHELL OILS HAIRPIN', lbl: 'BANKED HAIRPIN TRACTION' },
+                { icon: '⚖️', val: 'FAIR SHARE RULE', lbl: 'MIN 2 DRIVERS PER CAR' },
+                { icon: '⚡', val: '1 FAST REPAIR', lbl: 'AVAILABLE IN RACE' }
+            ],
+            highlights: 'Famous undulating parkland circuit featuring Old Hall, Cascades down to the banked Shell Oils Hairpin, and the thrilling plunge through Druids and Lodge Corner.',
+            detailsUrl: 'events.html'
         }
     };
 
@@ -1038,6 +1052,8 @@ function populateNextEventDashboard(nextEvent, staticIds = [], eventBanners = {}
         const nLower = ((nextEvent && nextEvent.name) || '').toLowerCase();
         if (idLower.includes('nec') || idLower.includes('vln') || tLower.includes('nurburg') || nLower.includes('nurburg') || nLower.includes('endurance championship')) {
             profile = EVENT_PROFILES['nec-26-w10'] || EVENT_PROFILES['nurburgring-vln'];
+        } else if (tLower.includes('oulton') || idLower.includes('oulton') || nLower.includes('oulton')) {
+            profile = EVENT_PROFILES['oulton-park'];
         }
     }
 
@@ -1499,10 +1515,11 @@ function renderEventsUI(upcomingEvents, pastEvents = null, featuredOverride = nu
         const liveStart = nextEvent.practiceStart ? parseDate(nextEvent.practiceStart) : startTime;
         const isLive = now >= liveStart && now <= endTime;
         
+        const hasLiveTelemetry = (typeof getActiveDriverList === 'function' && getActiveDriverList().length > 0) || Boolean(window.isSimulatingTelemetry);
         if (heroSubtitle) {
-            heroSubtitle.textContent = isLive ? `LIVE NOW: ${nextEvent.name || 'TBA'}` : `Next Major Race: ${nextEvent.name || 'TBA'}`;
-            heroSubtitle.style.color = isLive ? '#ff0055' : 'var(--primary)';
-            if (isLive) {
+            heroSubtitle.textContent = hasLiveTelemetry ? `LIVE NOW: ${nextEvent.name || 'TBA'}` : `Next Major Race: ${nextEvent.name || 'TBA'}`;
+            heroSubtitle.style.color = hasLiveTelemetry ? '#ff0055' : 'var(--primary)';
+            if (hasLiveTelemetry) {
                 heroSubtitle.classList.add('animate-pulse');
             } else {
                 heroSubtitle.classList.remove('animate-pulse');
@@ -1511,7 +1528,7 @@ function renderEventsUI(upcomingEvents, pastEvents = null, featuredOverride = nu
 
         const heroStatusBadge = document.getElementById('hero-event-status-badge');
         if (heroStatusBadge) {
-            if (isLive) {
+            if (hasLiveTelemetry) {
                 heroStatusBadge.className = 'mockup-badge-live';
                 heroStatusBadge.innerHTML = '<span class="pulsing-dot-red"></span> LIVE NOW';
             } else {
@@ -3096,24 +3113,78 @@ function updateHomepageTeamDropdown(activeTeamIds) {
 
 function renderHomepageTelemetryHUD() {
     const hud = document.getElementById('hero-live-telemetry-hud');
-    if (!hud) return;
+    const heroStatusBadge = document.getElementById('hero-event-status-badge');
+    const heroSubtitle = document.getElementById('hero-event-subtitle');
+    const telBtn = document.getElementById('hero-telemetry-btn');
+    const countdownEl = document.getElementById('countdown');
 
     const activeDrivers = getActiveDriverList();
-    const telBtn = document.getElementById('hero-telemetry-btn');
+    const isTelemetryStreaming = activeDrivers.length > 0 || Boolean(window.isSimulatingTelemetry);
 
-    // ONLY show if at least one driver has the telemetry tool working
-    if (activeDrivers.length === 0) {
-        hud.style.display = 'none';
+    // If NO active telemetry streaming, revert HUD, Status, Subtitle, and Countdown immediately without refresh
+    if (!isTelemetryStreaming) {
+        if (hud) hud.style.display = 'none';
+        if (heroStatusBadge) {
+            heroStatusBadge.className = 'mockup-badge-upcoming';
+            heroStatusBadge.innerHTML = '<span class="pulsing-dot"></span> UPCOMING';
+        }
+        if (heroSubtitle && window.currentNextEvent) {
+            heroSubtitle.textContent = `Next Major Race: ${window.currentNextEvent.name || 'TBA'}`;
+            heroSubtitle.style.color = 'var(--primary)';
+            heroSubtitle.classList.remove('animate-pulse');
+        }
         if (telBtn) {
             const nextEvent = window.currentNextEvent;
             telBtn.style.display = (nextEvent && nextEvent.id === 'spa-24hr') ? 'inline-flex' : 'none';
         }
+
+        // Restore countdown timer if it was showing LIVE NOW / RACE DAY
+        if (countdownEl && (countdownEl.querySelector('.glow-text.animate-pulse') || countdownEl.querySelector('.live-player-container'))) {
+            countdownEl.innerHTML = `
+                <div class="mockup-countdown-grid">
+                    <div class="cd-box"><span id="days" class="cd-num">00</span><span class="cd-lbl">DAYS</span></div>
+                    <div class="cd-box"><span id="hours" class="cd-num">00</span><span class="cd-lbl">HOURS</span></div>
+                    <div class="cd-box"><span id="minutes" class="cd-num">00</span><span class="cd-lbl">MINS</span></div>
+                    <div class="cd-box"><span id="seconds" class="cd-num">00</span><span class="cd-lbl">SECS</span></div>
+                </div>
+            `;
+            if (window.currentNextEvent) {
+                updateCountdown(window.currentNextEvent.startDate, window.currentNextEvent.endDate, window.currentNextEvent.broadcastUrl, window.currentNextEvent.practiceStart);
+            }
+        }
         return;
     }
 
-    hud.style.display = 'block';
-    if (telBtn) {
-        telBtn.style.display = 'inline-flex';
+    // Drivers ARE streaming telemetry! Show Live HUD, Red Badge, Subtitle & Live state
+    if (hud) hud.style.display = 'block';
+    if (telBtn) telBtn.style.display = 'inline-flex';
+    if (heroStatusBadge) {
+        heroStatusBadge.className = 'mockup-badge-live';
+        heroStatusBadge.innerHTML = '<span class="pulsing-dot-red"></span> LIVE NOW';
+    }
+    if (heroSubtitle && window.currentNextEvent) {
+        heroSubtitle.textContent = `LIVE NOW: ${window.currentNextEvent.name || 'TBA'}`;
+        heroSubtitle.style.color = '#ff0055';
+        heroSubtitle.classList.add('animate-pulse');
+    }
+    if (countdownEl) {
+        if (window.currentNextEvent && window.currentNextEvent.broadcastUrl) {
+            if (!countdownEl.querySelector('iframe')) {
+                let embedUrl = getEmbedUrl(window.currentNextEvent.broadcastUrl);
+                if (embedUrl) {
+                    if (embedUrl.includes('youtube.com/embed/') && !embedUrl.includes('mute=1')) {
+                        embedUrl += '&mute=1';
+                    }
+                    countdownEl.innerHTML = `
+                        <div class="live-player-container" style="max-width: 800px; width: 100%; margin: 1.5rem auto 0; border-radius: 16px; border: 1px solid var(--primary); box-shadow: 0 0 40px var(--primary-glow); overflow: hidden; aspect-ratio: 16/9; background: #000;">
+                            <iframe src="${embedUrl}" style="width: 100%; height: 100%; border: none;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                        </div>
+                    `;
+                }
+            }
+        } else if (!countdownEl.querySelector('.glow-text.animate-pulse')) {
+            countdownEl.innerHTML = "<div class='glow-text animate-pulse' style='font-size: 2.5rem; font-weight: 900; color: #ff0055;'>LIVE NOW / RACE DAY</div>";
+        }
     }
 
     const activeTeamIds = new Set(activeDrivers.map(d => d.teamId));
