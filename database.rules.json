@@ -3,6 +3,14 @@
     "setup_jobs": {
       "$machineId": {
         ".read": "auth != null",
+        "$jobId": {
+          ".write": "auth != null && (!data.exists() ? (newData.child('uid').val() === auth.uid || !newData.child('uid').exists()) : (data.child('uid').val() === auth.uid || !data.child('uid').exists()))"
+        }
+      }
+    },
+    "driver_registry": {
+      "$machineId": {
+        ".read": "auth != null",
         ".write": "auth != null"
       }
     },

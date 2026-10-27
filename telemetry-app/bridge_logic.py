@@ -238,16 +238,20 @@ class TelemetryBridge:
             return
 
         def is_safe_websocket_origin(origin):
-            if not origin or origin == "null":
+            if not origin:
+                # Local non-browser client without Origin header (e.g. CLI, python script)
                 return True
+            if origin == "null":
+                # Reject sandboxed iframes or opaque origin attempts
+                return False
             try:
                 parsed = urllib.parse.urlparse(origin)
                 host = (parsed.hostname or "").lower()
                 if host in ("localhost", "127.0.0.1"):
                     return True
-                if host in ("gridupracing.co.uk", "grid-up-racing.web.app", "grid-up-racing.firebaseapp.com", "gridup.online"):
+                if host in ("gridupracing.co.uk", "grid-up-racing.web.app", "grid-up-racing.firebaseapp.com", "gridup.online", "eubizare.github.io"):
                     return True
-                if host.endswith(".gridupracing.co.uk") or host.endswith(".gridup.online") or host.endswith(".github.io"):
+                if host.endswith(".gridupracing.co.uk") or host.endswith(".gridup.online"):
                     return True
                 return False
             except Exception:
