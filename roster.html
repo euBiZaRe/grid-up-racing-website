@@ -465,7 +465,9 @@
                 };
 
                 const getRatingsHTML = (d) => {
-                    const cEntry = findStatsInCache(d.name) || {};
+                    const matchedCache = findStatsInCache(d.name);
+                    const hasCacheEntry = Boolean(matchedCache && Object.keys(matchedCache).length > 0);
+                    const cEntry = matchedCache || {};
                     const stats = d.stats || {};
                     const iratings = stats.iRatings || {};
                     const licenses = stats.licenseLevels || {};
@@ -476,18 +478,14 @@
                         let ir = null;
                         let sr = null;
 
-                        // 1. Check local stats cache first
-                        if (cEntry[cName]) {
+                        // 1. Check authoritative local stats cache (driver_stats_2.json) first
+                        if (hasCacheEntry && cEntry[cName]) {
                             if (cEntry[cName].irating && cEntry[cName].irating > 0) ir = cEntry[cName].irating;
                             if (cEntry[cName].sr) sr = cEntry[cName].sr.trim();
-                        }
-
-                        // 2. Fallback to Firestore iracing.ratings or stats.iRatings
-                        if (!ir) {
+                        } else if (!hasCacheEntry) {
+                            // 2. Fallback to Firestore only if driver is not in driver_stats_2.json
                             if (detailedRatings[irKey] && detailedRatings[irKey].value > 0) ir = detailedRatings[irKey].value;
                             else if (iratings[intKey] && iratings[intKey] > 0) ir = iratings[intKey];
-                        }
-                        if (!sr) {
                             if (licenses[intKey]) sr = licenses[intKey].trim();
                         }
 
@@ -587,6 +585,61 @@
 
                     // Default active category
                     switchCategory(activeCategory);
+
+                    // Background sync: if current user is an Admin, sync any stale Firestore driver stats from driver_stats_2.json
+                    if (!window._adminRosterStatsSynced && window.IS_ADMIN) {
+                        window._adminRosterStatsSynced = true;
+                        const discMap = [
+                            { cName: 'Sports Car', irKey: 'sportsCar', intKey: 'SPORTS' },
+                            { cName: 'Formula Car', irKey: 'formulaCar', intKey: 'FORMULA' },
+                            { cName: 'Oval', irKey: 'oval', intKey: 'OVAL' },
+                            { cName: 'Dirt Road', irKey: 'dirtRoad', intKey: 'DIRT_ROAD' },
+                            { cName: 'Dirt Oval', irKey: 'dirtOval', intKey: 'DIRT_OVAL' },
+                            { cName: 'Road', irKey: 'road', intKey: 'ROAD' }
+                        ];
+                        const nowIso = new Date().toISOString();
+                        const nowFmt = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                        snap.forEach(doc => {
+                            const d = doc.data();
+                            if (!d || !d.name) return;
+                            const cEntry = findStatsInCache(d.name);
+                            if (!cEntry) return;
+                            const curStats = d.stats || {};
+                            const curIratings = curStats.iRatings || {};
+                            const curLicenses = curStats.licenseLevels || {};
+                            let needsSync = false;
+                            const newIratings = {};
+                            const newLicenses = {};
+                            const newPcs = {};
+                            const newDetailed = {};
+                            discMap.forEach(({ cName, irKey, intKey }) => {
+                                const cObj = cEntry[cName] || {};
+                                const irVal = (cObj.irating && cObj.irating > 0) ? Number(cObj.irating) : 0;
+                                const srVal = cObj.sr ? String(cObj.sr).trim() : 'R 2.50';
+                                if ((curIratings[intKey] || 0) !== irVal || (curLicenses[intKey] || 'R 2.50') !== srVal) {
+                                    needsSync = true;
+                                }
+                                newIratings[intKey] = irVal;
+                                newLicenses[intKey] = srVal;
+                                newPcs[intKey] = irVal > 0 ? Math.min(100, Number(((irVal / 6000) * 100).toFixed(2))) : 0;
+                                newDetailed[irKey] = { value: irVal, updated: irVal > 0 ? nowFmt : null };
+                            });
+                            if (needsSync) {
+                                doc.ref.set({
+                                    stats: {
+                                        iRatings: newIratings,
+                                        licenseLevels: newLicenses,
+                                        iRatingPercentages: newPcs
+                                    },
+                                    iracing: {
+                                        ...(d.iracing || {}),
+                                        ratings: newDetailed,
+                                        lastChecked: nowIso
+                                    }
+                                }, { merge: true }).catch(() => {});
+                            }
+                        });
+                    }
                 };
 
                 // Real-time listener so roster updates live when changes occur in Firestore

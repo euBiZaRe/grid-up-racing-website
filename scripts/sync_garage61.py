@@ -2,6 +2,7 @@ import urllib.request
 import urllib.error
 import json
 import os
+import re
 import sys
 import time
 from collections import defaultdict
@@ -48,6 +49,11 @@ HEADERS = {
     'Accept': 'application/json'
 }
 TEAM_ID = '01J4FHVP9N8APEV93B13HS16R8'  # Grid Up Sim Racing
+ALL_TEAM_IDS = [
+    '01J4FHVP9N8APEV93B13HS16R8',  # Grid Up Sim Racing
+    '01M3FAG0DM8WY94935B01AVP1P',  # GRiD UP Endurance Team
+    '01K66T1F5FMEA2N9V2MC27EB7T',  # Refined Motorsport
+]
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(SCRIPT_DIR)
@@ -58,9 +64,10 @@ DRIVERS_JSON_FILE = os.path.join(REPO_ROOT, 'scripts', 'drivers.json')
 DRIVERS_DIR = os.path.join(REPO_ROOT, 'drivers')
 DRIVER_TEMPLATE_FILE = os.path.join(DRIVERS_DIR, 'driver-template.html')
 
-def fetch_json(url, retries=2, timeout=15):
-    """Fetches JSON from the Garage61 API with error handling and retry."""
-    req = urllib.request.Request(url, headers=HEADERS)
+def fetch_json(url, custom_headers=None, retries=2, timeout=15):
+    """Fetches JSON from a URL with error handling and retry."""
+    hdrs = custom_headers if custom_headers is not None else HEADERS
+    req = urllib.request.Request(url, headers=hdrs)
     for attempt in range(1, retries + 1):
         try:
             with urllib.request.urlopen(req, timeout=timeout) as resp:
@@ -69,11 +76,85 @@ def fetch_json(url, retries=2, timeout=15):
             if e.code in (404, 403, 401) and attempt == retries:
                 return None
             time.sleep(1.0)
-        except Exception as e:
+        except Exception:
             if attempt == retries:
                 return None
             time.sleep(1.0)
     return None
+
+def normalize_name(name_str):
+    if not name_str:
+        return ''
+    s = str(name_str).lower()
+    s = re.sub(r'[^a-z0-9\s]', '', s)
+    s = re.sub(r'\b[a-z]\b', '', s)
+    s = re.sub(r'\d+$', '', s)
+    s = re.sub(r'\s+', ' ', s).strip()
+    return s
+
+def parse_firestore_val(v):
+    if not isinstance(v, dict):
+        return v
+    if 'stringValue' in v:
+        return v['stringValue']
+    if 'integerValue' in v:
+        return int(v['integerValue'])
+    if 'doubleValue' in v:
+        return float(v['doubleValue'])
+    if 'booleanValue' in v:
+        return v['booleanValue']
+    if 'mapValue' in v:
+        sub_fields = v.get('mapValue', {}).get('fields', {})
+        return {k: parse_firestore_val(val) for k, val in sub_fields.items()}
+    if 'arrayValue' in v:
+        sub_vals = v.get('arrayValue', {}).get('values', [])
+        return [parse_firestore_val(val) for val in sub_vals]
+    return None
+
+def fetch_firestore_drivers():
+    """Fetches canonical driver records (names, slugs, roles, iracingIds) from Firestore REST API."""
+    by_slug = {}
+    by_cid = {}
+    by_norm_name = {}
+    all_drivers = []
+
+    url = 'https://firestore.googleapis.com/v1/projects/grid-up/databases/(default)/documents/drivers?pageSize=100'
+    data = fetch_json(url, custom_headers={'User-Agent': 'GRiD-UP-SimRacing-Updater/2.0'})
+    if not data:
+        return by_slug, by_cid, by_norm_name, all_drivers
+
+    for doc in data.get('documents', []):
+        fields = doc.get('fields', {})
+        d = {k: parse_firestore_val(v) for k, v in fields.items()}
+        if d.get('active') is False:
+            continue
+        name = (d.get('name') or '').strip()
+        slug = (d.get('slug') or '').strip().lower()
+        if not slug and name:
+            slug = re.sub(r'[^a-z0-9]+', '-', name.lower()).strip('-')
+        role = (d.get('role') or 'Driver').strip()
+        cid = str(d.get('iracingId') or d.get('customerId') or '').strip()
+        if not cid and isinstance(d.get('iracing'), dict):
+            cid = str(d['iracing'].get('customerId') or '').strip()
+
+        rec = {
+            'name': name,
+            'slug': slug,
+            'role': role,
+            'iracingId': cid
+        }
+        all_drivers.append(rec)
+        if slug:
+            by_slug[slug] = rec
+        if cid:
+            by_cid[cid] = rec
+        if name:
+            by_norm_name[name.lower()] = rec
+            norm = normalize_name(name)
+            if norm:
+                by_norm_name[norm] = rec
+
+    return by_slug, by_cid, by_norm_name, all_drivers
 
 def license_level_to_letter(lvl):
     if lvl is None or lvl == '':
@@ -119,61 +200,110 @@ def format_date_str(date_str):
 
 def sync():
     print("=== Fetching Garage61 Data for GRiD UP Sim Racing ===")
-    
+
+    # 0. Canonical driver metadata from Firestore
+    fs_by_slug, fs_by_cid, fs_by_name, fs_drivers = fetch_firestore_drivers()
+    if fs_drivers:
+        print(f"0. Loaded {len(fs_drivers)} canonical active drivers from Firestore.")
+
+    def resolve_canonical_driver(slug, g61_name, g61_role, cid=None):
+        slug_key = (slug or '').strip().lower()
+        cid_key = str(cid or '').strip()
+        name_key = (g61_name or '').strip().lower()
+        norm_key = normalize_name(g61_name)
+
+        rec = (
+            (fs_by_slug.get(slug_key) if slug_key else None)
+            or (fs_by_cid.get(cid_key) if cid_key else None)
+            or (fs_by_name.get(name_key) if name_key else None)
+            or (fs_by_name.get(norm_key) if norm_key else None)
+        )
+        if rec:
+            return rec['name'], rec['role'], rec['slug'] or slug
+        # Fallback: ensure proper title casing if lowercase
+        clean_name = g61_name
+        if clean_name and clean_name == clean_name.lower():
+            clean_name = clean_name.title()
+        return clean_name, g61_role or 'Driver', slug
+
     # 1. Cars
     print("1. Fetching cars catalogue...")
     cars_data = fetch_json('https://garage61.net/api/v1/cars') or {}
     cars_raw = cars_data.get('items', [])
     cars_map = {c['id']: c['name'] for c in cars_raw}
     print(f"   Catalogued {len(cars_map)} cars.")
-    
+
     # 2. Tracks
     print("2. Fetching tracks catalogue...")
     tracks_data = fetch_json('https://garage61.net/api/v1/tracks') or {}
     tracks_raw = tracks_data.get('items', [])
     tracks_map = {t['id']: f"{t['name']}{(' - ' + t['variant']) if t.get('variant') else ''}" for t in tracks_raw}
     print(f"   Catalogued {len(tracks_map)} tracks.")
-    
-    # 3. Team members
+
+    # 3. Team members (primary team + sister/endurance teams)
     print("3. Fetching team members...")
     team_data = fetch_json(f'https://garage61.net/api/v1/teams/{TEAM_ID}')
     if not team_data:
         raise SystemExit(f"[ERROR] Could not fetch team data for ID {TEAM_ID}. Check API token permissions.")
-        
+
     team_name = team_data.get('name', 'GRiD UP Sim Racing')
     team_slug = team_data.get('slug', 'grid-up-simsport')
-    members_raw = team_data.get('members', [])
+    primary_members_raw = team_data.get('members', [])
+
+    all_members_by_slug = {}
+    for tid in ALL_TEAM_IDS:
+        t_data = team_data if tid == TEAM_ID else fetch_json(f'https://garage61.net/api/v1/teams/{tid}')
+        if not t_data:
+            continue
+        for m in t_data.get('members', []):
+            s = m.get('slug')
+            if s and s not in all_members_by_slug:
+                all_members_by_slug[s] = m
+
     members_map = {}
-    for m in members_raw:
+    for m in primary_members_raw:
         slug = m.get('slug')
-        full_name = f"{m.get('firstName', '')} {m.get('lastName', '')}".strip()
+        raw_name = f"{m.get('firstName', '')} {m.get('lastName', '')}".strip()
+        accounts = m.get('accounts', [])
+        ir_acc = next((a for a in accounts if a.get('platform') == 'iracing'), None)
+        cid = ir_acc.get('id') if ir_acc else None
+        canon_name, canon_role, _ = resolve_canonical_driver(slug, raw_name, m.get('role', 'Driver'), cid)
         members_map[slug] = {
-            'name': full_name,
+            'name': canon_name,
+            'rawName': raw_name,
             'firstName': m.get('firstName', ''),
             'lastName': m.get('lastName', ''),
-            'role': m.get('role', 'Driver'),
+            'role': canon_role,
             'slug': slug
         }
-    print(f"   Found {len(members_map)} team members.")
-    
+    print(f"   Found {len(members_map)} primary team members ({len(all_members_by_slug)} across all teams).")
+
     # 4. Driving statistics
     print("4. Fetching team driving statistics...")
     stats_data = fetch_json(f'https://garage61.net/api/v1/teams/{TEAM_ID}/statistics') or {}
     records = stats_data.get('drivingStatistics', [])
     print(f"   Downloaded {len(records)} telemetry statistics records.")
-    
+
     drivers = {}
     team_total_laps = 0
     team_clean_laps = 0
     team_total_seconds = 0.0
     team_days = set()
-    
+
     for r in records:
         u = r.get('user')
-        if not u: continue
-        
+        if not u:
+            continue
+
         if u not in drivers:
-            m_info = members_map.get(u, {'name': u.replace('-', ' ').title(), 'slug': u, 'firstName': '', 'lastName': '', 'role': 'Driver'})
+            default_name, default_role, _ = resolve_canonical_driver(u, u.replace('-', ' ').title(), 'Driver')
+            m_info = members_map.get(u, {
+                'name': default_name,
+                'slug': u,
+                'firstName': '',
+                'lastName': '',
+                'role': default_role
+            })
             drivers[u] = {
                 'slug': u,
                 'name': m_info['name'],
@@ -197,7 +327,7 @@ def sync():
                 'daysActive': set(),
                 'recentDays': defaultdict(int)
             }
-            
+
         d = drivers[u]
         laps = r.get('lapsDriven', 0)
         clean = r.get('cleanLapsDriven', 0)
@@ -207,22 +337,24 @@ def sync():
         car_id = r.get('car')
         track_id = r.get('track')
         stype = r.get('sessionType', 0)
-        
+
         d['totalLaps'] += laps
         d['cleanLaps'] += clean
         d['totalTimeSeconds'] += time_sec
         d['totalEvents'] += events
-        
+
         team_total_laps += laps
         team_clean_laps += clean
         team_total_seconds += time_sec
         if day:
             d['daysActive'].add(day)
             team_days.add(day)
-            if not d['firstDay'] or day < d['firstDay']: d['firstDay'] = day
-            if not d['lastDay'] or day > d['lastDay']: d['lastDay'] = day
+            if not d['firstDay'] or day < d['firstDay']:
+                d['firstDay'] = day
+            if not d['lastDay'] or day > d['lastDay']:
+                d['lastDay'] = day
             d['recentDays'][day] += laps
-            
+
         # Car aggregation
         car_name = cars_map.get(car_id, f"Car #{car_id}")
         if car_name not in d['cars']:
@@ -230,7 +362,7 @@ def sync():
         d['cars'][car_name]['laps'] += laps
         d['cars'][car_name]['cleanLaps'] += clean
         d['cars'][car_name]['timeSeconds'] += time_sec
-        
+
         # Track aggregation
         track_name = tracks_map.get(track_id, f"Track #{track_id}")
         if track_name not in d['tracks']:
@@ -238,7 +370,7 @@ def sync():
         d['tracks'][track_name]['laps'] += laps
         d['tracks'][track_name]['cleanLaps'] += clean
         d['tracks'][track_name]['timeSeconds'] += time_sec
-        
+
         # Session type
         stype_label = {1: 'Practice', 2: 'Qualifying', 3: 'Race'}.get(stype, 'Other')
         d['sessions'][stype_label]['laps'] += laps
@@ -279,7 +411,7 @@ def sync():
         clean_l = d['cleanLaps']
         clean_pct = round((clean_l / total_l * 100), 1) if total_l > 0 else 0.0
         hours = round(d['totalTimeSeconds'] / 3600, 1)
-        
+
         # Sort top cars (descending by laps)
         sorted_cars = sorted(d['cars'].values(), key=lambda x: x['laps'], reverse=True)
         top_cars = []
@@ -291,7 +423,7 @@ def sync():
                 'cleanPct': round((c['cleanLaps'] / c['laps'] * 100), 1) if c['laps'] > 0 else 0.0,
                 'hours': round(c['timeSeconds'] / 3600, 1)
             })
-            
+
         # Sort top tracks (descending by laps)
         sorted_tracks = sorted(d['tracks'].values(), key=lambda x: x['laps'], reverse=True)
         top_tracks = []
@@ -303,11 +435,11 @@ def sync():
                 'cleanPct': round((t['cleanLaps'] / t['laps'] * 100), 1) if t['laps'] > 0 else 0.0,
                 'hours': round(t['timeSeconds'] / 3600, 1)
             })
-            
+
         # Recent 30 days active laps
         recent_sorted = sorted(d['recentDays'].items(), reverse=True)[:30]
         recent_activity = [{'day': day, 'laps': laps} for day, laps in recent_sorted]
-        
+
         # Format session stats
         sessions_summary = {}
         for sname, sdata in d['sessions'].items():
@@ -338,17 +470,17 @@ def sync():
             'sessions': sessions_summary,
             'recentActivity': recent_activity
         })
-        
+
     # Sort entire roster by total laps descending
     driver_list.sort(key=lambda x: x['totalLaps'], reverse=True)
-    
+
     # Assign ranks
     for rank, d in enumerate(driver_list, start=1):
         d['rank'] = rank
-        
+
     team_clean_pct = round((team_clean_laps / team_total_laps * 100), 1) if team_total_laps > 0 else 0.0
     team_hours = round(team_total_seconds / 3600, 1)
-    
+
     output_data = {
         'syncedAt': datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'),
         'team': {
@@ -363,7 +495,7 @@ def sync():
         },
         'drivers': driver_list
     }
-    
+
     # 5. Save garage61-stats.json
     os.makedirs(TARGET_DATA_DIR, exist_ok=True)
     with open(GARAGE61_STATS_FILE, 'w', encoding='utf-8') as f:
@@ -382,26 +514,44 @@ def sync():
     existing_slugs = {
         (d.get('url', '').split('/')[-1].lower() if 'url' in d else d.get('slug', '').lower()): d
         for d in existing_drivers_list
+        if isinstance(d, dict)
     }
-    
+
     updated_drivers_manifest = []
+    seen_slugs = set()
+
     for d in driver_list:
         slug = d['slug']
+        slug_lower = slug.lower()
+        seen_slugs.add(slug_lower)
         url = f"https://garage61.net/app/drivers/{slug}"
-        prev_role = existing_slugs.get(slug.lower(), {}).get('role')
-        role = prev_role if prev_role else d.get('role', 'Driver')
+        fs_rec = fs_by_slug.get(slug_lower)
+        prev_role = existing_slugs.get(slug_lower, {}).get('role')
+        role = fs_rec['role'] if fs_rec else (prev_role if prev_role else d.get('role', 'Driver'))
+        name = fs_rec['name'] if fs_rec else d['name']
         updated_drivers_manifest.append({
-            'name': d['name'],
+            'name': name,
             'url': url,
             'role': role
         })
 
-    # Preserve any existing drivers that may not be on G61 team yet
+    # Include any additional active Firestore drivers or existing manifest drivers
+    for fs_rec in fs_drivers:
+        s_low = (fs_rec.get('slug') or '').lower()
+        if s_low and s_low not in seen_slugs:
+            seen_slugs.add(s_low)
+            updated_drivers_manifest.append({
+                'name': fs_rec['name'],
+                'url': f"https://garage61.net/app/drivers/{fs_rec['slug']}",
+                'role': fs_rec['role']
+            })
+
     for prev_slug, prev_d in existing_slugs.items():
-        if not any(d['slug'].lower() == prev_slug for d in driver_list):
+        if prev_slug and prev_slug not in seen_slugs:
+            seen_slugs.add(prev_slug)
             updated_drivers_manifest.append(prev_d)
 
-    updated_drivers_manifest.sort(key=lambda x: x.get('name', ''))
+    updated_drivers_manifest.sort(key=lambda x: x.get('name', '').lower())
     with open(DRIVERS_JSON_FILE, 'w', encoding='utf-8') as f:
         json.dump(updated_drivers_manifest, f, indent=2, ensure_ascii=False)
     print(f"[OK] Updated roster manifest in {DRIVERS_JSON_FILE} ({len(updated_drivers_manifest)} drivers)")
@@ -426,9 +576,9 @@ def sync():
         'road': 'Road'
     }
 
-    for m in members_raw:
-        name = f"{m.get('firstName', '')} {m.get('lastName', '')}".strip()
-        if not name:
+    for slug, m in all_members_by_slug.items():
+        raw_name = f"{m.get('firstName', '')} {m.get('lastName', '')}".strip()
+        if not raw_name:
             continue
         accounts = m.get('accounts', [])
         ir_acc = next((a for a in accounts if a.get('platform') == 'iracing'), None)
@@ -438,14 +588,19 @@ def sync():
         if not ratings_list:
             continue
 
-        entry = existing_stats.get(name, {
+        cid = ir_acc.get('id')
+        ir_acc_name = (ir_acc.get('name') or '').strip()
+        canon_name, _, _ = resolve_canonical_driver(slug, raw_name, m.get('role', 'Driver'), cid)
+
+        # Fresh entry so Rookie/unranked categories with rating <= 0 clear stale Oct 4 ratings
+        entry = {
             'Sports Car': {'irating': None, 'sr': 'R 2.50'},
             'Formula Car': {'irating': None, 'sr': 'R 2.50'},
             'Oval': {'irating': None, 'sr': 'R 2.50'},
             'Dirt Road': {'irating': None, 'sr': 'R 2.50'},
             'Dirt Oval': {'irating': None, 'sr': 'R 2.50'},
             'Road': {'irating': None, 'sr': 'R 2.50'}
-        })
+        }
 
         matched_any = False
         for r in ratings_list:
@@ -457,10 +612,8 @@ def sync():
             target_cat = disc_cat_map.get(cat)
             if not target_cat:
                 continue
-            if target_cat not in entry:
-                entry[target_cat] = {'irating': None, 'sr': 'R 2.50'}
-            if rtype == 'irating' and val is not None and val > 0:
-                entry[target_cat]['irating'] = int(val)
+            if rtype == 'irating':
+                entry[target_cat]['irating'] = int(val) if (val is not None and val > 0) else None
                 matched_any = True
             elif rtype == 'safety_rating':
                 if disp:
@@ -470,7 +623,20 @@ def sync():
                 matched_any = True
 
         if matched_any:
-            existing_stats[name] = entry
+            # Update canonical name, raw G61 name, iRacing account name, and any matching keys
+            candidate_names = {canon_name, raw_name}
+            if ir_acc_name:
+                candidate_names.add(ir_acc_name)
+
+            norm_candidates = {normalize_name(n) for n in candidate_names if n}
+            for existing_key in list(existing_stats.keys()):
+                if existing_key.lower() in {n.lower() for n in candidate_names if n} or normalize_name(existing_key) in norm_candidates:
+                    candidate_names.add(existing_key)
+
+            for k_name in candidate_names:
+                if k_name:
+                    existing_stats[k_name] = json.loads(json.dumps(entry))
+
             updated_ratings_count += 1
 
     # Save updated driver_stats_2.json
@@ -497,38 +663,56 @@ def sync():
             now_formatted = datetime.now().strftime("%d %b %Y")
             rendered_count = 0
 
-            # Combine all drivers from driver_list and members_raw
+            # Combine all drivers from driver_list, all_members_by_slug, and fs_drivers
             render_targets = {}
             for d in driver_list:
-                render_targets[d['slug']] = {
+                slug_low = d['slug'].lower()
+                canon_name, canon_role, _ = resolve_canonical_driver(d['slug'], d['name'], d.get('role', 'Driver'))
+                render_targets[slug_low] = {
                     'slug': d['slug'],
-                    'name': d['name'],
-                    'role': d.get('role', 'Driver'),
+                    'name': canon_name,
+                    'role': canon_role,
                     'totalLaps': d.get('totalLaps', 0),
                     'cleanPct': d.get('cleanPct', 0.0),
                     'hours': d.get('hours', 0.0)
                 }
-            for m in members_raw:
-                slug = m.get('slug')
-                if slug and slug not in render_targets:
-                    name = f"{m.get('firstName', '')} {m.get('lastName', '')}".strip()
-                    render_targets[slug] = {
+            for slug, m in all_members_by_slug.items():
+                slug_low = slug.lower()
+                if slug_low not in render_targets:
+                    raw_name = f"{m.get('firstName', '')} {m.get('lastName', '')}".strip()
+                    accounts = m.get('accounts', [])
+                    ir_acc = next((a for a in accounts if a.get('platform') == 'iracing'), None)
+                    cid = ir_acc.get('id') if ir_acc else None
+                    canon_name, canon_role, _ = resolve_canonical_driver(slug, raw_name, m.get('role', 'Driver'), cid)
+                    render_targets[slug_low] = {
                         'slug': slug,
-                        'name': name,
-                        'role': m.get('role', 'Driver'),
+                        'name': canon_name,
+                        'role': canon_role,
+                        'totalLaps': 0,
+                        'cleanPct': 0.0,
+                        'hours': 0.0
+                    }
+            for fs_rec in fs_drivers:
+                slug = fs_rec.get('slug')
+                if slug and slug.lower() not in render_targets:
+                    render_targets[slug.lower()] = {
+                        'slug': slug,
+                        'name': fs_rec['name'],
+                        'role': fs_rec['role'],
                         'totalLaps': 0,
                         'cleanPct': 0.0,
                         'hours': 0.0
                     }
 
-            for slug, d in render_targets.items():
+            for slug_low, d in render_targets.items():
+                slug = d.get('slug')
                 name = d.get('name')
                 if not slug or not name:
                     continue
 
                 html = template
                 url = f"https://garage61.net/app/drivers/{slug}"
-                driver_ratings = existing_stats.get(name, {})
+                driver_ratings = existing_stats.get(name) or existing_stats.get(normalize_name(name)) or {}
 
                 html = html.replace("{{NAME}}", name)
                 html = html.replace("{{NICKNAME}}", "")
@@ -550,7 +734,7 @@ def sync():
                     html = html.replace(f"{{{{IRATING_{int_key}_PC}}}}", str(pc))
                     html = html.replace(f"{{{{LICENSE_{int_key}}}}}", lic)
                     html = html.replace(f"{{{{LICENSE_CLASS_{int_key}}}}}", lic_class)
-                    html = html.replace(f"{{{{RATING_DATE_{int_key}}}}}", f"({now_formatted})" if ir_val else "")
+                    html = html.replace(f"{{{{RATING_DATE_{int_key}}}}}", f"({now_formatted})" if ir_val and ir_val > 0 else "")
 
                 html = html.replace("{{LAPS}}", str(d.get("totalLaps", "0")))
                 html = html.replace("{{CLEAN_LAP_PC}}", str(d.get("cleanPct", "0")))
