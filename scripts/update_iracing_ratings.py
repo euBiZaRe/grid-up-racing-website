@@ -41,6 +41,15 @@ DRIVERS_DIR = os.path.join(BASE_DIR, "drivers")
 
 API_BASE_URL = "https://iracing6-backend.herokuapp.com/api/member-career-stats/career"
 
+DEFAULT_G61_PAT = "ZTLHNDQWYZATNMJHMC0ZOWQ5LTLKOTUTYTZJYZG0ZGJKOGU5"
+G61_PAT = (
+    os.environ.get("G61_PAT")
+    or os.environ.get("GARAGE61_TOKEN")
+    or os.environ.get("GARAGE61_API_KEY")
+    or DEFAULT_G61_PAT
+)
+G61_TEAM_ID = "01J4FHVP9N8APEV93B13HS16R8"
+
 DISCIPLINES = [
     {"api_key": "sports_car", "internal_key": "SPORTS", "display_name": "Sports Car", "short_name": "Sports Car", "iracing_key": "sportsCar"},
     {"api_key": "formula_car", "internal_key": "FORMULA", "display_name": "Formula Car", "short_name": "Formula", "iracing_key": "formulaCar"},
@@ -49,6 +58,116 @@ DISCIPLINES = [
     {"api_key": "dirt_oval", "internal_key": "DIRT_OVAL", "display_name": "Dirt Oval", "short_name": "Dirt Oval", "iracing_key": "dirtOval"},
     {"api_key": "road", "internal_key": "ROAD", "display_name": "Road", "short_name": "Road", "iracing_key": "road"}
 ]
+
+def fetch_garage61_team_ratings():
+    """
+    Fetches real-time member ratings for all team drivers from the official Garage 61 Team API.
+    Returns dictionaries indexed by iracing customerId, driver full name (lowercase), and member slug.
+    """
+    by_cid = {}
+    by_name = {}
+    by_slug = {}
+
+    if not G61_PAT:
+        return by_cid, by_name, by_slug
+
+    url = f"https://garage61.net/api/v1/teams/{G61_TEAM_ID}"
+    headers = {
+        "Authorization": f"Bearer {G61_PAT}",
+        "User-Agent": "GRiD-UP-Rating-Updater/2.0",
+        "Accept": "application/json"
+    }
+
+    try:
+        resp = requests.get(url, headers=headers, timeout=15)
+        if resp.status_code == 200:
+            data = resp.json()
+            members = data.get("members", [])
+            cat_map = {
+                "sports_car": "sportsCar",
+                "formula_car": "formulaCar",
+                "oval": "oval",
+                "dirt_road": "dirtRoad",
+                "dirt_oval": "dirtOval",
+                "road": "road"
+            }
+            int_map = {
+                "sportsCar": "SPORTS",
+                "formulaCar": "FORMULA",
+                "oval": "OVAL",
+                "dirtRoad": "DIRT_ROAD",
+                "dirtOval": "DIRT_OVAL",
+                "road": "ROAD"
+            }
+
+            now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+            now_formatted = datetime.now().strftime("%d %b %Y")
+
+            for m in members:
+                first = m.get("firstName", "")
+                last = m.get("lastName", "")
+                full_name = f"{first} {last}".strip()
+                slug = m.get("slug", "").strip().lower()
+                accounts = m.get("accounts", [])
+                ir_acc = next((a for a in accounts if a.get("platform") == "iracing"), None)
+                if not ir_acc:
+                    continue
+
+                cid = str(ir_acc.get("id", "")).strip()
+                ratings_list = ir_acc.get("ratings", [])
+
+                parsed_data = {
+                    "customerId": int(cid) if cid.isdigit() else cid,
+                    "displayName": full_name or ir_acc.get("name", ""),
+                    "lastChecked": now_iso,
+                    "ratings": {},
+                    "licenseLevels": {},
+                    "iRatings": {},
+                    "iRatingPercentages": {}
+                }
+
+                # Initialize defaults
+                for d in DISCIPLINES:
+                    k = d["iracing_key"]
+                    ik = d["internal_key"]
+                    parsed_data["ratings"][k] = {"value": 0, "updated": None}
+                    parsed_data["iRatings"][ik] = 0
+                    parsed_data["licenseLevels"][ik] = "R 2.50"
+                    parsed_data["iRatingPercentages"][ik] = 0
+
+                for r in ratings_list:
+                    cat = r.get("category")
+                    rtype = r.get("type")
+                    val = r.get("rating")
+                    disp = r.get("ratingDisplayAs")
+                    lic_class = r.get("licenseClass")
+
+                    ir_key = cat_map.get(cat)
+                    if not ir_key:
+                        continue
+                    int_key = int_map.get(ir_key)
+
+                    if rtype == "irating" and val is not None and val > 0:
+                        parsed_data["ratings"][ir_key]["value"] = int(val)
+                        parsed_data["ratings"][ir_key]["updated"] = now_formatted
+                        parsed_data["iRatings"][int_key] = int(val)
+                        parsed_data["iRatingPercentages"][int_key] = min(100, round((int(val) / 6000) * 100, 2))
+                    elif rtype == "safety_rating":
+                        sr_text = disp if disp else format_safety_rating(val, lic_class)
+                        parsed_data["licenseLevels"][int_key] = sr_text
+
+                if cid:
+                    by_cid[cid] = parsed_data
+                if full_name:
+                    by_name[full_name.lower()] = parsed_data
+                if slug:
+                    by_slug[slug] = parsed_data
+
+            print(f"[OK] Loaded {len(members)} team members from Garage 61 (Mapped {len(by_cid)} iRacing accounts)")
+    except Exception as e:
+        print(f"[WARN] Garage 61 team fetch error: {e}")
+
+    return by_cid, by_name, by_slug
 
 def init_firebase():
     """Initializes Firebase Admin SDK using environment variable or local credential."""
@@ -161,6 +280,8 @@ def fetch_career_stats(customer_id, max_retries=3):
                     time.sleep(wait_time)
                     continue
                 return {"success": False, "data": None, "error": "Queued by backend (202), retry on next run"}
+            elif resp.status_code == 403:
+                return {"success": False, "data": None, "error": "Profile private on iRacingData (opt-in required)"}
             elif resp.status_code == 404:
                 return {"success": False, "data": None, "error": "Member not found (404)"}
             elif resp.status_code == 500:
@@ -416,6 +537,9 @@ def main():
     failed_drivers = []
     changed_drivers = 0
 
+    # Fetch team ratings from Garage 61 as primary authoritative source
+    g61_by_cid, g61_by_name, g61_by_slug = fetch_garage61_team_ratings()
+
     print(f"\nStarting processing for {len(drivers_list)} drivers...\n")
 
     for idx, driver in enumerate(drivers_list):
@@ -435,24 +559,50 @@ def main():
             cid = claims_map[name_key]
             driver["iracingId"] = str(cid)
 
+        # Check Garage 61 mapping by name or slug if cid still missing
         if not cid:
-            # Skip or preserve existing ratings
-            continue
+            if name_key in g61_by_name:
+                cid = g61_by_name[name_key].get("customerId")
+                if cid:
+                    driver["iracingId"] = str(cid)
+            elif slug and slug.lower() in g61_by_slug:
+                cid = g61_by_slug[slug.lower()].get("customerId")
+                if cid:
+                    driver["iracingId"] = str(cid)
 
-        cid_str = str(cid).strip()
-        if not cid_str:
+        cid_str = str(cid).strip() if cid else ""
+        if not cid_str and name_key not in g61_by_name and (not slug or slug.lower() not in g61_by_slug):
             continue
 
         processed_count += 1
-        print(f"[{processed_count}] Processing {name} (Cust ID: {cid_str})...")
+        print(f"[{processed_count}] Processing {name} (Cust ID: {cid_str or 'G61'})...")
 
-        # Rate limiting: short delay between requests
-        time.sleep(1.5)
+        # 1. Check Garage 61 first
+        parsed = None
+        if cid_str and cid_str in g61_by_cid:
+            parsed = g61_by_cid[cid_str]
+            res = {"success": True, "data": parsed, "error": None}
+        elif name_key in g61_by_name:
+            parsed = g61_by_name[name_key]
+            if not cid_str:
+                cid_str = str(parsed.get("customerId", ""))
+                driver["iracingId"] = cid_str
+            res = {"success": True, "data": parsed, "error": None}
+        elif slug and slug.lower() in g61_by_slug:
+            parsed = g61_by_slug[slug.lower()]
+            if not cid_str:
+                cid_str = str(parsed.get("customerId", ""))
+                driver["iracingId"] = cid_str
+            res = {"success": True, "data": parsed, "error": None}
+        elif cid_str:
+            time.sleep(1.0)
+            res = fetch_career_stats(cid_str)
+            if res["success"]:
+                parsed = parse_career_data(res["data"], cid_str)
+        else:
+            res = {"success": False, "data": None, "error": "No iRacing ID or Garage 61 account linked"}
 
-        res = fetch_career_stats(cid_str)
-        if res["success"]:
-            api_data = res["data"]
-            parsed = parse_career_data(api_data, cid_str)
+        if res["success"] and parsed:
             success_count += 1
 
             # Detect changes against existing data
@@ -478,7 +628,8 @@ def main():
                 "ratings": parsed["ratings"],
                 "lastChecked": parsed["lastChecked"]
             }
-            driver["iracingId"] = cid_str
+            if cid_str:
+                driver["iracingId"] = cid_str
 
             # Update stats object for backwards compatibility
             if "stats" not in driver or not isinstance(driver["stats"], dict):
@@ -531,7 +682,7 @@ def main():
             print(f"  [OK] Updated ratings for {name}")
         else:
             failed_count += 1
-            error_msg = res["error"]
+            error_msg = res.get("error", "Unknown error")
             print(f"  [FAIL] Failed for {name} ({cid_str}): {error_msg}")
             failed_drivers.append(f"{name} — {error_msg}")
 
@@ -575,6 +726,20 @@ def main():
         print(f"Saved {DRIVER_STATS_JSON}")
     except Exception as e:
         print(f"Failed to save {DRIVER_STATS_JSON}: {e}")
+
+    try:
+        if os.path.exists(DRIVERS_JSON) and drivers_list:
+            with open(DRIVERS_JSON, "w", encoding="utf-8") as f:
+                json.dump(drivers_list, f, indent=2, ensure_ascii=False)
+            print(f"Saved {DRIVERS_JSON}")
+    except Exception as e:
+        print(f"Failed to save {DRIVERS_JSON}: {e}")
+
+    try:
+        import subprocess
+        subprocess.run(['git', 'add', DRIVER_STATS_JSON, DRIVERS_JSON, DRIVERS_DIR], cwd=BASE_DIR, check=False)
+    except Exception:
+        pass
 
     # Build Summary
     summary_lines = [

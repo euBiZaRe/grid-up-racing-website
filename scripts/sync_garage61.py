@@ -27,11 +27,13 @@ def load_env():
 
 load_env()
 
+DEFAULT_G61_PAT = 'ZTLHNDQWYZATNMJHMC0ZOWQ5LTLKOTUTYTZJYZG0ZGJKOGU5'
 TOKEN = (
     os.environ.get('GARAGE61_TOKEN')
     or os.environ.get('G61_PAT')
     or os.environ.get('GARAGE61_API_KEY')
     or os.environ.get('GARAGE_61_KEY')
+    or DEFAULT_G61_PAT
 )
 
 if not TOKEN:
@@ -53,6 +55,8 @@ TARGET_DATA_DIR = os.path.join(REPO_ROOT, 'data')
 GARAGE61_STATS_FILE = os.path.join(TARGET_DATA_DIR, 'garage61-stats.json')
 DRIVER_STATS_FILE = os.path.join(REPO_ROOT, 'driver_stats_2.json')
 DRIVERS_JSON_FILE = os.path.join(REPO_ROOT, 'scripts', 'drivers.json')
+DRIVERS_DIR = os.path.join(REPO_ROOT, 'drivers')
+DRIVER_TEMPLATE_FILE = os.path.join(DRIVERS_DIR, 'driver-template.html')
 
 def fetch_json(url, retries=2, timeout=15):
     """Fetches JSON from the Garage61 API with error handling and retry."""
@@ -94,6 +98,24 @@ def format_sr(sr_val, lic_lvl):
         return f"{letter} {val:.2f}"
     except (ValueError, TypeError):
         return f"{letter} 2.50"
+
+def get_license_class(license_str):
+    if not license_str or license_str in ("N/A", "---"):
+        return "license-r"
+    first_char = license_str.strip()[0].upper()
+    if first_char in ['A', 'B', 'C', 'D', 'R', 'P']:
+        return f"license-{first_char.lower()}"
+    return "license-r"
+
+def format_date_str(date_str):
+    if not date_str:
+        return "N/A"
+    try:
+        clean_date = str(date_str).split("T")[0]
+        dt = datetime.strptime(clean_date, "%Y-%m-%d")
+        return dt.strftime("%d %b %Y")
+    except Exception:
+        return str(date_str)
 
 def sync():
     print("=== Fetching Garage61 Data for GRiD UP Sim Racing ===")
@@ -393,85 +415,161 @@ def sync():
         except Exception:
             pass
 
-    print("5. Syncing driver profile stats and ratings via Garage61 API...")
+    print("5. Syncing driver profile stats and ratings via Garage61 Team API...")
     updated_ratings_count = 0
-    for d in driver_list:
-        slug = d['slug']
-        name = d['name']
-        
-        # Query individual user profile endpoint
-        u_profile = fetch_json(f"https://garage61.net/api/internal/users/{slug}")
-        if not u_profile:
+    disc_cat_map = {
+        'sports_car': 'Sports Car',
+        'formula_car': 'Formula Car',
+        'oval': 'Oval',
+        'dirt_road': 'Dirt Road',
+        'dirt_oval': 'Dirt Oval',
+        'road': 'Road'
+    }
+
+    for m in members_raw:
+        name = f"{m.get('firstName', '')} {m.get('lastName', '')}".strip()
+        if not name:
             continue
-            
-        accounts = u_profile.get('accounts', [])
-        iracing_account = next((acc for acc in accounts if acc.get('platform') == 'iracing'), None)
-        
-        # If user has an iracing account, check for ratings & statistics
-        if iracing_account:
-            ir_stats = iracing_account.get('statistics', {}) or iracing_account.get('ratings', {})
-            # Also check user statistics if available
-            u_stats = fetch_json(f"https://garage61.net/api/internal/users/{slug}/statistics") or {}
-            rating_history = u_stats.get('rating_history', {}).get('iracing', {}).get(str(iracing_account.get('id')), {})
+        accounts = m.get('accounts', [])
+        ir_acc = next((a for a in accounts if a.get('platform') == 'iracing'), None)
+        if not ir_acc:
+            continue
+        ratings_list = ir_acc.get('ratings', [])
+        if not ratings_list:
+            continue
 
-            # If driver has existing stats, use as base
-            entry = existing_stats.get(name, {
-                'Sports Car': {'irating': None, 'sr': 'R 2.50'},
-                'Formula Car': {'irating': None, 'sr': 'R 2.50'},
-                'Oval': {'irating': None, 'sr': 'R 2.50'},
-                'Dirt Road': {'irating': None, 'sr': 'R 2.50'},
-                'Dirt Oval': {'irating': None, 'sr': 'R 2.50'},
-                'Road': {'irating': None, 'sr': 'R 2.50'}
-            })
+        entry = existing_stats.get(name, {
+            'Sports Car': {'irating': None, 'sr': 'R 2.50'},
+            'Formula Car': {'irating': None, 'sr': 'R 2.50'},
+            'Oval': {'irating': None, 'sr': 'R 2.50'},
+            'Dirt Road': {'irating': None, 'sr': 'R 2.50'},
+            'Dirt Oval': {'irating': None, 'sr': 'R 2.50'},
+            'Road': {'irating': None, 'sr': 'R 2.50'}
+        })
 
-            # Map discipline data if found in rating_history or ir_stats
-            disc_mapping = {
-                'sportsCar': 'Sports Car',
-                'sports_car': 'Sports Car',
-                'formulaCar': 'Formula Car',
-                'formula_car': 'Formula Car',
-                'oval': 'Oval',
-                'dirtRoad': 'Dirt Road',
-                'dirt_road': 'Dirt Road',
-                'dirtOval': 'Dirt Oval',
-                'dirt_oval': 'Dirt Oval',
-                'road': 'Road'
-            }
+        matched_any = False
+        for r in ratings_list:
+            cat = r.get('category')
+            rtype = r.get('type')
+            val = r.get('rating')
+            disp = r.get('ratingDisplayAs')
+            lic_class = r.get('licenseClass')
+            target_cat = disc_cat_map.get(cat)
+            if not target_cat:
+                continue
+            if target_cat not in entry:
+                entry[target_cat] = {'irating': None, 'sr': 'R 2.50'}
+            if rtype == 'irating' and val is not None and val > 0:
+                entry[target_cat]['irating'] = int(val)
+                matched_any = True
+            elif rtype == 'safety_rating':
+                if disp:
+                    entry[target_cat]['sr'] = disp
+                else:
+                    entry[target_cat]['sr'] = format_sr(val, lic_class)
+                matched_any = True
 
-            matched_any = False
-            for src_k, target_k in disc_mapping.items():
-                if src_k in ir_stats and isinstance(ir_stats[src_k], dict):
-                    ir_val = ir_stats[src_k].get('irating') or ir_stats[src_k].get('value')
-                    sr_val = ir_stats[src_k].get('safety_rating') or ir_stats[src_k].get('sr')
-                    lic_lvl = ir_stats[src_k].get('license_level') or ir_stats[src_k].get('licenseClass')
-                    if ir_val:
-                        entry[target_k]['irating'] = int(ir_val)
-                        matched_any = True
-                    if sr_val:
-                        entry[target_k]['sr'] = format_sr(sr_val, lic_lvl)
-                elif src_k in rating_history and isinstance(rating_history[src_k], list) and rating_history[src_k]:
-                    last_pt = rating_history[src_k][-1]
-                    if isinstance(last_pt, dict):
-                        ir_val = last_pt.get('irating') or last_pt.get('value')
-                        if ir_val:
-                            entry[target_k]['irating'] = int(ir_val)
-                            matched_any = True
-
-            if matched_any:
-                existing_stats[name] = entry
-                updated_ratings_count += 1
-
-        time.sleep(0.2)  # courteous API rate limit delay
+        if matched_any:
+            existing_stats[name] = entry
+            updated_ratings_count += 1
 
     # Save updated driver_stats_2.json
     with open(DRIVER_STATS_FILE, 'w', encoding='utf-8') as f:
         json.dump(existing_stats, f, indent=2, ensure_ascii=False)
     print(f"[OK] Saved driver stats & ratings to {DRIVER_STATS_FILE} (Updated {updated_ratings_count} drivers)")
 
+    # 8. Render individual driver HTML profile pages
+    if os.path.exists(DRIVER_TEMPLATE_FILE) and os.path.exists(DRIVERS_DIR):
+        print(f"6. Updating individual driver HTML profiles in {DRIVERS_DIR}...")
+        try:
+            with open(DRIVER_TEMPLATE_FILE, 'r', encoding='utf-8') as tf:
+                template = tf.read()
+
+            disciplines_meta = [
+                {"internal_key": "SPORTS", "display_name": "Sports Car"},
+                {"internal_key": "FORMULA", "display_name": "Formula Car"},
+                {"internal_key": "OVAL", "display_name": "Oval"},
+                {"internal_key": "DIRT_ROAD", "display_name": "Dirt Road"},
+                {"internal_key": "DIRT_OVAL", "display_name": "Dirt Oval"},
+                {"internal_key": "ROAD", "display_name": "Road"}
+            ]
+
+            now_formatted = datetime.now().strftime("%d %b %Y")
+            rendered_count = 0
+
+            # Combine all drivers from driver_list and members_raw
+            render_targets = {}
+            for d in driver_list:
+                render_targets[d['slug']] = {
+                    'slug': d['slug'],
+                    'name': d['name'],
+                    'role': d.get('role', 'Driver'),
+                    'totalLaps': d.get('totalLaps', 0),
+                    'cleanPct': d.get('cleanPct', 0.0),
+                    'hours': d.get('hours', 0.0)
+                }
+            for m in members_raw:
+                slug = m.get('slug')
+                if slug and slug not in render_targets:
+                    name = f"{m.get('firstName', '')} {m.get('lastName', '')}".strip()
+                    render_targets[slug] = {
+                        'slug': slug,
+                        'name': name,
+                        'role': m.get('role', 'Driver'),
+                        'totalLaps': 0,
+                        'cleanPct': 0.0,
+                        'hours': 0.0
+                    }
+
+            for slug, d in render_targets.items():
+                name = d.get('name')
+                if not slug or not name:
+                    continue
+
+                html = template
+                url = f"https://garage61.net/app/drivers/{slug}"
+                driver_ratings = existing_stats.get(name, {})
+
+                html = html.replace("{{NAME}}", name)
+                html = html.replace("{{NICKNAME}}", "")
+                html = html.replace("{{MEMBER_SINCE}}", "N/A")
+                html = html.replace("{{ROLE}}", d.get("role", "Driver") or "Driver")
+                html = html.replace("{{G61_URL}}", url)
+                html = html.replace("{{LAST_CHECKED}}", now_formatted)
+
+                for disc in disciplines_meta:
+                    int_key = disc["internal_key"]
+                    disp_name = disc["display_name"]
+                    cat_info = driver_ratings.get(disp_name, {})
+                    ir_val = cat_info.get("irating")
+                    lic = cat_info.get("sr", "R 2.50")
+                    lic_class = get_license_class(lic)
+                    pc = min(100, round((int(ir_val) / 6000) * 100, 2)) if ir_val and ir_val > 0 else 0
+
+                    html = html.replace(f"{{{{IRATING_{int_key}}}}}", str(ir_val) if ir_val and ir_val > 0 else "---")
+                    html = html.replace(f"{{{{IRATING_{int_key}_PC}}}}", str(pc))
+                    html = html.replace(f"{{{{LICENSE_{int_key}}}}}", lic)
+                    html = html.replace(f"{{{{LICENSE_CLASS_{int_key}}}}}", lic_class)
+                    html = html.replace(f"{{{{RATING_DATE_{int_key}}}}}", f"({now_formatted})" if ir_val else "")
+
+                html = html.replace("{{LAPS}}", str(d.get("totalLaps", "0")))
+                html = html.replace("{{CLEAN_LAP_PC}}", str(d.get("cleanPct", "0")))
+                hours_val = d.get("hours", 0)
+                html = html.replace("{{TIME_ON_TRACK}}", f"{hours_val} hrs" if hours_val else "N/A")
+
+                file_path = os.path.join(DRIVERS_DIR, f"{slug.lower()}.html")
+                with open(file_path, "w", encoding="utf-8") as hf:
+                    hf.write(html)
+                rendered_count += 1
+
+            print(f"[OK] Generated {rendered_count} driver HTML profiles.")
+        except Exception as te:
+            print(f"[WARN] Error updating driver HTML profiles: {te}")
+
     # Automatically stage generated data files for Git commit in CI/Actions
     try:
         import subprocess
-        subprocess.run(['git', 'add', GARAGE61_STATS_FILE, DRIVER_STATS_FILE, DRIVERS_JSON_FILE], cwd=REPO_ROOT, check=False)
+        subprocess.run(['git', 'add', GARAGE61_STATS_FILE, DRIVER_STATS_FILE, DRIVERS_JSON_FILE, DRIVERS_DIR], cwd=REPO_ROOT, check=False)
     except Exception:
         pass
 
