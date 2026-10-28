@@ -809,11 +809,6 @@ def main():
     except Exception as e:
         print(f"Failed to save {DRIVERS_JSON}: {e}")
 
-    try:
-        import subprocess
-        subprocess.run(['git', 'add', DRIVER_STATS_JSON, DRIVERS_JSON, DRIVERS_DIR], cwd=BASE_DIR, check=False)
-    except Exception:
-        pass
 
     # Build Summary
     summary_lines = [

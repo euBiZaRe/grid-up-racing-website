@@ -204,6 +204,7 @@ function initAuth() {
             // SECURITY: Only trust known hardcoded admin UIDs on fast-path; full verification occurs in enrichAuthData
             const isInitialAdmin = KNOWN_ADMIN_UIDS.includes(user.uid);
             IS_ADMIN = isInitialAdmin;
+            window.IS_ADMIN = isInitialAdmin;
             localStorage.setItem('gridup_auth_cache', JSON.stringify({
                 user: { uid: user.uid, photoURL: user.photoURL, displayName: user.displayName },
                 isAdmin: isInitialAdmin,
@@ -237,6 +238,8 @@ function initAuth() {
                 appNotificationUnsub = null;
             }
             PORTAL_HAS_UNREAD = false;
+            window.IS_ADMIN = false;
+            window.IS_VERIFIED = false;
             localStorage.removeItem('gridup_auth_cache');
             updateAuthUI(null);
             checkPublicMaintenanceMode();
@@ -346,6 +349,9 @@ async function enrichAuthData(user) {
         isVerified: IS_VERIFIED
     }));
     
+    window.IS_ADMIN = IS_ADMIN;
+    window.IS_VERIFIED = IS_VERIFIED;
+
     // Trigger page-specific data hooks
     if (typeof onAuthEnriched === 'function') {
         onAuthEnriched(user, { isAdmin: IS_ADMIN, isVerified: IS_VERIFIED });

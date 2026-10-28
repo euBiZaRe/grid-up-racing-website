@@ -19,7 +19,7 @@ def check_requests():
             if not firebase_admin._apps:
                 firebase_admin.initialize_app(cred)
             db = firestore.client()
-            doc_ref = db.collection("sync_requests").doc(workflow_id)
+            doc_ref = db.collection("sync_requests").document(workflow_id)
             doc = doc_ref.get()
             if doc.exists:
                 data = doc.to_dict()

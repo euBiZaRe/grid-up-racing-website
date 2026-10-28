@@ -750,12 +750,7 @@ def sync():
         except Exception as te:
             print(f"[WARN] Error updating driver HTML profiles: {te}")
 
-    # Automatically stage generated data files for Git commit in CI/Actions
-    try:
-        import subprocess
-        subprocess.run(['git', 'add', GARAGE61_STATS_FILE, DRIVER_STATS_FILE, DRIVERS_JSON_FILE, DRIVERS_DIR], cwd=REPO_ROOT, check=False)
-    except Exception:
-        pass
+
 
     print(f"\n[COMPLETE] Successfully synchronized all driver statistics!")
     print(f"Summary: {len(driver_list)} drivers, {team_total_laps:,} total laps, {team_hours:,} total hours.")
