@@ -1,212 +1,180 @@
 [
   {
-    "addedFromApplication": "C5tnFxQ7XoA1oLoyztfg",
-    "lastUpdated": null,
-    "stats": {
-      "licenseLevels": {
-        "FORMULA": "C 2.35",
-        "OVAL": "A 2.65",
-        "ROAD": "C 2.47",
-        "DIRT_OVAL": "C 2.14",
-        "SPORTS": "B 2.40",
-        "DIRT_ROAD": "C 2.59"
-      },
-      "iRatings": {
-        "OVAL": 2101,
-        "DIRT_ROAD": 1032,
-        "FORMULA": 781,
-        "ROAD": 840,
-        "DIRT_OVAL": 996,
-        "SPORTS": 1030
-      },
-      "iRatingPercentages": {
-        "OVAL": 35.02,
-        "DIRT_OVAL": 16.6,
-        "SPORTS": 17.17,
-        "FORMULA": 13.02,
-        "DIRT_ROAD": 17.2,
-        "ROAD": 14.0
-      }
-    },
-    "active": true,
-    "category": "Driver",
-    "slug": "anthony-savignano",
-    "role": "Driver",
+    "name": "Adam Jones",
+    "url": "https://garage61.net/app/drivers/adam-jones-2",
+    "role": "Driver"
+  },
+  {
+    "iracingId": "587326",
     "iracing": {
-      "customerId": 598614,
+      "customerId": 587326,
       "ratings": {
         "sportsCar": {
-          "value": 1030,
+          "value": 1289,
           "updated": "28 Oct 2026"
         },
         "formulaCar": {
-          "value": 781,
-          "updated": "28 Oct 2026"
+          "value": 0,
+          "updated": null
         },
         "oval": {
-          "value": 2101,
+          "value": 1672,
           "updated": "28 Oct 2026"
         },
         "dirtRoad": {
-          "value": 1032,
-          "updated": "28 Oct 2026"
+          "value": 0,
+          "updated": null
         },
         "dirtOval": {
-          "value": 996,
-          "updated": "28 Oct 2026"
+          "value": 0,
+          "updated": null
         },
         "road": {
-          "value": 840,
+          "value": 967,
           "updated": "28 Oct 2026"
         }
       },
       "lastChecked": "2026-10-28T13:58:20Z"
     },
-    "name": "Anthony Savignano",
-    "iracingId": "598614",
-    "irating": 1030,
-    "_docId": "0zT3OLKHeZg9vNvIGzIT"
-  },
-  {
-    "role": "Endurance Team Driver",
-    "active": true,
-    "name": "Tanner Hupp",
-    "linkedUid": "O4AYBQR5V1OzeJx7pDUyUvemtBC3",
-    "lastUpdated": null,
+    "irating": 1237,
     "stats": {
-      "licenseLevels": {
-        "FORMULA": "R 2.89",
-        "DIRT_ROAD": "R 2.50",
-        "DIRT_OVAL": "R 2.50",
-        "OVAL": "R 2.46",
-        "SPORTS": "B 3.27",
-        "ROAD": "R 2.50"
-      },
-      "iRatingPercentages": {
-        "SPORTS": 17.1,
-        "FORMULA": 19.75,
-        "OVAL": 20.62,
-        "DIRT_OVAL": 22.5,
-        "ROAD": 22.5,
-        "DIRT_ROAD": 22.5
-      },
       "iRatings": {
-        "OVAL": 1237,
-        "SPORTS": 1026,
+        "DIRT_OVAL": 1320,
         "DIRT_ROAD": 1350,
-        "DIRT_OVAL": 1350,
-        "ROAD": 1350,
-        "FORMULA": 1185
-      }
-    },
-    "slug": "tanner-hupp",
-    "irating": 1026,
-    "iracingId": "1272990",
-    "iracing": {
-      "customerId": 1272990,
-      "ratings": {
-        "sportsCar": {
-          "value": 1026,
-          "updated": "28 Oct 2026"
-        },
-        "formulaCar": {
-          "value": 0,
-          "updated": null
-        },
-        "oval": {
-          "value": 0,
-          "updated": null
-        },
-        "dirtRoad": {
-          "value": 1350,
-          "updated": "28 Oct 2026"
-        },
-        "dirtOval": {
-          "value": 1350,
-          "updated": "28 Oct 2026"
-        },
-        "road": {
-          "value": 0,
-          "updated": null
-        }
+        "OVAL": 1672,
+        "ROAD": 967,
+        "FORMULA": 1350,
+        "SPORTS": 1289
       },
-      "lastChecked": "2026-10-28T13:58:20Z"
-    },
-    "category": "GRiD UP Endurance",
-    "allowAccess": true,
-    "linkedDiscordName": "Discord User",
-    "_docId": "2wrxeX4fpyG5TgvxSQks"
-  },
-  {
-    "addedFromApplication": "cpgpSC0eeWqOBDAPbDoq",
-    "stats": {
+      "licenseLevels": {
+        "SPORTS": "B 4.61",
+        "OVAL": "A 2.66",
+        "DIRT_OVAL": "R 2.63",
+        "FORMULA": "R 2.50",
+        "ROAD": "C 2.46",
+        "DIRT_ROAD": "R 2.50"
+      },
       "iRatingPercentages": {
-        "SPORTS": 60.32,
-        "ROAD": 24.5,
-        "DIRT_OVAL": 22.5,
+        "OVAL": 27.87,
+        "SPORTS": 21.48,
         "DIRT_ROAD": 22.5,
-        "FORMULA": 37.0,
-        "OVAL": 21.18
-      },
-      "iRatings": {
-        "DIRT_ROAD": 1350,
-        "OVAL": 1271,
-        "FORMULA": 2220,
-        "DIRT_OVAL": 1350,
-        "SPORTS": 3619,
-        "ROAD": 1470
-      },
-      "licenseLevels": {
-        "OVAL": "R 2.43",
-        "FORMULA": "D 2.42",
-        "DIRT_ROAD": "R 2.50",
-        "ROAD": "D 2.62",
-        "SPORTS": "A 3.70",
-        "DIRT_OVAL": "R 2.50"
+        "ROAD": 16.12,
+        "FORMULA": 22.5,
+        "DIRT_OVAL": 22.0
       }
     },
-    "linkedDiscordName": "",
-    "linkedUid": "",
-    "category": "Driver",
-    "lastUpdated": null,
-    "slug": "ethan-turner2",
-    "role": "Driver",
+    "allowAccess": true,
     "active": true,
+    "lastUpdated": null,
+    "name": "Adam Jones",
+    "category": "Owner",
+    "role": "Owner",
+    "slug": "adam-jones",
+    "_docId": "BoWJ3gIXDYkE5h0Q5sAK"
+  },
+  {
+    "name": "Alex Cortez",
+    "url": "https://garage61.net/app/drivers/alex-cortez",
+    "role": "E-Sports Driver"
+  },
+  {
+    "name": "Aman Johnson",
+    "url": "https://garage61.net/app/drivers/aman-johnson",
+    "role": "Driver"
+  },
+  {
+    "name": "Andrew Fabian",
+    "url": "https://garage61.net/app/drivers/andrew-fabian",
+    "role": "Endurance Team Owner"
+  },
+  {
+    "name": "Andrew Gould",
+    "url": "https://garage61.net/app/drivers/andrew-gould",
+    "role": "Driver"
+  },
+  {
+    "irating": 2327,
+    "addedFromApplication": "xsPjOc7XkZl46Hk7l5Lp",
+    "category": "GRiD UP Endurance",
     "iracing": {
-      "customerId": 1071220,
+      "customerId": 251474,
       "ratings": {
         "sportsCar": {
-          "value": 3619,
+          "value": 2851,
           "updated": "28 Oct 2026"
         },
         "formulaCar": {
-          "value": 2220,
+          "value": 2203,
           "updated": "28 Oct 2026"
         },
         "oval": {
+          "value": 1750,
+          "updated": "28 Oct 2026"
+        },
+        "dirtRoad": {
           "value": 0,
           "updated": null
         },
-        "dirtRoad": {
-          "value": 1350,
-          "updated": "28 Oct 2026"
-        },
         "dirtOval": {
-          "value": 1350,
+          "value": 1555,
           "updated": "28 Oct 2026"
         },
         "road": {
-          "value": 1470,
+          "value": 2627,
           "updated": "28 Oct 2026"
         }
       },
       "lastChecked": "2026-10-28T13:58:20Z"
     },
-    "iracingId": "1071220",
-    "allowAccess": false,
-    "irating": 3473,
-    "name": "Ethan Turner2",
-    "_docId": "36Zrn38Y8TDSEJ3Kuev8"
+    "active": true,
+    "iracingId": "251474",
+    "name": "Andrew Gould",
+    "slug": "andrew-gould2",
+    "allowAccess": true,
+    "stats": {
+      "iRatings": {
+        "DIRT_ROAD": 1363,
+        "SPORTS": 2851,
+        "OVAL": 1750,
+        "FORMULA": 2203,
+        "DIRT_OVAL": 1555,
+        "ROAD": 2627
+      },
+      "iRatingPercentages": {
+        "DIRT_OVAL": 25.92,
+        "SPORTS": 47.52,
+        "DIRT_ROAD": 22.72,
+        "ROAD": 43.78,
+        "OVAL": 29.17,
+        "FORMULA": 36.72
+      },
+      "licenseLevels": {
+        "DIRT_OVAL": "D 2.56",
+        "DIRT_ROAD": "R 2.85",
+        "ROAD": "A 3.29",
+        "OVAL": "C 2.61",
+        "FORMULA": "B 2.09",
+        "SPORTS": "A 3.13"
+      }
+    },
+    "lastUpdated": null,
+    "role": "Endurance Team Driver",
+    "_docId": "CJv3Y4z7q2n5y5qn2IJR"
+  },
+  {
+    "name": "Anthony Savignano",
+    "url": "https://garage61.net/app/drivers/anthony-savignano",
+    "role": "Driver"
+  },
+  {
+    "name": "Aron Lotthammer",
+    "url": "https://garage61.net/app/drivers/aron-lotthammer",
+    "role": "Endurance Team Driver"
+  },
+  {
+    "name": "Aten-Wa Theba",
+    "url": "https://garage61.net/app/drivers/aten-wa-theba",
+    "role": "Endurance Team Driver"
   },
   {
     "linkedUid": "",
@@ -279,1794 +247,103 @@
     "_docId": "3thaAIqUnYdsxGOJLLH1"
   },
   {
-    "category": "Driver",
-    "lastUpdated": null,
-    "iracingId": "330403",
-    "iracing": {
-      "customerId": 330403,
-      "lastChecked": "2026-10-04T20:36:25.332Z",
-      "ratings": {
-        "formulaCar": {
-          "value": 1581,
-          "updated": "2026-10-04"
-        },
-        "dirtRoad": {
-          "value": 1316,
-          "updated": "2026-10-04"
-        },
-        "dirtOval": {
-          "value": 1572,
-          "updated": "2026-10-04"
-        },
-        "sportsCar": {
-          "updated": "2026-10-04",
-          "value": 2008
-        },
-        "road": {
-          "value": 1559,
-          "updated": "2026-10-04"
-        },
-        "oval": {
-          "updated": "2026-10-04",
-          "value": 1701
-        }
-      }
-    },
-    "name": "Omette Ohm",
-    "active": true,
-    "role": "",
-    "irating": 2008,
-    "slug": "omette-ohm",
-    "stats": {
-      "iRatingPercentages": {
-        "OVAL": 28.35,
-        "FORMULA": 26.35,
-        "DIRT_ROAD": 21.93,
-        "SPORTS": 33.47,
-        "ROAD": 25.98,
-        "DIRT_OVAL": 26.2
-      },
-      "licenseLevels": {
-        "DIRT_ROAD": "D 2.87",
-        "ROAD": "R 2.50",
-        "SPORTS": "A 2.13",
-        "FORMULA": "C 2.45",
-        "DIRT_OVAL": "D 3.38",
-        "OVAL": "C 2.32"
-      },
-      "iRatings": {
-        "DIRT_ROAD": 1316,
-        "OVAL": 1701,
-        "DIRT_OVAL": 1572,
-        "FORMULA": 1581,
-        "SPORTS": 2008,
-        "ROAD": 1559
-      }
-    },
-    "_docId": "4XYy1EsRDr61mqgaOHBO"
+    "name": "Brandon Berg",
+    "url": "https://garage61.net/app/drivers/brandon-berg",
+    "role": "Driver"
   },
   {
-    "allowAccess": false,
-    "active": true,
-    "slug": "harrison-holliday",
-    "linkedUid": "",
-    "stats": {
-      "licenseLevels": {
-        "ROAD": "A 2.11",
-        "DIRT_OVAL": "R 2.45",
-        "FORMULA": "C 2.66",
-        "DIRT_ROAD": "R 2.50",
-        "SPORTS": "A 1.47",
-        "OVAL": "A 2.42"
-      },
-      "iRatings": {
-        "DIRT_OVAL": 1302,
-        "OVAL": 1786,
-        "DIRT_ROAD": 1350,
-        "ROAD": 1075,
-        "FORMULA": 1456,
-        "SPORTS": 2363
-      },
-      "iRatingPercentages": {
-        "DIRT_OVAL": 21.7,
-        "ROAD": 17.92,
-        "DIRT_ROAD": 22.5,
-        "SPORTS": 39.38,
-        "FORMULA": 24.27,
-        "OVAL": 29.77
-      }
-    },
-    "category": "Driver",
-    "irating": 2363,
-    "lastUpdated": null,
-    "iracingId": "1063543",
+    "name": "Brandon Koch",
+    "url": "https://garage61.net/app/drivers/brandon-koch",
+    "role": "Driver"
+  },
+  {
+    "name": "Bret Leinweber Weyand",
+    "url": "https://garage61.net/app/drivers/bret-leinweber-weyand",
+    "role": "Driver"
+  },
+  {
     "iracing": {
-      "customerId": 1063543,
+      "customerId": 320832,
       "ratings": {
         "sportsCar": {
-          "value": 2363,
+          "value": 2152,
           "updated": "28 Oct 2026"
         },
         "formulaCar": {
-          "value": 1456,
+          "value": 2744,
           "updated": "28 Oct 2026"
         },
         "oval": {
-          "value": 1786,
+          "value": 1725,
           "updated": "28 Oct 2026"
         },
         "dirtRoad": {
-          "value": 0,
-          "updated": null
+          "value": 1638,
+          "updated": "28 Oct 2026"
         },
         "dirtOval": {
-          "value": 0,
-          "updated": null
+          "value": 1525,
+          "updated": "28 Oct 2026"
         },
         "road": {
-          "value": 1075,
+          "value": 1738,
           "updated": "28 Oct 2026"
         }
       },
       "lastChecked": "2026-10-28T13:58:20Z"
     },
-    "linkedDiscordName": "",
-    "addedFromApplication": "3vQ6JRbtDaJCKU7YUhjH",
-    "role": "Driver",
-    "name": "Harrison Holliday",
-    "_docId": "4zRGvFkMA7d245a60Oml"
-  },
-  {
-    "irating": 1471,
-    "name": "Jacob Roberts",
-    "active": true,
-    "stats": {
-      "licenseLevels": {
-        "FORMULA": "R 2.50",
-        "DIRT_ROAD": "R 2.50",
-        "DIRT_OVAL": "R 2.50",
-        "OVAL": "D 1.23",
-        "ROAD": "R 2.50",
-        "SPORTS": "C 2.53"
-      },
-      "iRatingPercentages": {
-        "ROAD": 22.5,
-        "DIRT_ROAD": 22.5,
-        "DIRT_OVAL": 22.5,
-        "FORMULA": 22.5,
-        "SPORTS": 24.52,
-        "OVAL": 18.43
-      },
-      "iRatings": {
-        "OVAL": 1106,
-        "SPORTS": 1471,
-        "FORMULA": 1350,
-        "DIRT_ROAD": 1350,
-        "ROAD": 1350,
-        "DIRT_OVAL": 1350
-      }
-    },
-    "role": "Driver",
-    "iracing": {
-      "customerId": 1385945,
-      "ratings": {
-        "sportsCar": {
-          "value": 1471,
-          "updated": "28 Oct 2026"
-        },
-        "formulaCar": {
-          "value": 1350,
-          "updated": "28 Oct 2026"
-        },
-        "oval": {
-          "value": 1106,
-          "updated": "28 Oct 2026"
-        },
-        "dirtRoad": {
-          "value": 1350,
-          "updated": "28 Oct 2026"
-        },
-        "dirtOval": {
-          "value": 1350,
-          "updated": "28 Oct 2026"
-        },
-        "road": {
-          "value": 0,
-          "updated": null
-        }
-      },
-      "lastChecked": "2026-10-28T13:58:20Z"
-    },
-    "iracingId": "1385945",
-    "slug": "jacob-roberts",
-    "category": "Driver",
+    "irating": 2153,
     "lastUpdated": null,
-    "_docId": "5tlZUc6X6BFg0lYObLH4"
-  },
-  {
-    "iracing": {
-      "customerId": 701522,
-      "ratings": {
-        "sportsCar": {
-          "value": 2317,
-          "updated": "28 Oct 2026"
-        },
-        "formulaCar": {
-          "value": 2111,
-          "updated": "28 Oct 2026"
-        },
-        "oval": {
-          "value": 1231,
-          "updated": "28 Oct 2026"
-        },
-        "dirtRoad": {
-          "value": 1784,
-          "updated": "28 Oct 2026"
-        },
-        "dirtOval": {
-          "value": 1255,
-          "updated": "28 Oct 2026"
-        },
-        "road": {
-          "value": 2036,
-          "updated": "28 Oct 2026"
-        }
-      },
-      "lastChecked": "2026-10-28T13:58:20Z"
-    },
-    "iracingId": "701522",
-    "irating": 2384,
-    "name": "Ric Wishon",
-    "lastUpdated": null,
-    "role": "Driver",
-    "linkedDiscordName": "",
-    "category": "Driver",
-    "stats": {
-      "iRatings": {
-        "FORMULA": 2111,
-        "ROAD": 2036,
-        "DIRT_ROAD": 1784,
-        "SPORTS": 2317,
-        "OVAL": 1231,
-        "DIRT_OVAL": 1255
-      },
-      "iRatingPercentages": {
-        "ROAD": 33.93,
-        "SPORTS": 38.62,
-        "DIRT_ROAD": 29.73,
-        "FORMULA": 35.18,
-        "OVAL": 20.52,
-        "DIRT_OVAL": 20.92
-      },
-      "licenseLevels": {
-        "FORMULA": "A 2.50",
-        "OVAL": "B 2.62",
-        "DIRT_ROAD": "C 3.61",
-        "ROAD": "A 2.46",
-        "DIRT_OVAL": "B 2.13",
-        "SPORTS": "B 1.37"
-      }
-    },
-    "linkedUid": "",
-    "active": true,
-    "allowAccess": false,
-    "slug": "ric-wishon-701522",
-    "addedFromApplication": "cCTv4Ck5uvMuV29J6sNd",
-    "_docId": "6bp76LEn6KUHgPfH5x78"
-  },
-  {
-    "active": true,
-    "iracingId": "1049845",
-    "lastUpdated": null,
-    "category": "GRiD UP Endurance",
-    "allowAccess": true,
-    "stats": {
-      "licenseLevels": {
-        "FORMULA": "A 1.46",
-        "OVAL": "A 3.73",
-        "DIRT_OVAL": "R 2.64",
-        "DIRT_ROAD": "R 2.88",
-        "SPORTS": "A 3.55",
-        "ROAD": "C 2.90"
-      },
-      "iRatingPercentages": {
-        "OVAL": 33.83,
-        "FORMULA": 33.9,
-        "ROAD": 21.05,
-        "DIRT_ROAD": 24.37,
-        "SPORTS": 45.6,
-        "DIRT_OVAL": 22.5
-      },
-      "iRatings": {
-        "DIRT_OVAL": 1350,
-        "DIRT_ROAD": 1462,
-        "ROAD": 1263,
-        "OVAL": 2030,
-        "FORMULA": 2034,
-        "SPORTS": 2736
-      }
-    },
-    "slug": "chandler-english",
+    "addedFromApplication": "vIqLfkSkyjkpBNdBK3uc",
     "role": "Endurance Team Driver",
-    "irating": 2627,
-    "addedFromApplication": "vufVy3hNDvGlnCeT6g7b",
+    "slug": "bret-weyand",
+    "allowAccess": true,
+    "active": true,
+    "iracingId": "320832",
+    "stats": {
+      "licenseLevels": {
+        "DIRT_OVAL": "B 3.19",
+        "DIRT_ROAD": "C 2.38",
+        "SPORTS": "A 3.52",
+        "OVAL": "A 2.32",
+        "ROAD": "B 2.48",
+        "FORMULA": "B 2.60"
+      },
+      "iRatingPercentages": {
+        "SPORTS": 35.87,
+        "OVAL": 28.75,
+        "FORMULA": 45.73,
+        "ROAD": 28.97,
+        "DIRT_OVAL": 25.42,
+        "DIRT_ROAD": 27.3
+      },
+      "iRatings": {
+        "DIRT_ROAD": 1638,
+        "ROAD": 1738,
+        "DIRT_OVAL": 1525,
+        "SPORTS": 2152,
+        "OVAL": 1725,
+        "FORMULA": 2744
+      }
+    },
+    "category": "GRiD UP Endurance",
+    "name": "Bret Weyand",
+    "_docId": "mzmMTFwdyNBFgAF0PS8O"
+  },
+  {
+    "name": "Broughton Jones",
+    "url": "https://garage61.net/app/drivers/broughton-jones",
+    "role": "Driver"
+  },
+  {
     "name": "Chandler English",
-    "iracing": {
-      "customerId": 1049845,
-      "ratings": {
-        "sportsCar": {
-          "value": 2736,
-          "updated": "28 Oct 2026"
-        },
-        "formulaCar": {
-          "value": 2034,
-          "updated": "28 Oct 2026"
-        },
-        "oval": {
-          "value": 2030,
-          "updated": "28 Oct 2026"
-        },
-        "dirtRoad": {
-          "value": 0,
-          "updated": null
-        },
-        "dirtOval": {
-          "value": 0,
-          "updated": null
-        },
-        "road": {
-          "value": 1263,
-          "updated": "28 Oct 2026"
-        }
-      },
-      "lastChecked": "2026-10-28T13:58:20Z"
-    },
-    "_docId": "7SDpp4w7QqmauQB3C1PI"
+    "url": "https://garage61.net/app/drivers/chandler-english",
+    "role": "Endurance Team Driver"
   },
   {
-    "iracingId": "1164079",
-    "role": "Developer",
-    "irating": 1895,
-    "slug": "matty-roberts",
-    "iracing": {
-      "customerId": 1164079,
-      "ratings": {
-        "sportsCar": {
-          "value": 1884,
-          "updated": "28 Oct 2026"
-        },
-        "formulaCar": {
-          "value": 1350,
-          "updated": "28 Oct 2026"
-        },
-        "oval": {
-          "value": 0,
-          "updated": null
-        },
-        "dirtRoad": {
-          "value": 0,
-          "updated": null
-        },
-        "dirtOval": {
-          "value": 0,
-          "updated": null
-        },
-        "road": {
-          "value": 0,
-          "updated": null
-        }
-      },
-      "lastChecked": "2026-10-28T13:58:20Z"
-    },
-    "allowAccess": true,
-    "active": true,
-    "name": "Matty Roberts",
-    "lastUpdated": null,
-    "category": "Owner",
-    "stats": {
-      "iRatings": {
-        "ROAD": 1350,
-        "DIRT_OVAL": 1195,
-        "SPORTS": 1884,
-        "FORMULA": 1350,
-        "DIRT_ROAD": 1317,
-        "OVAL": 1015
-      },
-      "iRatingPercentages": {
-        "DIRT_ROAD": 21.95,
-        "DIRT_OVAL": 19.92,
-        "SPORTS": 31.4,
-        "OVAL": 16.92,
-        "ROAD": 22.5,
-        "FORMULA": 22.5
-      },
-      "licenseLevels": {
-        "DIRT_ROAD": "R 2.54",
-        "ROAD": "R 2.50",
-        "DIRT_OVAL": "R 2.71",
-        "OVAL": "R 2.39",
-        "SPORTS": "A 3.70",
-        "FORMULA": "R 2.50"
-      }
-    },
-    "_docId": "8oJB5JqCd37376OMlVg3"
-  },
-  {
-    "iracingId": "587326",
-    "iracing": {
-      "customerId": 587326,
-      "ratings": {
-        "sportsCar": {
-          "value": 1289,
-          "updated": "28 Oct 2026"
-        },
-        "formulaCar": {
-          "value": 0,
-          "updated": null
-        },
-        "oval": {
-          "value": 1672,
-          "updated": "28 Oct 2026"
-        },
-        "dirtRoad": {
-          "value": 0,
-          "updated": null
-        },
-        "dirtOval": {
-          "value": 0,
-          "updated": null
-        },
-        "road": {
-          "value": 967,
-          "updated": "28 Oct 2026"
-        }
-      },
-      "lastChecked": "2026-10-28T13:58:20Z"
-    },
-    "irating": 1237,
-    "stats": {
-      "iRatings": {
-        "DIRT_OVAL": 1320,
-        "DIRT_ROAD": 1350,
-        "OVAL": 1672,
-        "ROAD": 967,
-        "FORMULA": 1350,
-        "SPORTS": 1289
-      },
-      "licenseLevels": {
-        "SPORTS": "B 4.61",
-        "OVAL": "A 2.66",
-        "DIRT_OVAL": "R 2.63",
-        "FORMULA": "R 2.50",
-        "ROAD": "C 2.46",
-        "DIRT_ROAD": "R 2.50"
-      },
-      "iRatingPercentages": {
-        "OVAL": 27.87,
-        "SPORTS": 21.48,
-        "DIRT_ROAD": 22.5,
-        "ROAD": 16.12,
-        "FORMULA": 22.5,
-        "DIRT_OVAL": 22.0
-      }
-    },
-    "allowAccess": true,
-    "active": true,
-    "lastUpdated": null,
-    "name": "Adam Jones",
-    "category": "Owner",
-    "role": "Owner",
-    "slug": "adam-jones",
-    "_docId": "BoWJ3gIXDYkE5h0Q5sAK"
-  },
-  {
-    "irating": 2262,
-    "iracing": {
-      "customerId": 378291,
-      "ratings": {
-        "sportsCar": {
-          "value": 2262,
-          "updated": "28 Oct 2026"
-        },
-        "formulaCar": {
-          "value": 2054,
-          "updated": "28 Oct 2026"
-        },
-        "oval": {
-          "value": 1419,
-          "updated": "28 Oct 2026"
-        },
-        "dirtRoad": {
-          "value": 0,
-          "updated": null
-        },
-        "dirtOval": {
-          "value": 0,
-          "updated": null
-        },
-        "road": {
-          "value": 2054,
-          "updated": "28 Oct 2026"
-        }
-      },
-      "lastChecked": "2026-10-28T13:58:20Z"
-    },
-    "active": true,
-    "name": "Martyn Cook",
-    "iracingId": "378291",
-    "category": "Owner",
-    "lastUpdated": null,
-    "slug": "martyn-cook",
-    "role": "Endurance Team Manager",
-    "stats": {
-      "iRatingPercentages": {
-        "FORMULA": 34.23,
-        "OVAL": 23.65,
-        "ROAD": 34.23,
-        "SPORTS": 37.7,
-        "DIRT_ROAD": 22.5,
-        "DIRT_OVAL": 22.5
-      },
-      "licenseLevels": {
-        "OVAL": "C 2.83",
-        "DIRT_ROAD": "R 2.50",
-        "SPORTS": "A 4.99",
-        "DIRT_OVAL": "R 2.50",
-        "ROAD": "A 4.99",
-        "FORMULA": "A 4.99"
-      },
-      "iRatings": {
-        "OVAL": 1419,
-        "SPORTS": 2262,
-        "FORMULA": 2054,
-        "DIRT_ROAD": 1350,
-        "DIRT_OVAL": 1350,
-        "ROAD": 2054
-      }
-    },
-    "allowAccess": true,
-    "_docId": "C9GC7Cb8Hi0Lg0YtTwY7"
-  },
-  {
-    "irating": 2327,
-    "addedFromApplication": "xsPjOc7XkZl46Hk7l5Lp",
-    "category": "GRiD UP Endurance",
-    "iracing": {
-      "customerId": 251474,
-      "ratings": {
-        "sportsCar": {
-          "value": 2851,
-          "updated": "28 Oct 2026"
-        },
-        "formulaCar": {
-          "value": 2203,
-          "updated": "28 Oct 2026"
-        },
-        "oval": {
-          "value": 1750,
-          "updated": "28 Oct 2026"
-        },
-        "dirtRoad": {
-          "value": 0,
-          "updated": null
-        },
-        "dirtOval": {
-          "value": 1555,
-          "updated": "28 Oct 2026"
-        },
-        "road": {
-          "value": 2627,
-          "updated": "28 Oct 2026"
-        }
-      },
-      "lastChecked": "2026-10-28T13:58:20Z"
-    },
-    "active": true,
-    "iracingId": "251474",
-    "name": "Andrew Gould",
-    "slug": "andrew-gould2",
-    "allowAccess": true,
-    "stats": {
-      "iRatings": {
-        "DIRT_ROAD": 1363,
-        "SPORTS": 2851,
-        "OVAL": 1750,
-        "FORMULA": 2203,
-        "DIRT_OVAL": 1555,
-        "ROAD": 2627
-      },
-      "iRatingPercentages": {
-        "DIRT_OVAL": 25.92,
-        "SPORTS": 47.52,
-        "DIRT_ROAD": 22.72,
-        "ROAD": 43.78,
-        "OVAL": 29.17,
-        "FORMULA": 36.72
-      },
-      "licenseLevels": {
-        "DIRT_OVAL": "D 2.56",
-        "DIRT_ROAD": "R 2.85",
-        "ROAD": "A 3.29",
-        "OVAL": "C 2.61",
-        "FORMULA": "B 2.09",
-        "SPORTS": "A 3.13"
-      }
-    },
-    "lastUpdated": null,
-    "role": "Endurance Team Driver",
-    "_docId": "CJv3Y4z7q2n5y5qn2IJR"
-  },
-  {
-    "iracingId": "267823",
-    "role": "Endurance Team Driver",
-    "allowAccess": true,
-    "slug": "eric-gentry",
-    "lastUpdated": null,
-    "name": "Eric Gentry",
-    "active": true,
-    "irating": 1506,
-    "stats": {
-      "licenseLevels": {
-        "ROAD": "D 2.46",
-        "FORMULA": "A 2.53",
-        "SPORTS": "A 3.37",
-        "DIRT_ROAD": "R 2.50",
-        "OVAL": "A 2.36",
-        "DIRT_OVAL": "R 2.50"
-      },
-      "iRatings": {
-        "SPORTS": 1576,
-        "ROAD": 908,
-        "FORMULA": 1382,
-        "DIRT_ROAD": 1350,
-        "OVAL": 1476,
-        "DIRT_OVAL": 1350
-      },
-      "iRatingPercentages": {
-        "OVAL": 24.6,
-        "DIRT_ROAD": 22.5,
-        "SPORTS": 26.27,
-        "DIRT_OVAL": 22.5,
-        "ROAD": 15.13,
-        "FORMULA": 23.03
-      }
-    },
-    "category": "GRiD UP Endurance",
-    "addedFromApplication": "NlpKVsW8inacxHT8CNiG",
-    "iracing": {
-      "customerId": 267823,
-      "ratings": {
-        "sportsCar": {
-          "value": 1576,
-          "updated": "28 Oct 2026"
-        },
-        "formulaCar": {
-          "value": 1382,
-          "updated": "28 Oct 2026"
-        },
-        "oval": {
-          "value": 1476,
-          "updated": "28 Oct 2026"
-        },
-        "dirtRoad": {
-          "value": 1350,
-          "updated": "28 Oct 2026"
-        },
-        "dirtOval": {
-          "value": 1350,
-          "updated": "28 Oct 2026"
-        },
-        "road": {
-          "value": 908,
-          "updated": "28 Oct 2026"
-        }
-      },
-      "lastChecked": "2026-10-28T13:58:20Z"
-    },
-    "_docId": "DFmVifVGa7aboGkG1dr4"
-  },
-  {
-    "iracing": {
-      "customerId": 958121,
-      "ratings": {
-        "sportsCar": {
-          "value": 1476,
-          "updated": "28 Oct 2026"
-        },
-        "formulaCar": {
-          "value": 1416,
-          "updated": "28 Oct 2026"
-        },
-        "oval": {
-          "value": 1350,
-          "updated": "28 Oct 2026"
-        },
-        "dirtRoad": {
-          "value": 1350,
-          "updated": "28 Oct 2026"
-        },
-        "dirtOval": {
-          "value": 1350,
-          "updated": "28 Oct 2026"
-        },
-        "road": {
-          "value": 0,
-          "updated": null
-        }
-      },
-      "lastChecked": "2026-10-28T13:58:20Z"
-    },
-    "name": "Matthew Graham",
-    "stats": {
-      "iRatingPercentages": {
-        "OVAL": 22.5,
-        "SPORTS": 24.6,
-        "FORMULA": 23.6,
-        "DIRT_ROAD": 22.5,
-        "ROAD": 22.5,
-        "DIRT_OVAL": 22.5
-      },
-      "iRatings": {
-        "OVAL": 1350,
-        "ROAD": 1350,
-        "DIRT_OVAL": 1350,
-        "FORMULA": 1416,
-        "DIRT_ROAD": 1350,
-        "SPORTS": 1476
-      },
-      "licenseLevels": {
-        "SPORTS": "A 3.09",
-        "OVAL": "R 2.50",
-        "FORMULA": "D 2.62",
-        "DIRT_ROAD": "R 2.50",
-        "ROAD": "R 2.50",
-        "DIRT_OVAL": "R 2.50"
-      }
-    },
-    "role": "Endurance Team Driver",
-    "category": "GRiD UP Endurance",
-    "irating": 1458,
-    "slug": "matthew-graham-4",
-    "iracingId": "958121",
-    "lastUpdated": null,
-    "active": true,
-    "allowAccess": true,
-    "_docId": "Dt1nJbXqZvH1N1GcOjDr"
-  },
-  {
-    "category": "GRiD UP Endurance",
-    "slug": "tim-libuda",
-    "addedFromApplication": "dKxRAbg0AIdBUyLOI9mu",
-    "allowAccess": true,
-    "iracingId": "1538155",
-    "stats": {
-      "licenseLevels": {
-        "OVAL": "D 2.55",
-        "SPORTS": "A 3.27",
-        "FORMULA": "D 2.72",
-        "DIRT_ROAD": "R 2.51",
-        "DIRT_OVAL": "R 2.65",
-        "ROAD": "R 2.50"
-      },
-      "iRatingPercentages": {
-        "SPORTS": 21.63,
-        "ROAD": 22.5,
-        "DIRT_OVAL": 21.37,
-        "DIRT_ROAD": 23.32,
-        "FORMULA": 24.93,
-        "OVAL": 22.28
-      },
-      "iRatings": {
-        "DIRT_OVAL": 1282,
-        "FORMULA": 1496,
-        "SPORTS": 1298,
-        "OVAL": 1337,
-        "DIRT_ROAD": 1399,
-        "ROAD": 1350
-      }
-    },
-    "role": "Endurance Team Driver",
-    "linkedUid": "BykjxXxMIOUrTk345bshxUTZfcr1",
-    "linkedDiscordName": "Tim Libuda",
-    "name": "Tim Libuda",
-    "active": true,
-    "iracing": {
-      "customerId": 1538155,
-      "ratings": {
-        "sportsCar": {
-          "value": 1298,
-          "updated": "28 Oct 2026"
-        },
-        "formulaCar": {
-          "value": 1496,
-          "updated": "28 Oct 2026"
-        },
-        "oval": {
-          "value": 1337,
-          "updated": "28 Oct 2026"
-        },
-        "dirtRoad": {
-          "value": 0,
-          "updated": null
-        },
-        "dirtOval": {
-          "value": 0,
-          "updated": null
-        },
-        "road": {
-          "value": 0,
-          "updated": null
-        }
-      },
-      "lastChecked": "2026-10-28T13:58:20Z"
-    },
-    "lastUpdated": null,
-    "irating": 1301,
-    "_docId": "F44TbMZiHrvi908cybt7"
-  },
-  {
-    "irating": 2065,
-    "category": "GRiD UP Endurance",
-    "name": "Stephen Smalley",
-    "role": "Endurance Team Driver",
-    "iracing": {
-      "customerId": 692716,
-      "ratings": {
-        "sportsCar": {
-          "value": 2065,
-          "updated": "28 Oct 2026"
-        },
-        "formulaCar": {
-          "value": 1967,
-          "updated": "28 Oct 2026"
-        },
-        "oval": {
-          "value": 1432,
-          "updated": "28 Oct 2026"
-        },
-        "dirtRoad": {
-          "value": 0,
-          "updated": null
-        },
-        "dirtOval": {
-          "value": 0,
-          "updated": null
-        },
-        "road": {
-          "value": 1967,
-          "updated": "28 Oct 2026"
-        }
-      },
-      "lastChecked": "2026-10-28T13:58:20Z"
-    },
-    "slug": "stephen-smalley",
-    "active": true,
-    "iracingId": "692716",
-    "stats": {
-      "iRatings": {
-        "FORMULA": 1967,
-        "OVAL": 1432,
-        "DIRT_ROAD": 1350,
-        "DIRT_OVAL": 1277,
-        "SPORTS": 2065,
-        "ROAD": 1967
-      },
-      "licenseLevels": {
-        "FORMULA": "B 2.73",
-        "ROAD": "B 2.73",
-        "SPORTS": "B 4.99",
-        "DIRT_OVAL": "R 2.59",
-        "OVAL": "D 2.44",
-        "DIRT_ROAD": "R 2.50"
-      },
-      "iRatingPercentages": {
-        "OVAL": 23.87,
-        "DIRT_ROAD": 22.5,
-        "FORMULA": 32.78,
-        "SPORTS": 34.42,
-        "DIRT_OVAL": 21.28,
-        "ROAD": 32.78
-      }
-    },
-    "allowAccess": true,
-    "lastUpdated": null,
-    "addedFromApplication": "1LZ9Bqq0MjTsrvl1Olse",
-    "_docId": "Hsk9CLVahGOBp3A8LsJz"
-  },
-  {
-    "active": true,
-    "stats": {
-      "iRatingPercentages": {
-        "SPORTS": 46.2,
-        "DIRT_ROAD": 25.6,
-        "FORMULA": 36.67,
-        "DIRT_OVAL": 20.2,
-        "ROAD": 26.92,
-        "OVAL": 43.15
-      },
-      "licenseLevels": {
-        "FORMULA": "A 4.54",
-        "ROAD": "A 4.99",
-        "OVAL": "A 2.54",
-        "DIRT_ROAD": "B 2.68",
-        "SPORTS": "A 4.67",
-        "DIRT_OVAL": "B 2.67"
-      },
-      "iRatings": {
-        "DIRT_ROAD": 1536,
-        "ROAD": 1615,
-        "DIRT_OVAL": 1212,
-        "SPORTS": 2772,
-        "OVAL": 2589,
-        "FORMULA": 2200
-      }
-    },
-    "name": "Andrew Fabian",
-    "iracingId": "694702",
-    "category": "Owner",
-    "irating": 2769,
-    "slug": "andrew-fabian",
-    "lastUpdated": null,
-    "iracing": {
-      "customerId": 694702,
-      "ratings": {
-        "sportsCar": {
-          "value": 2772,
-          "updated": "28 Oct 2026"
-        },
-        "formulaCar": {
-          "value": 2200,
-          "updated": "28 Oct 2026"
-        },
-        "oval": {
-          "value": 2589,
-          "updated": "28 Oct 2026"
-        },
-        "dirtRoad": {
-          "value": 1536,
-          "updated": "28 Oct 2026"
-        },
-        "dirtOval": {
-          "value": 1212,
-          "updated": "28 Oct 2026"
-        },
-        "road": {
-          "value": 1615,
-          "updated": "28 Oct 2026"
-        }
-      },
-      "lastChecked": "2026-10-28T13:58:20Z"
-    },
-    "allowAccess": true,
-    "role": "Endurance Team Owner",
-    "_docId": "JfDvTcJUrvPRDZF2Q1Ql"
-  },
-  {
-    "lastUpdated": null,
-    "active": true,
-    "linkedDiscordName": "Terry Cantwell",
-    "iracing": {
-      "customerId": 1140947,
-      "ratings": {
-        "sportsCar": {
-          "value": 1899,
-          "updated": "28 Oct 2026"
-        },
-        "formulaCar": {
-          "value": 1311,
-          "updated": "28 Oct 2026"
-        },
-        "oval": {
-          "value": 0,
-          "updated": null
-        },
-        "dirtRoad": {
-          "value": 1980,
-          "updated": "28 Oct 2026"
-        },
-        "dirtOval": {
-          "value": 0,
-          "updated": null
-        },
-        "road": {
-          "value": 988,
-          "updated": "28 Oct 2026"
-        }
-      },
-      "lastChecked": "2026-10-28T13:58:20Z"
-    },
-    "iracingId": "1140947",
-    "slug": "terry-cantwell",
-    "irating": 1779,
-    "category": "GRiD UP Endurance",
-    "linkedUid": "IEzHwYyhZ8ZQYmKh5pD7tnADraC2",
-    "allowAccess": true,
-    "stats": {
-      "iRatings": {
-        "ROAD": 988,
-        "FORMULA": 1311,
-        "DIRT_OVAL": 1182,
-        "OVAL": 1362,
-        "SPORTS": 1899,
-        "DIRT_ROAD": 1980
-      },
-      "iRatingPercentages": {
-        "OVAL": 22.7,
-        "DIRT_OVAL": 19.7,
-        "DIRT_ROAD": 33.0,
-        "SPORTS": 31.65,
-        "ROAD": 16.47,
-        "FORMULA": 21.85
-      },
-      "licenseLevels": {
-        "DIRT_OVAL": "R 2.43",
-        "FORMULA": "D 1.67",
-        "DIRT_ROAD": "C 2.71",
-        "OVAL": "R 2.77",
-        "SPORTS": "A 3.31",
-        "ROAD": "D 2.69"
-      }
-    },
-    "name": "Terry Cantwell",
-    "role": "Endurance Team Driver",
-    "_docId": "KczFNluqyXAcejKDuJal"
-  },
-  {
-    "allowAccess": false,
-    "lastUpdated": null,
-    "stats": {
-      "iRatingPercentages": {
-        "DIRT_ROAD": 23.23,
-        "ROAD": 27.27,
-        "DIRT_OVAL": 23.37,
-        "OVAL": 25.35,
-        "FORMULA": 27.27,
-        "SPORTS": 35.2
-      },
-      "iRatings": {
-        "SPORTS": 2112,
-        "DIRT_ROAD": 1394,
-        "OVAL": 1521,
-        "FORMULA": 1636,
-        "DIRT_OVAL": 1402,
-        "ROAD": 1636
-      },
-      "licenseLevels": {
-        "DIRT_ROAD": "R 2.69",
-        "SPORTS": "A 2.45",
-        "ROAD": "B 2.67",
-        "DIRT_OVAL": "C 2.78",
-        "FORMULA": "B 2.67",
-        "OVAL": "D 2.67"
-      }
-    },
-    "category": "Driver",
-    "active": true,
-    "iracingId": "1005244",
-    "name": "Matthew Koch",
-    "iracing": {
-      "customerId": 1005244,
-      "ratings": {
-        "sportsCar": {
-          "value": 2112,
-          "updated": "28 Oct 2026"
-        },
-        "formulaCar": {
-          "value": 1636,
-          "updated": "28 Oct 2026"
-        },
-        "oval": {
-          "value": 1521,
-          "updated": "28 Oct 2026"
-        },
-        "dirtRoad": {
-          "value": 0,
-          "updated": null
-        },
-        "dirtOval": {
-          "value": 1402,
-          "updated": "28 Oct 2026"
-        },
-        "road": {
-          "value": 1636,
-          "updated": "28 Oct 2026"
-        }
-      },
-      "lastChecked": "2026-10-28T13:58:20Z"
-    },
-    "role": "",
-    "slug": "matthew-koch",
-    "irating": 2112,
-    "_docId": "LvJMF28grKJ8I5xnstrF"
-  },
-  {
-    "iracing": {
-      "customerId": 825112,
-      "ratings": {
-        "sportsCar": {
-          "value": 2284,
-          "updated": "28 Oct 2026"
-        },
-        "formulaCar": {
-          "value": 1464,
-          "updated": "28 Oct 2026"
-        },
-        "oval": {
-          "value": 1226,
-          "updated": "28 Oct 2026"
-        },
-        "dirtRoad": {
-          "value": 1347,
-          "updated": "28 Oct 2026"
-        },
-        "dirtOval": {
-          "value": 1079,
-          "updated": "28 Oct 2026"
-        },
-        "road": {
-          "value": 885,
-          "updated": "28 Oct 2026"
-        }
-      },
-      "lastChecked": "2026-10-28T13:58:20Z"
-    },
-    "name": "Gabe Wilmoth",
-    "lastUpdated": null,
-    "irating": 2075,
-    "linkedUid": "EUnGIPbFSvgEcWFuqxpUMLxWiX43",
-    "role": "Endurance Team Driver",
-    "category": "GRiD UP Endurance",
-    "linkedDiscordName": "Gabe Wilmoth",
-    "allowAccess": true,
-    "slug": "gabe-wilmoth",
-    "iracingId": "825112",
-    "stats": {
-      "iRatings": {
-        "OVAL": 1226,
-        "SPORTS": 2284,
-        "DIRT_ROAD": 1347,
-        "ROAD": 885,
-        "FORMULA": 1464,
-        "DIRT_OVAL": 1079
-      },
-      "licenseLevels": {
-        "FORMULA": "C 2.47",
-        "ROAD": "D 2.57",
-        "DIRT_OVAL": "C 2.43",
-        "DIRT_ROAD": "D 2.52",
-        "SPORTS": "A 2.44",
-        "OVAL": "B 2.41"
-      },
-      "iRatingPercentages": {
-        "SPORTS": 38.07,
-        "OVAL": 20.43,
-        "DIRT_OVAL": 17.98,
-        "DIRT_ROAD": 22.45,
-        "FORMULA": 24.4,
-        "ROAD": 14.75
-      }
-    },
-    "active": true,
-    "_docId": "NIwwtG47mECSbZVEViGT"
-  },
-  {
-    "iracingId": "960798",
-    "lastUpdated": null,
-    "allowAccess": true,
-    "name": "Xavier Williams",
-    "iracing": {
-      "customerId": 960798,
-      "ratings": {
-        "sportsCar": {
-          "value": 1657,
-          "updated": "2026-10-04"
-        },
-        "road": {
-          "value": 1076,
-          "updated": "2026-10-04"
-        },
-        "oval": {
-          "updated": "2026-10-04",
-          "value": 724
-        },
-        "dirtOval": {
-          "value": 1331,
-          "updated": "2026-10-04"
-        },
-        "dirtRoad": {
-          "value": 1459,
-          "updated": "2026-10-04"
-        },
-        "formulaCar": {
-          "value": 1391,
-          "updated": "2026-10-04"
-        }
-      },
-      "lastChecked": "2026-10-04T20:36:25.332Z"
-    },
-    "category": "GRiD UP Endurance",
-    "active": true,
-    "slug": "xavier-williams",
-    "irating": 1755,
-    "stats": {
-      "iRatingPercentages": {
-        "ROAD": 17.93,
-        "FORMULA": 23.18,
-        "DIRT_ROAD": 24.32,
-        "OVAL": 12.07,
-        "DIRT_OVAL": 22.18,
-        "SPORTS": 29.25
-      },
-      "licenseLevels": {
-        "ROAD": "R 2.50",
-        "FORMULA": "B 2.09",
-        "DIRT_OVAL": "R 2.45",
-        "OVAL": "D 2.12",
-        "SPORTS": "A 3.39",
-        "DIRT_ROAD": "R 2.78"
-      },
-      "iRatings": {
-        "ROAD": 1076,
-        "SPORTS": 1755,
-        "DIRT_ROAD": 1459,
-        "DIRT_OVAL": 1331,
-        "OVAL": 724,
-        "FORMULA": 1391
-      }
-    },
-    "role": "Endurance Team Driver",
-    "_docId": "Peb4M04PVEhgio6QVJ3N"
-  },
-  {
-    "role": "Endurance Team Driver",
-    "stats": {
-      "licenseLevels": {
-        "OVAL": "C 2.66",
-        "DIRT_OVAL": "R 2.50",
-        "FORMULA": "A 2.27",
-        "DIRT_ROAD": "C 2.44",
-        "SPORTS": "A 2.42",
-        "ROAD": "R 2.50"
-      },
-      "iRatingPercentages": {
-        "DIRT_OVAL": 22.5,
-        "OVAL": 25.3,
-        "DIRT_ROAD": 26.4,
-        "ROAD": 35.77,
-        "FORMULA": 34.62,
-        "SPORTS": 35.92
-      },
-      "iRatings": {
-        "DIRT_ROAD": 1584,
-        "DIRT_OVAL": 1350,
-        "OVAL": 1518,
-        "ROAD": 2146,
-        "FORMULA": 2077,
-        "SPORTS": 2155
-      }
-    },
-    "iracing": {
-      "ratings": {
-        "formulaCar": {
-          "value": 2077,
-          "updated": "2026-10-04"
-        },
-        "dirtOval": {
-          "value": 1350,
-          "updated": "2026-10-04"
-        },
-        "sportsCar": {
-          "updated": "2026-10-04",
-          "value": 2203
-        },
-        "oval": {
-          "value": 1518,
-          "updated": "2026-10-04"
-        },
-        "road": {
-          "value": 2146,
-          "updated": "2026-10-04"
-        },
-        "dirtRoad": {
-          "value": 1584,
-          "updated": "2026-10-04"
-        }
-      },
-      "customerId": 492337,
-      "lastChecked": "2026-10-04T20:36:25.332Z"
-    },
-    "slug": "hector-hernandez",
-    "category": "GRiD UP Endurance",
-    "allowAccess": true,
-    "irating": 2155,
-    "name": "Hector Hernandez",
-    "lastUpdated": null,
-    "iracingId": "492337",
-    "active": true,
-    "_docId": "QOv6R4tUJZOCnPhY1ka8"
-  },
-  {
-    "active": true,
-    "name": "David Shreve",
-    "irating": 2044,
-    "iracingId": "1066917",
-    "category": "GRiD UP Endurance",
-    "slug": "david-shreve",
-    "lastUpdated": null,
-    "iracing": {
-      "customerId": 1066917,
-      "ratings": {
-        "sportsCar": {
-          "value": 2182,
-          "updated": "28 Oct 2026"
-        },
-        "formulaCar": {
-          "value": 1816,
-          "updated": "28 Oct 2026"
-        },
-        "oval": {
-          "value": 1337,
-          "updated": "28 Oct 2026"
-        },
-        "dirtRoad": {
-          "value": 1350,
-          "updated": "28 Oct 2026"
-        },
-        "dirtOval": {
-          "value": 1325,
-          "updated": "28 Oct 2026"
-        },
-        "road": {
-          "value": 1961,
-          "updated": "28 Oct 2026"
-        }
-      },
-      "lastChecked": "2026-10-28T13:58:20Z"
-    },
-    "stats": {
-      "iRatings": {
-        "OVAL": 1337,
-        "FORMULA": 1816,
-        "DIRT_OVAL": 1325,
-        "SPORTS": 2182,
-        "ROAD": 1961,
-        "DIRT_ROAD": 1350
-      },
-      "licenseLevels": {
-        "SPORTS": "A 1.54",
-        "OVAL": "D 2.70",
-        "FORMULA": "B 2.21",
-        "DIRT_ROAD": "R 2.50",
-        "ROAD": "C 2.84",
-        "DIRT_OVAL": "D 2.44"
-      },
-      "iRatingPercentages": {
-        "FORMULA": 30.27,
-        "DIRT_OVAL": 22.08,
-        "OVAL": 22.28,
-        "DIRT_ROAD": 22.5,
-        "SPORTS": 36.37,
-        "ROAD": 32.68
-      }
-    },
-    "allowAccess": true,
-    "role": "Endurance Team Driver",
-    "_docId": "QxSFsyG9REsNQBFTMWnK"
-  },
-  {
-    "category": "GRiD UP Endurance",
-    "irating": 2375,
-    "iracingId": "1343645",
-    "active": true,
-    "iracing": {
-      "customerId": 1343645,
-      "ratings": {
-        "sportsCar": {
-          "value": 2442,
-          "updated": "28 Oct 2026"
-        },
-        "formulaCar": {
-          "value": 1716,
-          "updated": "28 Oct 2026"
-        },
-        "oval": {
-          "value": 1309,
-          "updated": "28 Oct 2026"
-        },
-        "dirtRoad": {
-          "value": 1536,
-          "updated": "28 Oct 2026"
-        },
-        "dirtOval": {
-          "value": 1194,
-          "updated": "28 Oct 2026"
-        },
-        "road": {
-          "value": 0,
-          "updated": null
-        }
-      },
-      "lastChecked": "2026-10-28T13:58:20Z"
-    },
-    "name": "Jason Hayden",
-    "slug": "jason-hayden",
-    "allowAccess": true,
-    "stats": {
-      "licenseLevels": {
-        "ROAD": "R 2.50",
-        "DIRT_ROAD": "D 2.70",
-        "FORMULA": "C 2.52",
-        "SPORTS": "A 4.03",
-        "DIRT_OVAL": "C 2.51",
-        "OVAL": "D 2.67"
-      },
-      "iRatingPercentages": {
-        "ROAD": 22.5,
-        "FORMULA": 28.6,
-        "DIRT_ROAD": 25.6,
-        "SPORTS": 40.7,
-        "DIRT_OVAL": 19.9,
-        "OVAL": 21.82
-      },
-      "iRatings": {
-        "ROAD": 1350,
-        "SPORTS": 2442,
-        "DIRT_OVAL": 1194,
-        "DIRT_ROAD": 1536,
-        "FORMULA": 1716,
-        "OVAL": 1309
-      }
-    },
-    "role": "Endurance Team Driver",
-    "lastUpdated": null,
-    "_docId": "U4dfikkCHUUMhCboI4sE"
-  },
-  {
-    "iracing": {
-      "customerId": 786044,
-      "ratings": {
-        "sportsCar": {
-          "value": 4295,
-          "updated": "28 Oct 2026"
-        },
-        "formulaCar": {
-          "value": 3154,
-          "updated": "28 Oct 2026"
-        },
-        "oval": {
-          "value": 2092,
-          "updated": "28 Oct 2026"
-        },
-        "dirtRoad": {
-          "value": 1466,
-          "updated": "28 Oct 2026"
-        },
-        "dirtOval": {
-          "value": 0,
-          "updated": null
-        },
-        "road": {
-          "value": 2824,
-          "updated": "28 Oct 2026"
-        }
-      },
-      "lastChecked": "2026-10-28T13:58:20Z"
-    },
-    "iracingId": "786044",
-    "stats": {
-      "iRatingPercentages": {
-        "ROAD": 47.07,
-        "DIRT_ROAD": 24.43,
-        "DIRT_OVAL": 21.12,
-        "SPORTS": 71.58,
-        "FORMULA": 52.57,
-        "OVAL": 34.87
-      },
-      "iRatings": {
-        "FORMULA": 3154,
-        "DIRT_ROAD": 1466,
-        "OVAL": 2092,
-        "DIRT_OVAL": 1267,
-        "ROAD": 2824,
-        "SPORTS": 4295
-      },
-      "licenseLevels": {
-        "DIRT_ROAD": "D 2.69",
-        "OVAL": "A 2.47",
-        "DIRT_OVAL": "R 2.50",
-        "SPORTS": "A 2.47",
-        "FORMULA": "A 1.38",
-        "ROAD": "A 4.49"
-      }
-    },
-    "irating": 4289,
-    "lastUpdated": null,
-    "active": true,
-    "name": "Michael O'Dell",
-    "role": "Driver",
-    "category": "Driver",
-    "slug": "michael-odell",
-    "_docId": "VJaRuLK7iY0IsUt3Seqs"
-  },
-  {
-    "stats": {
-      "licenseLevels": {
-        "DIRT_OVAL": "B 2.36",
-        "DIRT_ROAD": "R 2.86",
-        "OVAL": "A 2.62",
-        "ROAD": "R 2.50",
-        "FORMULA": "R 2.65",
-        "SPORTS": "C 2.57"
-      },
-      "iRatings": {
-        "DIRT_OVAL": 1697,
-        "SPORTS": 1823,
-        "ROAD": 1350,
-        "DIRT_ROAD": 1508,
-        "OVAL": 2427,
-        "FORMULA": 1705
-      },
-      "iRatingPercentages": {
-        "SPORTS": 30.38,
-        "FORMULA": 28.42,
-        "OVAL": 40.45,
-        "ROAD": 22.5,
-        "DIRT_ROAD": 25.13,
-        "DIRT_OVAL": 28.28
-      }
-    },
-    "lastUpdated": null,
-    "active": true,
-    "irating": 1823,
-    "role": "Driver",
-    "name": "Johnathan Shampine",
-    "iracing": {
-      "customerId": 1220067,
-      "ratings": {
-        "sportsCar": {
-          "value": 1823,
-          "updated": "28 Oct 2026"
-        },
-        "formulaCar": {
-          "value": 0,
-          "updated": null
-        },
-        "oval": {
-          "value": 2427,
-          "updated": "28 Oct 2026"
-        },
-        "dirtRoad": {
-          "value": 0,
-          "updated": null
-        },
-        "dirtOval": {
-          "value": 1697,
-          "updated": "28 Oct 2026"
-        },
-        "road": {
-          "value": 0,
-          "updated": null
-        }
-      },
-      "lastChecked": "2026-10-28T13:58:20Z"
-    },
-    "iracingId": "1220067",
-    "slug": "johnathan-shampine",
-    "allowAccess": false,
-    "linkedDiscordName": "",
-    "linkedUid": "",
-    "category": "Driver",
-    "_docId": "VlXkcvdxTgxi4GPAiJ5d"
-  },
-  {
-    "linkedUid": "nbGwIeQ5HCT2tY5nYQXnZhnnLQi2",
-    "stats": {
-      "iRatings": {
-        "FORMULA": 2130,
-        "ROAD": 1439,
-        "DIRT_ROAD": 1350,
-        "SPORTS": 1769,
-        "OVAL": 1107,
-        "DIRT_OVAL": 1350
-      },
-      "iRatingPercentages": {
-        "ROAD": 23.98,
-        "FORMULA": 35.5,
-        "DIRT_ROAD": 22.5,
-        "OVAL": 18.45,
-        "DIRT_OVAL": 22.5,
-        "SPORTS": 29.48
-      },
-      "licenseLevels": {
-        "DIRT_ROAD": "R 2.50",
-        "SPORTS": "A 4.01",
-        "ROAD": "C 2.46",
-        "DIRT_OVAL": "R 2.50",
-        "FORMULA": "B 3.24",
-        "OVAL": "C 2.10"
-      }
-    },
-    "allowAccess": true,
-    "linkedDiscordName": "Discord User",
-    "slug": "marko-skrnjug",
-    "iracing": {
-      "customerId": 928424,
-      "ratings": {
-        "sportsCar": {
-          "value": 1769,
-          "updated": "28 Oct 2026"
-        },
-        "formulaCar": {
-          "value": 2130,
-          "updated": "28 Oct 2026"
-        },
-        "oval": {
-          "value": 1107,
-          "updated": "28 Oct 2026"
-        },
-        "dirtRoad": {
-          "value": 0,
-          "updated": null
-        },
-        "dirtOval": {
-          "value": 0,
-          "updated": null
-        },
-        "road": {
-          "value": 1439,
-          "updated": "28 Oct 2026"
-        }
-      },
-      "lastChecked": "2026-10-28T13:58:20Z"
-    },
-    "irating": 1733,
-    "active": true,
-    "lastUpdated": null,
-    "iracingId": "928424",
-    "name": "Marko Skrnjug",
-    "role": "Endurance Team Driver",
-    "category": "GRiD UP Endurance",
-    "_docId": "WgKoRUjAc0JEvHVd5RR0"
-  },
-  {
-    "lastUpdated": null,
-    "iracingId": "1014097",
-    "slug": "levi-wolfe",
-    "active": true,
-    "linkedDiscordName": "Discord User",
-    "linkedUid": "zSmPrMASaXMf8JGszyFwuIu1OIK2",
-    "allowAccess": true,
-    "name": "Levi Wolfe",
-    "iracing": {
-      "customerId": 1014097,
-      "ratings": {
-        "sportsCar": {
-          "value": 2090,
-          "updated": "28 Oct 2026"
-        },
-        "formulaCar": {
-          "value": 1383,
-          "updated": "28 Oct 2026"
-        },
-        "oval": {
-          "value": 3043,
-          "updated": "28 Oct 2026"
-        },
-        "dirtRoad": {
-          "value": 1194,
-          "updated": "28 Oct 2026"
-        },
-        "dirtOval": {
-          "value": 1436,
-          "updated": "28 Oct 2026"
-        },
-        "road": {
-          "value": 1173,
-          "updated": "28 Oct 2026"
-        }
-      },
-      "lastChecked": "2026-10-28T13:58:20Z"
-    },
-    "category": "GRiD UP Endurance",
-    "irating": 2069,
-    "stats": {
-      "iRatings": {
-        "ROAD": 1173,
-        "DIRT_OVAL": 1436,
-        "OVAL": 3043,
-        "SPORTS": 2090,
-        "DIRT_ROAD": 1194,
-        "FORMULA": 1383
-      },
-      "licenseLevels": {
-        "ROAD": "B 3.57",
-        "FORMULA": "C 2.41",
-        "DIRT_ROAD": "D 3.56",
-        "OVAL": "A 3.85",
-        "SPORTS": "A 4.99",
-        "DIRT_OVAL": "D 2.82"
-      },
-      "iRatingPercentages": {
-        "OVAL": 50.72,
-        "DIRT_OVAL": 23.93,
-        "FORMULA": 23.05,
-        "SPORTS": 34.83,
-        "DIRT_ROAD": 19.9,
-        "ROAD": 19.55
-      }
-    },
-    "role": "Endurance Team Driver",
-    "_docId": "XBx3IzniHVvSTaa8JoS6"
-  },
-  {
-    "linkedUid": "",
-    "lastUpdated": null,
-    "name": "Mark Prince",
-    "role": "Driver",
-    "category": "Driver",
-    "stats": {
-      "iRatingPercentages": {
-        "DIRT_OVAL": 20.43,
-        "OVAL": 23.53,
-        "DIRT_ROAD": 21.52,
-        "FORMULA": 22.95,
-        "SPORTS": 29.93,
-        "ROAD": 25.28
-      },
-      "licenseLevels": {
-        "FORMULA": "A 3.14",
-        "ROAD": "A 4.59",
-        "DIRT_OVAL": "C 2.72",
-        "OVAL": "A 4.73",
-        "DIRT_ROAD": "R 2.79",
-        "SPORTS": "A 4.30"
-      },
-      "iRatings": {
-        "DIRT_OVAL": 1226,
-        "FORMULA": 1377,
-        "ROAD": 1517,
-        "DIRT_ROAD": 1291,
-        "OVAL": 1412,
-        "SPORTS": 1796
-      }
-    },
-    "linkedDiscordName": "",
-    "iracing": {
-      "customerId": 217557,
-      "ratings": {
-        "sportsCar": {
-          "value": 1796,
-          "updated": "28 Oct 2026"
-        },
-        "formulaCar": {
-          "value": 1377,
-          "updated": "28 Oct 2026"
-        },
-        "oval": {
-          "value": 1412,
-          "updated": "28 Oct 2026"
-        },
-        "dirtRoad": {
-          "value": 0,
-          "updated": null
-        },
-        "dirtOval": {
-          "value": 1226,
-          "updated": "28 Oct 2026"
-        },
-        "road": {
-          "value": 1517,
-          "updated": "28 Oct 2026"
-        }
-      },
-      "lastChecked": "2026-10-28T13:58:20Z"
-    },
-    "iracingId": "217557",
-    "irating": 1796,
-    "allowAccess": false,
-    "active": true,
-    "slug": "mark-prince",
-    "_docId": "Yf8bjPRGnHwNp3XIfQxo"
+    "name": "Christian Rivera",
+    "url": "https://garage61.net/app/drivers/christian-rivera-4",
+    "role": "Driver"
   },
   {
     "role": "Endurance Team Driver",
@@ -2140,142 +417,198 @@
     "_docId": "YsUwhVoR1QecdalnX0ud"
   },
   {
-    "stats": {
-      "iRatingPercentages": {
-        "SPORTS": 22.28,
-        "DIRT_ROAD": 22.13,
-        "FORMULA": 18.57,
-        "OVAL": 22.5,
-        "DIRT_OVAL": 22.5,
-        "ROAD": 22.5
-      },
-      "licenseLevels": {
-        "DIRT_OVAL": "R 2.50",
-        "ROAD": "R 2.50",
-        "DIRT_ROAD": "R 2.37",
-        "OVAL": "R 2.50",
-        "FORMULA": "C 1.59",
-        "SPORTS": "B 3.50"
-      },
-      "iRatings": {
-        "ROAD": 1350,
-        "SPORTS": 1337,
-        "DIRT_ROAD": 1328,
-        "DIRT_OVAL": 1350,
-        "FORMULA": 1114,
-        "OVAL": 1350
-      }
-    },
-    "lastUpdated": null,
-    "linkedDiscordName": "",
-    "slug": "daniel-tamminga",
-    "category": "GRiD UP Endurance",
-    "iracing": {
-      "customerId": 1211984,
-      "ratings": {
-        "sportsCar": {
-          "value": 1337,
-          "updated": "28 Oct 2026"
-        },
-        "formulaCar": {
-          "value": 1114,
-          "updated": "28 Oct 2026"
-        },
-        "oval": {
-          "value": 1350,
-          "updated": "28 Oct 2026"
-        },
-        "dirtRoad": {
-          "value": 0,
-          "updated": null
-        },
-        "dirtOval": {
-          "value": 1350,
-          "updated": "28 Oct 2026"
-        },
-        "road": {
-          "value": 0,
-          "updated": null
-        }
-      },
-      "lastChecked": "2026-10-28T13:58:20Z"
-    },
-    "active": true,
-    "iracingId": "1211984",
-    "irating": 1008,
-    "linkedUid": "",
-    "name": "Daniel Tamminga",
-    "allowAccess": true,
-    "role": "Endurance Team Driver",
-    "_docId": "Z0sYri2u1PHNvxCxehr2"
+    "name": "Connor Hatfield",
+    "url": "https://garage61.net/app/drivers/connor-hatfield",
+    "role": "Driver"
   },
   {
-    "irating": 2114,
-    "category": "GRiD UP Endurance",
-    "name": "Aten-Wa Theba",
-    "role": "Endurance Team Driver",
+    "name": "Daniel Tamminga",
+    "url": "https://garage61.net/app/drivers/daniel-tamminga",
+    "role": "Endurance Team Driver"
+  },
+  {
+    "name": "David Greenberg",
+    "url": "https://garage61.net/app/drivers/david-greenberg",
+    "role": "Driver"
+  },
+  {
+    "name": "David Shreve",
+    "url": "https://garage61.net/app/drivers/david-shreve",
+    "role": "Endurance Team Driver"
+  },
+  {
+    "name": "Eric Gentry",
+    "url": "https://garage61.net/app/drivers/eric-gentry",
+    "role": "Endurance Team Driver"
+  },
+  {
+    "name": "Ethan Turner",
+    "url": "https://garage61.net/app/drivers/ethan-turner",
+    "role": "Driver"
+  },
+  {
+    "addedFromApplication": "cpgpSC0eeWqOBDAPbDoq",
+    "stats": {
+      "iRatingPercentages": {
+        "SPORTS": 60.32,
+        "ROAD": 24.5,
+        "DIRT_OVAL": 22.5,
+        "DIRT_ROAD": 22.5,
+        "FORMULA": 37.0,
+        "OVAL": 21.18
+      },
+      "iRatings": {
+        "DIRT_ROAD": 1350,
+        "OVAL": 1271,
+        "FORMULA": 2220,
+        "DIRT_OVAL": 1350,
+        "SPORTS": 3619,
+        "ROAD": 1470
+      },
+      "licenseLevels": {
+        "OVAL": "R 2.43",
+        "FORMULA": "D 2.42",
+        "DIRT_ROAD": "R 2.50",
+        "ROAD": "D 2.62",
+        "SPORTS": "A 3.70",
+        "DIRT_OVAL": "R 2.50"
+      }
+    },
+    "linkedDiscordName": "",
+    "linkedUid": "",
+    "category": "Driver",
+    "lastUpdated": null,
+    "slug": "ethan-turner2",
+    "role": "Driver",
+    "active": true,
     "iracing": {
-      "customerId": 934614,
+      "customerId": 1071220,
       "ratings": {
         "sportsCar": {
-          "value": 2114,
+          "value": 3619,
           "updated": "28 Oct 2026"
         },
         "formulaCar": {
-          "value": 2807,
+          "value": 2220,
           "updated": "28 Oct 2026"
         },
         "oval": {
-          "value": 1655,
-          "updated": "28 Oct 2026"
-        },
-        "dirtRoad": {
           "value": 0,
           "updated": null
         },
+        "dirtRoad": {
+          "value": 1350,
+          "updated": "28 Oct 2026"
+        },
         "dirtOval": {
-          "value": 1367,
+          "value": 1350,
           "updated": "28 Oct 2026"
         },
         "road": {
-          "value": 1538,
+          "value": 1470,
           "updated": "28 Oct 2026"
         }
       },
       "lastChecked": "2026-10-28T13:58:20Z"
     },
-    "active": true,
-    "slug": "aten-wa-theba",
+    "iracingId": "1071220",
+    "allowAccess": false,
+    "irating": 3473,
+    "name": "Ethan Turner2",
+    "_docId": "36Zrn38Y8TDSEJ3Kuev8"
+  },
+  {
+    "name": "Faraz Ebrahim",
+    "url": "https://garage61.net/app/drivers/faraz-ebrahim",
+    "role": "Endurance Team Driver"
+  },
+  {
+    "name": "Gabe Wilmoth",
+    "url": "https://garage61.net/app/drivers/gabe-wilmoth",
+    "role": "Endurance Team Driver"
+  },
+  {
+    "name": "Harrison Holliday",
+    "url": "https://garage61.net/app/drivers/harrison-holliday",
+    "role": "Driver"
+  },
+  {
+    "role": "Endurance Team Driver",
     "stats": {
+      "licenseLevels": {
+        "OVAL": "C 2.66",
+        "DIRT_OVAL": "R 2.50",
+        "FORMULA": "A 2.27",
+        "DIRT_ROAD": "C 2.44",
+        "SPORTS": "A 2.42",
+        "ROAD": "R 2.50"
+      },
       "iRatingPercentages": {
-        "SPORTS": 35.23,
-        "OVAL": 27.58,
-        "ROAD": 25.63,
-        "DIRT_OVAL": 22.78,
-        "FORMULA": 46.78,
-        "DIRT_ROAD": 23.32
+        "DIRT_OVAL": 22.5,
+        "OVAL": 25.3,
+        "DIRT_ROAD": 26.4,
+        "ROAD": 35.77,
+        "FORMULA": 34.62,
+        "SPORTS": 35.92
       },
       "iRatings": {
-        "SPORTS": 2114,
-        "DIRT_OVAL": 1367,
-        "FORMULA": 2807,
-        "DIRT_ROAD": 1399,
-        "OVAL": 1655,
-        "ROAD": 1538
-      },
-      "licenseLevels": {
-        "SPORTS": "B 2.28",
-        "OVAL": "A 2.38",
-        "FORMULA": "C 2.35",
-        "DIRT_OVAL": "D 2.60",
-        "ROAD": "A 2.46",
-        "DIRT_ROAD": "R 2.60"
+        "DIRT_ROAD": 1584,
+        "DIRT_OVAL": 1350,
+        "OVAL": 1518,
+        "ROAD": 2146,
+        "FORMULA": 2077,
+        "SPORTS": 2155
       }
     },
+    "iracing": {
+      "ratings": {
+        "formulaCar": {
+          "value": 2077,
+          "updated": "2026-10-04"
+        },
+        "dirtOval": {
+          "value": 1350,
+          "updated": "2026-10-04"
+        },
+        "sportsCar": {
+          "updated": "2026-10-04",
+          "value": 2203
+        },
+        "oval": {
+          "value": 1518,
+          "updated": "2026-10-04"
+        },
+        "road": {
+          "value": 2146,
+          "updated": "2026-10-04"
+        },
+        "dirtRoad": {
+          "value": 1584,
+          "updated": "2026-10-04"
+        }
+      },
+      "customerId": 492337,
+      "lastChecked": "2026-10-04T20:36:25.332Z"
+    },
+    "slug": "hector-hernandez",
+    "category": "GRiD UP Endurance",
     "allowAccess": true,
+    "irating": 2155,
+    "name": "Hector Hernandez",
     "lastUpdated": null,
-    "iracingId": "934614",
-    "_docId": "cMyIFVvDj3I3TO8MfsGS"
+    "iracingId": "492337",
+    "active": true,
+    "_docId": "QOv6R4tUJZOCnPhY1ka8"
+  },
+  {
+    "name": "Isaac Shore",
+    "url": "https://garage61.net/app/drivers/isaac-shore",
+    "role": "Driver"
+  },
+  {
+    "name": "Jacob Reid",
+    "url": "https://garage61.net/app/drivers/jacob-reid-3",
+    "role": "Driver"
   },
   {
     "lastUpdated": null,
@@ -2346,489 +679,99 @@
     "_docId": "d5iorn7pnKaIJNwlnbKT"
   },
   {
-    "lastUpdated": null,
-    "category": "Driver",
-    "iracingId": "852581",
-    "stats": {
-      "licenseLevels": {
-        "FORMULA": "A 3.39",
-        "ROAD": "A 4.82",
-        "DIRT_ROAD": "B 2.63",
-        "DIRT_OVAL": "B 3.70",
-        "SPORTS": "A 4.35",
-        "OVAL": "A 2.65"
-      },
-      "iRatingPercentages": {
-        "DIRT_OVAL": 29.75,
-        "ROAD": 34.8,
-        "DIRT_ROAD": 40.62,
-        "FORMULA": 34.3,
-        "SPORTS": 48.73,
-        "OVAL": 67.82
-      },
-      "iRatings": {
-        "SPORTS": 2924,
-        "OVAL": 4069,
-        "FORMULA": 2058,
-        "ROAD": 2088,
-        "DIRT_OVAL": 1785,
-        "DIRT_ROAD": 2437
-      }
-    },
-    "name": "Zack Saunders",
-    "active": true,
-    "iracing": {
-      "customerId": 852581,
-      "ratings": {
-        "sportsCar": {
-          "value": 2924,
-          "updated": "28 Oct 2026"
-        },
-        "formulaCar": {
-          "value": 2058,
-          "updated": "28 Oct 2026"
-        },
-        "oval": {
-          "value": 4069,
-          "updated": "28 Oct 2026"
-        },
-        "dirtRoad": {
-          "value": 2437,
-          "updated": "28 Oct 2026"
-        },
-        "dirtOval": {
-          "value": 1785,
-          "updated": "28 Oct 2026"
-        },
-        "road": {
-          "value": 2088,
-          "updated": "28 Oct 2026"
-        }
-      },
-      "lastChecked": "2026-10-28T13:58:20Z"
-    },
-    "slug": "zack-saunders",
-    "role": "Driver",
-    "irating": 2765,
-    "_docId": "gfuP0ibuGHv56dDGyn3W"
+    "name": "Jacob Roberts",
+    "url": "https://garage61.net/app/drivers/jacob-roberts",
+    "role": "Driver"
   },
   {
-    "lastUpdated": null,
-    "iracingId": "519801",
-    "slug": "keith-todd",
-    "allowAccess": true,
-    "stats": {
-      "licenseLevels": {
-        "SPORTS": "A 3.83",
-        "OVAL": "B 1.84",
-        "FORMULA": "C 4.99",
-        "DIRT_OVAL": "A 2.50",
-        "ROAD": "C 4.99",
-        "DIRT_ROAD": "R 2.81"
-      },
-      "iRatings": {
-        "SPORTS": 956,
-        "OVAL": 2453,
-        "DIRT_ROAD": 1022,
-        "ROAD": 945,
-        "DIRT_OVAL": 2096,
-        "FORMULA": 1043
-      },
-      "iRatingPercentages": {
-        "SPORTS": 15.93,
-        "OVAL": 40.88,
-        "FORMULA": 17.38,
-        "ROAD": 15.75,
-        "DIRT_OVAL": 34.93,
-        "DIRT_ROAD": 17.03
-      }
-    },
-    "linkedDiscordName": "",
-    "category": "GRiD UP Endurance",
-    "active": true,
-    "role": "Endurance Team Driver",
-    "iracing": {
-      "customerId": 519801,
-      "ratings": {
-        "sportsCar": {
-          "value": 956,
-          "updated": "28 Oct 2026"
-        },
-        "formulaCar": {
-          "value": 1043,
-          "updated": "28 Oct 2026"
-        },
-        "oval": {
-          "value": 2453,
-          "updated": "28 Oct 2026"
-        },
-        "dirtRoad": {
-          "value": 0,
-          "updated": null
-        },
-        "dirtOval": {
-          "value": 2096,
-          "updated": "28 Oct 2026"
-        },
-        "road": {
-          "value": 945,
-          "updated": "28 Oct 2026"
-        }
-      },
-      "lastChecked": "2026-10-28T13:58:20Z"
-    },
-    "name": "Keith Todd",
-    "linkedUid": "",
-    "irating": 956,
-    "_docId": "h4lbpWh1HJwuEczoJbEj"
+    "name": "Jason Hayden",
+    "url": "https://garage61.net/app/drivers/jason-hayden",
+    "role": "Endurance Team Driver"
   },
   {
     "stats": {
       "licenseLevels": {
-        "OVAL": "A 3.79",
-        "SPORTS": "A 4.59",
-        "FORMULA": "A 3.57",
-        "DIRT_OVAL": "R 2.50",
         "ROAD": "R 2.50",
-        "DIRT_ROAD": "R 2.50"
-      },
-      "iRatings": {
-        "SPORTS": 1406,
-        "FORMULA": 1350,
-        "ROAD": 1350,
-        "DIRT_ROAD": 1350,
-        "OVAL": 1331,
-        "DIRT_OVAL": 1350
-      },
-      "iRatingPercentages": {
-        "OVAL": 22.18,
-        "FORMULA": 22.5,
-        "DIRT_OVAL": 22.5,
-        "SPORTS": 23.43,
-        "ROAD": 22.5,
-        "DIRT_ROAD": 22.5
-      }
-    },
-    "slug": "faraz-ebrahim",
-    "category": "GRiD UP Endurance",
-    "active": true,
-    "lastUpdated": null,
-    "iracingId": "1241020",
-    "role": "Endurance Team Driver",
-    "linkedUid": "oVvsh40HLia17M8kYawbEUFMNkD3",
-    "iracing": {
-      "customerId": 1241020,
-      "ratings": {
-        "sportsCar": {
-          "value": 1406,
-          "updated": "28 Oct 2026"
-        },
-        "formulaCar": {
-          "value": 1350,
-          "updated": "28 Oct 2026"
-        },
-        "oval": {
-          "value": 1331,
-          "updated": "28 Oct 2026"
-        },
-        "dirtRoad": {
-          "value": 1350,
-          "updated": "28 Oct 2026"
-        },
-        "dirtOval": {
-          "value": 1350,
-          "updated": "28 Oct 2026"
-        },
-        "road": {
-          "value": 0,
-          "updated": null
-        }
-      },
-      "lastChecked": "2026-10-28T13:58:20Z"
-    },
-    "irating": 1415,
-    "linkedDiscordName": "Discord User",
-    "name": "Faraz Ebrahim",
-    "allowAccess": true,
-    "_docId": "kj0Hjt5WYCLsSytAVs71"
-  },
-  {
-    "role": "Endurance Team Driver",
-    "linkedUid": "",
-    "name": "Landen Hendershot",
-    "iracing": {
-      "customerId": 711618,
-      "ratings": {
-        "sportsCar": {
-          "value": 1093,
-          "updated": "28 Oct 2026"
-        },
-        "formulaCar": {
-          "value": 1008,
-          "updated": "28 Oct 2026"
-        },
-        "oval": {
-          "value": 2838,
-          "updated": "28 Oct 2026"
-        },
-        "dirtRoad": {
-          "value": 1376,
-          "updated": "28 Oct 2026"
-        },
-        "dirtOval": {
-          "value": 1311,
-          "updated": "28 Oct 2026"
-        },
-        "road": {
-          "value": 1035,
-          "updated": "28 Oct 2026"
-        }
-      },
-      "lastChecked": "2026-10-28T13:58:20Z"
-    },
-    "stats": {
-      "licenseLevels": {
-        "DIRT_OVAL": "A 2.68",
-        "SPORTS": "A 4.00",
-        "ROAD": "A 4.99",
-        "DIRT_ROAD": "B 2.47",
-        "FORMULA": "A 4.67",
-        "OVAL": "A 1.51"
-      },
-      "iRatingPercentages": {
-        "ROAD": 17.25,
-        "DIRT_OVAL": 21.85,
-        "OVAL": 47.3,
-        "FORMULA": 16.8,
-        "SPORTS": 18.22,
-        "DIRT_ROAD": 22.93
-      },
-      "iRatings": {
-        "ROAD": 1035,
-        "DIRT_OVAL": 1311,
-        "SPORTS": 1093,
-        "DIRT_ROAD": 1376,
-        "FORMULA": 1008,
-        "OVAL": 2838
-      }
-    },
-    "allowAccess": true,
-    "irating": 1140,
-    "linkedDiscordName": "",
-    "slug": "landen-hendershot",
-    "category": "GRiD UP Endurance",
-    "lastUpdated": null,
-    "iracingId": "711618",
-    "active": true,
-    "_docId": "lsPaObeCHsYH7ypXufUr"
-  },
-  {
-    "iracing": {
-      "customerId": 320832,
-      "ratings": {
-        "sportsCar": {
-          "value": 2152,
-          "updated": "28 Oct 2026"
-        },
-        "formulaCar": {
-          "value": 2744,
-          "updated": "28 Oct 2026"
-        },
-        "oval": {
-          "value": 1725,
-          "updated": "28 Oct 2026"
-        },
-        "dirtRoad": {
-          "value": 1638,
-          "updated": "28 Oct 2026"
-        },
-        "dirtOval": {
-          "value": 1525,
-          "updated": "28 Oct 2026"
-        },
-        "road": {
-          "value": 1738,
-          "updated": "28 Oct 2026"
-        }
-      },
-      "lastChecked": "2026-10-28T13:58:20Z"
-    },
-    "irating": 2153,
-    "lastUpdated": null,
-    "addedFromApplication": "vIqLfkSkyjkpBNdBK3uc",
-    "role": "Endurance Team Driver",
-    "slug": "bret-weyand",
-    "allowAccess": true,
-    "active": true,
-    "iracingId": "320832",
-    "stats": {
-      "licenseLevels": {
-        "DIRT_OVAL": "B 3.19",
-        "DIRT_ROAD": "C 2.38",
-        "SPORTS": "A 3.52",
-        "OVAL": "A 2.32",
-        "ROAD": "B 2.48",
-        "FORMULA": "B 2.60"
-      },
-      "iRatingPercentages": {
-        "SPORTS": 35.87,
-        "OVAL": 28.75,
-        "FORMULA": 45.73,
-        "ROAD": 28.97,
-        "DIRT_OVAL": 25.42,
-        "DIRT_ROAD": 27.3
-      },
-      "iRatings": {
-        "DIRT_ROAD": 1638,
-        "ROAD": 1738,
-        "DIRT_OVAL": 1525,
-        "SPORTS": 2152,
-        "OVAL": 1725,
-        "FORMULA": 2744
-      }
-    },
-    "category": "GRiD UP Endurance",
-    "name": "Bret Weyand",
-    "_docId": "mzmMTFwdyNBFgAF0PS8O"
-  },
-  {
-    "role": "Broadcast",
-    "stats": {
-      "iRatingPercentages": {
-        "OVAL": 20.33,
-        "DIRT_ROAD": 22.5,
-        "DIRT_OVAL": 22.5,
-        "FORMULA": 15.22,
-        "SPORTS": 13.5,
-        "ROAD": 14.7
-      },
-      "licenseLevels": {
-        "OVAL": "R 2.59",
-        "DIRT_OVAL": "R 2.50",
         "DIRT_ROAD": "R 2.50",
-        "SPORTS": "B 2.64",
-        "ROAD": "A 3.25",
-        "FORMULA": "A 3.42"
+        "DIRT_OVAL": "R 2.50",
+        "FORMULA": "D 2.34",
+        "OVAL": "R 2.39",
+        "SPORTS": "B 2.11"
       },
-      "iRatings": {
-        "SPORTS": 810,
-        "DIRT_ROAD": 1350,
-        "FORMULA": 913,
-        "DIRT_OVAL": 1350,
-        "OVAL": 1220,
-        "ROAD": 882
-      }
-    },
-    "lastUpdated": null,
-    "irating": 857,
-    "active": true,
-    "slug": "justin-sadowski",
-    "allowAccess": true,
-    "iracing": {
-      "customerId": 394991,
-      "ratings": {
-        "sportsCar": {
-          "value": 810,
-          "updated": "28 Oct 2026"
-        },
-        "formulaCar": {
-          "value": 913,
-          "updated": "28 Oct 2026"
-        },
-        "oval": {
-          "value": 0,
-          "updated": null
-        },
-        "dirtRoad": {
-          "value": 1350,
-          "updated": "28 Oct 2026"
-        },
-        "dirtOval": {
-          "value": 1350,
-          "updated": "28 Oct 2026"
-        },
-        "road": {
-          "value": 882,
-          "updated": "28 Oct 2026"
-        }
-      },
-      "lastChecked": "2026-10-28T13:58:20Z"
-    },
-    "category": "Custom",
-    "name": "Justin Sadowski",
-    "iracingId": "394991",
-    "_docId": "n6V7ibPA8oz7vdqh6jlQ"
-  },
-  {
-    "iracing": {
-      "customerId": 391970,
-      "ratings": {
-        "formulaCar": {
-          "value": 1963,
-          "updated": "2026-10-04"
-        },
-        "sportsCar": {
-          "value": 2639,
-          "updated": "2026-10-04"
-        },
-        "oval": {
-          "updated": "2026-10-04",
-          "value": 2022
-        },
-        "road": {
-          "updated": "2026-10-04",
-          "value": 1350
-        },
-        "dirtRoad": {
-          "updated": "2026-10-04",
-          "value": 1350
-        },
-        "dirtOval": {
-          "updated": "2026-10-04",
-          "value": 1350
-        }
-      },
-      "lastChecked": "2026-10-04T20:36:25.332Z"
-    },
-    "linkedDiscordName": "Discord User",
-    "linkedUid": "U1GgyWhKfChavfcGdI60UadbNEv2",
-    "irating": 2738,
-    "allowAccess": false,
-    "slug": "logan-manus",
-    "stats": {
       "iRatingPercentages": {
-        "SPORTS": 45.63,
+        "SPORTS": 30.8,
+        "OVAL": 21.3,
         "DIRT_ROAD": 22.5,
-        "OVAL": 33.7,
+        "FORMULA": 26.82,
         "DIRT_OVAL": 22.5,
-        "FORMULA": 32.72,
         "ROAD": 22.5
       },
-      "licenseLevels": {
-        "SPORTS": "A 3.24",
-        "ROAD": "R 2.50",
-        "FORMULA": "C 2.57",
-        "OVAL": "A 3.49",
-        "DIRT_ROAD": "R 2.50",
-        "DIRT_OVAL": "R 2.50"
-      },
       "iRatings": {
-        "SPORTS": 2738,
+        "SPORTS": 1848,
+        "OVAL": 1278,
         "DIRT_ROAD": 1350,
-        "OVAL": 2022,
-        "DIRT_OVAL": 1350,
-        "FORMULA": 1963,
-        "ROAD": 1350
+        "ROAD": 1350,
+        "FORMULA": 1609,
+        "DIRT_OVAL": 1350
       }
     },
-    "addedFromApplication": "g5YrAYsQtcR8869bu4Ca",
+    "slug": "Jens-Van-Der-Wilt",
+    "linkedDiscordName": "",
     "lastUpdated": null,
-    "category": "Driver",
-    "iracingId": "391970",
-    "name": "Logan Manus",
-    "role": "Driver",
+    "iracingId": "1183570",
+    "name": "Jens Van Der Wilt",
+    "irating": 1848,
+    "linkedUid": "",
     "active": true,
-    "_docId": "oMHXbpImeVs5SuzYrCuA"
+    "iracing": {
+      "customerId": 1183570,
+      "lastChecked": "2026-10-04T20:36:25.332Z",
+      "ratings": {
+        "sportsCar": {
+          "updated": "2026-10-04",
+          "value": 1848
+        },
+        "dirtOval": {
+          "updated": "2026-10-04",
+          "value": 1350
+        },
+        "dirtRoad": {
+          "value": 1350,
+          "updated": "2026-10-04"
+        },
+        "oval": {
+          "updated": "2026-10-04",
+          "value": 1278
+        },
+        "road": {
+          "updated": "2026-10-04",
+          "value": 1350
+        },
+        "formulaCar": {
+          "value": 1609,
+          "updated": "2026-10-04"
+        }
+      }
+    },
+    "role": "Driver",
+    "category": "Driver",
+    "allowAccess": false,
+    "_docId": "uR2iHpER1AE3Owshf7IM"
+  },
+  {
+    "name": "Johnathan Shampine",
+    "url": "https://garage61.net/app/drivers/johnathan-shampine",
+    "role": "Driver"
+  },
+  {
+    "name": "Justin Sadowski",
+    "url": "https://garage61.net/app/drivers/justin-sadowski",
+    "role": "Broadcast"
+  },
+  {
+    "name": "Keith Todd",
+    "url": "https://garage61.net/app/drivers/keith-todd",
+    "role": "Endurance Team Driver"
   },
   {
     "slug": "kevin-miller",
@@ -2902,210 +845,380 @@
     "_docId": "p3WLAAMwK3GWtwW3x5YM"
   },
   {
-    "active": true,
-    "irating": 1545,
-    "iracingId": "1475555",
-    "stats": {
-      "iRatingPercentages": {
-        "SPORTS": 24.97,
-        "FORMULA": 22.5,
-        "ROAD": 22.5,
-        "OVAL": 23.33,
-        "DIRT_ROAD": 20.23,
-        "DIRT_OVAL": 22.22
-      },
-      "iRatings": {
-        "OVAL": 1400,
-        "DIRT_ROAD": 1214,
-        "FORMULA": 1350,
-        "DIRT_OVAL": 1333,
-        "SPORTS": 1498,
-        "ROAD": 1350
-      },
-      "licenseLevels": {
-        "OVAL": "R 2.35",
-        "SPORTS": "A 4.65",
-        "FORMULA": "R 2.50",
-        "DIRT_ROAD": "R 2.33",
-        "ROAD": "R 2.50",
-        "DIRT_OVAL": "R 2.67"
-      }
-    },
-    "addedFromApplication": "GSNvUffYLHWkRidHZmsZ",
-    "category": "GRiD UP Endurance",
-    "iracing": {
-      "customerId": 1475555,
-      "ratings": {
-        "sportsCar": {
-          "value": 1498,
-          "updated": "28 Oct 2026"
-        },
-        "formulaCar": {
-          "value": 1350,
-          "updated": "28 Oct 2026"
-        },
-        "oval": {
-          "value": 0,
-          "updated": null
-        },
-        "dirtRoad": {
-          "value": 0,
-          "updated": null
-        },
-        "dirtOval": {
-          "value": 0,
-          "updated": null
-        },
-        "road": {
-          "value": 0,
-          "updated": null
-        }
-      },
-      "lastChecked": "2026-10-28T13:58:20Z"
-    },
-    "slug": "aron-lotthammer",
-    "allowAccess": true,
-    "lastUpdated": null,
-    "role": "Endurance Team Driver",
-    "name": "Aron Lotthammer",
-    "_docId": "s7g9N0traQfzratEcoCY"
+    "name": "Landen Hendershot",
+    "url": "https://garage61.net/app/drivers/landen-hendershot",
+    "role": "Endurance Team Driver"
   },
   {
-    "stats": {
-      "licenseLevels": {
-        "ROAD": "R 2.50",
-        "DIRT_ROAD": "R 2.50",
-        "DIRT_OVAL": "R 2.50",
-        "FORMULA": "D 2.34",
-        "OVAL": "R 2.39",
-        "SPORTS": "B 2.11"
+    "name": "Levi Wolfe",
+    "url": "https://garage61.net/app/drivers/levi-wolfe",
+    "role": "Endurance Team Driver"
+  },
+  {
+    "iracing": {
+      "customerId": 391970,
+      "ratings": {
+        "formulaCar": {
+          "value": 1963,
+          "updated": "2026-10-04"
+        },
+        "sportsCar": {
+          "value": 2639,
+          "updated": "2026-10-04"
+        },
+        "oval": {
+          "updated": "2026-10-04",
+          "value": 2022
+        },
+        "road": {
+          "updated": "2026-10-04",
+          "value": 1350
+        },
+        "dirtRoad": {
+          "updated": "2026-10-04",
+          "value": 1350
+        },
+        "dirtOval": {
+          "updated": "2026-10-04",
+          "value": 1350
+        }
       },
+      "lastChecked": "2026-10-04T20:36:25.332Z"
+    },
+    "linkedDiscordName": "Discord User",
+    "linkedUid": "U1GgyWhKfChavfcGdI60UadbNEv2",
+    "irating": 2738,
+    "allowAccess": false,
+    "slug": "logan-manus",
+    "stats": {
       "iRatingPercentages": {
-        "SPORTS": 30.8,
-        "OVAL": 21.3,
+        "SPORTS": 45.63,
         "DIRT_ROAD": 22.5,
-        "FORMULA": 26.82,
+        "OVAL": 33.7,
         "DIRT_OVAL": 22.5,
+        "FORMULA": 32.72,
         "ROAD": 22.5
       },
+      "licenseLevels": {
+        "SPORTS": "A 3.24",
+        "ROAD": "R 2.50",
+        "FORMULA": "C 2.57",
+        "OVAL": "A 3.49",
+        "DIRT_ROAD": "R 2.50",
+        "DIRT_OVAL": "R 2.50"
+      },
       "iRatings": {
-        "SPORTS": 1848,
-        "OVAL": 1278,
+        "SPORTS": 2738,
         "DIRT_ROAD": 1350,
-        "ROAD": 1350,
-        "FORMULA": 1609,
-        "DIRT_OVAL": 1350
+        "OVAL": 2022,
+        "DIRT_OVAL": 1350,
+        "FORMULA": 1963,
+        "ROAD": 1350
       }
     },
-    "slug": "Jens-Van-Der-Wilt",
-    "linkedDiscordName": "",
+    "addedFromApplication": "g5YrAYsQtcR8869bu4Ca",
     "lastUpdated": null,
-    "iracingId": "1183570",
-    "name": "Jens Van Der Wilt",
-    "irating": 1848,
-    "linkedUid": "",
+    "category": "Driver",
+    "iracingId": "391970",
+    "name": "Logan Manus",
+    "role": "Driver",
     "active": true,
+    "_docId": "oMHXbpImeVs5SuzYrCuA"
+  },
+  {
+    "name": "Mark Prince",
+    "url": "https://garage61.net/app/drivers/mark-prince",
+    "role": "Driver"
+  },
+  {
+    "name": "Marko Skrnjug",
+    "url": "https://garage61.net/app/drivers/marko-skrnjug",
+    "role": "Endurance Team Driver"
+  },
+  {
+    "name": "Matthew Graham",
+    "url": "https://garage61.net/app/drivers/matthew-graham-4",
+    "role": "Endurance Team Driver"
+  },
+  {
+    "name": "Matthew Koch",
+    "url": "https://garage61.net/app/drivers/matthew-koch",
+    "role": "Driver"
+  },
+  {
+    "name": "Matty Roberts",
+    "url": "https://garage61.net/app/drivers/matty-roberts",
+    "role": "Developer"
+  },
+  {
+    "name": "Michael O'Dell",
+    "url": "https://garage61.net/app/drivers/michael-odell",
+    "role": "Driver"
+  },
+  {
+    "name": "Michael Zuver",
+    "url": "https://garage61.net/app/drivers/michael-zuver",
+    "role": "Driver"
+  },
+  {
+    "category": "Driver",
+    "lastUpdated": null,
+    "iracingId": "330403",
     "iracing": {
-      "customerId": 1183570,
+      "customerId": 330403,
       "lastChecked": "2026-10-04T20:36:25.332Z",
       "ratings": {
-        "sportsCar": {
-          "updated": "2026-10-04",
-          "value": 1848
-        },
-        "dirtOval": {
-          "updated": "2026-10-04",
-          "value": 1350
+        "formulaCar": {
+          "value": 1581,
+          "updated": "2026-10-04"
         },
         "dirtRoad": {
-          "value": 1350,
+          "value": 1316,
+          "updated": "2026-10-04"
+        },
+        "dirtOval": {
+          "value": 1572,
+          "updated": "2026-10-04"
+        },
+        "sportsCar": {
+          "updated": "2026-10-04",
+          "value": 2008
+        },
+        "road": {
+          "value": 1559,
           "updated": "2026-10-04"
         },
         "oval": {
           "updated": "2026-10-04",
-          "value": 1278
-        },
-        "road": {
-          "updated": "2026-10-04",
-          "value": 1350
-        },
-        "formulaCar": {
-          "value": 1609,
-          "updated": "2026-10-04"
+          "value": 1701
         }
       }
     },
-    "role": "Driver",
-    "category": "Driver",
-    "allowAccess": false,
-    "_docId": "uR2iHpER1AE3Owshf7IM"
-  },
-  {
+    "name": "Omette Ohm",
     "active": true,
-    "allowAccess": true,
-    "lastUpdated": null,
+    "role": "",
+    "irating": 2008,
+    "slug": "omette-ohm",
     "stats": {
+      "iRatingPercentages": {
+        "OVAL": 28.35,
+        "FORMULA": 26.35,
+        "DIRT_ROAD": 21.93,
+        "SPORTS": 33.47,
+        "ROAD": 25.98,
+        "DIRT_OVAL": 26.2
+      },
       "licenseLevels": {
-        "DIRT_ROAD": "R 2.50",
-        "OVAL": "B 3.84",
-        "DIRT_OVAL": "R 2.50",
-        "FORMULA": "B 2.38",
-        "ROAD": "A 2.54",
-        "SPORTS": "A 4.71"
+        "DIRT_ROAD": "D 2.87",
+        "ROAD": "R 2.50",
+        "SPORTS": "A 2.13",
+        "FORMULA": "C 2.45",
+        "DIRT_OVAL": "D 3.38",
+        "OVAL": "C 2.32"
       },
       "iRatings": {
-        "OVAL": 1850,
-        "FORMULA": 2915,
-        "DIRT_ROAD": 1350,
-        "SPORTS": 4270,
-        "DIRT_OVAL": 1350,
-        "ROAD": 3004
-      },
-      "iRatingPercentages": {
-        "SPORTS": 71.17,
-        "OVAL": 30.83,
-        "FORMULA": 48.58,
-        "DIRT_OVAL": 22.5,
-        "DIRT_ROAD": 22.5,
-        "ROAD": 50.07
+        "DIRT_ROAD": 1316,
+        "OVAL": 1701,
+        "DIRT_OVAL": 1572,
+        "FORMULA": 1581,
+        "SPORTS": 2008,
+        "ROAD": 1559
       }
     },
-    "category": "GRiD UP Endurance",
-    "role": "E-Sports Driver",
-    "slug": "alex-cortez",
-    "irating": 4212,
-    "iracingId": "841755",
-    "name": "Alex Cortez",
+    "_docId": "4XYy1EsRDr61mqgaOHBO"
+  },
+  {
+    "name": "Ric Wishon",
+    "url": "https://garage61.net/app/drivers/ric-wishon",
+    "role": "Driver"
+  },
+  {
     "iracing": {
-      "customerId": 841755,
+      "customerId": 701522,
       "ratings": {
         "sportsCar": {
-          "value": 4270,
+          "value": 2317,
           "updated": "28 Oct 2026"
         },
         "formulaCar": {
-          "value": 2915,
+          "value": 2111,
           "updated": "28 Oct 2026"
         },
         "oval": {
-          "value": 1850,
+          "value": 1231,
           "updated": "28 Oct 2026"
         },
         "dirtRoad": {
-          "value": 1350,
+          "value": 1784,
           "updated": "28 Oct 2026"
         },
         "dirtOval": {
-          "value": 1350,
+          "value": 1255,
           "updated": "28 Oct 2026"
         },
         "road": {
-          "value": 3004,
+          "value": 2036,
           "updated": "28 Oct 2026"
         }
       },
       "lastChecked": "2026-10-28T13:58:20Z"
     },
-    "_docId": "wfcuZe4taBzjQ9eRpRML"
+    "iracingId": "701522",
+    "irating": 2384,
+    "name": "Ric Wishon",
+    "lastUpdated": null,
+    "role": "Driver",
+    "linkedDiscordName": "",
+    "category": "Driver",
+    "stats": {
+      "iRatings": {
+        "FORMULA": 2111,
+        "ROAD": 2036,
+        "DIRT_ROAD": 1784,
+        "SPORTS": 2317,
+        "OVAL": 1231,
+        "DIRT_OVAL": 1255
+      },
+      "iRatingPercentages": {
+        "ROAD": 33.93,
+        "SPORTS": 38.62,
+        "DIRT_ROAD": 29.73,
+        "FORMULA": 35.18,
+        "OVAL": 20.52,
+        "DIRT_OVAL": 20.92
+      },
+      "licenseLevels": {
+        "FORMULA": "A 2.50",
+        "OVAL": "B 2.62",
+        "DIRT_ROAD": "C 3.61",
+        "ROAD": "A 2.46",
+        "DIRT_OVAL": "B 2.13",
+        "SPORTS": "B 1.37"
+      }
+    },
+    "linkedUid": "",
+    "active": true,
+    "allowAccess": false,
+    "slug": "ric-wishon-701522",
+    "addedFromApplication": "cCTv4Ck5uvMuV29J6sNd",
+    "_docId": "6bp76LEn6KUHgPfH5x78"
+  },
+  {
+    "name": "Stephen Smalley",
+    "url": "https://garage61.net/app/drivers/stephen-smalley",
+    "role": "Endurance Team Driver"
+  },
+  {
+    "name": "Strats G",
+    "url": "https://garage61.net/app/drivers/strats-g",
+    "role": "Driver"
+  },
+  {
+    "name": "Tanner Hupp",
+    "url": "https://garage61.net/app/drivers/tanner-hupp",
+    "role": "Endurance Team Driver"
+  },
+  {
+    "name": "Terry Cantwell",
+    "url": "https://garage61.net/app/drivers/terry-cantwell",
+    "role": "Endurance Team Driver"
+  },
+  {
+    "name": "Thomas Fox4",
+    "url": "https://garage61.net/app/drivers/thomas-fox-2",
+    "role": "Driver"
+  },
+  {
+    "name": "Tim Libuda",
+    "url": "https://garage61.net/app/drivers/tim-libuda",
+    "role": "Endurance Team Driver"
+  },
+  {
+    "name": "William McClain",
+    "url": "https://garage61.net/app/drivers/william-mcclain",
+    "role": "Driver"
+  },
+  {
+    "iracingId": "960798",
+    "lastUpdated": null,
+    "allowAccess": true,
+    "name": "Xavier Williams",
+    "iracing": {
+      "customerId": 960798,
+      "ratings": {
+        "sportsCar": {
+          "value": 1657,
+          "updated": "2026-10-04"
+        },
+        "road": {
+          "value": 1076,
+          "updated": "2026-10-04"
+        },
+        "oval": {
+          "updated": "2026-10-04",
+          "value": 724
+        },
+        "dirtOval": {
+          "value": 1331,
+          "updated": "2026-10-04"
+        },
+        "dirtRoad": {
+          "value": 1459,
+          "updated": "2026-10-04"
+        },
+        "formulaCar": {
+          "value": 1391,
+          "updated": "2026-10-04"
+        }
+      },
+      "lastChecked": "2026-10-04T20:36:25.332Z"
+    },
+    "category": "GRiD UP Endurance",
+    "active": true,
+    "slug": "xavier-williams",
+    "irating": 1755,
+    "stats": {
+      "iRatingPercentages": {
+        "ROAD": 17.93,
+        "FORMULA": 23.18,
+        "DIRT_ROAD": 24.32,
+        "OVAL": 12.07,
+        "DIRT_OVAL": 22.18,
+        "SPORTS": 29.25
+      },
+      "licenseLevels": {
+        "ROAD": "R 2.50",
+        "FORMULA": "B 2.09",
+        "DIRT_OVAL": "R 2.45",
+        "OVAL": "D 2.12",
+        "SPORTS": "A 3.39",
+        "DIRT_ROAD": "R 2.78"
+      },
+      "iRatings": {
+        "ROAD": 1076,
+        "SPORTS": 1755,
+        "DIRT_ROAD": 1459,
+        "DIRT_OVAL": 1331,
+        "OVAL": 724,
+        "FORMULA": 1391
+      }
+    },
+    "role": "Endurance Team Driver",
+    "_docId": "Peb4M04PVEhgio6QVJ3N"
+  },
+  {
+    "name": "Zack Saunders",
+    "url": "https://garage61.net/app/drivers/zack-saunders",
+    "role": "Driver"
+  },
+  {
+    "name": "Zack Saunders",
+    "url": "https://garage61.net/app/drivers/zack-saunders-2",
+    "role": "Driver"
+  },
+  {
+    "name": "martyn cook",
+    "url": "https://garage61.net/app/drivers/martyn-cook",
+    "role": "Endurance Team Manager"
   }
 ]
