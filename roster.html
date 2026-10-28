@@ -472,7 +472,6 @@
 
                 const getRatingsHTML = (d) => {
                     const matchedCache = findStatsInCache(d.name);
-                    const hasCacheEntry = Boolean(matchedCache && Object.keys(matchedCache).length > 0);
                     const cEntry = matchedCache || {};
                     const stats = d.stats || {};
                     const iratings = stats.iRatings || {};
@@ -484,14 +483,18 @@
                         let ir = null;
                         let sr = null;
 
-                        // 1. Check authoritative local stats cache (driver_stats_2.json) first
-                        if (hasCacheEntry && cEntry[cName]) {
+                        // 1. Check local stats cache (driver_stats_2.json)
+                        if (cEntry[cName]) {
                             if (cEntry[cName].irating && cEntry[cName].irating > 0) ir = cEntry[cName].irating;
                             if (cEntry[cName].sr) sr = cEntry[cName].sr.trim();
-                        } else if (!hasCacheEntry) {
-                            // 2. Fallback to Firestore only if driver is not in driver_stats_2.json
+                        }
+
+                        // 2. Fallback to Firestore ratings if not found or empty in cache
+                        if (!ir) {
                             if (detailedRatings[irKey] && detailedRatings[irKey].value > 0) ir = detailedRatings[irKey].value;
                             else if (iratings[intKey] && iratings[intKey] > 0) ir = iratings[intKey];
+                        }
+                        if (!sr) {
                             if (licenses[intKey]) sr = licenses[intKey].trim();
                         }
 
@@ -510,31 +513,19 @@
                         return { ir, irText, sr, srClass, hasIr };
                     };
 
-                    // Candidate disciplines in motorsport priority
-                    const candidates = [
+                    // Display all 6 disciplines for a balanced, uniform 2x3 grid across all cards
+                    const disciplines = [
                         { label: 'Sports Car', isSports: true, info: getDiscInfo('Sports Car', 'sportsCar', 'SPORTS') },
                         { label: 'Formula', isSports: false, info: getDiscInfo('Formula Car', 'formulaCar', 'FORMULA') },
                         { label: 'Oval', isSports: false, info: getDiscInfo('Oval', 'oval', 'OVAL') },
                         { label: 'Dirt Road', isSports: false, info: getDiscInfo('Dirt Road', 'dirtRoad', 'DIRT_ROAD') },
-                        { label: 'Dirt Oval', isSports: false, info: getDiscInfo('Dirt Oval', 'dirtOval', 'DIRT_OVAL') }
+                        { label: 'Dirt Oval', isSports: false, info: getDiscInfo('Dirt Oval', 'dirtOval', 'DIRT_OVAL') },
+                        { label: 'Road', isSports: false, info: getDiscInfo('Road', 'road', 'ROAD') }
                     ];
 
-                    // Active disciplines filter: always include Sports Car; include others only if active iR or non-rookie license
-                    let activeDisciplines = candidates.filter((c, idx) => {
-                        if (idx === 0) return true; // Always display Sports Car
-                        if (c.info.hasIr) return true;
-                        if (c.info.sr && !c.info.sr.startsWith('R')) return true;
-                        return false;
-                    });
-
-                    // If driver has only Sports Car and Formula, show both cleanly
-                    if (activeDisciplines.length === 1 && candidates[1].info.sr) {
-                        activeDisciplines.push(candidates[1]);
-                    }
-
                     return `
-                        <div class="driver-ratings-compact" style="${activeDisciplines.length === 1 ? 'grid-template-columns: 1fr;' : ''}">
-                            ${activeDisciplines.map(disc => `
+                        <div class="driver-ratings-compact">
+                            ${disciplines.map(disc => `
                                 <div class="d-stat-tile ${disc.isSports ? 'is-sports' : ''}">
                                     <div class="d-stat-tile-top">
                                         <span class="d-stat-label">${disc.label}</span>
@@ -617,7 +608,8 @@
                             { cName: 'Formula Car', irKey: 'formulaCar', intKey: 'FORMULA' },
                             { cName: 'Oval', irKey: 'oval', intKey: 'OVAL' },
                             { cName: 'Dirt Road', irKey: 'dirtRoad', intKey: 'DIRT_ROAD' },
-                            { cName: 'Dirt Oval', irKey: 'dirtOval', intKey: 'DIRT_OVAL' }
+                            { cName: 'Dirt Oval', irKey: 'dirtOval', intKey: 'DIRT_OVAL' },
+                            { cName: 'Road', irKey: 'road', intKey: 'ROAD' }
                         ];
                         const nowIso = new Date().toISOString();
                         const nowFmt = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -630,6 +622,7 @@
                             const curStats = d.stats || {};
                             const curIratings = curStats.iRatings || {};
                             const curLicenses = curStats.licenseLevels || {};
+                            const curDetailed = (d.iracing && d.iracing.ratings) || {};
                             let needsSync = false;
                             const newIratings = {};
                             const newLicenses = {};
@@ -637,8 +630,9 @@
                             const newDetailed = {};
                             discMap.forEach(({ cName, irKey, intKey }) => {
                                 const cObj = cEntry[cName] || {};
-                                const irVal = (cObj.irating && cObj.irating > 0) ? Number(cObj.irating) : 0;
-                                const srVal = cObj.sr ? String(cObj.sr).trim() : 'R 2.50';
+                                const existingIr = (curIratings[intKey] && curIratings[intKey] > 0) ? curIratings[intKey] : ((curDetailed[irKey] && curDetailed[irKey].value > 0) ? curDetailed[irKey].value : 0);
+                                const irVal = (cObj.irating && cObj.irating > 0) ? Number(cObj.irating) : existingIr;
+                                const srVal = cObj.sr ? String(cObj.sr).trim() : (curLicenses[intKey] || 'R 2.50');
                                 if ((curIratings[intKey] || 0) !== irVal || (curLicenses[intKey] || 'R 2.50') !== srVal) {
                                     needsSync = true;
                                 }
