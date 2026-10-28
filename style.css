@@ -48,7 +48,7 @@ body {
     min-height: 100vh;
 }
 
-/* High-performance GPU-accelerated background layer (eliminates scroll repaint lag) */
+/* High-performance GPU-accelerated motorsport telemetry background */
 body::before {
     content: '';
     position: fixed;
@@ -58,13 +58,14 @@ body::before {
     height: 100vh;
     z-index: -2;
     pointer-events: none;
-    background-color: var(--bg-dark);
+    background-color: #05070e;
     background-image: 
-        radial-gradient(circle at 50% -15%, rgba(139, 92, 246, 0.14) 0%, transparent 60%),
-        radial-gradient(circle 800px at 100% 60%, rgba(109, 40, 217, 0.05) 0%, transparent 50%),
-        linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
-    background-size: 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+        radial-gradient(ellipse 1000px 550px at 50% -10%, rgba(139, 92, 246, 0.22) 0%, transparent 70%),
+        radial-gradient(circle 850px at 100% 65%, rgba(0, 207, 255, 0.08) 0%, transparent 60%),
+        radial-gradient(circle 600px at 0% 90%, rgba(139, 92, 246, 0.08) 0%, transparent 55%),
+        linear-gradient(rgba(0, 207, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 207, 255, 0.025) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 100% 100%, 48px 48px, 48px 48px;
 }
 
 /* Custom Scrollbar */
@@ -3720,5 +3721,397 @@ body[data-theme="theme-purple"]::before, body::before {
         width: 100%;
         justify-content: space-between;
     }
+}
+
+/* ==========================================================================
+   UNIFIED MOTORSPORT & ESPORTS GLOBAL DESIGN SYSTEM
+   Standardizes hero banners, cockpit cards, tactical switchers, 
+   timing & scoring leaderboards, position badges, and telemetry elements.
+   ========================================================================== */
+
+/* 1. Global Beacon & Micro-Animations */
+@keyframes beaconPulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+        box-shadow: 0 0 10px #00cfff;
+    }
+    50% {
+        opacity: 0.35;
+        transform: scale(0.85);
+        box-shadow: 0 0 4px #00cfff;
+    }
+}
+
+@keyframes laserSweep {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* 2. Unified Subpage Hero Header */
+.hero.hero-small,
+.standings-hero,
+.subpage-hero {
+    position: relative;
+    padding: 7.5rem 0 3.8rem;
+    min-height: auto;
+    text-align: center;
+    background: linear-gradient(180deg, rgba(12, 17, 30, 0.95) 0%, rgba(6, 9, 16, 0.98) 100%);
+    border-bottom: 1px solid rgba(0, 207, 255, 0.16);
+    overflow: hidden;
+    contain: layout paint;
+}
+
+/* Laser Top Accent Line */
+.hero.hero-small::before,
+.standings-hero::before,
+.subpage-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent 0%, #8b5cf6 30%, #00cfff 70%, transparent 100%);
+    z-index: 3;
+}
+
+/* Telemetry Grid & Circuit Watermark */
+.hero.hero-small::after,
+.standings-hero::after,
+.subpage-hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: 
+        radial-gradient(circle at 50% 30%, rgba(0, 207, 255, 0.08) 0%, transparent 60%),
+        linear-gradient(rgba(0, 207, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 207, 255, 0.02) 1px, transparent 1px);
+    background-size: 100% 100%, 40px 40px, 40px 40px;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.hero.hero-small .hero-content,
+.standings-hero .container,
+.subpage-hero .hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* Eyebrow Pill with Pulsing LED Beacon */
+.ms-hero-eyebrow,
+.stats-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0, 207, 255, 0.08);
+    border: 1px solid rgba(0, 207, 255, 0.3);
+    color: #00cfff;
+    font-family: var(--font-heading);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 999px;
+    margin-bottom: 0.85rem;
+    box-shadow: 0 0 15px rgba(0, 207, 255, 0.12);
+}
+
+.ms-beacon-dot,
+.stats-badge-pulse {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #00cfff;
+    box-shadow: 0 0 10px #00cfff;
+    animation: beaconPulse 1.4s ease-in-out infinite;
+    display: inline-block;
+}
+
+/* Hero Typography */
+.hero.hero-small h1,
+.standings-hero h1,
+.subpage-hero h1 {
+    font-family: 'Orbitron', var(--font-heading), sans-serif !important;
+    font-size: clamp(2.4rem, 5.5vw, 4.2rem) !important;
+    font-weight: 900 !important;
+    letter-spacing: 2px !important;
+    text-transform: uppercase !important;
+    line-height: 1.1 !important;
+    margin: 0.6rem 0 0.5rem !important;
+    background: linear-gradient(180deg, #ffffff 20%, #38bdf8 100%) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    filter: drop-shadow(0 0 25px rgba(0, 207, 255, 0.25)) !important;
+}
+
+.hero-subtitle,
+.hero.hero-small p,
+.standings-hero p:not(.roster-tabs) {
+    color: #94a3b8 !important;
+    font-size: clamp(0.85rem, 1.1vw, 1rem) !important;
+    font-weight: 500 !important;
+    letter-spacing: 1.5px !important;
+    text-transform: uppercase !important;
+    max-width: 680px !important;
+    margin: 0.5rem auto 0 !important;
+    line-height: 1.6 !important;
+}
+
+/* 3. Unified Cockpit Glass Cards */
+.mockup-card,
+.event-horizontal-card,
+.season-card,
+.driver-card,
+.event-result-block,
+.compact-card,
+.standings-panel,
+.sidebar-card,
+.sched-event-card {
+    background: linear-gradient(135deg, rgba(13, 19, 32, 0.92) 0%, rgba(7, 10, 18, 0.96) 100%) !important;
+    border: 1px solid rgba(0, 207, 255, 0.18) !important;
+    border-top: 2px solid #00cfff !important;
+    border-radius: 14px !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55), 0 0 1px rgba(0, 207, 255, 0.2) !important;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.mockup-card:hover,
+.event-horizontal-card:hover,
+.season-card:hover,
+.driver-card:hover,
+.event-result-block:hover,
+.compact-card:hover,
+.sidebar-card:hover,
+.sched-event-card:hover {
+    transform: translateY(-4px) !important;
+    border-color: rgba(0, 207, 255, 0.45) !important;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.75), 0 0 25px rgba(0, 207, 255, 0.25) !important;
+}
+
+/* 4. Unified Tactical Tabs & Filter Switchers */
+.event-tabs,
+.roster-tabs,
+.tabs-wrapper,
+.profile-nav-tabs,
+.category-tiles {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 2.5rem;
+}
+
+.event-tab,
+.category-tile,
+.roster-tabs .tab-btn,
+.tabs-wrapper .tab-btn,
+.profile-nav-tabs .tab-btn,
+.filter-btn,
+.podium-filter-btn {
+    background: rgba(14, 20, 32, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #94a3b8 !important;
+    font-family: var(--font-heading) !important;
+    font-size: 0.75rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 1.2px !important;
+    text-transform: uppercase !important;
+    padding: 0.7rem 1.4rem !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    transition: all 0.25s ease !important;
+    outline: none !important;
+}
+
+.event-tab:hover,
+.category-tile:hover,
+.roster-tabs .tab-btn:hover,
+.tabs-wrapper .tab-btn:hover,
+.profile-nav-tabs .tab-btn:hover,
+.filter-btn:hover,
+.podium-filter-btn:hover {
+    background: rgba(0, 207, 255, 0.1) !important;
+    border-color: rgba(0, 207, 255, 0.4) !important;
+    color: #ffffff !important;
+}
+
+.event-tab.active,
+.category-tile.active,
+.roster-tabs .tab-btn.active,
+.tabs-wrapper .tab-btn.active,
+.profile-nav-tabs .tab-btn.active,
+.filter-btn.active,
+.podium-filter-btn.active {
+    background: linear-gradient(135deg, rgba(0, 207, 255, 0.22) 0%, rgba(139, 92, 246, 0.18) 100%) !important;
+    border-color: #00cfff !important;
+    color: #00cfff !important;
+    box-shadow: 0 0 20px rgba(0, 207, 255, 0.3), inset 0 0 10px rgba(0, 207, 255, 0.15) !important;
+}
+
+/* 5. Unified Standings / Timing & Scoring Tables */
+.claims-table,
+.standings-table,
+.results-table-container table {
+    width: 100% !important;
+    border-collapse: separate !important;
+    border-spacing: 0 6px !important;
+}
+
+.claims-table th,
+.standings-table th,
+.results-table-container table th {
+    font-family: var(--font-heading) !important;
+    font-size: 0.72rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 1.8px !important;
+    text-transform: uppercase !important;
+    color: #94a3b8 !important;
+    padding: 0.9rem 1.2rem !important;
+    border-bottom: 2px solid rgba(0, 207, 255, 0.25) !important;
+    background: rgba(10, 15, 26, 0.9) !important;
+}
+
+.claims-table tbody tr,
+.standings-table tbody tr,
+.results-table-container table tbody tr {
+    background: rgba(15, 21, 35, 0.65) !important;
+    transition: all 0.2s ease !important;
+}
+
+.claims-table tbody tr:hover,
+.standings-table tbody tr:hover,
+.results-table-container table tbody tr:hover {
+    background: rgba(0, 207, 255, 0.09) !important;
+    box-shadow: inset 3px 0 0 #00cfff !important;
+    transform: translateX(2px) !important;
+}
+
+.claims-table td,
+.standings-table td,
+.results-table-container table td {
+    padding: 0.95rem 1.2rem !important;
+    vertical-align: middle !important;
+    font-size: 0.88rem !important;
+}
+
+/* 6. Unified Position Finishes (P1 / P2 / P3 / P4+) */
+.pos-chip-p1 {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 38px;
+    padding: 3px 8px;
+    background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+    color: #000;
+    font-family: 'Orbitron', var(--font-heading), sans-serif;
+    font-weight: 900;
+    font-size: 0.78rem;
+    border-radius: 4px;
+    box-shadow: 0 0 12px rgba(251, 191, 36, 0.45);
+}
+
+.pos-chip-p2 {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 38px;
+    padding: 3px 8px;
+    background: linear-gradient(135deg, #f1f5f9 0%, #94a3b8 100%);
+    color: #000;
+    font-family: 'Orbitron', var(--font-heading), sans-serif;
+    font-weight: 900;
+    font-size: 0.78rem;
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(226, 232, 240, 0.35);
+}
+
+.pos-chip-p3 {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 38px;
+    padding: 3px 8px;
+    background: linear-gradient(135deg, #fb923c 0%, #ea580c 100%);
+    color: #000;
+    font-family: 'Orbitron', var(--font-heading), sans-serif;
+    font-weight: 900;
+    font-size: 0.78rem;
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(249, 115, 22, 0.4);
+}
+
+/* 7. Unified Class Badges & Sanctioning Body Pills */
+.badge-gt3 {
+    background: rgba(16, 185, 129, 0.15) !important;
+    color: #34d399 !important;
+    border: 1px solid rgba(16, 185, 129, 0.4) !important;
+}
+
+.badge-gtp {
+    background: rgba(239, 68, 68, 0.15) !important;
+    color: #f87171 !important;
+    border: 1px solid rgba(239, 68, 68, 0.4) !important;
+}
+
+.badge-lmp2 {
+    background: rgba(59, 130, 246, 0.15) !important;
+    color: #60a5fa !important;
+    border: 1px solid rgba(59, 130, 246, 0.4) !important;
+}
+
+.badge-gt4 {
+    background: rgba(245, 158, 11, 0.15) !important;
+    color: #fbbf24 !important;
+    border: 1px solid rgba(245, 158, 11, 0.4) !important;
+}
+
+/* 8. Unified Buttons across all pages */
+.btn-primary,
+.btn-mockup-primary {
+    background: linear-gradient(135deg, #8b5cf6 0%, #00cfff 100%) !important;
+    color: #ffffff !important;
+    border: none !important;
+    box-shadow: 0 0 20px rgba(0, 207, 255, 0.3) !important;
+    text-transform: uppercase !important;
+    font-family: var(--font-heading) !important;
+    font-weight: 800 !important;
+    letter-spacing: 1px !important;
+    transition: all 0.25s ease !important;
+}
+
+.btn-primary:hover,
+.btn-mockup-primary:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 0 30px rgba(0, 207, 255, 0.55) !important;
+}
+
+.btn-outline,
+.btn-mockup-secondary {
+    background: rgba(15, 23, 42, 0.6) !important;
+    border: 1px solid rgba(0, 207, 255, 0.3) !important;
+    color: #00cfff !important;
+    text-transform: uppercase !important;
+    font-family: var(--font-heading) !important;
+    font-weight: 800 !important;
+    letter-spacing: 1px !important;
+    transition: all 0.25s ease !important;
+}
+
+.btn-outline:hover,
+.btn-mockup-secondary:hover {
+    background: rgba(0, 207, 255, 0.15) !important;
+    border-color: #00cfff !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 20px rgba(0, 207, 255, 0.3) !important;
+    transform: translateY(-2px) !important;
 }
 
