@@ -19,6 +19,19 @@ def check_requests():
             if not firebase_admin._apps:
                 firebase_admin.initialize_app(cred)
             db = firestore.client()
+            
+            # Clean up requested/orphaned test events
+            try:
+                for bad_id in ['TEST-EVENT', 'test-event']:
+                    b_doc = db.collection("events").document(bad_id)
+                    if b_doc.get().exists:
+                        b_doc.delete()
+                        print(f"[OK] Purged '{bad_id}' from events collection.")
+                    db.collection("race_lineups").document(bad_id).delete()
+                    db.collection("event_availability").document(bad_id).delete()
+            except Exception as clean_err:
+                print(f"Warning during event purge: {clean_err}")
+
             doc_ref = db.collection("sync_requests").document(workflow_id)
             doc = doc_ref.get()
             if doc.exists:

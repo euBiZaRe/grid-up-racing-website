@@ -2876,12 +2876,31 @@ body.meeting-mode-active .btn-summary-confirm {
             <!-- Events Management Section -->
             <div id="section-events" class="tab-content" style="display: none;">
                 <div class="glass" style="padding: 2.5rem; margin-bottom: 2rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
                         <div>
                             <h3 style="color: var(--primary); font-size: 1.2rem; margin-bottom: 0.5rem;">Event Schedule</h3>
-                            <p style="color: var(--text-muted); font-size: 0.8rem;">Manage the global list of upcoming races and countdowns.</p>
+                            <p style="color: var(--text-muted); font-size: 0.8rem;">Manage all events, upcoming races, and completed past schedule items.</p>
                         </div>
                         <button onclick="showEventModal()" class="btn btn-primary" style="box-shadow: 0 0 20px rgba(0,207,255,0.3);">+ Create Event</button>
+                    </div>
+
+                    <!-- Filter Controls & Search -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 1.25rem;">
+                        <div class="filter-buttons" id="admin-event-filter-btns" style="display: flex; gap: 8px;">
+                            <button id="admin-filter-all" class="filter-btn active" onclick="setAdminEventFilter('all')" style="font-size: 0.75rem; padding: 0.45rem 0.9rem;">
+                                All Events (<span id="count-all-events">0</span>)
+                            </button>
+                            <button id="admin-filter-upcoming" class="filter-btn" onclick="setAdminEventFilter('upcoming')" style="font-size: 0.75rem; padding: 0.45rem 0.9rem;">
+                                Upcoming (<span id="count-upcoming-events">0</span>)
+                            </button>
+                            <button id="admin-filter-past" class="filter-btn" onclick="setAdminEventFilter('past')" style="font-size: 0.75rem; padding: 0.45rem 0.9rem;">
+                                Past / Completed (<span id="count-past-events">0</span>)
+                            </button>
+                        </div>
+                        <div style="position: relative;">
+                            <input type="text" id="admin-events-search" placeholder="Search events..." oninput="filterAdminEventsList()" 
+                                   style="background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 0.45rem 0.9rem; color: #fff; font-size: 0.8rem; width: 240px;">
+                        </div>
                     </div>
                     
                     <div id="events-manager-list" class="grid" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
@@ -4180,6 +4199,91 @@ body.meeting-mode-active .btn-summary-confirm {
             return _loadingEventsPromise;
         }
 
+        let adminEventFilter = 'all'; // 'all' | 'upcoming' | 'past'
+
+        window.setAdminEventFilter = function(filter) {
+            adminEventFilter = filter;
+            document.querySelectorAll('#admin-event-filter-btns .filter-btn').forEach(b => {
+                b.classList.remove('active');
+            });
+            const activeBtn = document.getElementById(`admin-filter-${filter}`);
+            if (activeBtn) activeBtn.classList.add('active');
+            renderAdminEventsList();
+        };
+
+        window.filterAdminEventsList = function() {
+            renderAdminEventsList();
+        };
+
+        function renderAdminEventsList() {
+            const list = document.getElementById('events-manager-list');
+            if (!list) return;
+            const now = new Date();
+            const searchVal = (document.getElementById('admin-events-search')?.value || '').toLowerCase().trim();
+
+            const upcomingCount = UPCOMING_EVENTS.length;
+            const pastCount = Math.max(0, ALL_EVENTS.length - upcomingCount);
+            
+            const countAll = document.getElementById('count-all-events');
+            const countUpcoming = document.getElementById('count-upcoming-events');
+            const countPast = document.getElementById('count-past-events');
+            if (countAll) countAll.textContent = ALL_EVENTS.length;
+            if (countUpcoming) countUpcoming.textContent = upcomingCount;
+            if (countPast) countPast.textContent = pastCount;
+
+            const filtered = ALL_EVENTS.filter(event => {
+                const isUpcoming = isEventUpcoming(event, now);
+                if (adminEventFilter === 'upcoming' && !isUpcoming) return false;
+                if (adminEventFilter === 'past' && isUpcoming) return false;
+                if (searchVal) {
+                    const matchName = (event.name || '').toLowerCase().includes(searchVal);
+                    const matchId = (event.id || '').toLowerCase().includes(searchVal);
+                    const matchTrack = (event.track || '').toLowerCase().includes(searchVal);
+                    if (!matchName && !matchId && !matchTrack) return false;
+                }
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                list.innerHTML = `<p style="text-align: center; color: var(--text-muted); grid-column: 1/-1; padding: 2rem;">No ${adminEventFilter === 'all' ? '' : adminEventFilter} events found.</p>`;
+                return;
+            }
+
+            list.innerHTML = '';
+            filtered.forEach(event => {
+                const isUpcoming = isEventUpcoming(event, now);
+                const card = document.createElement('div');
+                card.className = 'card glass';
+                card.style.padding = '1.5rem';
+                card.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.85rem;">
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                            <span style="font-size: 0.7rem; color: var(--primary); font-weight: 700; text-transform: uppercase;">${event.date || 'TBD'}</span>
+                            <span style="font-size: 0.6rem; padding: 2px 6px; border-radius: 4px; font-weight: 800; text-transform: uppercase; ${isUpcoming ? 'background: rgba(0,207,255,0.15); color: var(--primary); border: 1px solid rgba(0,207,255,0.3);' : 'background: rgba(255,255,255,0.06); color: #9ca3af; border: 1px solid rgba(255,255,255,0.12);'}">
+                                ${isUpcoming ? 'UPCOMING' : 'COMPLETED'}
+                            </span>
+                        </div>
+                        <div style="font-size: 0.6rem; color: var(--text-muted); font-family: monospace;">${event.id}</div>
+                    </div>
+                    <h4 style="margin-bottom: 0.5rem; color: #fff;">${event.name}</h4>
+                    <div style="font-size: 0.65rem; color: ${isUpcoming ? 'var(--primary)' : '#9ca3af'}; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.75rem;">
+                        ${event.type || 'Standard'} // ${event.distance || 'Sprint'}
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+                        Classes: ${event.classes ? event.classes.join(', ') : 'None'}
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button onclick="openLineupsForEvent('${event.id}')" class="btn btn-primary" style="flex: 1.2; font-size: 0.7rem; padding: 0.5rem; display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
+                            <i class="fas fa-users-cog"></i> Lineup
+                        </button>
+                        <button onclick="showEventModal('${event.id}')" class="btn btn-outline" style="flex: 1; font-size: 0.7rem; padding: 0.5rem;">Edit</button>
+                        <button onclick="deleteEvent('${event.id}')" class="btn btn-outline" style="flex: 1; font-size: 0.7rem; padding: 0.5rem; border-color: #ff0055; color: #ff0055;">Delete</button>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
         async function loadEvents() {
             const list = document.getElementById('events-manager-list');
             const notice = document.getElementById('migration-notice');
@@ -4190,43 +4294,12 @@ body.meeting-mode-active .btn-summary-confirm {
 
             try {
                 await ensureEventsLoaded();
-
-                if (!list) return;
-
-                if (UPCOMING_EVENTS.length === 0) {
-                    list.innerHTML = '';
+                if (ALL_EVENTS.length === 0) {
                     if (notice) notice.style.display = 'block';
+                    if (list) list.innerHTML = '';
                     return;
                 }
-
-                list.innerHTML = '';
-                UPCOMING_EVENTS.forEach(event => {
-                    const card = document.createElement('div');
-                    card.className = 'card glass';
-                    card.style.padding = '1.5rem';
-                    card.innerHTML = `
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
-                            <div style="font-size: 0.7rem; color: var(--primary); font-weight: 700; text-transform: uppercase;">${event.date || 'TBD'}</div>
-                            <div style="font-size: 0.6rem; color: var(--text-muted); font-family: monospace;">${event.id}</div>
-                        </div>
-                        <h4 style="margin-bottom: 0.5rem;">${event.name}</h4>
-                        <div style="font-size: 0.65rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem;">
-                            ${event.type || 'Standard'} // ${event.distance || 'Sprint'}
-                        </div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 2rem;">
-                            Classes: ${event.classes ? event.classes.join(', ') : 'None'}
-                        </div>
-                        <div style="display: flex; gap: 8px;">
-                            <button onclick="openLineupsForEvent('${event.id}')" class="btn btn-primary" style="flex: 1.2; font-size: 0.7rem; padding: 0.5rem; display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
-                                <i class="fas fa-users-cog"></i> Lineup
-                            </button>
-                            <button onclick="showEventModal('${event.id}')" class="btn btn-outline" style="flex: 1; font-size: 0.7rem; padding: 0.5rem;">Edit</button>
-                            <button onclick="deleteEvent('${event.id}')" class="btn btn-outline" style="flex: 1; font-size: 0.7rem; padding: 0.5rem; border-color: #ff0055; color: #ff0055;">Delete</button>
-                        </div>
-                    `;
-                    list.appendChild(card);
-                });
-
+                renderAdminEventsList();
             } catch (e) {
                 console.error("Error loading events:", e);
                 if (list) list.innerHTML = `<p style="color: #ff0055; grid-column: 1/-1;">Error loading events: ${e.message}</p>`;

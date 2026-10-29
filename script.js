@@ -1771,6 +1771,9 @@ function renderEventsUI(upcomingEvents, pastEvents = null, featuredOverride = nu
                         </div>
                         <div class="event-action">
                             <a href="${staticIds.includes(e.id) ? getEventLink(e.id, true) : getEventLink(e.id)}" class="btn btn-outline">Details</a>
+                            <button onclick="window.adminDeleteEvent('${e.id}', '${(e.name || 'Event').replace(/'/g, "\\'")}', event)" class="btn btn-outline admin-event-delete-btn" style="border-color: #ff0055; color: #ff0055; margin-left: 6px; display: none;" title="Delete this event (Admin)">
+                                <i class="fas fa-trash-alt"></i> Delete
+                            </button>
                         </div>
                     `;
                     fullEventList.appendChild(card);
@@ -1803,12 +1806,97 @@ function renderEventsUI(upcomingEvents, pastEvents = null, featuredOverride = nu
                 <div class="event-action">
                     <button onclick="openEventResultsModal('${e.id}', '${(e.name || 'Event').replace(/'/g, "\\'")}')" class="btn btn-outline" style="border-color: rgba(255, 190, 11, 0.4); color: #ffbe0b;">Results</button>
                     <a href="${staticIds.includes(e.id) ? getEventLink(e.id, true) : getEventLink(e.id)}" class="btn btn-outline">Details</a>
+                    <button onclick="window.adminDeleteEvent('${e.id}', '${(e.name || 'Event').replace(/'/g, "\\'")}', event)" class="btn btn-outline admin-event-delete-btn" style="border-color: #ff0055; color: #ff0055; margin-left: 6px; display: none;" title="Delete this event (Admin)">
+                        <i class="fas fa-trash-alt"></i> Delete
+                    </button>
                 </div>
             `;
             pastList.appendChild(card);
         });
     }
+
+    if (typeof window.refreshAdminEventControls === 'function') {
+        window.refreshAdminEventControls();
+    }
 }
+
+// Admin event management from schedule lists
+window.adminDeleteEvent = async function(eventId, eventName, evt) {
+    if (evt) {
+        evt.preventDefault();
+        evt.stopPropagation();
+    }
+    if (!confirm(`Are you sure you want to permanently delete "${eventName}" (${eventId})?\n\nThis will remove the event, its lineups, and availability from the schedule.`)) {
+        return;
+    }
+    const btn = evt ? (evt.currentTarget || evt.target) : null;
+    const oldHtml = btn ? btn.innerHTML : '';
+    try {
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        }
+        if (typeof db === 'undefined') {
+            throw new Error("Database connection not ready.");
+        }
+        await db.collection("events").doc(eventId).delete();
+        await db.collection("race_lineups").doc(eventId).delete().catch(() => {});
+        await db.collection("event_availability").doc(eventId).delete().catch(() => {});
+
+        // Animate card removal
+        const card = document.getElementById(`event-${eventId}`);
+        if (card) {
+            card.style.transition = 'all 0.3s ease';
+            card.style.opacity = '0';
+            card.style.transform = 'scale(0.95)';
+            setTimeout(() => card.remove(), 300);
+        }
+
+        // Clean local storage caches
+        try {
+            ['gridup_events_cache', 'gridup_past_events_cache'].forEach(key => {
+                const raw = localStorage.getItem(key);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    const filtered = parsed.filter(item => item.id !== eventId);
+                    localStorage.setItem(key, JSON.stringify(filtered));
+                }
+            });
+        } catch (_) {}
+
+        alert(`Event "${eventName}" has been permanently removed.`);
+    } catch (err) {
+        console.error("Failed to delete event:", err);
+        alert("Failed to delete event: " + err.message);
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = oldHtml || '<i class="fas fa-trash-alt"></i> Delete';
+        }
+    }
+};
+
+window.refreshAdminEventControls = function() {
+    let isAdmin = Boolean(window.IS_ADMIN);
+    if (!isAdmin) {
+        try {
+            const cached = JSON.parse(localStorage.getItem('gridup_auth_cache') || '{}');
+            const uid = cached.user ? cached.user.uid : null;
+            const hardcodedAdmins = ['B0t4f4nqqpZIQKpT8Ed97xka5gM2','8nojtKUFKUUKDFFpnU6EdueLhkN2','uYUa2WYZ5TPg98vle6jQzzrItR53','2TfuhZVILNQerQK95YL1304jYp83'];
+            if (cached.isAdmin || (uid && hardcodedAdmins.includes(uid))) {
+                isAdmin = true;
+                window.IS_ADMIN = true;
+            }
+        } catch (_) {}
+    }
+    if (isAdmin) {
+        document.body.classList.add('is-admin');
+        document.querySelectorAll('.admin-event-delete-btn').forEach(b => {
+            b.style.display = 'inline-flex';
+            b.style.alignItems = 'center';
+            b.style.gap = '4px';
+        });
+    }
+};
 
 // --- URL CLEANING (Pretty Links) ---
 function beautifyCurrentURL() {

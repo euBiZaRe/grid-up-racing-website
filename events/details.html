@@ -86,7 +86,18 @@
     </header>
 
     <main class="container event-details">
-        <a href="../events.html" class="back-btn">&#8592; Back to Events</a>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <a href="../events.html" class="back-btn">&#8592; Back to Events</a>
+            <div id="admin-event-actions" style="display: none; align-items: center; gap: 8px;">
+                <span style="background: rgba(255,0,85,0.15); color: #ff0055; border: 1px solid rgba(255,0,85,0.3); padding: 3px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 800; letter-spacing: 1px;">ADMIN</span>
+                <a href="../admin.html#races" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.4rem 0.85rem; border-radius: 6px;">
+                    Edit in Admin
+                </a>
+                <button id="admin-delete-event-btn" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.4rem 0.85rem; border-radius: 6px; border-color: #ff0055; color: #ff0055;">
+                    <i class="fas fa-trash-alt"></i> Delete Event
+                </button>
+            </div>
+        </div>
         
         <div id="event-content" class="event-grid" style="display: none;">
             <div class="event-main">
@@ -356,7 +367,65 @@
             if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
         };
 
-        window.addEventListener('load', loadDynamicEvent);
+        // Admin Auth Detection & Action Setup
+        function checkAdminControls() {
+            const adminBar = document.getElementById('admin-event-actions');
+            if (!adminBar) return;
+            const isAdmin = Boolean(window.IS_ADMIN);
+            if (isAdmin) {
+                adminBar.style.display = 'flex';
+            }
+        }
+
+        window.onAuthEnriched = function(user, authInfo) {
+            if (authInfo && authInfo.isAdmin) {
+                window.IS_ADMIN = true;
+                checkAdminControls();
+            }
+        };
+
+        try {
+            const cached = JSON.parse(localStorage.getItem('gridup_auth_cache') || '{}');
+            const uid = cached.user ? cached.user.uid : null;
+            const hardcodedAdmins = ['B0t4f4nqqpZIQKpT8Ed97xka5gM2','8nojtKUFKUUKDFFpnU6EdueLhkN2','uYUa2WYZ5TPg98vle6jQzzrItR53','2TfuhZVILNQerQK95YL1304jYp83'];
+            if (cached.isAdmin || (uid && hardcodedAdmins.includes(uid))) {
+                window.IS_ADMIN = true;
+                checkAdminControls();
+            }
+        } catch (_) {}
+
+        document.getElementById('admin-delete-event-btn')?.addEventListener('click', async function() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id') || window.location.hash.substring(1);
+            if (!id) return;
+            const name = document.getElementById('event-title')?.textContent || id;
+
+            if (!confirm(`Are you sure you want to permanently delete "${name}" (${id})?\n\nThis will remove the event, all team lineups, and availability registrations.`)) {
+                return;
+            }
+
+            try {
+                this.disabled = true;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+                
+                await db.collection("events").doc(id).delete();
+                await db.collection("race_lineups").doc(id).delete().catch(() => {});
+                await db.collection("event_availability").doc(id).delete().catch(() => {});
+
+                alert(`Event "${name}" has been permanently deleted.`);
+                window.location.href = '../events.html';
+            } catch (err) {
+                console.error("Error deleting event:", err);
+                alert("Failed to delete event: " + err.message);
+                this.disabled = false;
+                this.innerHTML = '<i class="fas fa-trash-alt"></i> Delete Event';
+            }
+        });
+
+        window.addEventListener('load', () => {
+            loadDynamicEvent();
+            checkAdminControls();
+        });
     </script>
 </body>
 </html>

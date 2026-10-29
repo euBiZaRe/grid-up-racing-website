@@ -33,6 +33,17 @@ def init_firebase():
     return None
 
 db = init_firebase()
+if db:
+    try:
+        for bad_id in ['TEST-EVENT', 'test-event']:
+            bad_doc = db.collection("events").document(bad_id)
+            if bad_doc.get().exists:
+                bad_doc.delete()
+                print(f"[OK] Purged '{bad_id}' from events collection.")
+            db.collection("race_lineups").document(bad_id).delete()
+            db.collection("event_availability").document(bad_id).delete()
+    except Exception as e:
+        pass
 
 def report_progress(current, total, event_name):
     if db:
