@@ -1,28 +1,28 @@
 {
-  "syncedAt": "2026-10-30T20:16:53Z",
+  "syncedAt": "2026-10-31T01:17:18Z",
   "team": {
     "name": "Grid Up Sim Racing",
     "slug": "grid-up-simsport",
     "totalDrivers": 50,
-    "totalLaps": 730243,
-    "cleanLaps": 575476,
+    "totalLaps": 730345,
+    "cleanLaps": 575547,
     "cleanPct": 78.8,
-    "totalHours": 26936.2,
-    "activeDays": 1374
+    "totalHours": 26940.9,
+    "activeDays": 1375
   },
   "drivers": [
     {
       "slug": "mark-prince",
       "name": "Mark Prince",
       "role": "Driver",
-      "totalLaps": 60799,
-      "cleanLaps": 52228,
+      "totalLaps": 60838,
+      "cleanLaps": 52253,
       "cleanPct": 85.9,
-      "hours": 1965.9,
-      "totalEvents": 5491,
+      "hours": 1967.6,
+      "totalEvents": 5496,
       "firstDay": "2023-06-27",
-      "lastDay": "2026-10-30",
-      "activeDaysCount": 865,
+      "lastDay": "2026-10-31",
+      "activeDaysCount": 866,
       "favoriteCar": "Dallara IR18",
       "favoriteTrack": "Indianapolis Motor Speedway - Open Wheel Oval",
       "topCars": [
@@ -142,10 +142,10 @@
         },
         {
           "name": "Virginia International Raceway - Full Course",
-          "laps": 1854,
-          "cleanLaps": 1349,
-          "cleanPct": 72.8,
-          "hours": 80.8
+          "laps": 1893,
+          "cleanLaps": 1374,
+          "cleanPct": 72.6,
+          "hours": 82.5
         },
         {
           "name": "Michigan International Speedway",
@@ -171,28 +171,32 @@
       ],
       "sessions": {
         "Practice": {
-          "laps": 31234,
-          "cleanLaps": 26521,
+          "laps": 31253,
+          "cleanLaps": 26535,
           "cleanPct": 84.9,
-          "hours": 1187.8
+          "hours": 1188.7
         },
         "Qualifying": {
-          "laps": 2033,
-          "cleanLaps": 1795,
-          "cleanPct": 88.3,
-          "hours": 84.6
+          "laps": 2037,
+          "cleanLaps": 1797,
+          "cleanPct": 88.2,
+          "hours": 84.8
         },
         "Race": {
-          "laps": 27532,
-          "cleanLaps": 23912,
-          "cleanPct": 86.9,
-          "hours": 693.4
+          "laps": 27548,
+          "cleanLaps": 23921,
+          "cleanPct": 86.8,
+          "hours": 694.1
         }
       },
       "recentActivity": [
         {
+          "day": "2026-10-31",
+          "laps": 20
+        },
+        {
           "day": "2026-10-30",
-          "laps": 31
+          "laps": 50
         },
         {
           "day": "2026-10-29",
@@ -305,10 +309,6 @@
         {
           "day": "2026-09-02",
           "laps": 69
-        },
-        {
-          "day": "2026-09-01",
-          "laps": 48
         }
       ],
       "rank": 1
@@ -920,7 +920,7 @@
     {
       "slug": "levi-wolfe",
       "name": "Levi Wolfe",
-      "role": "Endurance Team Driver",
+      "role": "Driver",
       "totalLaps": 47149,
       "cleanLaps": 43010,
       "cleanPct": 91.2,
@@ -1524,7 +1524,7 @@
     {
       "slug": "marko-skrnjug",
       "name": "Marko Skrnjug",
-      "role": "Endurance Team Driver",
+      "role": "Driver",
       "totalLaps": 39071,
       "cleanLaps": 27998,
       "cleanPct": 71.7,
@@ -2128,7 +2128,7 @@
     {
       "slug": "faraz-ebrahim",
       "name": "Faraz Ebrahim",
-      "role": "Endurance Team Driver",
+      "role": "Driver",
       "totalLaps": 35049,
       "cleanLaps": 28316,
       "cleanPct": 80.8,
@@ -3034,15 +3034,15 @@
     {
       "slug": "david-shreve",
       "name": "David Shreve",
-      "role": "Endurance Team Driver",
-      "totalLaps": 22044,
-      "cleanLaps": 17581,
-      "cleanPct": 79.8,
-      "hours": 825.1,
-      "totalEvents": 3562,
+      "role": "Driver",
+      "totalLaps": 22085,
+      "cleanLaps": 17610,
+      "cleanPct": 79.7,
+      "hours": 826.9,
+      "totalEvents": 3566,
       "firstDay": "2025-03-18",
-      "lastDay": "2026-10-30",
-      "activeDaysCount": 458,
+      "lastDay": "2026-10-31",
+      "activeDaysCount": 459,
       "favoriteCar": "Toyota GR86",
       "favoriteTrack": "Daytona International Speedway - Road Course",
       "topCars": [
@@ -3104,10 +3104,10 @@
         },
         {
           "name": "BMW M2 Racing (G87)",
-          "laps": 875,
-          "cleanLaps": 651,
-          "cleanPct": 74.4,
-          "hours": 34.2
+          "laps": 916,
+          "cleanLaps": 680,
+          "cleanPct": 74.2,
+          "hours": 36.1
         },
         {
           "name": "BMW M2 CS Racing (F87) - 2020",
@@ -3126,18 +3126,18 @@
           "hours": 64.7
         },
         {
+          "name": "Virginia International Raceway - Full Course",
+          "laps": 1391,
+          "cleanLaps": 957,
+          "cleanPct": 68.8,
+          "hours": 65.2
+        },
+        {
           "name": "Watkins Glen International - Boot",
           "laps": 1373,
           "cleanLaps": 1070,
           "cleanPct": 77.9,
           "hours": 68.7
-        },
-        {
-          "name": "Virginia International Raceway - Full Course",
-          "laps": 1350,
-          "cleanLaps": 928,
-          "cleanPct": 68.7,
-          "hours": 63.3
         },
         {
           "name": "Road America - Full Course",
@@ -3191,28 +3191,32 @@
       ],
       "sessions": {
         "Practice": {
-          "laps": 8285,
-          "cleanLaps": 6143,
+          "laps": 8306,
+          "cleanLaps": 6156,
           "cleanPct": 74.1,
-          "hours": 389.6
+          "hours": 390.7
         },
         "Qualifying": {
-          "laps": 1567,
-          "cleanLaps": 1293,
+          "laps": 1571,
+          "cleanLaps": 1296,
           "cleanPct": 82.5,
-          "hours": 71.8
+          "hours": 72.0
         },
         "Race": {
-          "laps": 12192,
-          "cleanLaps": 10145,
+          "laps": 12208,
+          "cleanLaps": 10158,
           "cleanPct": 83.2,
-          "hours": 363.6
+          "hours": 364.3
         }
       },
       "recentActivity": [
         {
+          "day": "2026-10-31",
+          "laps": 20
+        },
+        {
           "day": "2026-10-30",
-          "laps": 42
+          "laps": 63
         },
         {
           "day": "2026-10-29",
@@ -3325,10 +3329,6 @@
         {
           "day": "2026-09-29",
           "laps": 27
-        },
-        {
-          "day": "2026-09-28",
-          "laps": 22
         }
       ],
       "rank": 11
@@ -3638,7 +3638,7 @@
     {
       "slug": "martyn-cook",
       "name": "Martyn Cook",
-      "role": "Endurance Team Manager",
+      "role": "Driver",
       "totalLaps": 19969,
       "cleanLaps": 13364,
       "cleanPct": 66.9,
@@ -3944,8 +3944,8 @@
       "totalLaps": 17552,
       "cleanLaps": 11667,
       "cleanPct": 66.5,
-      "hours": 1158.7,
-      "totalEvents": 3597,
+      "hours": 1158.9,
+      "totalEvents": 3598,
       "firstDay": "2024-01-26",
       "lastDay": "2026-10-30",
       "activeDaysCount": 613,
@@ -4029,7 +4029,7 @@
           "laps": 2665,
           "cleanLaps": 1779,
           "cleanPct": 66.8,
-          "hours": 157.6
+          "hours": 157.7
         },
         {
           "name": "Road America - Full Course",
@@ -4057,7 +4057,7 @@
           "laps": 933,
           "cleanLaps": 621,
           "cleanPct": 66.6,
-          "hours": 46.3
+          "hours": 46.5
         },
         {
           "name": "Autodromo Internazionale del Mugello - Grand Prix",
@@ -4100,7 +4100,7 @@
           "laps": 11098,
           "cleanLaps": 6673,
           "cleanPct": 60.1,
-          "hours": 869.1
+          "hours": 869.2
         },
         "Qualifying": {
           "laps": 985,
@@ -4112,7 +4112,7 @@
           "laps": 5469,
           "cleanLaps": 4246,
           "cleanPct": 77.6,
-          "hours": 223.6
+          "hours": 223.7
         }
       },
       "recentActivity": [
@@ -4242,7 +4242,7 @@
     {
       "slug": "jacob-reid-3",
       "name": "Jacob Reid",
-      "role": "E-Sports Driver",
+      "role": "Driver",
       "totalLaps": 16761,
       "cleanLaps": 12306,
       "cleanPct": 73.4,
@@ -4544,7 +4544,7 @@
     {
       "slug": "adam-jones-2",
       "name": "Adam Jones",
-      "role": "Owner",
+      "role": "Driver",
       "totalLaps": 15586,
       "cleanLaps": 13207,
       "cleanPct": 84.7,
@@ -5148,7 +5148,7 @@
     {
       "slug": "jason-hayden",
       "name": "Jason Hayden",
-      "role": "Endurance Team Driver",
+      "role": "Driver",
       "totalLaps": 14986,
       "cleanLaps": 12428,
       "cleanPct": 82.9,
@@ -5450,7 +5450,7 @@
     {
       "slug": "keith-todd",
       "name": "Keith Todd",
-      "role": "Endurance Team Driver",
+      "role": "Driver",
       "totalLaps": 12874,
       "cleanLaps": 11191,
       "cleanPct": 86.9,
@@ -5752,15 +5752,15 @@
     {
       "slug": "stephen-smalley",
       "name": "Stephen Smalley",
-      "role": "Endurance Team Driver",
-      "totalLaps": 11751,
-      "cleanLaps": 8728,
+      "role": "Driver",
+      "totalLaps": 11758,
+      "cleanLaps": 8733,
       "cleanPct": 74.3,
-      "hours": 574.6,
-      "totalEvents": 1522,
+      "hours": 574.9,
+      "totalEvents": 1523,
       "firstDay": "2022-04-29",
-      "lastDay": "2026-10-30",
-      "activeDaysCount": 471,
+      "lastDay": "2026-10-31",
+      "activeDaysCount": 472,
       "favoriteCar": "Porsche 911 GT3 R (992)",
       "favoriteTrack": "Road Atlanta - Full Course",
       "topCars": [
@@ -5801,10 +5801,10 @@
         },
         {
           "name": "BMW M4 GT3 EVO",
-          "laps": 371,
-          "cleanLaps": 257,
+          "laps": 378,
+          "cleanLaps": 262,
           "cleanPct": 69.3,
-          "hours": 25.2
+          "hours": 25.5
         },
         {
           "name": "Super Formula Lights",
@@ -5909,10 +5909,10 @@
       ],
       "sessions": {
         "Practice": {
-          "laps": 5785,
-          "cleanLaps": 3819,
+          "laps": 5792,
+          "cleanLaps": 3824,
           "cleanPct": 66.0,
-          "hours": 383.6
+          "hours": 383.9
         },
         "Qualifying": {
           "laps": 617,
@@ -5934,6 +5934,10 @@
         }
       },
       "recentActivity": [
+        {
+          "day": "2026-10-31",
+          "laps": 7
+        },
         {
           "day": "2026-10-30",
           "laps": 12
@@ -6049,10 +6053,6 @@
         {
           "day": "2026-09-30",
           "laps": 4
-        },
-        {
-          "day": "2026-09-29",
-          "laps": 2
         }
       ],
       "rank": 20
@@ -6060,7 +6060,7 @@
     {
       "slug": "alex-cortez",
       "name": "Alex Cortez",
-      "role": "E-Sports Driver",
+      "role": "Driver",
       "totalLaps": 11466,
       "cleanLaps": 8816,
       "cleanPct": 76.9,
@@ -6361,7 +6361,7 @@
     },
     {
       "slug": "ethan-turner",
-      "name": "Ethan Turner2",
+      "name": "Ethan Turner",
       "role": "Driver",
       "totalLaps": 10990,
       "cleanLaps": 6184,
@@ -6966,7 +6966,7 @@
     {
       "slug": "andrew-fabian",
       "name": "Andrew Fabian",
-      "role": "Endurance Team Owner",
+      "role": "Driver",
       "totalLaps": 8618,
       "cleanLaps": 6818,
       "cleanPct": 79.1,
@@ -7268,15 +7268,15 @@
     {
       "slug": "terry-cantwell",
       "name": "Terry Cantwell",
-      "role": "Endurance Team Driver",
-      "totalLaps": 8291,
-      "cleanLaps": 6098,
-      "cleanPct": 73.5,
-      "hours": 418.4,
-      "totalEvents": 832,
+      "role": "Driver",
+      "totalLaps": 8306,
+      "cleanLaps": 6110,
+      "cleanPct": 73.6,
+      "hours": 419.0,
+      "totalEvents": 833,
       "firstDay": "2025-10-08",
-      "lastDay": "2026-10-29",
-      "activeDaysCount": 216,
+      "lastDay": "2026-10-30",
+      "activeDaysCount": 217,
       "favoriteCar": "Porsche 911 GT3 R (992)",
       "favoriteTrack": "Daytona International Speedway - Road Course",
       "topCars": [
@@ -7289,10 +7289,10 @@
         },
         {
           "name": "Porsche 963 GTP",
-          "laps": 1346,
-          "cleanLaps": 1002,
-          "cleanPct": 74.4,
-          "hours": 72.4
+          "laps": 1361,
+          "cleanLaps": 1014,
+          "cleanPct": 74.5,
+          "hours": 72.9
         },
         {
           "name": "Aston Martin Vantage GT3 EVO",
@@ -7425,10 +7425,10 @@
       ],
       "sessions": {
         "Practice": {
-          "laps": 3807,
-          "cleanLaps": 2426,
-          "cleanPct": 63.7,
-          "hours": 235.5
+          "laps": 3822,
+          "cleanLaps": 2438,
+          "cleanPct": 63.8,
+          "hours": 236.1
         },
         "Qualifying": {
           "laps": 181,
@@ -7444,6 +7444,10 @@
         }
       },
       "recentActivity": [
+        {
+          "day": "2026-10-30",
+          "laps": 15
+        },
         {
           "day": "2026-10-29",
           "laps": 18
@@ -7559,10 +7563,6 @@
         {
           "day": "2026-09-16",
           "laps": 20
-        },
-        {
-          "day": "2026-09-15",
-          "laps": 13
         }
       ],
       "rank": 25
@@ -7570,7 +7570,7 @@
     {
       "slug": "eric-gentry",
       "name": "Eric Gentry",
-      "role": "Endurance Team Driver",
+      "role": "Driver",
       "totalLaps": 8105,
       "cleanLaps": 5748,
       "cleanPct": 70.9,
@@ -7872,7 +7872,7 @@
     {
       "slug": "daniel-tamminga",
       "name": "Daniel Tamminga",
-      "role": "Endurance Team Driver",
+      "role": "Driver",
       "totalLaps": 7264,
       "cleanLaps": 4255,
       "cleanPct": 58.6,
@@ -8476,7 +8476,7 @@
     {
       "slug": "chandler-english",
       "name": "Chandler English",
-      "role": "Endurance Team Driver",
+      "role": "Driver",
       "totalLaps": 5706,
       "cleanLaps": 4641,
       "cleanPct": 81.3,
@@ -8778,7 +8778,7 @@
     {
       "slug": "gabe-wilmoth",
       "name": "Gabe Wilmoth",
-      "role": "Endurance Team Driver",
+      "role": "Driver",
       "totalLaps": 5490,
       "cleanLaps": 4076,
       "cleanPct": 74.2,
@@ -9080,7 +9080,7 @@
     {
       "slug": "matthew-graham-4",
       "name": "Matthew Graham",
-      "role": "Endurance Team Driver",
+      "role": "Driver",
       "totalLaps": 5454,
       "cleanLaps": 3565,
       "cleanPct": 65.4,
@@ -9684,7 +9684,7 @@
     {
       "slug": "aten-wa-theba",
       "name": "Aten-Wa Theba",
-      "role": "Endurance Team Driver",
+      "role": "Driver",
       "totalLaps": 4852,
       "cleanLaps": 3401,
       "cleanPct": 70.1,
@@ -10288,7 +10288,7 @@
     {
       "slug": "aron-lotthammer",
       "name": "Aron Lotthammer",
-      "role": "Endurance Team Driver",
+      "role": "Driver",
       "totalLaps": 3779,
       "cleanLaps": 2150,
       "cleanPct": 56.9,
@@ -10590,7 +10590,7 @@
     {
       "slug": "andrew-gould",
       "name": "Andrew Gould",
-      "role": "Endurance Team Driver",
+      "role": "Driver",
       "totalLaps": 3698,
       "cleanLaps": 2909,
       "cleanPct": 78.7,
@@ -11496,7 +11496,7 @@
     {
       "slug": "tim-libuda",
       "name": "Tim Libuda",
-      "role": "Endurance Team Driver",
+      "role": "Driver",
       "totalLaps": 2695,
       "cleanLaps": 1772,
       "cleanPct": 65.8,
@@ -11798,7 +11798,7 @@
     {
       "slug": "matty-roberts",
       "name": "Matty Roberts",
-      "role": "Developer",
+      "role": "Driver",
       "totalLaps": 2659,
       "cleanLaps": 1763,
       "cleanPct": 66.3,
@@ -12704,7 +12704,7 @@
     {
       "slug": "tanner-hupp",
       "name": "Tanner Hupp",
-      "role": "Endurance Team Driver",
+      "role": "Driver",
       "totalLaps": 1942,
       "cleanLaps": 1083,
       "cleanPct": 55.8,
@@ -13006,7 +13006,7 @@
     {
       "slug": "christian-rivera-4",
       "name": "Christian Rivera",
-      "role": "Endurance Team Driver",
+      "role": "Driver",
       "totalLaps": 1869,
       "cleanLaps": 1164,
       "cleanPct": 62.3,
@@ -13307,8 +13307,8 @@
     },
     {
       "slug": "bret-leinweber-weyand",
-      "name": "Bret Weyand",
-      "role": "Endurance Team Driver",
+      "name": "Bret Leinweber Weyand",
+      "role": "Driver",
       "totalLaps": 1053,
       "cleanLaps": 849,
       "cleanPct": 80.6,
@@ -13602,7 +13602,7 @@
     {
       "slug": "justin-sadowski",
       "name": "Justin Sadowski",
-      "role": "Broadcast",
+      "role": "Driver",
       "totalLaps": 956,
       "cleanLaps": 687,
       "cleanPct": 71.9,
@@ -13903,8 +13903,8 @@
     },
     {
       "slug": "william-mcclain",
-      "name": "Bill McClain",
-      "role": "Endurance Team Driver",
+      "name": "William McClain",
+      "role": "Driver",
       "totalLaps": 732,
       "cleanLaps": 556,
       "cleanPct": 76.0,
@@ -14150,7 +14150,7 @@
     {
       "slug": "landen-hendershot",
       "name": "Landen Hendershot",
-      "role": "Endurance Team Driver",
+      "role": "Driver",
       "totalLaps": 498,
       "cleanLaps": 451,
       "cleanPct": 90.6,
