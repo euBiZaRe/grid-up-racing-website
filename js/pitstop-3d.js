@@ -749,7 +749,8 @@
         // ---------------------------------------------------------------------
         loadCarModel(onProgress, onComplete, onError) {
             const loader = new THREE.GLTFLoader();
-            const modelUrl = 'assets/models/mclaren-720s.glb';
+            const modelUrl = 'assets/models/mclaren-720s.glb?v=3';
+            const expectedTotalBytes = 18064564; // Optimized GLB size
 
             console.log('[3D Engine] Loading car model from:', modelUrl);
 
@@ -772,11 +773,15 @@
                     this.carGroup.add(this.carModel);
                     this.isLoaded = true;
 
+                    if (typeof onProgress === 'function') onProgress(100);
                     if (typeof onComplete === 'function') onComplete(this);
                 },
                 (xhr) => {
-                    if (xhr.lengthComputable && typeof onProgress === 'function') {
-                        const pct = Math.round((xhr.loaded / xhr.total) * 100);
+                    // Handles both Content-Length and Cloudflare Transfer-Encoding: chunked streams
+                    const totalBytes = (xhr && xhr.total && xhr.total > 0) ? xhr.total : expectedTotalBytes;
+                    const loadedBytes = (xhr && xhr.loaded) ? xhr.loaded : 0;
+                    const pct = Math.min(99, Math.max(1, Math.round((loadedBytes / totalBytes) * 100)));
+                    if (typeof onProgress === 'function') {
                         onProgress(pct);
                     }
                 },

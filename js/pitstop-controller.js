@@ -64,6 +64,14 @@
                 this.onLoadError.bind(this)
             );
 
+            // Safety timeout: If 3D model hasn't loaded within 10s, auto-enter normal website
+            this.loadTimeoutId = setTimeout(() => {
+                if (!this.scene3D || !this.scene3D.isLoaded) {
+                    console.warn('[Pitstop Controller] Loading timed out. Collapsing intro directly.');
+                    this.collapseIntroDirectly();
+                }
+            }, 10000);
+
             this.bindEvents();
         }
 
@@ -87,6 +95,11 @@
 
         onLoadComplete() {
             console.log('[Pitstop Controller] 3D assets loaded successfully.');
+
+            if (this.loadTimeoutId) {
+                clearTimeout(this.loadTimeoutId);
+                this.loadTimeoutId = null;
+            }
 
             if (this.loaderFill) this.loaderFill.style.width = '100%';
             if (this.loaderPct) this.loaderPct.textContent = '100%';
@@ -176,6 +189,16 @@
         }
 
         bindEvents() {
+            // Immediate Skip button on the Loading Screen
+            const loaderSkip = document.getElementById('loader-btn-skip');
+            if (loaderSkip) {
+                loaderSkip.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    console.log('[Pitstop Controller] Loader skip clicked.');
+                    this.collapseIntroDirectly();
+                });
+            }
+
             // Skip Intro Button
             if (this.btnSkip) {
                 this.btnSkip.addEventListener('click', (e) => {

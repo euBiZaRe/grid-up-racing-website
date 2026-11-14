@@ -448,6 +448,32 @@ body.pitstop-completed #navbar {
     color: #94a3b8;
 }
 
+.loader-btn-skip {
+    margin-top: 1.8rem;
+    padding: 0.55rem 1.4rem;
+    font-family: var(--pit-font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: #cbd5e1;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.loader-btn-skip:hover {
+    color: #fff;
+    border-color: var(--pit-lime);
+    background: rgba(0, 255, 136, 0.12);
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.25);
+    transform: translateY(-1px);
+}
+
 /* --------------------------------------------------------------------------
    Scene 4: GRiD UP Cinematic Reveal Overlay
    -------------------------------------------------------------------------- */
