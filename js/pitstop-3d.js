@@ -2,7 +2,7 @@
  * GRiD UP - Interactive 3D Pitstop Experience Engine
  * Built with Three.js r128 & GLTFLoader.
  * Features the McLaren 720S GT3 in a dark motorsport pitlane,
- * realistic vehicle kinematics, 3D pit crew, and dynamic lighting.
+ * realistic forward vehicle kinematics, 3D pit crew, and dynamic lighting.
  */
 
 (function(window) {
@@ -31,6 +31,7 @@
                 lr: new THREE.Group(),
                 rr: new THREE.Group()
             };
+            // Model space wheel centers
             this.wheelCenters = {
                 lf: new THREE.Vector3(0.857, 0.377, 1.213),
                 rf: new THREE.Vector3(-0.846, 0.377, 1.213),
@@ -50,27 +51,30 @@
             this.lollipopSign = null;
             this.lollipopCanvas = null;
             this.lollipopTexture = null;
+            this.airJackOperator = null;
             
             // Particles
             this.ambientParticles = null;
             this.tyreSmoke = null;
-            this.wheelGunSparks = [];
             
             // Overhead signage / LED displays
             this.pitTimerDisplay = null;
             this.pitTimerCanvas = null;
             this.pitTimerTexture = null;
             
-            // Animation state
+            // Smooth Camera Interpolation targets
+            this.currentCameraPos = new THREE.Vector3(0, 2.2, 32);
+            this.targetCameraPos = new THREE.Vector3(0, 2.2, 32);
+            this.currentCameraLookAt = new THREE.Vector3(0, 1.0, 10);
+            this.targetCameraLookAt = new THREE.Vector3(0, 1.0, 10);
+            
+            // State
             this.wheelRotationAngle = 0;
-            this.lastCarZ = 50;
+            this.currentTimelineProgress = 0;
+            this.targetTimelineProgress = 0;
             this.isLoaded = false;
             this.isDisposed = false;
             this.animFrameId = null;
-            
-            // Camera targets for smooth interpolation
-            this.cameraPosition = new THREE.Vector3(0, 2, 25);
-            this.cameraLookAt = new THREE.Vector3(0, 1, 0);
         }
 
         init(container, onProgress, onComplete, onError) {
@@ -81,16 +85,20 @@
             // 1. Scene & Atmospheric Fog
             this.scene = new THREE.Scene();
             this.scene.background = new THREE.Color(0x04060b);
-            this.scene.fog = new THREE.FogExp2(0x050711, 0.016);
+            this.scene.fog = new THREE.FogExp2(0x050711, 0.015);
 
             // 2. Camera with responsive FOV (wider on mobile to prevent clipping)
             const isMobile = width < 768;
-            const fov = isMobile ? 55 : 44;
-            this.camera = new THREE.PerspectiveCamera(fov, width / height, 0.1, 200);
-            this.camera.position.set(0, 1.8, 30);
-            this.camera.lookAt(0, 1, 0);
+            const fov = isMobile ? 54 : 42;
+            this.camera = new THREE.PerspectiveCamera(fov, width / height, 0.1, 220);
+            this.camera.position.set(0, 2.2, 32);
+            this.currentCameraPos.set(0, 2.2, 32);
+            this.targetCameraPos.set(0, 2.2, 32);
+            this.currentCameraLookAt.set(0, 1.0, 10);
+            this.targetCameraLookAt.set(0, 1.0, 10);
+            this.camera.lookAt(this.currentCameraLookAt);
 
-            // 3. WebGL Renderer
+            // 3. WebGL Renderer with High-Performance Tone Mapping & Soft Shadows
             this.renderer = new THREE.WebGLRenderer({
                 antialias: window.devicePixelRatio < 2,
                 powerPreference: 'high-performance',
@@ -101,7 +109,7 @@
             this.renderer.shadowMap.enabled = true;
             this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            this.renderer.toneMappingExposure = 1.15;
+            this.renderer.toneMappingExposure = 1.18;
             this.renderer.outputEncoding = THREE.sRGBEncoding;
 
             this.container.innerHTML = '';
@@ -133,7 +141,7 @@
             const width = window.innerWidth;
             const height = window.innerHeight;
             const isMobile = width < 768;
-            this.camera.fov = isMobile ? 55 : 44;
+            this.camera.fov = isMobile ? 54 : 42;
             this.camera.aspect = width / height;
             this.camera.updateProjectionMatrix();
             this.renderer.setSize(width, height);
@@ -145,47 +153,47 @@
         // ---------------------------------------------------------------------
         buildLighting() {
             // Dark ambient fill with deep slate-blue tone
-            const ambient = new THREE.AmbientLight(0x1a243b, 0.55);
+            const ambient = new THREE.AmbientLight(0x1a243b, 0.6);
             this.scene.add(ambient);
 
             // Overhead Pit Box Spotlight (Key Light)
-            const mainPitSpot = new THREE.SpotLight(0xf0f6ff, 3.8);
-            mainPitSpot.position.set(0, 8.5, 0);
+            const mainPitSpot = new THREE.SpotLight(0xf0f6ff, 4.2);
+            mainPitSpot.position.set(0, 9.0, 0);
             mainPitSpot.target.position.set(0, 0, 0);
-            mainPitSpot.angle = Math.PI / 4.2;
+            mainPitSpot.angle = Math.PI / 4.0;
             mainPitSpot.penumbra = 0.65;
-            mainPitSpot.decay = 1.8;
-            mainPitSpot.distance = 25;
+            mainPitSpot.decay = 1.7;
+            mainPitSpot.distance = 28;
             mainPitSpot.castShadow = true;
             mainPitSpot.shadow.mapSize.width = window.innerWidth < 768 ? 1024 : 2048;
             mainPitSpot.shadow.mapSize.height = window.innerWidth < 768 ? 1024 : 2048;
             mainPitSpot.shadow.camera.near = 1;
-            mainPitSpot.shadow.camera.far = 25;
+            mainPitSpot.shadow.camera.far = 28;
             mainPitSpot.shadow.bias = -0.0008;
             this.scene.add(mainPitSpot);
             this.scene.add(mainPitSpot.target);
 
             // Gantry Neon Purple Fill (Team Identity)
-            const purpleWash = new THREE.PointLight(0x8b5cf6, 2.2, 18, 2);
-            purpleWash.position.set(2.8, 5.0, 0);
+            const purpleWash = new THREE.PointLight(0x8b5cf6, 2.5, 20, 2);
+            purpleWash.position.set(3.2, 5.2, 0);
             this.scene.add(purpleWash);
 
             // Gantry Electric Lime Accent
-            const limeWash = new THREE.PointLight(0x00ff88, 1.8, 16, 2);
-            limeWash.position.set(-2.8, 5.0, 0);
+            const limeWash = new THREE.PointLight(0x00ff88, 2.0, 18, 2);
+            limeWash.position.set(-3.2, 5.2, 0);
             this.scene.add(limeWash);
 
-            // Distant Pitlane Entrance Floodlight
-            const entryLight = new THREE.SpotLight(0x8099cc, 2.0, 45, Math.PI / 5, 0.7);
-            entryLight.position.set(4, 9, 35);
-            entryLight.target.position.set(0, 0, 20);
+            // Pitlane Entrance Floodlight (At Z = +40)
+            const entryLight = new THREE.SpotLight(0x90a5d4, 2.4, 50, Math.PI / 4.5, 0.7);
+            entryLight.position.set(5, 9.5, 42);
+            entryLight.target.position.set(0, 0, 22);
             this.scene.add(entryLight);
             this.scene.add(entryLight.target);
 
-            // Distant Pitlane Exit Floodlight
-            const exitLight = new THREE.SpotLight(0x8099cc, 2.0, 45, Math.PI / 5, 0.7);
-            exitLight.position.set(4, 9, -35);
-            exitLight.target.position.set(0, 0, -20);
+            // Pitlane Exit Floodlight (At Z = -40)
+            const exitLight = new THREE.SpotLight(0x90a5d4, 2.4, 50, Math.PI / 4.5, 0.7);
+            exitLight.position.set(5, 9.5, -42);
+            exitLight.target.position.set(0, 0, -22);
             this.scene.add(exitLight);
             this.scene.add(exitLight.target);
         }
@@ -195,9 +203,8 @@
         // ---------------------------------------------------------------------
         buildPitlaneTrack() {
             const trackWidth = 16;
-            const trackLength = 140;
+            const trackLength = 150;
 
-            // Generate Procedural High-Res Asphalt Texture with painted markings
             const canvas = document.createElement('canvas');
             canvas.width = 2048;
             canvas.height = 2048;
@@ -207,8 +214,8 @@
             ctx.fillStyle = '#090d14';
             ctx.fillRect(0, 0, 2048, 2048);
 
-            // Fine bitumen grain noise
-            for (let i = 0; i < 45000; i++) {
+            // Bitumen grain noise
+            for (let i = 0; i < 50000; i++) {
                 const nx = Math.random() * 2048;
                 const ny = Math.random() * 2048;
                 const bright = Math.floor(Math.random() * 32) + 8;
@@ -216,28 +223,27 @@
                 ctx.fillRect(nx, ny, 2, 2);
             }
 
-            // Pitlane Center Separation Line (Yellow)
+            // Pitlane Fast Lane Separation Line (Yellow)
             ctx.fillStyle = '#fbbf24';
             ctx.fillRect(980, 0, 24, 2048);
 
-            // Pit Speed Limit Demarcation Text
-            ctx.font = 'bold 36px "Orbitron", sans-serif';
+            // Pit Speed Limit Demarcation Text at Entry (+Z, which is top of texture)
+            ctx.font = 'bold 38px "Orbitron", sans-serif';
             ctx.fillStyle = 'rgba(251, 191, 36, 0.85)';
             ctx.textAlign = 'center';
             ctx.save();
-            ctx.translate(650, 400);
+            ctx.translate(650, 360);
             ctx.rotate(-Math.PI / 2);
             ctx.fillText('PIT SPEED 60 KM/H', 0, 0);
             ctx.restore();
 
-            // Pit Box 01 Perimeter (Yellow & Cyan Stencil)
-            // Center is around Y=1024, X=450
+            // Pit Box 01 Perimeter (Yellow Stencil)
             ctx.strokeStyle = '#eab308';
             ctx.lineWidth = 14;
             ctx.strokeRect(200, 780, 520, 500);
 
             // Diagonal Hazard Warning Chevrons along pit box boundary
-            ctx.strokeStyle = 'rgba(234, 179, 8, 0.7)';
+            ctx.strokeStyle = 'rgba(234, 179, 8, 0.75)';
             ctx.lineWidth = 8;
             for (let c = 790; c < 1270; c += 40) {
                 ctx.beginPath();
@@ -258,13 +264,11 @@
             ctx.fillText('DRIVE. IMPROVE. ACHIEVE.', 0, 15);
             ctx.restore();
 
-            // Tyre stop crosshairs (Front & Rear)
+            // Tyre stop crosshairs (Front is towards bottom/exit, Rear is towards top/entry)
             ctx.strokeStyle = '#00ff88';
             ctx.lineWidth = 6;
-            // LF & RF
             ctx.strokeRect(320, 840, 50, 80);
             ctx.strokeRect(550, 840, 50, 80);
-            // LR & RR
             ctx.strokeRect(320, 1120, 50, 80);
             ctx.strokeRect(550, 1120, 50, 80);
 
@@ -276,34 +280,34 @@
             const trackGeo = new THREE.PlaneGeometry(trackWidth, trackLength);
             const trackMat = new THREE.MeshStandardMaterial({
                 map: trackTexture,
-                roughness: 0.68,
-                metalness: 0.22,
+                roughness: 0.65,
+                metalness: 0.25,
                 roughnessMap: trackTexture
             });
 
             const trackMesh = new THREE.Mesh(trackGeo, trackMat);
             trackMesh.rotation.x = -Math.PI / 2;
             trackMesh.position.y = 0;
-            trackMesh.position.x = 2; // Center pitlane in viewing frame
+            trackMesh.position.x = 2; // Position pitlane in viewing frame
             trackMesh.receiveShadow = true;
             this.scene.add(trackMesh);
 
-            // Pit Wall (FIA Concrete barrier on track side)
+            // Concrete Pit Wall on the left (trackside, X = -6)
             const wallLength = trackLength;
-            const wallGeo = new THREE.BoxGeometry(0.8, 1.2, wallLength);
+            const wallGeo = new THREE.BoxGeometry(0.8, 1.25, wallLength);
             const wallMat = new THREE.MeshStandardMaterial({
                 color: 0x1e2430,
                 roughness: 0.85,
                 metalness: 0.1
             });
             const pitWall = new THREE.Mesh(wallGeo, wallMat);
-            pitWall.position.set(-6, 0.6, 0);
+            pitWall.position.set(-6, 0.625, 0);
             pitWall.castShadow = true;
             pitWall.receiveShadow = true;
             this.scene.add(pitWall);
 
             // Red & White Safety Curbs along pit wall base
-            const curbGeo = new THREE.BoxGeometry(0.5, 0.15, wallLength);
+            const curbGeo = new THREE.BoxGeometry(0.5, 0.16, wallLength);
             const curbCanvas = document.createElement('canvas');
             curbCanvas.width = 64;
             curbCanvas.height = 128;
@@ -315,14 +319,14 @@
             const curbTex = new THREE.CanvasTexture(curbCanvas);
             curbTex.wrapS = THREE.RepeatWrapping;
             curbTex.wrapT = THREE.RepeatWrapping;
-            curbTex.repeat.set(1, 70);
+            curbTex.repeat.set(1, 75);
             const curbMat = new THREE.MeshStandardMaterial({ map: curbTex, roughness: 0.5 });
             const curb = new THREE.Mesh(curbGeo, curbMat);
             curb.position.set(-5.4, 0.08, 0);
             this.scene.add(curb);
 
-            // Debris fence above pit wall (Steel poles & wire mesh)
-            for (let z = -60; z <= 60; z += 12) {
+            // Steel posts along pit wall for protective catch fencing
+            for (let z = -65; z <= 65; z += 10) {
                 const postGeo = new THREE.CylinderGeometry(0.04, 0.04, 2.8, 8);
                 const postMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.8 });
                 const post = new THREE.Mesh(postGeo, postMat);
@@ -335,7 +339,6 @@
         // Pit Gantry, Overhead LED Signage & Garage Interior
         // ---------------------------------------------------------------------
         buildPitGantryAndGarage() {
-            // Overhead Heavy Steel Truss Gantry spanning over the pit box
             const gantryGroup = new THREE.Group();
             const beamMat = new THREE.MeshStandardMaterial({
                 color: 0x1f293d,
@@ -384,7 +387,6 @@
 
             sctx.font = '700 32px "JetBrains Mono", monospace';
             sctx.fillStyle = '#00ff88';
-            sctx.letterSpacing = '6px';
             sctx.fillText('SIM RACING // PIT 01', 512, 185);
 
             const signTex = new THREE.CanvasTexture(signCanvas);
@@ -393,14 +395,14 @@
                 map: signTex,
                 emissive: 0x8b5cf6,
                 emissiveMap: signTex,
-                emissiveIntensity: 0.6,
+                emissiveIntensity: 0.65,
                 roughness: 0.3
             });
             const signMesh = new THREE.Mesh(signGeo, signMat);
             signMesh.position.set(0, 5.2, 0);
             gantryGroup.add(signMesh);
 
-            // Digital Live Pitstop Stopwatch Board (facing front)
+            // Digital Live Pitstop Stopwatch Board (facing front toward pit entry)
             this.pitTimerCanvas = document.createElement('canvas');
             this.pitTimerCanvas.width = 512;
             this.pitTimerCanvas.height = 128;
@@ -441,7 +443,6 @@
             desk.position.set(-4.8, 0.45, 0);
             standGroup.add(desk);
 
-            // Curved monitors with simulated telemetry traces
             for (let m = -1; m <= 1; m++) {
                 const monGeo = new THREE.BoxGeometry(0.05, 0.65, 0.95);
                 const monMat = new THREE.MeshBasicMaterial({ color: 0x00ff88 });
@@ -456,7 +457,6 @@
             const garageGroup = new THREE.Group();
             garageGroup.position.set(5.8, 0, 0);
 
-            // Rear Garage Wall with ambient purple strip
             const gWallGeo = new THREE.BoxGeometry(0.4, 5.0, 30);
             const gWallMat = new THREE.MeshStandardMaterial({ color: 0x0a0f1d, roughness: 0.7 });
             const gWall = new THREE.Mesh(gWallGeo, gWallMat);
@@ -473,7 +473,6 @@
                     tire.castShadow = true;
                     garageGroup.add(tire);
 
-                    // Red warmer band
                     const bandGeo = new THREE.CylinderGeometry(0.365, 0.365, 0.2, 16);
                     const bandMat = new THREE.MeshBasicMaterial({ color: 0xef4444 });
                     const band = new THREE.Mesh(bandGeo, bandMat);
@@ -508,80 +507,53 @@
         }
 
         // ---------------------------------------------------------------------
-        // 3D Pit Crew Characters
+        // 3D Pit Crew Characters (Positioned around car facing -Z)
         // ---------------------------------------------------------------------
         buildPitCrew() {
-            // Team colors: Black suit with GRiD UP Purple (#8b5cf6) & Lime (#00ff88)
-            const suitMat = new THREE.MeshStandardMaterial({
-                color: 0x111827,
-                roughness: 0.65
-            });
-            const accentMat = new THREE.MeshStandardMaterial({
-                color: 0x8b5cf6,
-                roughness: 0.4
-            });
-            const helmetMat = new THREE.MeshStandardMaterial({
-                color: 0x090d16,
-                metalness: 0.85,
-                roughness: 0.25
-            });
-            const visorMat = new THREE.MeshStandardMaterial({
-                color: 0x00ff88,
-                metalness: 0.95,
-                roughness: 0.1
-            });
-            const gunMat = new THREE.MeshStandardMaterial({
-                color: 0x94a3b8,
-                metalness: 0.9,
-                roughness: 0.2
-            });
+            const suitMat = new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.65 });
+            const accentMat = new THREE.MeshStandardMaterial({ color: 0x8b5cf6, roughness: 0.4 });
+            const helmetMat = new THREE.MeshStandardMaterial({ color: 0x090d16, metalness: 0.85, roughness: 0.25 });
+            const visorMat = new THREE.MeshStandardMaterial({ color: 0x00ff88, metalness: 0.95, roughness: 0.1 });
+            const gunMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.9, roughness: 0.2 });
 
-            // Factory to build an articulated crouching pit crew member
-            const createCrewMember = (side = 'left') => {
+            const createCrewMember = (facingDir = 'toward_car_from_right') => {
                 const member = new THREE.Group();
 
                 // Torso
-                const torsoGeo = new THREE.BoxGeometry(0.42, 0.52, 0.28);
-                const torso = new THREE.Mesh(torsoGeo, suitMat);
+                const torso = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.52, 0.28), suitMat);
                 torso.position.y = 0.55;
                 torso.castShadow = true;
                 member.add(torso);
 
-                // Purple chest strip
-                const stripeGeo = new THREE.BoxGeometry(0.43, 0.12, 0.29);
-                const stripe = new THREE.Mesh(stripeGeo, accentMat);
+                // Purple chest stripe
+                const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.43, 0.12, 0.29), accentMat);
                 stripe.position.y = 0.62;
                 member.add(stripe);
 
                 // Helmet
-                const headGeo = new THREE.SphereGeometry(0.18, 16, 16);
-                const head = new THREE.Mesh(headGeo, helmetMat);
+                const head = new THREE.Mesh(new THREE.SphereGeometry(0.18, 16, 16), helmetMat);
                 head.position.y = 0.92;
                 head.scale.set(1, 1.15, 1.1);
                 head.castShadow = true;
                 member.add(head);
 
                 // Reflective Visor
-                const visorGeo = new THREE.BoxGeometry(0.24, 0.08, 0.08);
-                const visor = new THREE.Mesh(visorGeo, visorMat);
-                visor.position.set(0, 0.94, side === 'left' ? -0.15 : 0.15);
+                const visor = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.08, 0.08), visorMat);
+                visor.position.set(0, 0.94, -0.15);
                 member.add(visor);
 
                 // Arms holding Pneumatic Wheel Gun
                 const armGroup = new THREE.Group();
                 armGroup.position.set(0, 0.58, 0);
 
-                const gunGeo = new THREE.BoxGeometry(0.12, 0.18, 0.35);
-                const gun = new THREE.Mesh(gunGeo, gunMat);
-                gun.position.set(0, -0.08, side === 'left' ? -0.42 : 0.42);
+                const gun = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.18, 0.35), gunMat);
+                gun.position.set(0, -0.08, -0.42);
                 gun.castShadow = true;
                 armGroup.add(gun);
 
-                // Drive socket tip
-                const tipGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.16, 12);
-                const tip = new THREE.Mesh(tipGeo, gunMat);
+                const tip = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.16, 12), gunMat);
                 tip.rotation.x = Math.PI / 2;
-                tip.position.set(0, -0.08, side === 'left' ? -0.62 : 0.62);
+                tip.position.set(0, -0.08, -0.62);
                 armGroup.add(tip);
 
                 member.add(armGroup);
@@ -589,13 +561,12 @@
                 member.gun = gun;
 
                 // Legs in kneeling stance
-                const legGeo = new THREE.BoxGeometry(0.16, 0.42, 0.24);
-                const leg1 = new THREE.Mesh(legGeo, suitMat);
+                const leg1 = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.42, 0.24), suitMat);
                 leg1.position.set(-0.12, 0.22, 0.05);
                 leg1.rotation.x = 0.35;
                 member.add(leg1);
 
-                const leg2 = new THREE.Mesh(legGeo, suitMat);
+                const leg2 = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.42, 0.24), suitMat);
                 leg2.position.set(0.12, 0.18, -0.12);
                 leg2.rotation.x = -0.55;
                 member.add(leg2);
@@ -603,16 +574,21 @@
                 return member;
             };
 
-            // 4 Tyre Changers at LF, RF, LR, RR
-            const crewOffsets = [
-                { id: 'lf', x: 1.55, z: 1.25, rotY: Math.PI / 2, side: 'left' },
-                { id: 'lr', x: 1.55, z: -1.45, rotY: Math.PI / 2, side: 'left' },
-                { id: 'rf', x: -1.55, z: 1.25, rotY: -Math.PI / 2, side: 'right' },
-                { id: 'rr', x: -1.55, z: -1.45, rotY: -Math.PI / 2, side: 'right' }
+            // 4 Tyre Changers around the 4 wheels:
+            // Since car faces -Z:
+            // Front wheels are at world Z ≈ -1.2m
+            // Rear wheels are at world Z ≈ +1.4m
+            // Right wheels (garage side) are at world X ≈ +0.85m -> Crew at X ≈ +1.65m facing car (-X)
+            // Left wheels (pit wall side) are at world X ≈ -0.85m -> Crew at X ≈ -1.65m facing car (+X)
+            const crewConfigs = [
+                { id: 'rf', x: 1.65, z: -1.25, rotY: -Math.PI / 2, side: 'garage' }, // Right Front
+                { id: 'rr', x: 1.65, z: 1.45, rotY: -Math.PI / 2, side: 'garage' },  // Right Rear
+                { id: 'lf', x: -1.65, z: -1.25, rotY: Math.PI / 2, side: 'wall' },  // Left Front
+                { id: 'lr', x: -1.65, z: 1.45, rotY: Math.PI / 2, side: 'wall' }   // Left Rear
             ];
 
-            crewOffsets.forEach(cfg => {
-                const c = createCrewMember(cfg.side);
+            crewConfigs.forEach(cfg => {
+                const c = createCrewMember();
                 c.position.set(cfg.x, 0, cfg.z);
                 c.rotation.y = cfg.rotY;
                 c.userData = {
@@ -624,9 +600,9 @@
                 this.tyreChangers.push(c);
             });
 
-            // 1 Lollipop Marshal standing front-left of pit box
+            // 1 Lollipop Marshal standing in front of car (Z ≈ -3.2, garage side X ≈ 1.8)
             const marshal = new THREE.Group();
-            marshal.position.set(2.2, 0, 3.2);
+            marshal.position.set(1.8, 0, -3.2);
 
             const mTorso = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.65, 0.28), suitMat);
             mTorso.position.y = 1.0;
@@ -636,29 +612,28 @@
             mHead.position.y = 1.48;
             marshal.add(mHead);
 
-            // Lollipop sign post
-            const poleGeo = new THREE.CylinderGeometry(0.025, 0.025, 3.2, 8);
-            const poleMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.8 });
-            const pole = new THREE.Mesh(poleGeo, poleMat);
+            // Lollipop sign pole
+            const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 3.2, 8), new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.8 }));
             pole.position.set(-0.7, 1.6, 0);
             pole.rotation.z = -0.15;
             marshal.add(pole);
 
-            // Lollipop paddle head with dual LED display
+            // Lollipop paddle with dual-sided LED display facing incoming car (+Z)
             this.lollipopCanvas = document.createElement('canvas');
             this.lollipopCanvas.width = 256;
             this.lollipopCanvas.height = 256;
             this.lollipopTexture = new THREE.CanvasTexture(this.lollipopCanvas);
             this.updateLollipopSign('BRAKE', '#ef4444');
 
-            const paddleGeo = new THREE.CircleGeometry(0.4, 24);
+            const paddleGeo = new THREE.CircleGeometry(0.42, 24);
             const paddleMat = new THREE.MeshBasicMaterial({
                 map: this.lollipopTexture,
                 side: THREE.DoubleSide
             });
             this.lollipopSign = new THREE.Mesh(paddleGeo, paddleMat);
-            this.lollipopSign.position.set(-1.1, 2.8, 0);
-            this.lollipopSign.rotation.y = Math.PI / 2;
+            this.lollipopSign.position.set(-1.1, 2.7, 0);
+            // Rotate paddle to face incoming car (+Z)
+            this.lollipopSign.rotation.y = 0;
             marshal.add(this.lollipopSign);
 
             this.lollipop = marshal;
@@ -670,7 +645,6 @@
             const ctx = this.lollipopCanvas.getContext('2d');
             ctx.clearRect(0, 0, 256, 256);
 
-            // Circular ring
             ctx.fillStyle = '#060a14';
             ctx.beginPath();
             ctx.arc(128, 128, 120, 0, Math.PI * 2);
@@ -680,8 +654,7 @@
             ctx.lineWidth = 14;
             ctx.stroke();
 
-            // Bold LED Stencil Text
-            ctx.font = '900 48px "Orbitron", sans-serif';
+            ctx.font = '900 46px "Orbitron", sans-serif';
             ctx.fillStyle = colorHex;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
@@ -691,17 +664,16 @@
         }
 
         // ---------------------------------------------------------------------
-        // Atmospheric Dust Particles & Tyre Smoke
+        // Atmospheric Dust Particles
         // ---------------------------------------------------------------------
         buildParticles() {
-            // Ambient dust motes floating under spotlights
             const count = 350;
             const geom = new THREE.BufferGeometry();
             const positions = new Float32Array(count * 3);
             for (let i = 0; i < count * 3; i += 3) {
                 positions[i] = (Math.random() - 0.5) * 16;
                 positions[i + 1] = Math.random() * 7;
-                positions[i + 2] = (Math.random() - 0.5) * 45;
+                positions[i + 2] = (Math.random() - 0.5) * 50;
             }
             geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 
@@ -718,7 +690,7 @@
         }
 
         // ---------------------------------------------------------------------
-        // McLaren 720S GT3 Model Loading & Hierarchy Optimization
+        // McLaren 720S GT3 Model Loading & Forward Orientation
         // ---------------------------------------------------------------------
         loadCarModel(onProgress, onComplete, onError) {
             const loader = new THREE.GLTFLoader();
@@ -730,16 +702,17 @@
                 modelUrl,
                 (gltf) => {
                     this.carModel = gltf.scene;
-                    // The GLB has a 0.01 FBX unit matrix on its root node.
-                    // Scale by 100 to bring the McLaren 720S to exact 1:1 real-world meter scale!
+
+                    // 1. Scale from FBX centimeters to real-world meters
                     this.carModel.scale.set(100, 100, 100);
-                    console.log('[3D Engine] GLB loaded successfully. Optimizing hierarchy...');
+
+                    // 2. Rotate 180° so the car's nose points FORWARD along the pitlane (-Z)
+                    this.carModel.rotation.y = Math.PI;
+
+                    console.log('[3D Engine] GLB loaded & rotated forward. Setting up hierarchy...');
 
                     // Setup Wheels, Materials & Lights
                     this.setupCarHierarchy();
-
-                    const bbox = new THREE.Box3().setFromObject(this.carModel);
-                    console.log('[3D Engine] Car BBox size:', bbox.getSize(new THREE.Vector3()));
 
                     this.carGroup.add(this.carModel);
                     this.isLoaded = true;
@@ -762,7 +735,6 @@
         setupCarHierarchy() {
             if (!this.carModel) return;
 
-            // Target nodes for wheels
             const wheelNodeMap = {
                 lf: 'WHEEL_LF',
                 rf: 'WHEEL_RF',
@@ -794,7 +766,7 @@
                 }
             });
 
-            // Enhance materials & discover lights
+            // Enhance materials for WebGL
             this.carModel.traverse(child => {
                 if (child.isMesh) {
                     child.castShadow = true;
@@ -802,12 +774,10 @@
 
                     const mat = child.material;
                     if (mat) {
-                        // High-end GT3 metallic car paint
                         if (mat.name && mat.name.toLowerCase().includes('carpaint')) {
                             mat.metalness = 0.85;
                             mat.roughness = 0.18;
                         }
-                        // Tinted endurance windshield / windows
                         if (mat.name && mat.name.toLowerCase().includes('window')) {
                             mat.transparent = true;
                             mat.opacity = 0.55;
@@ -817,90 +787,104 @@
                 }
             });
 
-            // Attach 2 dynamic forward spotlights to the headlights
-            const leftHeadlight = new THREE.SpotLight(0xf8fafc, 6.0, 45, Math.PI / 6, 0.45);
+            // Headlights: Attached inside carModel so they illuminate FORWARD in direction of travel (-Z)
+            // In carModel local space, front is +Z, which rotates 180° to world -Z!
+            const leftHeadlight = new THREE.SpotLight(0xf8fafc, 7.0, 50, Math.PI / 5.5, 0.45);
             leftHeadlight.position.set(0.65, 0.55, 2.1);
-            leftHeadlight.target.position.set(0.4, 0.1, 15);
-            this.carGroup.add(leftHeadlight);
-            this.carGroup.add(leftHeadlight.target);
+            leftHeadlight.target.position.set(0.4, 0.1, 16);
+            this.carModel.add(leftHeadlight);
+            this.carModel.add(leftHeadlight.target);
             this.headlights.push(leftHeadlight);
 
-            const rightHeadlight = new THREE.SpotLight(0xf8fafc, 6.0, 45, Math.PI / 6, 0.45);
+            const rightHeadlight = new THREE.SpotLight(0xf8fafc, 7.0, 50, Math.PI / 5.5, 0.45);
             rightHeadlight.position.set(-0.65, 0.55, 2.1);
-            rightHeadlight.target.position.set(-0.4, 0.1, 15);
-            this.carGroup.add(rightHeadlight);
-            this.carGroup.add(rightHeadlight.target);
+            rightHeadlight.target.position.set(-0.4, 0.1, 16);
+            this.carModel.add(rightHeadlight);
+            this.carModel.add(rightHeadlight.target);
             this.headlights.push(rightHeadlight);
 
-            // Taillights (Red glow on rear diffuser)
-            const rearLight = new THREE.PointLight(0xff0033, 0.8, 4);
+            // Taillights: Attached to rear of carModel (local -Z -> world +Z)
+            const rearLight = new THREE.PointLight(0xff0033, 1.2, 5);
             rearLight.position.set(0, 0.65, -2.35);
-            this.carGroup.add(rearLight);
+            this.carModel.add(rearLight);
             this.taillights.push(rearLight);
 
-            // Initial car position (Start of Scene 1 in distance)
-            this.carGroup.position.set(0, 0, 50);
+            // Initial car position (Start of Scene 1 at Pit Entry Z = +55m)
+            this.carGroup.position.set(0, 0, 55);
         }
 
         // ---------------------------------------------------------------------
         // Continuous Cinematic Timeline Synchronization (Driven by GSAP)
         // ---------------------------------------------------------------------
         updateFromTimeline(progress, velocity = 0) {
+            this.targetTimelineProgress = progress;
+            this.currentVelocity = velocity;
+        }
+
+        // Internal physics update running in 60fps renderLoop with smooth damping
+        processTimelineStep(progress) {
             if (!this.isLoaded) return;
 
             // -----------------------------------------------------------------
-            // SCENE 1: CAR ENTERS PITLANE (0.00 -> 0.38)
+            // SCENE 1: CAR ENTERS PITLANE DRIVING FORWARD (0.00 -> 0.38)
             // -----------------------------------------------------------------
             if (progress < 0.38) {
                 const p = progress / 0.38; // 0 to 1
-                // Deceleration curve from Z = 50m to Z = 0m (pit box)
-                const easedP = Math.sin((p * Math.PI) / 2);
-                const carZ = 50 - (easedP * 50);
+                // Smooth cubic deceleration curve from Z = +55m (entrance) to Z = 0m (pit box)
+                const smoothP = p * p * (3 - 2 * p);
+                const carZ = 55 - (smoothP * 55);
                 this.carGroup.position.z = carZ;
 
                 // Subtle steering entry arc into the pit box
-                const steerCurve = Math.sin(p * Math.PI) * 0.08;
-                this.carGroup.position.x = steerCurve * 0.8;
-                this.carGroup.rotation.y = steerCurve * 0.35;
+                const steerArc = Math.sin(p * Math.PI) * 0.15;
+                this.carGroup.position.x = steerArc * 0.5;
+                // Car nose steers slightly as it enters box
+                this.carGroup.rotation.y = -steerArc * 0.25;
 
-                // Wheels rotate with forward distance
-                const deltaZ = this.lastCarZ - carZ;
-                this.wheelRotationAngle += deltaZ / 0.35;
+                // Wheels rotate FORWARD in direction of travel (-Z)
+                // Distance traveled = 55 - carZ
+                const distTraveled = 55 - carZ;
+                this.wheelRotationAngle = distTraveled / 0.35;
                 ['lf', 'rf', 'lr', 'rr'].forEach(k => {
                     if (this.wheels[k]) {
                         this.wheels[k].rotation.x = this.wheelRotationAngle;
-                        this.wheels[k].position.x = this.wheelCenters[k].x; // Restored to hubs
+                        this.wheels[k].position.x = this.wheelCenters[k].x;
                     }
                 });
-                this.lastCarZ = carZ;
 
-                // Suspension dip when braking into box
-                const brakeDip = Math.sin(Math.pow(p, 3) * Math.PI) * 0.025;
+                // Front wheels steer slightly with the entry arc
+                if (this.wheels.lf) this.wheels.lf.rotation.y = -steerArc * 0.5;
+                if (this.wheels.rf) this.wheels.rf.rotation.y = -steerArc * 0.5;
+
+                // Subtle suspension dip under braking
+                const brakeDip = Math.sin(Math.pow(p, 2.5) * Math.PI) * 0.028;
                 this.carGroup.position.y = -brakeDip;
 
                 // Headlights illumination
                 this.headlights.forEach(h => {
-                    h.intensity = p > 0.05 ? 6.5 : 1.2;
+                    h.intensity = p > 0.03 ? 7.5 : 1.2;
                 });
-                // Taillights glow red on heavy braking
+                // Taillights flare red under braking into box
                 this.taillights.forEach(t => {
-                    t.intensity = p > 0.6 ? 3.5 : 0.8;
+                    t.intensity = p > 0.55 ? 4.5 : 0.8;
                 });
 
-                // Lollipop: lowered waiting for car to brake
+                // Lollipop marshal holding BRAKE sign facing car
                 if (this.lollipop) {
                     this.updateLollipopSign('BRAKE', '#ef4444');
                     this.lollipop.rotation.x = 0;
                 }
 
-                // Camera Sequence: Wide track view tracking the incoming vehicle
-                const camP = Math.pow(p, 0.8);
-                this.cameraPosition.set(
-                    2.8 - (camP * 1.2),
-                    1.4 + (camP * 0.4),
-                    carZ + 4.8 + ((1 - camP) * 8.0)
+                // Camera: Starts down pitlane on garage side watching car drive FORWARD into frame,
+                // then glides into tracking position
+                const camP = Math.pow(p, 0.85);
+                this.targetCameraPos.set(
+                    2.4 - (camP * 0.4),
+                    1.6 + (camP * 0.2),
+                    carZ - 5.5 - ((1 - camP) * 12.0)
                 );
-                this.cameraLookAt.set(0, 0.6, carZ - 1.5);
+                // Camera looks at the front of the car
+                this.targetCameraLookAt.set(0, 0.65, carZ);
 
                 this.updatePitTimerDisplay('0.00 s', 'APPROACH');
             }
@@ -912,35 +896,38 @@
                 this.carGroup.position.set(0, 0, 0);
                 this.carGroup.rotation.set(0, 0, 0);
 
-                // Air jack lift: car lifts ~7cm off the ground
-                const liftP = Math.min(1, p * 4.5);
+                // Air jack lift: car lifts ~7.5cm off the tarmac smoothly
+                const liftP = Math.min(1, p * 4.0);
                 const dropP = Math.max(0, (p - 0.88) / 0.12);
-                const currentLift = (liftP * 0.075) - (dropP * 0.075);
+                const currentLift = (Math.sin(liftP * Math.PI * 0.5) * 0.075) - (Math.pow(dropP, 2) * 0.075);
                 this.carGroup.position.y = currentLift;
 
-                // Tyre Change Animation:
-                // p: 0.15 -> 0.50 (wheels slide outward off hubs)
-                // p: 0.50 -> 0.85 (new wheels slide back on)
-                let wheelSlideOut = 0;
+                // 4-Wheel Tyre Change Animation:
+                // Smooth sinusoidal displacement outward and inward
+                let wheelSlide = 0;
                 if (p >= 0.15 && p < 0.50) {
-                    wheelSlideOut = ((p - 0.15) / 0.35) * 0.65;
+                    const t = (p - 0.15) / 0.35;
+                    wheelSlide = Math.sin(t * Math.PI * 0.5) * 0.62;
                 } else if (p >= 0.50 && p < 0.85) {
-                    wheelSlideOut = (1 - ((p - 0.50) / 0.35)) * 0.65;
+                    const t = (p - 0.50) / 0.35;
+                    wheelSlide = (1 - Math.sin(t * Math.PI * 0.5)) * 0.62;
                 }
 
-                if (this.wheels.lf) this.wheels.lf.position.x = this.wheelCenters.lf.x + wheelSlideOut;
-                if (this.wheels.lr) this.wheels.lr.position.x = this.wheelCenters.lr.x + wheelSlideOut;
-                if (this.wheels.rf) this.wheels.rf.position.x = this.wheelCenters.rf.x - wheelSlideOut;
-                if (this.wheels.rr) this.wheels.rr.position.x = this.wheelCenters.rr.x - wheelSlideOut;
+                if (this.wheels.lf) this.wheels.lf.position.x = this.wheelCenters.lf.x + wheelSlide;
+                if (this.wheels.lr) this.wheels.lr.position.x = this.wheelCenters.lr.x + wheelSlide;
+                if (this.wheels.rf) this.wheels.rf.position.x = this.wheelCenters.rf.x - wheelSlide;
+                if (this.wheels.rr) this.wheels.rr.position.x = this.wheelCenters.rr.x - wheelSlide;
 
-                // Tyre Changers move in, guns fire
+                // Reset steering angle
+                if (this.wheels.lf) this.wheels.lf.rotation.y = 0;
+                if (this.wheels.rf) this.wheels.rf.rotation.y = 0;
+
+                // Tyre changers step in, guns vibrate
                 this.tyreChangers.forEach(c => {
-                    const sideMultiplier = c.userData.side === 'left' ? 1 : -1;
-                    // Lean inward towards the wheel during active tyre swap
+                    const sideMultiplier = c.userData.side === 'garage' ? 1 : -1;
                     if (p >= 0.12 && p <= 0.85) {
                         c.position.x = c.userData.origX - (sideMultiplier * 0.18);
                         if (c.armGroup) {
-                            // High-frequency gun impact vibration
                             c.armGroup.position.y = 0.58 + Math.sin(Date.now() * 0.08) * 0.015;
                         }
                     } else {
@@ -948,7 +935,7 @@
                     }
                 });
 
-                // Lollipop transitions: "BRAKE" -> "IN GEAR" -> "GO"
+                // Lollipop signals: "STOP" -> "1ST GEAR" -> "GO!"
                 if (this.lollipop) {
                     if (p < 0.65) {
                         this.updateLollipopSign('STOP', '#ef4444');
@@ -958,51 +945,51 @@
                         this.lollipop.rotation.x = 0;
                     } else {
                         this.updateLollipopSign('GO!', '#00ff88');
-                        // Paddle lifts up out of way
-                        this.lollipop.rotation.x = -Math.PI / 3;
+                        this.lollipop.rotation.x = -Math.PI / 2.8;
                     }
                 }
 
                 // Dynamic Pitstop Stopwatch Timer
                 const timerSec = (p * 2.38).toFixed(2);
-                this.updatePitTimerDisplay(`${timerSec} s`, p < 0.88 ? 'SERVICE' : 'CLEAR');
+                this.updatePitTimerDisplay(`${timerSec} s`, p < 0.88 ? 'SERVICE' : 'RELEASE');
 
-                // Camera: Dynamic sweeping cinematic close-up of the pitstop action
-                // Sweeps from front-right 3/4 to side profile focusing on tire changes and car aero
-                const camX = -3.2 - Math.sin(p * Math.PI) * 0.4;
-                const camY = 0.95 + Math.sin(p * Math.PI * 0.5) * 0.45;
-                const camZ = 2.4 - (p * 3.6);
-                this.cameraPosition.set(camX, camY, camZ);
-                this.cameraLookAt.set(0, 0.55, 0.6 - (p * 1.2));
-
-                this.lastCarZ = 0;
+                // Camera: Dynamic sweeping cinematic close-up of the pit crew & McLaren
+                // Sweeps around the front-right corner showcasing tyre change action
+                const camAngle = -Math.PI / 4 + (p * Math.PI * 0.6);
+                const camDist = 3.8 + Math.sin(p * Math.PI) * 0.3;
+                this.targetCameraPos.set(
+                    Math.cos(camAngle) * camDist,
+                    1.0 + Math.sin(p * Math.PI * 0.5) * 0.4,
+                    Math.sin(camAngle) * camDist - 0.5
+                );
+                this.targetCameraLookAt.set(0, 0.55, -0.2);
             }
             // -----------------------------------------------------------------
-            // SCENE 3: RELEASE & DEPARTURE (0.65 -> 0.88)
+            // SCENE 3: RELEASE & LAUNCH FORWARD (0.65 -> 0.88)
             // -----------------------------------------------------------------
             else if (progress >= 0.65 && progress < 0.88) {
                 const p = (progress - 0.65) / 0.23; // 0 to 1
-                // Rapid GT3 launch acceleration curve: from Z = 0 to Z = -45m
-                const launchZ = -Math.pow(p, 1.6) * 45;
+                // Rapid GT3 launch acceleration curve: launches FORWARD from Z = 0 to Z = -52m
+                const launchZ = -Math.pow(p, 1.7) * 52;
                 this.carGroup.position.z = launchZ;
                 this.carGroup.position.y = 0;
-                this.carGroup.rotation.y = 0;
+                this.carGroup.rotation.set(0, 0, 0);
 
-                // Wheel spin with acceleration
-                const deltaZ = this.lastCarZ - launchZ;
-                this.wheelRotationAngle += deltaZ / 0.35;
+                // Wheel spin accelerating forward
+                const distTraveled = 55 + (-launchZ);
+                this.wheelRotationAngle = distTraveled / 0.35;
                 ['lf', 'rf', 'lr', 'rr'].forEach(k => {
                     if (this.wheels[k]) {
                         this.wheels[k].rotation.x = this.wheelRotationAngle;
                         this.wheels[k].position.x = this.wheelCenters[k].x;
+                        this.wheels[k].rotation.y = 0;
                     }
                 });
-                this.lastCarZ = launchZ;
 
                 // Pit crew clears out of box
                 this.tyreChangers.forEach(c => {
-                    const sideMultiplier = c.userData.side === 'left' ? 1 : -1;
-                    c.position.x = c.userData.origX + (sideMultiplier * 0.35);
+                    const sideMultiplier = c.userData.side === 'garage' ? 1 : -1;
+                    c.position.x = c.userData.origX + (sideMultiplier * 0.4);
                 });
 
                 if (this.lollipop) {
@@ -1010,13 +997,13 @@
                     this.lollipop.rotation.x = -Math.PI / 2.2;
                 }
 
-                // Camera follows the departing vehicle briefly, panning as it races away
-                this.cameraPosition.set(
-                    2.2 - (p * 1.5),
-                    1.3 + (p * 0.8),
-                    4.2 - (p * 2.5)
+                // Camera follows the departing vehicle briefly, panning as it races away forward
+                this.targetCameraPos.set(
+                    1.8 - (p * 1.2),
+                    1.3 + (p * 0.6),
+                    2.8 - (p * 4.0)
                 );
-                this.cameraLookAt.set(0, 0.6, launchZ);
+                this.targetCameraLookAt.set(0, 0.6, launchZ - 2.0);
 
                 this.updatePitTimerDisplay('2.38 s', 'DEPARTED');
             }
@@ -1026,15 +1013,15 @@
             else if (progress >= 0.88) {
                 const p = (progress - 0.88) / 0.12; // 0 to 1
                 // Car has sped off into the night
-                this.carGroup.position.z = -45 - (p * 25);
+                this.carGroup.position.z = -52 - (p * 30);
 
-                // Camera tilts up smoothly towards the illuminated GRiD UP pit gantry
-                this.cameraPosition.set(
-                    0.5 - (p * 0.5),
+                // Camera smoothly tilts up towards the illuminated GRiD UP gantry
+                this.targetCameraPos.set(
+                    0.2 - (p * 0.2),
                     2.2 + (p * 2.8),
-                    2.5 + (p * 4.5)
+                    2.5 + (p * 4.0)
                 );
-                this.cameraLookAt.set(0, 4.8 - (p * 1.2), 0);
+                this.targetCameraLookAt.set(0, 4.8 - (p * 1.0), 0);
             }
         }
 
@@ -1044,14 +1031,16 @@
 
             const delta = this.clock.getDelta();
 
-            // Smooth camera interpolation
+            // Smooth timeline progress lerp (removes any scroll notched stepping)
+            this.currentTimelineProgress += (this.targetTimelineProgress - this.currentTimelineProgress) * 0.12;
+            this.processTimelineStep(this.currentTimelineProgress);
+
+            // Butter-smooth camera interpolation
             if (this.camera) {
-                this.camera.position.lerp(this.cameraPosition, 0.1);
-                const currentLook = new THREE.Vector3();
-                this.camera.getWorldDirection(currentLook);
-                const targetLook = this.cameraLookAt.clone().sub(this.camera.position).normalize();
-                currentLook.lerp(targetLook, 0.1);
-                this.camera.lookAt(this.camera.position.clone().add(currentLook));
+                this.currentCameraPos.lerp(this.targetCameraPos, 0.08);
+                this.currentCameraLookAt.lerp(this.targetCameraLookAt, 0.08);
+                this.camera.position.copy(this.currentCameraPos);
+                this.camera.lookAt(this.currentCameraLookAt);
             }
 
             // Animate ambient dust motes

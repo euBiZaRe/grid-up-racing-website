@@ -132,7 +132,7 @@
                 trigger: this.scrollTrack,
                 start: 'top top',
                 end: 'bottom bottom',
-                scrub: 0.45, // Smooth physical inertia
+                scrub: 0.85, // Smooth physical inertia and progressive momentum
                 onUpdate: (self) => {
                     const progress = self.progress; // 0.00 to 1.00
                     const velocity = self.getVelocity ? self.getVelocity() : 0;
