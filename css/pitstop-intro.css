@@ -37,10 +37,12 @@ body.pitstop-active #navbar {
     transition: opacity 0.6s ease, transform 0.6s ease;
 }
 
-body.pitstop-revealed #navbar {
-    opacity: 1;
-    pointer-events: auto;
-    transform: translateY(0);
+body.pitstop-revealed #navbar,
+body.pitstop-completed #navbar {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: translateY(0) !important;
+    visibility: visible !important;
 }
 
 /* Fixed 3D Canvas Viewport */

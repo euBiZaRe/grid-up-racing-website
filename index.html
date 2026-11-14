@@ -164,10 +164,6 @@
                 </div>
 
                 <div class="pitstop-hud-controls">
-                    <button id="pit-btn-audio" class="pit-btn pit-btn-audio" title="Toggle Sound FX">
-                        <span class="audio-icon-unmuted">🔊 SOUND FX</span>
-                        <span class="audio-icon-muted">🔇 MUTED</span>
-                    </button>
                     <button id="pit-btn-skip" class="pit-btn pit-btn-skip" title="Skip Intro and Go Directly to Website">
                         <span>SKIP INTRO</span>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
@@ -214,12 +210,6 @@
         </div>
     </div>
 
-    <!-- Replay 3D Intro Floating Button -->
-    <button id="btn-replay-pitstop" title="Replay 3D Pitstop Introduction">
-        <span>🏎️</span>
-        <span>3D PITSTOP</span>
-    </button>
-
             <nav id="navbar" class="scrolled">
         <div class="container nav-content">
             <a href="index.html" class="logo-brand">
@@ -246,10 +236,6 @@
             </ul>
 
             <div class="nav-actions">
-                <button type="button" onclick="if(window.pitstopApp){window.pitstopApp.replayIntro();}" class="btn-nav-pitstop" style="display: inline-flex; align-items: center; gap: 6px; padding: 0.45rem 0.85rem; font-size: 0.72rem; font-family: var(--font-heading); font-weight: 700; color: #fff; background: rgba(139, 92, 246, 0.15); border: 1px solid var(--primary); border-radius: 6px; cursor: pointer; transition: all 0.2s ease;">
-                    <span>🏎️</span>
-                    <span>3D PITSTOP</span>
-                </button>
                 <a href="login.html" id="login-link" class="btn-nav-login">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                     LOGIN
@@ -1097,7 +1083,6 @@
     <script src="js/vendor/ScrollTrigger.min.js"></script>
     
     <!-- GRiD UP 3D Pitstop Experience -->
-    <script src="js/pitstop-audio.js"></script>
     <script src="js/pitstop-3d.js"></script>
     <script src="js/pitstop-controller.js"></script>
 </body>

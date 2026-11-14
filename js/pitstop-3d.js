@@ -507,84 +507,136 @@
         }
 
         // ---------------------------------------------------------------------
-        // 3D Pit Crew Characters (Positioned around car facing -Z)
+        // High-End 3D Pit Crew & Precision GT3 Service Equipment
         // ---------------------------------------------------------------------
         buildPitCrew() {
-            const suitMat = new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.65 });
-            const accentMat = new THREE.MeshStandardMaterial({ color: 0x8b5cf6, roughness: 0.4 });
-            const helmetMat = new THREE.MeshStandardMaterial({ color: 0x090d16, metalness: 0.85, roughness: 0.25 });
-            const visorMat = new THREE.MeshStandardMaterial({ color: 0x00ff88, metalness: 0.95, roughness: 0.1 });
-            const gunMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.9, roughness: 0.2 });
+            // Materials: Sleek matte race suit, titanium tools, carbon helmets with iridescent gold/green visors
+            const suitMat = new THREE.MeshStandardMaterial({
+                color: 0x0d111a,
+                roughness: 0.72,
+                metalness: 0.1
+            });
+            const accentMat = new THREE.MeshStandardMaterial({
+                color: 0x8b5cf6,
+                roughness: 0.4,
+                metalness: 0.2
+            });
+            const helmetMat = new THREE.MeshStandardMaterial({
+                color: 0x080b12,
+                metalness: 0.9,
+                roughness: 0.18
+            });
+            const visorMat = new THREE.MeshPhysicalMaterial({
+                color: 0x00ff88,
+                metalness: 0.95,
+                roughness: 0.12,
+                clearcoat: 1.0,
+                clearcoatRoughness: 0.1
+            });
+            const gunMat = new THREE.MeshStandardMaterial({
+                color: 0x475569,
+                metalness: 0.85,
+                roughness: 0.25
+            });
 
-            const createCrewMember = (facingDir = 'toward_car_from_right') => {
+            const createCrewMember = () => {
                 const member = new THREE.Group();
 
-                // Torso
-                const torso = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.52, 0.28), suitMat);
-                torso.position.y = 0.55;
+                // Kneeling base pad on pitlane surface
+                const matGeo = new THREE.BoxGeometry(0.7, 0.02, 0.7);
+                const matMat = new THREE.MeshStandardMaterial({ color: 0x171f2e, roughness: 0.9 });
+                const kneeler = new THREE.Mesh(matGeo, matMat);
+                kneeler.position.set(0, 0.01, 0);
+                kneeler.receiveShadow = true;
+                member.add(kneeler);
+
+                // Smooth athletic tapered torso
+                const torsoGeo = new THREE.CylinderGeometry(0.19, 0.14, 0.52, 16);
+                const torso = new THREE.Mesh(torsoGeo, suitMat);
+                torso.position.set(0, 0.46, 0.03);
+                torso.rotation.x = 0.22; // Natural athletic forward lean toward wheel hub
                 torso.castShadow = true;
                 member.add(torso);
 
-                // Purple chest stripe
-                const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.43, 0.12, 0.29), accentMat);
-                stripe.position.y = 0.62;
+                // GRiD UP Violet Team Stripe across chest
+                const stripeGeo = new THREE.CylinderGeometry(0.195, 0.155, 0.14, 16);
+                const stripe = new THREE.Mesh(stripeGeo, accentMat);
+                stripe.position.set(0, 0.52, 0.04);
+                stripe.rotation.x = 0.22;
                 member.add(stripe);
 
-                // Helmet
-                const head = new THREE.Mesh(new THREE.SphereGeometry(0.18, 16, 16), helmetMat);
-                head.position.y = 0.92;
-                head.scale.set(1, 1.15, 1.1);
+                // Aerodynamic Carbon Helmet
+                const headGroup = new THREE.Group();
+                headGroup.position.set(0, 0.80, -0.05);
+
+                const head = new THREE.Mesh(new THREE.SphereGeometry(0.15, 20, 20), helmetMat);
+                head.scale.set(0.95, 1.05, 1.15);
                 head.castShadow = true;
-                member.add(head);
+                headGroup.add(head);
 
-                // Reflective Visor
-                const visor = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.08, 0.08), visorMat);
-                visor.position.set(0, 0.94, -0.15);
-                member.add(visor);
+                // Curved Iridescent Gold/Green Visor
+                const visor = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.152, 0.152, 0.08, 16, 1, false, Math.PI * 0.7, Math.PI * 0.6),
+                    visorMat
+                );
+                visor.position.set(0, 0.02, -0.04);
+                headGroup.add(visor);
+                member.add(headGroup);
 
-                // Arms holding Pneumatic Wheel Gun
+                // Kneeling Leg Silhouettes
+                const legGeo = new THREE.CylinderGeometry(0.085, 0.07, 0.42, 12);
+                const leftLeg = new THREE.Mesh(legGeo, suitMat);
+                leftLeg.position.set(-0.13, 0.19, 0.12);
+                leftLeg.rotation.x = 0.65;
+                member.add(leftLeg);
+
+                const rightLeg = new THREE.Mesh(legGeo, suitMat);
+                rightLeg.position.set(0.13, 0.17, -0.08);
+                rightLeg.rotation.x = -0.45;
+                member.add(rightLeg);
+
+                // Arm & Precision Pneumatic Impact Wrench Assembly
                 const armGroup = new THREE.Group();
-                armGroup.position.set(0, 0.58, 0);
+                armGroup.position.set(0, 0.46, -0.05);
 
-                const gun = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.18, 0.35), gunMat);
-                gun.position.set(0, -0.08, -0.42);
+                // Contoured Arms
+                const armGeo = new THREE.CylinderGeometry(0.06, 0.05, 0.38, 12);
+                const leftArm = new THREE.Mesh(armGeo, suitMat);
+                leftArm.position.set(-0.17, -0.08, -0.16);
+                leftArm.rotation.set(-0.85, 0, 0.28);
+                armGroup.add(leftArm);
+
+                const rightArm = new THREE.Mesh(armGeo, suitMat);
+                rightArm.position.set(0.17, -0.08, -0.16);
+                rightArm.rotation.set(-0.85, 0, -0.28);
+                armGroup.add(rightArm);
+
+                // Machined Impact Wrench
+                const gun = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.14, 0.26), gunMat);
+                gun.position.set(0, -0.10, -0.38);
                 gun.castShadow = true;
                 armGroup.add(gun);
 
-                const tip = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.16, 12), gunMat);
-                tip.rotation.x = Math.PI / 2;
-                tip.position.set(0, -0.08, -0.62);
-                armGroup.add(tip);
+                // Titanium Center-Lock Drive Socket
+                const socket = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.16, 16), gunMat);
+                socket.rotation.x = Math.PI / 2;
+                socket.position.set(0, -0.10, -0.56);
+                socket.castShadow = true;
+                armGroup.add(socket);
 
                 member.add(armGroup);
                 member.armGroup = armGroup;
                 member.gun = gun;
 
-                // Legs in kneeling stance
-                const leg1 = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.42, 0.24), suitMat);
-                leg1.position.set(-0.12, 0.22, 0.05);
-                leg1.rotation.x = 0.35;
-                member.add(leg1);
-
-                const leg2 = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.42, 0.24), suitMat);
-                leg2.position.set(0.12, 0.18, -0.12);
-                leg2.rotation.x = -0.55;
-                member.add(leg2);
-
                 return member;
             };
 
-            // 4 Tyre Changers around the 4 wheels:
-            // Since car faces -Z:
-            // Front wheels are at world Z ≈ -1.2m
-            // Rear wheels are at world Z ≈ +1.4m
-            // Right wheels (garage side) are at world X ≈ +0.85m -> Crew at X ≈ +1.65m facing car (-X)
-            // Left wheels (pit wall side) are at world X ≈ -0.85m -> Crew at X ≈ -1.65m facing car (+X)
+            // 4 Tyre Changers positioned precisely around the McLaren's 4 wheel hubs
             const crewConfigs = [
-                { id: 'rf', x: 1.65, z: -1.25, rotY: -Math.PI / 2, side: 'garage' }, // Right Front
-                { id: 'rr', x: 1.65, z: 1.45, rotY: -Math.PI / 2, side: 'garage' },  // Right Rear
-                { id: 'lf', x: -1.65, z: -1.25, rotY: Math.PI / 2, side: 'wall' },  // Left Front
-                { id: 'lr', x: -1.65, z: 1.45, rotY: Math.PI / 2, side: 'wall' }   // Left Rear
+                { id: 'rf', x: 1.62, z: -1.25, rotY: -Math.PI / 2, side: 'garage' }, // Right Front
+                { id: 'rr', x: 1.62, z: 1.45, rotY: -Math.PI / 2, side: 'garage' },  // Right Rear
+                { id: 'lf', x: -1.62, z: -1.25, rotY: Math.PI / 2, side: 'wall' },  // Left Front
+                { id: 'lr', x: -1.62, z: 1.45, rotY: Math.PI / 2, side: 'wall' }   // Left Rear
             ];
 
             crewConfigs.forEach(cfg => {
@@ -600,39 +652,42 @@
                 this.tyreChangers.push(c);
             });
 
-            // 1 Lollipop Marshal standing in front of car (Z ≈ -3.2, garage side X ≈ 1.8)
+            // 1 Front Marshal with Carbon Fiber Digital Lollipop Boom (Z ≈ -3.3, X ≈ 1.6)
             const marshal = new THREE.Group();
-            marshal.position.set(1.8, 0, -3.2);
+            marshal.position.set(1.6, 0, -3.3);
 
-            const mTorso = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.65, 0.28), suitMat);
-            mTorso.position.y = 1.0;
+            const mTorso = new THREE.Mesh(new THREE.CylinderGeometry(0.20, 0.16, 0.65, 16), suitMat);
+            mTorso.position.y = 0.95;
             marshal.add(mTorso);
 
-            const mHead = new THREE.Mesh(new THREE.SphereGeometry(0.18, 16, 16), helmetMat);
-            mHead.position.y = 1.48;
+            const mStripe = new THREE.Mesh(new THREE.CylinderGeometry(0.205, 0.165, 0.16, 16), accentMat);
+            mStripe.position.y = 1.05;
+            marshal.add(mStripe);
+
+            const mHead = new THREE.Mesh(new THREE.SphereGeometry(0.16, 20, 20), helmetMat);
+            mHead.position.y = 1.46;
             marshal.add(mHead);
 
-            // Lollipop sign pole
-            const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 3.2, 8), new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.8 }));
-            pole.position.set(-0.7, 1.6, 0);
+            // Carbon Fiber Lollipop Pole
+            const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 3.2, 12), new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.85 }));
+            pole.position.set(-0.6, 1.6, 0);
             pole.rotation.z = -0.15;
             marshal.add(pole);
 
-            // Lollipop paddle with dual-sided LED display facing incoming car (+Z)
+            // Circular Digital LED Display Paddle facing incoming car (+Z)
             this.lollipopCanvas = document.createElement('canvas');
             this.lollipopCanvas.width = 256;
             this.lollipopCanvas.height = 256;
             this.lollipopTexture = new THREE.CanvasTexture(this.lollipopCanvas);
             this.updateLollipopSign('BRAKE', '#ef4444');
 
-            const paddleGeo = new THREE.CircleGeometry(0.42, 24);
+            const paddleGeo = new THREE.CircleGeometry(0.40, 28);
             const paddleMat = new THREE.MeshBasicMaterial({
                 map: this.lollipopTexture,
                 side: THREE.DoubleSide
             });
             this.lollipopSign = new THREE.Mesh(paddleGeo, paddleMat);
-            this.lollipopSign.position.set(-1.1, 2.7, 0);
-            // Rotate paddle to face incoming car (+Z)
+            this.lollipopSign.position.set(-1.0, 2.7, 0);
             this.lollipopSign.rotation.y = 0;
             marshal.add(this.lollipopSign);
 
