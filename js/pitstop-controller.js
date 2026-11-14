@@ -33,15 +33,8 @@
         init() {
             console.log('[Pitstop Controller] Initializing...');
 
-            // If returning visitor who already finished intro, jump straight to normal website
-            const hasSeen = sessionStorage.getItem('gridup_intro_completed');
-            const forceIntro = window.location.hash === '#intro' || window.location.search.includes('intro=1');
-            
-            if (hasSeen && !forceIntro) {
-                console.log('[Pitstop Controller] Session completed. Showing normal website.');
-                this.collapseIntroDirectly();
-                return;
-            }
+            // Clear any stale completed flags so homepage loads show the 3D experience
+            sessionStorage.removeItem('gridup_intro_completed');
 
             // Verify WebGL Support
             if (!this.checkWebGLSupport()) {
@@ -63,14 +56,6 @@
                 this.onLoadComplete.bind(this),
                 this.onLoadError.bind(this)
             );
-
-            // Safety timeout: If 3D model hasn't loaded within 10s, auto-enter normal website
-            this.loadTimeoutId = setTimeout(() => {
-                if (!this.scene3D || !this.scene3D.isLoaded) {
-                    console.warn('[Pitstop Controller] Loading timed out. Collapsing intro directly.');
-                    this.collapseIntroDirectly();
-                }
-            }, 10000);
 
             this.bindEvents();
         }
@@ -96,11 +81,6 @@
         onLoadComplete() {
             console.log('[Pitstop Controller] 3D assets loaded successfully.');
 
-            if (this.loadTimeoutId) {
-                clearTimeout(this.loadTimeoutId);
-                this.loadTimeoutId = null;
-            }
-
             if (this.loaderFill) this.loaderFill.style.width = '100%';
             if (this.loaderPct) this.loaderPct.textContent = '100%';
 
@@ -123,6 +103,12 @@
         setupScrollTrigger() {
             if (!window.ScrollTrigger || !this.scrollTrack) return;
 
+            // Ensure browser does not restore previous scroll position into the website
+            if ('scrollRestoration' in history) {
+                history.scrollRestoration = 'manual';
+            }
+            window.scrollTo(0, 0);
+
             // Pin the 3D experience and scrub through the timeline
             this.scrollTrigger = ScrollTrigger.create({
                 trigger: this.scrollTrack,
@@ -143,9 +129,9 @@
                     // Update UI HUD
                     this.updateUI(progress);
 
-                    // Once user reaches the end of Scene 4 (progress >= 0.94), automatically
-                    // finish the intro, collapse the 480vh track, and enter the normal website!
-                    if (progress >= 0.94 && !this.isTransitioning) {
+                    // Once user reaches the end of the scroll track (progress >= 0.99),
+                    // smoothly transition, unmount the 480vh track, and enter the normal website!
+                    if (progress >= 0.99 && !this.isTransitioning) {
                         this.finishAndEnterWebsite(true);
                     }
                 }
