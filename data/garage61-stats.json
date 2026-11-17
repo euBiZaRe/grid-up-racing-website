@@ -1,14 +1,14 @@
 {
-  "syncedAt": "2026-11-17T00:58:57Z",
+  "syncedAt": "2026-11-17T05:54:51Z",
   "team": {
     "name": "Grid Up Sim Racing",
     "slug": "grid-up-simsport",
     "totalDrivers": 50,
-    "totalLaps": 704076,
-    "cleanLaps": 555602,
+    "totalLaps": 704298,
+    "cleanLaps": 555749,
     "cleanPct": 78.9,
-    "totalHours": 25901.3,
-    "activeDays": 1391
+    "totalHours": 25908.8,
+    "activeDays": 1392
   },
   "drivers": [
     {
@@ -921,23 +921,23 @@
       "slug": "levi-wolfe",
       "name": "Levi Wolfe",
       "role": "Endurance Team Driver",
-      "totalLaps": 48103,
-      "cleanLaps": 43891,
+      "totalLaps": 48202,
+      "cleanLaps": 43974,
       "cleanPct": 91.2,
-      "hours": 1080.0,
-      "totalEvents": 2193,
+      "hours": 1081.6,
+      "totalEvents": 2198,
       "firstDay": "2025-01-01",
-      "lastDay": "2026-11-16",
-      "activeDaysCount": 534,
+      "lastDay": "2026-11-17",
+      "activeDaysCount": 535,
       "favoriteCar": "Gen 4 Chevrolet Monte Carlo - 2003",
       "favoriteTrack": "Talladega Superspeedway",
       "topCars": [
         {
           "name": "Gen 4 Chevrolet Monte Carlo - 2003",
-          "laps": 14203,
-          "cleanLaps": 13374,
-          "cleanPct": 94.2,
-          "hours": 189.2
+          "laps": 14298,
+          "cleanLaps": 13453,
+          "cleanPct": 94.1,
+          "hours": 190.6
         },
         {
           "name": "Gen 4 Cup",
@@ -1047,6 +1047,13 @@
           "hours": 31.1
         },
         {
+          "name": "Homestead Miami Speedway - Oval",
+          "laps": 1329,
+          "cleanLaps": 1258,
+          "cleanPct": 94.7,
+          "hours": 19.6
+        },
+        {
           "name": "Chicagoland Speedway",
           "laps": 1316,
           "cleanLaps": 1261,
@@ -1061,13 +1068,6 @@
           "hours": 50.5
         },
         {
-          "name": "Homestead Miami Speedway - Oval",
-          "laps": 1234,
-          "cleanLaps": 1179,
-          "cleanPct": 95.5,
-          "hours": 18.2
-        },
-        {
           "name": "Daytona International Speedway - Oval - 2008",
           "laps": 1206,
           "cleanLaps": 1103,
@@ -1077,25 +1077,29 @@
       ],
       "sessions": {
         "Practice": {
-          "laps": 19497,
-          "cleanLaps": 18049,
+          "laps": 19514,
+          "cleanLaps": 18066,
           "cleanPct": 92.6,
-          "hours": 538.8
+          "hours": 539.3
         },
         "Qualifying": {
-          "laps": 899,
-          "cleanLaps": 826,
+          "laps": 901,
+          "cleanLaps": 828,
           "cleanPct": 91.9,
           "hours": 28.7
         },
         "Race": {
-          "laps": 27707,
-          "cleanLaps": 25016,
+          "laps": 27787,
+          "cleanLaps": 25080,
           "cleanPct": 90.3,
-          "hours": 512.5
+          "hours": 513.6
         }
       },
       "recentActivity": [
+        {
+          "day": "2026-11-17",
+          "laps": 99
+        },
         {
           "day": "2026-11-16",
           "laps": 91
@@ -1211,10 +1215,6 @@
         {
           "day": "2026-10-06",
           "laps": 103
-        },
-        {
-          "day": "2026-10-04",
-          "laps": 24
         }
       ],
       "rank": 4
@@ -1827,14 +1827,14 @@
       "slug": "faraz-ebrahim",
       "name": "Faraz Ebrahim",
       "role": "Endurance Team Driver",
-      "totalLaps": 35765,
-      "cleanLaps": 28794,
+      "totalLaps": 35778,
+      "cleanLaps": 28806,
       "cleanPct": 80.5,
-      "hours": 1413.2,
-      "totalEvents": 4655,
+      "hours": 1413.8,
+      "totalEvents": 4656,
       "firstDay": "2025-05-15",
-      "lastDay": "2026-11-16",
-      "activeDaysCount": 528,
+      "lastDay": "2026-11-17",
+      "activeDaysCount": 529,
       "favoriteCar": "NASCAR Cup Series Next Gen Chevrolet Camaro ZL1",
       "favoriteTrack": "Talladega Superspeedway",
       "topCars": [
@@ -1889,10 +1889,10 @@
         },
         {
           "name": "Mercedes-AMG GT3 2020",
-          "laps": 1421,
-          "cleanLaps": 1107,
-          "cleanPct": 77.9,
-          "hours": 76.7
+          "laps": 1434,
+          "cleanLaps": 1119,
+          "cleanPct": 78.0,
+          "hours": 77.3
         },
         {
           "name": "NASCAR O'Reilly Chevrolet Camaro",
@@ -1926,10 +1926,10 @@
         },
         {
           "name": "Daytona International Speedway - Road Course",
-          "laps": 2357,
-          "cleanLaps": 1984,
+          "laps": 2370,
+          "cleanLaps": 1996,
           "cleanPct": 84.2,
-          "hours": 114.1
+          "hours": 114.7
         },
         {
           "name": "Road Atlanta - Full Course",
@@ -1983,10 +1983,10 @@
       ],
       "sessions": {
         "Practice": {
-          "laps": 20687,
-          "cleanLaps": 15548,
+          "laps": 20700,
+          "cleanLaps": 15560,
           "cleanPct": 75.2,
-          "hours": 1018.2
+          "hours": 1018.9
         },
         "Qualifying": {
           "laps": 987,
@@ -2002,6 +2002,10 @@
         }
       },
       "recentActivity": [
+        {
+          "day": "2026-11-17",
+          "laps": 13
+        },
         {
           "day": "2026-11-16",
           "laps": 40
@@ -2117,10 +2121,6 @@
         {
           "day": "2026-10-17",
           "laps": 80
-        },
-        {
-          "day": "2026-10-16",
-          "laps": 27
         }
       ],
       "rank": 7
@@ -2733,14 +2733,14 @@
       "slug": "david-shreve",
       "name": "David Shreve",
       "role": "Endurance Team Driver",
-      "totalLaps": 22784,
-      "cleanLaps": 18200,
+      "totalLaps": 22832,
+      "cleanLaps": 18232,
       "cleanPct": 79.9,
-      "hours": 851.8,
-      "totalEvents": 3681,
+      "hours": 854.0,
+      "totalEvents": 3690,
       "firstDay": "2025-03-18",
-      "lastDay": "2026-11-16",
-      "activeDaysCount": 475,
+      "lastDay": "2026-11-17",
+      "activeDaysCount": 476,
       "favoriteCar": "Toyota GR86",
       "favoriteTrack": "Daytona International Speedway - Road Course",
       "topCars": [
@@ -2802,10 +2802,10 @@
         },
         {
           "name": "BMW M2 Racing (G87)",
-          "laps": 1014,
-          "cleanLaps": 757,
+          "laps": 1019,
+          "cleanLaps": 761,
           "cleanPct": 74.7,
-          "hours": 41.3
+          "hours": 41.4
         },
         {
           "name": "BMW M2 CS Racing (F87) - 2020",
@@ -2846,10 +2846,10 @@
         },
         {
           "name": "Summit Point Raceway - Summit Point Raceway",
-          "laps": 927,
-          "cleanLaps": 708,
+          "laps": 932,
+          "cleanLaps": 712,
           "cleanPct": 76.4,
-          "hours": 27.8
+          "hours": 27.9
         },
         {
           "name": "Road Atlanta - Full Course",
@@ -2889,25 +2889,29 @@
       ],
       "sessions": {
         "Practice": {
-          "laps": 8665,
-          "cleanLaps": 6450,
+          "laps": 8682,
+          "cleanLaps": 6459,
           "cleanPct": 74.4,
-          "hours": 404.5
+          "hours": 405.3
         },
         "Qualifying": {
-          "laps": 1597,
-          "cleanLaps": 1317,
-          "cleanPct": 82.5,
-          "hours": 73.7
+          "laps": 1604,
+          "cleanLaps": 1320,
+          "cleanPct": 82.3,
+          "hours": 74.0
         },
         "Race": {
-          "laps": 12522,
-          "cleanLaps": 10433,
+          "laps": 12546,
+          "cleanLaps": 10453,
           "cleanPct": 83.3,
-          "hours": 373.7
+          "hours": 374.8
         }
       },
       "recentActivity": [
+        {
+          "day": "2026-11-17",
+          "laps": 48
+        },
         {
           "day": "2026-11-16",
           "laps": 8
@@ -3023,10 +3027,6 @@
         {
           "day": "2026-10-17",
           "laps": 76
-        },
-        {
-          "day": "2026-10-16",
-          "laps": 85
         }
       ],
       "rank": 10
@@ -6665,14 +6665,14 @@
       "slug": "terry-cantwell",
       "name": "Terry Cantwell",
       "role": "Endurance Team Driver",
-      "totalLaps": 8850,
-      "cleanLaps": 6483,
-      "cleanPct": 73.3,
-      "hours": 441.6,
-      "totalEvents": 885,
+      "totalLaps": 8879,
+      "cleanLaps": 6498,
+      "cleanPct": 73.2,
+      "hours": 442.6,
+      "totalEvents": 886,
       "firstDay": "2025-10-08",
-      "lastDay": "2026-11-16",
-      "activeDaysCount": 231,
+      "lastDay": "2026-11-17",
+      "activeDaysCount": 232,
       "favoriteCar": "Porsche 911 GT3 R (992)",
       "favoriteTrack": "Daytona International Speedway - Road Course",
       "topCars": [
@@ -6685,10 +6685,10 @@
         },
         {
           "name": "Porsche 963 GTP",
-          "laps": 1760,
-          "cleanLaps": 1249,
-          "cleanPct": 71.0,
-          "hours": 93.7
+          "laps": 1789,
+          "cleanLaps": 1264,
+          "cleanPct": 70.7,
+          "hours": 94.7
         },
         {
           "name": "Aston Martin Vantage GT3 EVO",
@@ -6821,10 +6821,10 @@
       ],
       "sessions": {
         "Practice": {
-          "laps": 4146,
-          "cleanLaps": 2626,
+          "laps": 4175,
+          "cleanLaps": 2641,
           "cleanPct": 63.3,
-          "hours": 252.7
+          "hours": 253.7
         },
         "Qualifying": {
           "laps": 203,
@@ -6840,6 +6840,10 @@
         }
       },
       "recentActivity": [
+        {
+          "day": "2026-11-17",
+          "laps": 29
+        },
         {
           "day": "2026-11-16",
           "laps": 25
@@ -6955,10 +6959,6 @@
         {
           "day": "2026-10-10",
           "laps": 19
-        },
-        {
-          "day": "2026-10-09",
-          "laps": 32
         }
       ],
       "rank": 23
@@ -8477,14 +8477,14 @@
       "slug": "gabe-wilmoth",
       "name": "Gabe Wilmoth",
       "role": "Endurance Team Driver",
-      "totalLaps": 5604,
-      "cleanLaps": 4139,
-      "cleanPct": 73.9,
-      "hours": 268.8,
-      "totalEvents": 514,
+      "totalLaps": 5628,
+      "cleanLaps": 4141,
+      "cleanPct": 73.6,
+      "hours": 269.8,
+      "totalEvents": 515,
       "firstDay": "2025-10-05",
-      "lastDay": "2026-11-16",
-      "activeDaysCount": 138,
+      "lastDay": "2026-11-17",
+      "activeDaysCount": 139,
       "favoriteCar": "Porsche 911 GT3 R (992)",
       "favoriteTrack": "Daytona International Speedway - Road Course",
       "topCars": [
@@ -8496,18 +8496,18 @@
           "hours": 167.2
         },
         {
+          "name": "Porsche 963 GTP",
+          "laps": 450,
+          "cleanLaps": 234,
+          "cleanPct": 52.0,
+          "hours": 35.1
+        },
+        {
           "name": "NASCAR Cup Series Next Gen Toyota Camry",
           "laps": 440,
           "cleanLaps": 382,
           "cleanPct": 86.8,
           "hours": 9.9
-        },
-        {
-          "name": "Porsche 963 GTP",
-          "laps": 426,
-          "cleanLaps": 232,
-          "cleanPct": 54.5,
-          "hours": 34.1
         },
         {
           "name": "Audi RS3 LMS Gen2 TCR",
@@ -8633,10 +8633,10 @@
       ],
       "sessions": {
         "Practice": {
-          "laps": 1607,
-          "cleanLaps": 895,
-          "cleanPct": 55.7,
-          "hours": 119.1
+          "laps": 1631,
+          "cleanLaps": 897,
+          "cleanPct": 55.0,
+          "hours": 120.0
         },
         "Qualifying": {
           "laps": 272,
@@ -8652,6 +8652,10 @@
         }
       },
       "recentActivity": [
+        {
+          "day": "2026-11-17",
+          "laps": 24
+        },
         {
           "day": "2026-11-16",
           "laps": 25
@@ -8767,10 +8771,6 @@
         {
           "day": "2026-08-20",
           "laps": 21
-        },
-        {
-          "day": "2026-08-19",
-          "laps": 45
         }
       ],
       "rank": 29
@@ -8779,23 +8779,23 @@
       "slug": "matthew-graham-4",
       "name": "Matthew Graham",
       "role": "Endurance Team Driver",
-      "totalLaps": 5548,
-      "cleanLaps": 3632,
+      "totalLaps": 5553,
+      "cleanLaps": 3635,
       "cleanPct": 65.5,
-      "hours": 709.0,
-      "totalEvents": 807,
+      "hours": 709.6,
+      "totalEvents": 808,
       "firstDay": "2025-11-25",
-      "lastDay": "2026-11-15",
-      "activeDaysCount": 239,
+      "lastDay": "2026-11-17",
+      "activeDaysCount": 240,
       "favoriteCar": "Aston Martin Vantage GT3 EVO",
       "favoriteTrack": "Daytona International Speedway - Road Course",
       "topCars": [
         {
           "name": "Aston Martin Vantage GT3 EVO",
-          "laps": 1862,
-          "cleanLaps": 1228,
-          "cleanPct": 66.0,
-          "hours": 241.1
+          "laps": 1867,
+          "cleanLaps": 1231,
+          "cleanPct": 65.9,
+          "hours": 241.8
         },
         {
           "name": "Porsche 911 GT3 R (992)",
@@ -8885,10 +8885,10 @@
         },
         {
           "name": "Circuit des 24 Heures du Mans - 24 Heures du Mans",
-          "laps": 385,
-          "cleanLaps": 189,
-          "cleanPct": 49.1,
-          "hours": 94.1
+          "laps": 390,
+          "cleanLaps": 192,
+          "cleanPct": 49.2,
+          "hours": 94.8
         },
         {
           "name": "Indianapolis Motor Speedway - Road Course",
@@ -8935,10 +8935,10 @@
       ],
       "sessions": {
         "Practice": {
-          "laps": 4352,
-          "cleanLaps": 2772,
+          "laps": 4357,
+          "cleanLaps": 2775,
           "cleanPct": 63.7,
-          "hours": 648.9
+          "hours": 649.6
         },
         "Qualifying": {
           "laps": 103,
@@ -8954,6 +8954,10 @@
         }
       },
       "recentActivity": [
+        {
+          "day": "2026-11-17",
+          "laps": 5
+        },
         {
           "day": "2026-11-15",
           "laps": 2
@@ -9069,10 +9073,6 @@
         {
           "day": "2026-10-05",
           "laps": 15
-        },
-        {
-          "day": "2026-10-04",
-          "laps": 0
         }
       ],
       "rank": 30
@@ -9987,14 +9987,14 @@
       "slug": "aron-lotthammer",
       "name": "Aron Lotthammer",
       "role": "Endurance Team Driver",
-      "totalLaps": 4142,
+      "totalLaps": 4146,
       "cleanLaps": 2354,
       "cleanPct": 56.8,
-      "hours": 295.3,
-      "totalEvents": 894,
+      "hours": 295.7,
+      "totalEvents": 897,
       "firstDay": "2026-06-16",
-      "lastDay": "2026-11-16",
-      "activeDaysCount": 134,
+      "lastDay": "2026-11-17",
+      "activeDaysCount": 135,
       "favoriteCar": "Ferrari 296 GT3",
       "favoriteTrack": "Road Atlanta - Full Course",
       "topCars": [
@@ -10107,10 +10107,10 @@
         },
         {
           "name": "Circuit de Spa-Francorchamps - Grand Prix Pits",
-          "laps": 317,
+          "laps": 321,
           "cleanLaps": 186,
-          "cleanPct": 58.7,
-          "hours": 20.1
+          "cleanPct": 57.9,
+          "hours": 20.5
         },
         {
           "name": "Road America - Full Course",
@@ -10143,10 +10143,10 @@
       ],
       "sessions": {
         "Practice": {
-          "laps": 2551,
+          "laps": 2555,
           "cleanLaps": 1118,
           "cleanPct": 43.8,
-          "hours": 214.0
+          "hours": 214.3
         },
         "Qualifying": {
           "laps": 84,
@@ -10162,6 +10162,10 @@
         }
       },
       "recentActivity": [
+        {
+          "day": "2026-11-17",
+          "laps": 4
+        },
         {
           "day": "2026-11-16",
           "laps": 13
@@ -10277,10 +10281,6 @@
         {
           "day": "2026-10-18",
           "laps": 6
-        },
-        {
-          "day": "2026-10-17",
-          "laps": 18
         }
       ],
       "rank": 34
@@ -12406,11 +12406,11 @@
       "totalLaps": 2211,
       "cleanLaps": 1428,
       "cleanPct": 64.6,
-      "hours": 128.9,
-      "totalEvents": 270,
+      "hours": 129.0,
+      "totalEvents": 271,
       "firstDay": "2026-08-18",
-      "lastDay": "2026-11-16",
-      "activeDaysCount": 65,
+      "lastDay": "2026-11-17",
+      "activeDaysCount": 66,
       "favoriteCar": "Chevrolet Corvette Z06 GT3.R",
       "favoriteTrack": "Suzuka International Racing Course - Grand Prix",
       "topCars": [
@@ -12440,7 +12440,7 @@
           "laps": 155,
           "cleanLaps": 79,
           "cleanPct": 51.0,
-          "hours": 14.3
+          "hours": 14.4
         },
         {
           "name": "Dallara P217",
@@ -12491,7 +12491,7 @@
           "laps": 709,
           "cleanLaps": 402,
           "cleanPct": 56.7,
-          "hours": 40.4
+          "hours": 40.5
         },
         {
           "name": "Indianapolis Motor Speedway - Road Course",
@@ -12562,7 +12562,7 @@
           "laps": 1238,
           "cleanLaps": 676,
           "cleanPct": 54.6,
-          "hours": 84.2
+          "hours": 84.3
         },
         "Qualifying": {
           "laps": 48,
@@ -12578,6 +12578,10 @@
         }
       },
       "recentActivity": [
+        {
+          "day": "2026-11-17",
+          "laps": 0
+        },
         {
           "day": "2026-11-16",
           "laps": 18
@@ -12693,10 +12697,6 @@
         {
           "day": "2026-10-07",
           "laps": 11
-        },
-        {
-          "day": "2026-10-06",
-          "laps": 1
         }
       ],
       "rank": 42
