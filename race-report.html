@@ -130,39 +130,48 @@
     </style>
 </head>
 <body>
-            <nav id="navbar" class="scrolled">
+            <!-- Factory Works Broadcast Navigation Bar -->
+    <nav id="navbar" class="scrolled">
         <div class="container nav-content">
-            <a href="index.html" class="logo-brand">
-                <img src="assets/G_2.png" decoding="async" width="36" height="36" alt="GRiD UP" style="height: 36px; width: auto; vertical-align: middle;">
-                <div class="brand-text-wrap">
-                    <div class="brand-title"><span class="brand-white">GRID</span> <span class="brand-purple">UP</span></div>
-                    <div class="brand-sub">SIM RACING</div>
+            <div class="brand-group-wrap">
+                <a href="index.html" class="logo-brand">
+                    <img src="assets/G_2.png" decoding="async" width="38" height="38" alt="GRiD UP" class="brand-crest-img">
+                    <div class="brand-text-wrap">
+                        <div class="brand-title"><span class="brand-white">GRID</span> <span class="brand-purple">UP</span></div>
+                        <div class="brand-sub">FACTORY SIM RACING</div>
+                    </div>
+                </a>
+                
+                <div class="nav-squad-status">
+                    <span class="status-beacon-dot"></span>
+                    <span class="status-beacon-text">iRACING SPECIAL EVENTS // ACTIVE</span>
                 </div>
-            </a>
-            
+            </div>
+
             <div class="menu-toggle" aria-label="Toggle navigation">
                 <span></span>
                 <span></span>
                 <span></span>
             </div>
 
-            <!-- Redesigned Navbar Links matching Mockup -->
+            <!-- Precision Broadcast Navbar Links -->
             <ul class="nav-links">
                 <li><a href="index.html">HOME</a></li>
-                <li><a href="events.html">EVENTS</a></li>
+                <li><a href="events.html">CALENDAR</a></li>
                 <li><a href="roster.html">DRIVERS</a></li>
                 <li><a href="trophy-room.html">TROPHY ROOM</a></li>
+                <li><a href="reports.html" class="active">REPORTS</a></li>
                 <li><a href="team-app.html">APPLY</a></li>
             </ul>
 
             <div class="nav-actions">
-                <a href="login.html" id="login-link" class="btn-nav-login">
+                <a href="login.html" id="login-link" class="btn-nav-login" title="Driver Portal">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                    LOGIN
+                    <span>DRIVER LOGIN</span>
                 </a>
-                <a href="results.html" class="btn-nav-join">
+                <a href="results.html" class="btn-nav-join" title="Official Results">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.45 1-1 1H7v2h10v-2h-2c-.55 0-1-.45-1-1v-2.34c3.27-.64 5-3.08 5-6.66V4H5v4c0 3.58 1.73 6.02 5 6.66z"></path></svg>
-                    RECENT RESULTS
+                    <span>RECENT RESULTS</span>
                 </a>
             </div>
         </div>
