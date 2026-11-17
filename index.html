@@ -411,9 +411,23 @@
         </div>
     </section>
 
-    <!-- Main Dashboard Section (Split Layout: Next Event + Sidebar) -->
-    <section id="next-event" class="mockup-main-dashboard">
+    <!-- Race Control Room / Telemetry & Results Command Center -->
+    <section id="next-event" class="mockup-main-dashboard race-control-section">
         <div class="container">
+            <!-- Section Header -->
+            <div class="control-room-header">
+                <div class="control-room-tagline">
+                    <span class="control-tag-bracket">[</span>
+                    <span class="control-radar-dot"></span>
+                    <span class="control-tag-text">MISSION CONTROL // FIXTURES & TELEMETRY</span>
+                    <span class="control-tag-bracket">]</span>
+                </div>
+                <div class="control-room-title-row">
+                    <h2 class="control-room-title">RACE CONTROL ROOM</h2>
+                    <div class="control-room-meta">LIVE CAMPAIGN BRIEFINGS • TELEMETRY CHANNELS • TIMING SHEET ARCHIVES</div>
+                </div>
+            </div>
+
             <div class="mockup-dashboard-layout">
                 
                 <!-- LEFT COLUMN: NEXT EVENT CARD -->
@@ -423,7 +437,7 @@
                         <div class="mockup-card-header">
                             <div class="mockup-card-title-group">
                                 <span class="card-title-icon">🏁</span>
-                                <span class="mockup-card-title">NEXT EVENT</span>
+                                <span class="mockup-card-title">OFFICIAL FIXTURE BRIEFING</span>
                             </div>
                             <span class="mockup-badge-upcoming" id="hero-event-status-badge">
                                 <span class="pulsing-dot"></span> UPCOMING
@@ -438,6 +452,14 @@
                                 <div class="mockup-event-date" id="hero-event-date">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                                     <span id="hero-event-date-text">NOVEMBER 7–8</span>
+                                </div>
+
+                                <!-- Atmospheric & Track Environmental Telemetry Strip -->
+                                <div class="event-env-telemetry-bar">
+                                    <div class="env-chip"><span class="chip-k">CONDITIONS:</span> <span class="chip-v">CLEAR / DRY</span></div>
+                                    <div class="env-chip"><span class="chip-k">TRACK TEMP:</span> <span class="chip-v">28°C</span></div>
+                                    <div class="env-chip"><span class="chip-k">AIR TEMP:</span> <span class="chip-v">21°C</span></div>
+                                    <div class="env-chip"><span class="chip-k">SURFACE:</span> <span class="chip-v">ASPHALT VLN</span></div>
                                 </div>
 
                                 <div class="mockup-event-timeslots" id="hero-event-timeslots">
@@ -527,6 +549,11 @@
                             </div>
 
                             <div class="mockup-track-preview">
+                                <div class="hud-corner hud-tl"></div>
+                                <div class="hud-corner hud-tr"></div>
+                                <div class="hud-corner hud-bl"></div>
+                                <div class="hud-corner hud-br"></div>
+                                <div class="track-hud-tag">CIRCUIT TELEMETRICS // VLN 24.36KM</div>
                                 <div class="track-img-wrap">
                                     <img src="assets/tracks/nurburgring.png" alt="Nürburgring Combined Track Map" class="track-graphic" id="hero-track-img">
                                 </div>
@@ -641,10 +668,10 @@
                     <div class="mockup-card mockup-recent-results-card" id="upcoming-results">
                         <div class="mockup-card-header">
                             <div class="mockup-card-title-group">
-                                <span class="card-title-icon">🏆</span>
+                                <span class="card-title-icon">⏱️</span>
                                 <div>
-                                    <span class="mockup-card-title">OFFICIAL TEAM RESULTS</span>
-                                    <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; letter-spacing: 0.5px; margin-top: 2px;">LAST 2 PODIUM FINISHES (P1 • P2 • P3)</div>
+                                    <span class="mockup-card-title">OFFICIAL TIMING & PODIUM LEDGER</span>
+                                    <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; letter-spacing: 0.5px; margin-top: 2px;">VERIFIED iRACING SPECIAL EVENTS FINISHES (P1 • P2 • P3)</div>
                                 </div>
                             </div>
                             <span class="mockup-badge-upcoming" style="border-color: rgba(234, 179, 8, 0.4); background: rgba(234, 179, 8, 0.1); color: #facc15;">
@@ -904,21 +931,25 @@
                             <a href="events.html" class="quick-link-item">
                                 <span class="ql-icon">📅</span>
                                 <span class="ql-text">Events Calendar</span>
+                                <span class="ql-tag">FIXTURES</span>
                                 <span class="ql-arrow">→</span>
                             </a>
                             <a href="roster.html" class="quick-link-item">
                                 <span class="ql-icon">🏎️</span>
                                 <span class="ql-text">Driver Profiles</span>
+                                <span class="ql-tag">ROSTER</span>
                                 <span class="ql-arrow">→</span>
                             </a>
                             <a href="trophy-room.html" class="quick-link-item">
                                 <span class="ql-icon">🏆</span>
                                 <span class="ql-text">Trophy Room</span>
+                                <span class="ql-tag">ARCHIVE</span>
                                 <span class="ql-arrow">→</span>
                             </a>
                             <a href="team-app.html" class="quick-link-item">
                                 <span class="ql-icon">👥</span>
                                 <span class="ql-text">Apply To Team</span>
+                                <span class="ql-tag tag-recruiting">RECRUITING</span>
                                 <span class="ql-arrow">→</span>
                             </a>
                         </div>
