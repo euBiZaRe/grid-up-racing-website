@@ -3571,6 +3571,46 @@ body[data-theme="theme-purple"]::before, body::before {
     position: relative;
 }
 
+/* Pro Driver Discipline Filter Controls */
+.driver-filter-bar {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.75rem;
+}
+
+.driver-filter-btn {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #94a3b8;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 0.4rem 0.95rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+}
+
+.driver-filter-btn:hover {
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.driver-filter-btn.active {
+    background: rgba(139, 92, 246, 0.2);
+    color: #ffffff;
+    border-color: #8b5cf6;
+    box-shadow: 0 0 12px rgba(139, 92, 246, 0.35);
+}
+
+.driver-trading-card.filter-hidden {
+    display: none !important;
+}
+
 .drivers-trading-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);

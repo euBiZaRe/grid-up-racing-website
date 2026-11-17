@@ -1009,10 +1009,18 @@
                 </div>
             </div>
 
+            <!-- Pro Driver Discipline Filters -->
+            <div class="driver-filter-bar">
+                <button class="driver-filter-btn active" data-filter="all">ALL SQUAD (4)</button>
+                <button class="driver-filter-btn" data-filter="gt3">GT3 / SP9 (2)</button>
+                <button class="driver-filter-btn" data-filter="prototype">LMP2 / GTP (2)</button>
+                <button class="driver-filter-btn" data-filter="formula">FORMULA / IR18 (1)</button>
+            </div>
+
             <!-- Pro Drivers Trading Cards Grid -->
             <div class="drivers-trading-grid">
                 <!-- Driver Card 1: Jacob Reid -->
-                <div class="driver-trading-card">
+                <div class="driver-trading-card" data-disciplines="gt3">
                     <div class="hud-corner hud-tl"></div>
                     <div class="hud-corner hud-tr"></div>
                     <div class="hud-corner hud-bl"></div>
@@ -1060,7 +1068,7 @@
                 </div>
 
                 <!-- Driver Card 2: Alex Cortez -->
-                <div class="driver-trading-card">
+                <div class="driver-trading-card" data-disciplines="gt3,formula">
                     <div class="hud-corner hud-tl"></div>
                     <div class="hud-corner hud-tr"></div>
                     <div class="hud-corner hud-bl"></div>
@@ -1108,7 +1116,7 @@
                 </div>
 
                 <!-- Driver Card 3: Chandler English -->
-                <div class="driver-trading-card">
+                <div class="driver-trading-card" data-disciplines="prototype">
                     <div class="hud-corner hud-tl"></div>
                     <div class="hud-corner hud-tr"></div>
                     <div class="hud-corner hud-bl"></div>
@@ -1156,7 +1164,7 @@
                 </div>
 
                 <!-- Driver Card 4: Andrew Fabian -->
-                <div class="driver-trading-card">
+                <div class="driver-trading-card" data-disciplines="prototype">
                     <div class="hud-corner hud-tl"></div>
                     <div class="hud-corner hud-tr"></div>
                     <div class="hud-corner hud-bl"></div>
@@ -1332,5 +1340,31 @@
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
     <script defer src="script.js?v=33"></script>
     <script defer src="js/auth.js?v=11"></script>
+    <script>
+    // Featured Pro Drivers Interactive Discipline Filter
+    document.addEventListener('DOMContentLoaded', function() {
+        const filterBtns = document.querySelectorAll('.driver-filter-btn');
+        const driverCards = document.querySelectorAll('.driver-trading-card');
+        
+        if (filterBtns.length > 0 && driverCards.length > 0) {
+            filterBtns.forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    filterBtns.forEach(function(b) { b.classList.remove('active'); });
+                    btn.classList.add('active');
+                    const target = btn.getAttribute('data-filter');
+                    
+                    driverCards.forEach(function(card) {
+                        const disciplines = card.getAttribute('data-disciplines') || '';
+                        if (target === 'all' || disciplines.indexOf(target) !== -1) {
+                            card.classList.remove('filter-hidden');
+                        } else {
+                            card.classList.add('filter-hidden');
+                        }
+                    });
+                });
+            });
+        }
+    });
+    </script>
 </body>
 </html>
