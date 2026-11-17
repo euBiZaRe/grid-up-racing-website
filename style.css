@@ -3563,6 +3563,390 @@ body[data-theme="theme-purple"]::before, body::before {
     overflow: hidden;
 }
 
+/* ===================================================
+   FEATURED PRO DRIVERS LINEUP (STAGE 4)
+   =================================================== */
+.pro-drivers-section {
+    padding: 3.5rem 0 4.5rem;
+    position: relative;
+}
+
+.drivers-trading-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+    margin-bottom: 2.25rem;
+}
+
+.driver-trading-card {
+    background: #090d16;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    padding: 1.15rem;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.driver-trading-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(139, 92, 246, 0.45);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.65), 0 0 20px rgba(139, 92, 246, 0.15);
+}
+
+.driver-card-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.85rem;
+    gap: 0.5rem;
+}
+
+.driver-number {
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: #ffffff;
+}
+
+.driver-role-chip {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+}
+
+.role-esports {
+    background: rgba(139, 92, 246, 0.15);
+    border: 1px solid rgba(139, 92, 246, 0.45);
+    color: #c084fc;
+}
+
+.role-p1 {
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.45);
+    color: #fbbf24;
+}
+
+.role-captain {
+    background: rgba(0, 255, 136, 0.12);
+    border: 1px solid rgba(0, 255, 136, 0.4);
+    color: #00ff88;
+}
+
+.driver-country-chip {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #94a3b8;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 0.2rem 0.45rem;
+    border-radius: 3px;
+}
+
+/* Portrait Wrapper with Scrim and Floating iR Telemetry Badge */
+.driver-portrait-wrap {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+    background: #05070a;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    margin-bottom: 1rem;
+}
+
+.driver-portrait-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    transition: transform 0.4s ease;
+}
+
+.driver-trading-card:hover .driver-portrait-img {
+    transform: scale(1.05);
+}
+
+.driver-portrait-wrap.driver-portrait-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at center, rgba(139, 92, 246, 0.15) 0%, #05070a 75%);
+}
+
+.driver-portrait-wrap.driver-portrait-fallback .driver-portrait-img {
+    width: 65%;
+    height: 65%;
+    object-fit: contain;
+    opacity: 0.85;
+}
+
+.driver-portrait-wrap.driver-portrait-fallback .driver-portrait-img.logo-crest-fit {
+    width: 50%;
+    height: 50%;
+    opacity: 0.9;
+}
+
+.driver-portrait-gradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(9, 13, 22, 0) 50%, rgba(9, 13, 22, 0.9) 100%);
+    pointer-events: none;
+}
+
+.driver-irating-badge {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: rgba(5, 7, 10, 0.9);
+    border: 1px solid rgba(0, 255, 136, 0.35);
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    backdrop-filter: blur(8px);
+}
+
+.ir-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.5rem;
+    font-weight: 700;
+    color: #64748b;
+    letter-spacing: 0.8px;
+}
+
+.ir-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    font-weight: 900;
+    color: #00ff88;
+    line-height: 1.1;
+    text-shadow: 0 0 8px rgba(0, 255, 136, 0.4);
+}
+
+/* Driver Bio Block */
+.driver-bio-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.driver-name-title {
+    font-family: var(--font-heading);
+    font-size: 1.05rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: #ffffff;
+    text-transform: uppercase;
+}
+
+.driver-discipline-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #94a3b8;
+    text-transform: uppercase;
+    margin-top: -0.4rem;
+}
+
+.driver-telemetry-specs {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    background: #07090e;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    padding: 0.6rem 0.75rem;
+}
+
+.spec-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    gap: 0.5rem;
+}
+
+.spec-k {
+    color: #64748b;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.spec-v {
+    color: #cbd5e1;
+    font-weight: 700;
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.spec-v.lic-a {
+    color: #38bdf8;
+    font-weight: 800;
+}
+
+.spec-v.highlight {
+    color: #fbbf24;
+    font-weight: 800;
+}
+
+.btn-driver-telemetry {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    padding: 0.55rem 0.75rem;
+    background: rgba(139, 92, 246, 0.08);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 4px;
+    color: #cbd5e1;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: all 0.2s ease;
+    margin-top: 0.35rem;
+}
+
+.btn-driver-telemetry:hover {
+    background: rgba(139, 92, 246, 0.22);
+    border-color: #8b5cf6;
+    color: #ffffff;
+    box-shadow: 0 0 12px rgba(139, 92, 246, 0.3);
+}
+
+/* Roster Recruitment Banner */
+.roster-recruitment-banner {
+    background: #090d16;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-left: 3px solid #00ff88;
+    border-radius: 6px;
+    padding: 1.6rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+    position: relative;
+    flex-wrap: wrap;
+}
+
+.recruitment-left {
+    flex: 1 1 500px;
+}
+
+.recruitment-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    color: #00ff88;
+    margin-bottom: 0.4rem;
+}
+
+.recruitment-badge .badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #00ff88;
+    box-shadow: 0 0 8px #00ff88;
+    animation: liveDot 1.5s infinite;
+}
+
+.recruitment-title {
+    font-family: var(--font-heading);
+    font-size: clamp(1.05rem, 1.8vw, 1.35rem);
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: #ffffff;
+    text-transform: uppercase;
+    margin: 0 0 0.4rem 0;
+}
+
+.recruitment-desc {
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: #94a3b8;
+    margin: 0;
+}
+
+.recruitment-right {
+    flex-shrink: 0;
+}
+
+/* ===================================================
+   TEAM ETHOS & PHILOSOPHY CARD
+   =================================================== */
+.team-ethos-section {
+    padding: 3rem 0 4.5rem;
+    position: relative;
+}
+
+.team-ethos-card {
+    background: #090d16;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    padding: 3.5rem 3rem;
+    position: relative;
+    text-align: center;
+    max-width: 950px;
+    margin: 0 auto;
+}
+
+.ethos-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #94a3b8;
+    margin-bottom: 1rem;
+}
+
+.ethos-title {
+    font-family: var(--font-heading);
+    font-size: clamp(1.6rem, 3.2vw, 2.3rem);
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    color: #ffffff;
+    text-transform: uppercase;
+    margin: 0 0 1.25rem 0;
+}
+
+.ethos-lead {
+    font-size: 1rem;
+    line-height: 1.75;
+    color: #cbd5e1;
+    max-width: 780px;
+    margin: 0 auto 2.25rem auto;
+    font-weight: 400;
+}
+
+.ethos-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
 /* Mockup Footer */
 .mockup-footer {
     background: #05070a;
@@ -3664,6 +4048,9 @@ body[data-theme="theme-purple"]::before, body::before {
     .mockup-hero-kicker-top {
         display: none;
     }
+    .drivers-trading-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 @media (max-width: 768px) {
     .events-ticker-bar {
@@ -3701,6 +4088,16 @@ body[data-theme="theme-purple"]::before, body::before {
     .mockup-event-metrics-grid {
         grid-template-columns: repeat(2, 1fr);
     }
+    .roster-recruitment-banner {
+        flex-direction: column;
+        text-align: left;
+        align-items: flex-start;
+        padding: 1.4rem;
+        gap: 1.25rem;
+    }
+    .team-ethos-card {
+        padding: 2.5rem 1.5rem;
+    }
     .mockup-footer-container {
         flex-direction: column;
         text-align: center;
@@ -3716,6 +4113,36 @@ body[data-theme="theme-purple"]::before, body::before {
     }
     .mockup-event-metrics-grid {
         grid-template-columns: 1fr;
+    }
+    .drivers-trading-grid {
+        grid-template-columns: 1fr;
+    }
+    .control-room-title {
+        font-size: clamp(1rem, 4.2vw, 1.35rem) !important;
+        letter-spacing: 0.5px !important;
+    }
+    .driver-portrait-wrap {
+        aspect-ratio: 16 / 11;
+    }
+    .spec-v {
+        white-space: normal;
+        line-height: 1.3;
+    }
+    .spec-row {
+        align-items: flex-start;
+    }
+    .recruitment-right,
+    .recruitment-right .btn-works-primary {
+        width: 100%;
+        justify-content: center;
+    }
+    .ethos-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+    .ethos-actions a {
+        width: 100%;
+        justify-content: center;
     }
     .mockup-hero-actions,
     .works-hero-ctas {
