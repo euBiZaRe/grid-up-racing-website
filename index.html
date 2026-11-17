@@ -121,37 +121,45 @@
 <body>
             <nav id="navbar" class="scrolled">
         <div class="container nav-content">
-            <a href="index.html" class="logo-brand">
-                <img src="assets/G_2.png" decoding="async" width="36" height="36" alt="GRiD UP" style="height: 36px; width: auto; vertical-align: middle;">
-                <div class="brand-text-wrap">
-                    <div class="brand-title"><span class="brand-white">GRID</span> <span class="brand-purple">UP</span></div>
-                    <div class="brand-sub">SIM RACING</div>
+            <div class="nav-identity">
+                <a href="index.html" class="logo-brand">
+                    <img src="assets/G_2.png" decoding="async" width="36" height="36" alt="GRiD UP" style="height: 36px; width: auto; vertical-align: middle;">
+                    <div class="brand-text-wrap">
+                        <div class="brand-title"><span class="brand-white">GRID</span> <span class="brand-purple">UP</span></div>
+                        <div class="brand-sub">FACTORY SIM RACING</div>
+                    </div>
+                </a>
+                
+                <div class="nav-squad-status">
+                    <span class="status-beacon-dot"></span>
+                    <span class="status-beacon-text">iRACING SPECIAL EVENTS // ACTIVE</span>
                 </div>
-            </a>
-            
+            </div>
+
             <div class="menu-toggle" aria-label="Toggle navigation">
                 <span></span>
                 <span></span>
                 <span></span>
             </div>
 
-            <!-- Redesigned Navbar Links matching Mockup -->
+            <!-- Precision Broadcast Navbar Links -->
             <ul class="nav-links">
                 <li><a href="index.html" class="active">HOME</a></li>
-                <li><a href="events.html">EVENTS</a></li>
+                <li><a href="events.html">CALENDAR</a></li>
                 <li><a href="roster.html">DRIVERS</a></li>
                 <li><a href="trophy-room.html">TROPHY ROOM</a></li>
+                <li><a href="reports.html">REPORTS</a></li>
                 <li><a href="team-app.html">APPLY</a></li>
             </ul>
 
             <div class="nav-actions">
-                <a href="login.html" id="login-link" class="btn-nav-login">
+                <a href="login.html" id="login-link" class="btn-nav-login" title="Driver Portal">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                    LOGIN
+                    <span>DRIVER LOGIN</span>
                 </a>
-                <a href="results.html" class="btn-nav-join">
+                <a href="results.html" class="btn-nav-join" title="Official Results">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.45 1-1 1H7v2h10v-2h-2c-.55 0-1-.45-1-1v-2.34c3.27-.64 5-3.08 5-6.66V4H5v4c0 3.58 1.73 6.02 5 6.66z"></path></svg>
-                    RECENT RESULTS
+                    <span>RECENT RESULTS</span>
                 </a>
             </div>
         </div>
@@ -255,91 +263,149 @@
         </div>
     </div>
 
-    <!-- Redesigned Hero Section -->
-    <section id="home" class="mockup-hero">
-        <div class="mockup-hero-bg"></div>
-        <div class="mockup-hero-overlay"></div>
+    <!-- Factory Works / High-Precision Hero Section -->
+    <section id="home" class="works-hero">
+        <div class="works-hero-bg"></div>
+        <div class="works-hero-grid-overlay"></div>
         
-        <div class="container mockup-hero-container">
-            <!-- Top Right Kicker from Mockup -->
-            <div class="mockup-hero-kicker-top">
-                LONGER RACES. DEEPER STRATEGY. REAL TEAMWORK.
-            </div>
-
-            <!-- Left Content Area -->
-            <div class="mockup-hero-left">
-                <div class="mockup-hero-badge">
-                    <span class="badge-dot"></span> IRACING ENDURANCE TEAM
+        <div class="container works-hero-container">
+            <!-- Top Technical Index Ledger -->
+            <div class="works-hero-topline">
+                <div class="works-hero-kicker">
+                    <span class="tech-bracket">[</span>
+                    <span class="telemetry-ping"></span>
+                    <span class="kicker-text">OFFICIAL WORKS ENTRY // FIA iRACING SPECIAL EVENTS</span>
+                    <span class="tech-bracket">]</span>
                 </div>
-                
-                <h1 class="mockup-hero-title">
-                    GRID UP <span class="purple-neon-text">SIM RACING</span>
-                </h1>
-
-                <div class="mockup-hero-tagline">
-                    ENDURANCE / TEAMWORK / RESULTS
-                </div>
-
-                <p class="mockup-hero-desc">
-                    A competitive iRacing endurance team built on performance, progress and a passion for long-format racing.
-                </p>
-
-                <div class="mockup-hero-actions">
-                    <a href="events.html" class="btn-mockup-primary">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                        VIEW UPCOMING EVENTS <span class="arrow">→</span>
-                    </a>
-                    <a href="results.html" class="btn-mockup-secondary">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.45 1-1 1H7v2h10v-2h-2c-.55 0-1-.45-1-1v-2.34c3.27-.64 5-3.08 5-6.66V4H5v4c0 3.58 1.73 6.02 5 6.66z"></path></svg>
-                        RECENT RESULTS
-                    </a>
+                <div class="works-hero-serial">
+                    <span>DIVISION: PREMIER ENDURANCE</span>
+                    <span class="serial-divider">//</span>
+                    <span>SPEC: GT3 • GTP • LMP2</span>
                 </div>
             </div>
-        </div>
-    </section>
 
-    <!-- 4 Feature Pillars Strip directly below Hero -->
-    <section class="mockup-features-strip">
-        <div class="container">
-            <div class="mockup-features-grid">
-                <div class="mockup-feature-card">
-                    <div class="mockup-feature-icon">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <!-- Split Main Content: Left Intel, Right Telemetry Machine Display -->
+            <div class="works-hero-split">
+                <div class="works-hero-content">
+                    <div class="works-badge-row">
+                        <span class="works-status-badge">
+                            <span class="badge-dot"></span> TOP-SPLIT SQUAD
+                        </span>
+                        <span class="works-meta-tag">SEASON 2026 CAMPAIGN</span>
                     </div>
-                    <div class="mockup-feature-content">
-                        <h3>ENDURANCE FOCUSED</h3>
-                        <p>120 minutes, 6 hours, 12 hours+ / Real team racing, real strategy.</p>
+
+                    <h1 class="works-hero-title">
+                        PRECISION RACING.<br>
+                        <span class="works-title-accent">CHAMPIONSHIP PEDIGREE.</span>
+                    </h1>
+
+                    <p class="works-hero-lead">
+                        Engineering top-tier iRacing endurance campaigns. From the green flag at Daytona to 24 hours in the Eifel Green Hell, GRiD UP executes high-commitment sim racing through rigorous telemetry data, custom setups, and synchronized team strategy.
+                    </p>
+
+                    <div class="works-hero-ctas">
+                        <a href="events.html" class="btn-works-primary">
+                            <span>RACE CALENDAR & FIXTURES</span>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                        </a>
+                        <a href="results.html" class="btn-works-secondary">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.45 1-1 1H7v2h10v-2h-2c-.55 0-1-.45-1-1v-2.34c3.27-.64 5-3.08 5-6.66V4H5v4c0 3.58 1.73 6.02 5 6.66z"></path></svg>
+                            <span>OFFICIAL TIMING & PODIUMS</span>
+                        </a>
                     </div>
                 </div>
 
-                <div class="mockup-feature-card">
-                    <div class="mockup-feature-icon">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                    </div>
-                    <div class="mockup-feature-content">
-                        <h3>TEAM DRIVEN</h3>
-                        <p>Built around respect, consistency and improvement.</p>
+                <!-- Right Telemetry Machine Frame -->
+                <div class="works-hero-machinery">
+                    <div class="machinery-frame">
+                        <!-- Corner HUD crosshairs -->
+                        <div class="hud-corner hud-tl"></div>
+                        <div class="hud-corner hud-tr"></div>
+                        <div class="hud-corner hud-bl"></div>
+                        <div class="hud-corner hud-br"></div>
+
+                        <!-- Header HUD Banner -->
+                        <div class="machinery-hud-header">
+                            <div class="hud-header-left">
+                                <span class="hud-rec-dot"></span>
+                                <span class="hud-title">CHASSIS TELEMETRY LINKED</span>
+                            </div>
+                            <div class="hud-header-right">
+                                <span class="hud-spec">TELEMETRICS v2.4</span>
+                            </div>
+                        </div>
+
+                        <!-- Vehicle Showcase Image -->
+                        <div class="machinery-img-wrap">
+                            <img src="assets/hero-sunset-gt3.jpg" alt="GRiD UP McLaren 720S GT3 Evo" class="machinery-hero-img" loading="eager">
+                            <div class="machinery-gradient-scrim"></div>
+                            <div class="machinery-floating-tag">
+                                <span class="tag-accent-bar"></span>
+                                <span>COMPETITION LIVERY #72</span>
+                            </div>
+                        </div>
+
+                        <!-- Technical Telemetry Footer Strip -->
+                        <div class="machinery-telemetry-hud">
+                            <div class="hud-metric-row">
+                                <div class="hud-data-pill">
+                                    <span class="hud-lbl">PRIMARY MACHINE</span>
+                                    <span class="hud-val">MCLAREN 720S GT3 EVO</span>
+                                </div>
+                                <div class="hud-data-pill">
+                                    <span class="hud-lbl">POWERTRAIN</span>
+                                    <span class="hud-val">4.0L TWIN-TURBO V8</span>
+                                </div>
+                                <div class="hud-data-pill">
+                                    <span class="hud-lbl">CHASSIS SPEC</span>
+                                    <span class="hud-val">CARBON MONOCELL II</span>
+                                </div>
+                            </div>
+                            <div class="hud-status-line">
+                                <span class="hud-radar-beacon"></span>
+                                <span>GARAGE 61 TELEMETRY INTEGRATED // LIVE MOTEC ANALYSIS</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="mockup-feature-card">
-                    <div class="mockup-feature-icon">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+            <!-- BOTTOM TECHNICAL METRICS DATABAR -->
+            <div class="works-hero-databar">
+                <div class="databar-item">
+                    <div class="databar-num-wrap">
+                        <span class="databar-num">08</span>
+                        <span class="databar-suffix">PODIUMS</span>
                     </div>
-                    <div class="mockup-feature-content">
-                        <h3>DETAILED REPORTS</h3>
-                        <p>Race recaps, results and performance insights.</p>
-                    </div>
+                    <div class="databar-label">OFFICIAL ENDURANCE RESULTS</div>
+                    <div class="databar-meta">3x P1 WINS • 4x P2 • 1x P3</div>
                 </div>
 
-                <div class="mockup-feature-card">
-                    <div class="mockup-feature-icon">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="m9 12 2 2 4-4"></path></svg>
+                <div class="databar-item">
+                    <div class="databar-num-wrap">
+                        <span class="databar-num">24H</span>
+                        <span class="databar-suffix">MAJORS</span>
                     </div>
-                    <div class="mockup-feature-content">
-                        <h3>PROFESSIONAL STANDARDS</h3>
-                        <p>Fair play, clean racing and a welcoming community.</p>
+                    <div class="databar-label">SPECIAL EVENTS DISCIPLINE</div>
+                    <div class="databar-meta">NÜRBURGRING • DAYTONA • SPA</div>
+                </div>
+
+                <div class="databar-item">
+                    <div class="databar-num-wrap">
+                        <span class="databar-num">6.5K+</span>
+                        <span class="databar-suffix">PEAK iR</span>
                     </div>
+                    <div class="databar-label">DRIVER ROSTER STRENGTH</div>
+                    <div class="databar-meta">TOP-SPLIT COMPETITIVE BENCHMARK</div>
+                </div>
+
+                <div class="databar-item">
+                    <div class="databar-num-wrap">
+                        <span class="databar-num">100%</span>
+                        <span class="databar-suffix">SYNCED</span>
+                    </div>
+                    <div class="databar-label">TELEMETRY & RACE CRAFT</div>
+                    <div class="databar-meta">REAL-TIME STINT & FUEL STRATEGY</div>
                 </div>
             </div>
         </div>
