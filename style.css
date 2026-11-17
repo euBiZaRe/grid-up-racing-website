@@ -2778,22 +2778,27 @@ body[data-theme="theme-purple"]::before, body::before {
 }
 
 /* Next Event Card Content */
-.mockup-event-split {
-    display: grid;
-    grid-template-columns: 1.25fr 1fr;
-    gap: 1.5rem;
-    align-items: center;
-    margin-bottom: 1.75rem;
+.mockup-event-top {
+    margin-bottom: 1.25rem;
+    padding-bottom: 1.15rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
 }
 .mockup-event-heading {
     font-family: var(--font-heading);
-    font-size: clamp(1.4rem, 2.5vw, 1.85rem);
+    font-size: clamp(1.4rem, 2.3vw, 1.95rem);
     font-weight: 900;
     letter-spacing: 1px;
     color: #ffffff;
-    margin-bottom: 0.6rem;
+    margin-bottom: 0.75rem;
     line-height: 1.2;
     text-transform: uppercase;
+}
+.mockup-event-subbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
 }
 .mockup-event-date {
     display: inline-flex;
@@ -2804,7 +2809,23 @@ body[data-theme="theme-purple"]::before, body::before {
     font-size: 0.85rem;
     font-weight: 800;
     letter-spacing: 1.5px;
-    margin-bottom: 1rem;
+    margin-bottom: 0;
+}
+.event-env-telemetry-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0;
+}
+.mockup-event-split {
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    gap: 1.5rem;
+    align-items: stretch;
+    margin-bottom: 1.5rem;
+}
+.mockup-event-split > * {
+    min-width: 0;
 }
 .mockup-event-schedule {
     display: flex;
@@ -2995,55 +3016,71 @@ body[data-theme="theme-purple"]::before, body::before {
 
 /* Track Preview Graphic - Blueprint Telemetry Display */
 .mockup-track-preview {
-    background: #07090e;
+    background: #060911;
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 6px;
-    padding: 1.25rem;
+    border-radius: 8px;
+    padding: 1.4rem 1.25rem 1.25rem;
     text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     position: relative;
     overflow: hidden;
+    min-height: 320px;
+    box-shadow: inset 0 0 35px rgba(0, 0, 0, 0.6);
 }
 .track-hud-tag {
     position: absolute;
     top: 10px;
     right: 12px;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.58rem;
+    font-size: 0.62rem;
     font-weight: 700;
     color: #64748b;
     letter-spacing: 1px;
 }
 .track-img-wrap {
     width: 100%;
-    max-height: 160px;
+    flex: 1;
+    min-height: 200px;
+    max-height: 250px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-top: 0.5rem;
-    margin-bottom: 0.85rem;
+    margin: 1.1rem 0;
+    position: relative;
 }
 .track-graphic {
-    max-width: 100%;
-    max-height: 140px;
+    max-width: 95%;
+    max-height: 220px;
+    width: auto;
+    height: auto;
     object-fit: contain;
-    filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.25));
+    filter: drop-shadow(0 0 14px rgba(255, 45, 76, 0.5)) drop-shadow(0 0 30px rgba(139, 92, 246, 0.25));
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.mockup-track-preview:hover .track-graphic {
+    transform: scale(1.04);
+}
+.track-meta {
+    width: 100%;
+    padding-top: 0.85rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 .track-name {
     font-family: var(--font-heading);
-    font-size: 0.78rem;
+    font-size: 0.85rem;
     font-weight: 800;
-    letter-spacing: 1.5px;
+    letter-spacing: 1.2px;
     color: #ffffff;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.3rem;
     text-transform: uppercase;
+    line-height: 1.3;
 }
 .track-specs {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.68rem;
+    font-size: 0.72rem;
     letter-spacing: 1px;
     color: #00ff88;
     font-weight: 700;
@@ -4119,8 +4156,16 @@ body[data-theme="theme-purple"]::before, body::before {
     .works-hero {
         padding: 3.5rem 0 2.5rem;
     }
+    .container {
+        padding: 0 1rem;
+    }
     .mockup-event-split {
         grid-template-columns: 1fr;
+    }
+    .mockup-event-subbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
     }
     .recent-results-grid {
         grid-template-columns: 1fr;
@@ -4148,6 +4193,46 @@ body[data-theme="theme-purple"]::before, body::before {
     }
 }
 @media (max-width: 540px) {
+    .container {
+        padding: 0 0.85rem;
+    }
+    .mockup-card {
+        padding: 1.1rem 0.95rem;
+    }
+    .mockup-event-heading {
+        font-size: clamp(1.15rem, 5vw, 1.55rem);
+        word-break: break-word;
+    }
+    .mockup-countdown-grid {
+        gap: 0.35rem;
+    }
+    .cd-box {
+        padding: 0.45rem 0.25rem;
+    }
+    .cd-num {
+        font-size: 1.15rem;
+    }
+    .cd-lbl {
+        font-size: 0.55rem;
+    }
+    .timeslots-header,
+    .timeslot-row {
+        padding: 0.5rem 0.65rem;
+        gap: 0.4rem;
+    }
+    .timeslot-time {
+        font-size: 0.85rem;
+    }
+    .timeslot-date-title {
+        font-size: 0.76rem;
+    }
+    .mockup-track-preview {
+        padding: 1.1rem 0.85rem;
+        min-height: 270px;
+    }
+    .track-graphic {
+        max-height: 180px;
+    }
     .mockup-features-grid {
         grid-template-columns: 1fr;
     }

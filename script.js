@@ -1299,6 +1299,12 @@ function populateNextEventDashboard(nextEvent, staticIds = [], eventBanners = {}
     const trackSpecs = document.getElementById('hero-track-specs');
     if (trackSpecs) trackSpecs.textContent = profile.trackSpecs;
 
+    const trackTag = document.getElementById('hero-track-hud-tag');
+    if (trackTag && profile.trackSpecs) {
+        const distPart = profile.trackSpecs.split('•')[0].trim();
+        trackTag.textContent = `CIRCUIT TELEMETRICS // ${distPart}`;
+    }
+
     const metricsEl = document.getElementById('hero-event-metrics');
     if (metricsEl && Array.isArray(profile.metrics)) {
         metricsEl.innerHTML = profile.metrics.map(m => `
