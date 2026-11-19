@@ -2,37 +2,45 @@
   "rules": {
     "setup_jobs": {
       "$machineId": {
-        ".read": "auth != null",
+        ".read": "auth != null && (root.child('driver_registry').child($machineId).child('ownerUid').val() === auth.uid || auth.uid === 'B0t4f4nqqpZIQKpT8Ed97xka5gM2' || auth.uid === 'uYUa2WYZ5TPg98vle6jQzzrItR53' || auth.uid === '8nojtKUFKUUKDFFpnU6EdueLhkN2' || auth.uid === '2TfuhZVILNQerQK95YL1304jYp83')",
         "$jobId": {
-          ".write": "auth != null && (!data.exists() ? (newData.child('uid').val() === auth.uid || !newData.child('uid').exists()) : (data.child('uid').val() === auth.uid || !data.child('uid').exists()))"
+          ".write": "auth != null && (root.child('driver_registry').child($machineId).child('ownerUid').val() === auth.uid || auth.uid === 'B0t4f4nqqpZIQKpT8Ed97xka5gM2' || auth.uid === 'uYUa2WYZ5TPg98vle6jQzzrItR53' || auth.uid === '8nojtKUFKUUKDFFpnU6EdueLhkN2' || auth.uid === '2TfuhZVILNQerQK95YL1304jYp83') && (!newData.exists() || (newData.child('uid').val() === auth.uid && (!newData.child('downloadUrl').exists() || newData.child('downloadUrl').val().beginsWith('https://firebasestorage.googleapis.com/'))))"
         }
       }
     },
     "driver_registry": {
       "$machineId": {
-        ".read": "auth != null",
-        ".write": "auth != null"
+        ".read": "auth != null && (!data.exists() || data.child('ownerUid').val() === auth.uid || auth.uid === 'B0t4f4nqqpZIQKpT8Ed97xka5gM2' || auth.uid === 'uYUa2WYZ5TPg98vle6jQzzrItR53' || auth.uid === '8nojtKUFKUUKDFFpnU6EdueLhkN2' || auth.uid === '2TfuhZVILNQerQK95YL1304jYp83')",
+        ".write": "auth != null && (((!data.exists() && newData.child('ownerUid').val() === auth.uid) || (data.exists() && data.child('ownerUid').val() === auth.uid && newData.child('ownerUid').val() === auth.uid)) || auth.uid === 'B0t4f4nqqpZIQKpT8Ed97xka5gM2' || auth.uid === 'uYUa2WYZ5TPg98vle6jQzzrItR53' || auth.uid === '8nojtKUFKUUKDFFpnU6EdueLhkN2' || auth.uid === '2TfuhZVILNQerQK95YL1304jYp83')"
       }
     },
     "teams": {
+      "meta_teams": {
+        ".read": true,
+        ".write": "auth != null && (auth.uid === 'B0t4f4nqqpZIQKpT8Ed97xka5gM2' || auth.uid === 'uYUa2WYZ5TPg98vle6jQzzrItR53' || auth.uid === '8nojtKUFKUUKDFFpnU6EdueLhkN2' || auth.uid === '2TfuhZVILNQerQK95YL1304jYp83')"
+      },
       "$teamId": {
         "streams": {
           "$streamKey": {
             ".read": true,
-            ".write": "auth != null"
+            ".write": "auth != null && (((!data.exists() && newData.child('uid').val() === auth.uid) || (data.exists() && data.child('uid').val() === auth.uid && newData.child('uid').val() === auth.uid)) || auth.uid === 'B0t4f4nqqpZIQKpT8Ed97xka5gM2' || auth.uid === 'uYUa2WYZ5TPg98vle6jQzzrItR53' || auth.uid === '8nojtKUFKUUKDFFpnU6EdueLhkN2' || auth.uid === '2TfuhZVILNQerQK95YL1304jYp83')"
           }
         },
         "drivers": {
           "$streamKey": {
             ".read": true,
-            ".write": "auth != null"
+            ".write": "auth != null && (((!data.exists() && newData.child('uid').val() === auth.uid) || (data.exists() && data.child('uid').val() === auth.uid && newData.child('uid').val() === auth.uid)) || auth.uid === 'B0t4f4nqqpZIQKpT8Ed97xka5gM2' || auth.uid === 'uYUa2WYZ5TPg98vle6jQzzrItR53' || auth.uid === '8nojtKUFKUUKDFFpnU6EdueLhkN2' || auth.uid === '2TfuhZVILNQerQK95YL1304jYp83')"
           }
+        },
+        "laps_analysis": {
+          ".read": true,
+          ".write": "auth != null && (auth.uid === 'B0t4f4nqqpZIQKpT8Ed97xka5gM2' || auth.uid === 'uYUa2WYZ5TPg98vle6jQzzrItR53' || auth.uid === '8nojtKUFKUUKDFFpnU6EdueLhkN2' || auth.uid === '2TfuhZVILNQerQK95YL1304jYp83')"
         }
       }
     },
     "telemetry": {
       ".read": true,
-      ".write": "auth != null"
+      ".write": "auth != null && (auth.uid === 'B0t4f4nqqpZIQKpT8Ed97xka5gM2' || auth.uid === 'uYUa2WYZ5TPg98vle6jQzzrItR53' || auth.uid === '8nojtKUFKUUKDFFpnU6EdueLhkN2' || auth.uid === '2TfuhZVILNQerQK95YL1304jYp83')"
     },
     ".read": false,
     ".write": false

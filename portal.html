@@ -2909,22 +2909,28 @@
                         const currentUid = (auth && auth.currentUser) ? auth.currentUser.uid : null;
                         const isMe = currentUid && m.uid === currentUid;
                         const canDelete = isMe || isAdminUser;
+                        const safeAuthor = escapeHtml(m.author || 'Driver');
+                        const safeInitial = escapeHtml((m.author || 'D').charAt(0).toUpperCase());
+                        const safeText = escapeHtml(m.text || '');
 
-                        container.innerHTML += `
-                            <div class="chat-bubble ${isMe ? 'chat-me' : 'chat-other'}">
-                                <div class="chat-bubble-meta">
-                                    <div style="display: flex; align-items: center; gap: 8px;">
-                                        <div class="chat-avatar-pill">${(m.author || 'D').charAt(0).toUpperCase()}</div>
-                                        <span class="chat-author">${m.author || 'Driver'}</span>
-                                    </div>
-                                    <div style="display: flex; align-items: center; gap: 10px;">
-                                        <span class="chat-time">${time}</span>
-                                        ${canDelete ? `<button class="delete-msg" onclick="deleteMessage('${doc.id}')" title="Delete message"><i class="fas fa-trash-alt"></i></button>` : ''}
-                                    </div>
+                        const bubble = document.createElement('div');
+                        bubble.className = `chat-bubble ${isMe ? 'chat-me' : 'chat-other'}`;
+                        bubble.innerHTML = `
+                            <div class="chat-bubble-meta">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div class="chat-avatar-pill">${safeInitial}</div>
+                                    <span class="chat-author">${safeAuthor}</span>
                                 </div>
-                                <div class="chat-text">${m.text}</div>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span class="chat-time">${escapeHtml(time)}</span>
+                                    ${canDelete ? `<button type="button" class="delete-msg" title="Delete message"><i class="fas fa-trash-alt"></i></button>` : ''}
+                                </div>
                             </div>
+                            <div class="chat-text">${safeText}</div>
                         `;
+                        const delBtn = bubble.querySelector('.delete-msg');
+                        if (delBtn) delBtn.addEventListener('click', () => deleteMessage(doc.id));
+                        container.appendChild(bubble);
                     });
 
                     container.scrollTop = container.scrollHeight;
@@ -4492,11 +4498,13 @@
             const canEdit = canUserEditSetup(setup);
             const versions = setup.versions || [setup.currentVersion || {}];
 
+            const safeCatClass = String(setup.category || 'race').toLowerCase().replace(/[^a-z0-9_-]/g, '');
+            const safeSetupId = escapeHtml(setup.id || '');
             container.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 1rem; margin-bottom: 1.25rem;">
                     <div>
                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                            <span class="setup-badge-category category-${(setup.category||'race').toLowerCase()}">${escapeHtml(setup.category || 'Race')}</span>
+                            <span class="setup-badge-category category-${safeCatClass}">${escapeHtml(setup.category || 'Race')}</span>
                             ${setup.isApprovedForEvent ? '<span class="setup-badge-approved"><i class="fas fa-certificate"></i> Event Approved</span>' : ''}
                             <span class="setup-version-pill"><i class="fas fa-code-branch"></i> ${escapeHtml(setup.currentVersionId || 'v1.0')}</span>
                         </div>
@@ -4506,14 +4514,14 @@
                         </div>
                     </div>
                     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                        <button type="button" id="btn-detail-install-${setup.id}" onclick="installSetupToIRacing('${setup.id}')" class="btn btn-primary ${isInstalled ? 'installed' : ''}" style="font-size: 0.8rem; padding: 0.5rem 1.2rem;">
+                        <button type="button" id="btn-detail-install-${safeSetupId}" class="btn btn-primary btn-detail-install-trigger ${isInstalled ? 'installed' : ''}" style="font-size: 0.8rem; padding: 0.5rem 1.2rem;">
                             ${isInstalled ? '<i class="fas fa-circle-check"></i> Installed in iRacing' : '<i class="fas fa-download"></i> Install to iRacing'}
                         </button>
-                        <button type="button" onclick="downloadSetupFile('${setup.downloadUrl}', '${setup.fileName}')" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.5rem 1rem;" title="Download .sto file">
+                        <button type="button" class="btn btn-outline btn-detail-download-trigger" style="font-size: 0.8rem; padding: 0.5rem 1rem;" title="Download .sto file">
                             <i class="fas fa-file-arrow-down"></i> Download .sto
                         </button>
                         ${canEdit ? `
-                            <button type="button" onclick="openNewVersionModal('${setup.id}')" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.5rem 1rem; border-color: var(--primary); color: var(--primary);">
+                            <button type="button" class="btn btn-outline btn-detail-newver-trigger" style="font-size: 0.8rem; padding: 0.5rem 1rem; border-color: var(--primary); color: var(--primary);">
                                 <i class="fas fa-plus"></i> New Version
                             </button>
                         ` : ''}
@@ -4569,18 +4577,18 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                ${versions.slice().reverse().map(v => `
+                                ${versions.slice().reverse().map((v, vIdx) => `
                                     <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
                                         <td style="padding: 8px 12px; font-weight: 800; color: var(--primary);">${escapeHtml(v.versionId || 'v1.0')}</td>
                                         <td style="padding: 8px 12px;">${escapeHtml(v.notes || 'Baseline setup')}</td>
                                         <td style="padding: 8px 12px; color: var(--text-muted);">${escapeHtml(v.uploaderName || setup.author || 'Driver')}</td>
-                                        <td style="padding: 8px 12px; color: var(--text-muted);">${formatRelativeTime(v.uploadedAt)}</td>
-                                        <td style="padding: 8px 12px; color: var(--text-muted);">${formatFileSize(v.fileSize)}</td>
+                                        <td style="padding: 8px 12px; color: var(--text-muted);">${escapeHtml(formatRelativeTime(v.uploadedAt))}</td>
+                                        <td style="padding: 8px 12px; color: var(--text-muted);">${escapeHtml(formatFileSize(v.fileSize))}</td>
                                         <td style="padding: 8px 12px; text-align: right; white-space: nowrap;">
-                                            <button type="button" onclick="downloadSetupFile('${v.downloadUrl}', '${v.fileName}')" class="btn btn-outline" style="padding: 2px 8px; font-size: 0.7rem; margin-right: 4px;" title="Download .sto">
+                                            <button type="button" data-ver-idx="${vIdx}" class="btn btn-outline btn-ver-download" style="padding: 2px 8px; font-size: 0.7rem; margin-right: 4px;" title="Download .sto">
                                                 <i class="fas fa-download"></i>
                                             </button>
-                                            <button type="button" onclick="installSetupToIRacing('${setup.id}', '${v.versionId}')" class="btn btn-primary" style="padding: 2px 8px; font-size: 0.7rem;" title="Install to iRacing">
+                                            <button type="button" data-ver-idx="${vIdx}" class="btn btn-primary btn-ver-install" style="padding: 2px 8px; font-size: 0.7rem;" title="Install to iRacing">
                                                 <i class="fas fa-microchip"></i> Install
                                             </button>
                                         </td>
@@ -4600,6 +4608,23 @@
                     </div>
                 </div>
             `;
+
+            const detailInstallBtn = container.querySelector('.btn-detail-install-trigger');
+            if (detailInstallBtn) detailInstallBtn.addEventListener('click', () => installSetupToIRacing(setup.id));
+            const detailDownloadBtn = container.querySelector('.btn-detail-download-trigger');
+            if (detailDownloadBtn) detailDownloadBtn.addEventListener('click', () => downloadSetupFile(sanitizeHttpUrl(setup.downloadUrl), setup.fileName));
+            const detailNewVerBtn = container.querySelector('.btn-detail-newver-trigger');
+            if (detailNewVerBtn) detailNewVerBtn.addEventListener('click', () => openNewVersionModal(setup.id));
+
+            const reversedVersions = versions.slice().reverse();
+            container.querySelectorAll('.btn-ver-download').forEach(btn => {
+                const v = reversedVersions[Number(btn.dataset.verIdx)];
+                if (v) btn.addEventListener('click', () => downloadSetupFile(sanitizeHttpUrl(v.downloadUrl), v.fileName));
+            });
+            container.querySelectorAll('.btn-ver-install').forEach(btn => {
+                const v = reversedVersions[Number(btn.dataset.verIdx)];
+                if (v) btn.addEventListener('click', () => installSetupToIRacing(setup.id, v.versionId));
+            });
 
             modal.style.display = 'flex';
 

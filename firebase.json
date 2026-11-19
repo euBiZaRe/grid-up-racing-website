@@ -7,7 +7,17 @@
     "ignore": [
       "firebase.json",
       "**/.*",
-      "**/node_modules/**"
+      "**/node_modules/**",
+      "firestore.rules",
+      "database.rules.json",
+      "cors.json",
+      "security-audit/**",
+      "scripts/**",
+      "telemetry-app/**",
+      "tests/**",
+      "**/*.log",
+      "**/*.map",
+      "**/*.pyc"
     ],
     "redirects": [
       {

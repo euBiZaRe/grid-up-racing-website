@@ -195,10 +195,16 @@
     const p=document.getElementById('panel-'+t);if(p)p.classList.add('active');
   }
 
+  function getVerifiedKnownAdmins(){
+    return (Array.isArray(window.KNOWN_ADMIN_UIDS) && window.KNOWN_ADMIN_UIDS.length)
+      ? window.KNOWN_ADMIN_UIDS
+      : ['B0t4f4nqqpZIQKpT8Ed97xka5gM2','uYUa2WYZ5TPg98vle6jQzzrItR53','8nojtKUFKUUKDFFpnU6EdueLhkN2','2TfuhZVILNQerQK95YL1304jYp83'];
+  }
+
   function checkAdminAccess(){
     const main=document.getElementById('admin-main');
     const denied=document.getElementById('access-denied');
-    const KNOWN_ADMINS=['B0t4f4nqqpZIQKpT8Ed97xka5gM2','uYUa2WYZ5TPg98v1e6jQzzrItR53','BnojTKUFKUUKDFFpnUGEdueLhkN2','2TfuhZVILNQerQK9SYL1304jYp83'];
+    const KNOWN_ADMINS=getVerifiedKnownAdmins();
     const currentUser = firebase.auth().currentUser;
     const isVerifiedAdmin = Boolean(currentUser && (KNOWN_ADMINS.includes(currentUser.uid) || window.IS_ADMIN === true));
     if(isVerifiedAdmin){
@@ -210,7 +216,7 @@
   window.onAuthEnriched=function(user,data){
     const main=document.getElementById('admin-main');
     const denied=document.getElementById('access-denied');
-    const KNOWN_ADMINS=['B0t4f4nqqpZIQKpT8Ed97xka5gM2','uYUa2WYZ5TPg98v1e6jQzzrItR53','BnojTKUFKUUKDFFpnUGEdueLhkN2','2TfuhZVILNQerQK9SYL1304jYp83'];
+    const KNOWN_ADMINS=getVerifiedKnownAdmins();
     const isAuthAdmin=Boolean(user && (KNOWN_ADMINS.includes(user.uid) || (window.IS_ADMIN===true)));
     if(isAuthAdmin){
       window.IS_ADMIN=true;
@@ -223,8 +229,8 @@
 
   firebase.auth().onAuthStateChanged(async(user)=>{
     if(user){
-      const MASTER_ADMIN='B0t4f4nqqpZIQKpT8Ed97xka5gM2';
-      const KNOWN_ADMINS=['B0t4f4nqqpZIQKpT8Ed97xka5gM2','uYUa2WYZ5TPg98v1e6jQzzrItR53','BnojTKUFKUUKDFFpnUGEdueLhkN2','2TfuhZVILNQerQK9SYL1304jYp83'];
+      const MASTER_ADMIN=window.MASTER_ADMIN || 'B0t4f4nqqpZIQKpT8Ed97xka5gM2';
+      const KNOWN_ADMINS=getVerifiedKnownAdmins();
       if(user.uid===MASTER_ADMIN || KNOWN_ADMINS.includes(user.uid)){
         window.IS_ADMIN=true;
         const main=document.getElementById('admin-main');

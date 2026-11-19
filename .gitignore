@@ -25,9 +25,13 @@ __pycache__/
 telemetry_recorder.log
 *.log
 
-# Scratch and Temporary directories
+# Scratch, Audit Reports, Source Maps, & Temporary directories
 scratch/
+security-audit/
 discord_screenshots/
 .system_generated/
+*.map
+telemetry-app/*.exe
+firebase-debug.log
 .DS_Store
 Thumbs.db

@@ -3478,10 +3478,13 @@ function renderHomepageTelemetryHUD() {
         if (noStreamMsg) {
             noStreamMsg.style.display = 'flex';
             const selectedTeamObj = availableTelemetryTeams.find(t => t.id === selectedTelemetryTeamId);
-            const teamName = selectedTeamObj ? selectedTeamObj.name : selectedTelemetryTeamId;
+            const rawTeamName = selectedTeamObj ? selectedTeamObj.name : selectedTelemetryTeamId;
+            const safeTeamName = (typeof window.escapeHtml === 'function')
+                ? window.escapeHtml(rawTeamName)
+                : String(rawTeamName || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
             noStreamMsg.innerHTML = `
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                <span>No active telemetry streams for <strong>${teamName}</strong>. Select another team above or run the telemetry tool in iRacing.</span>
+                <span>No active telemetry streams for <strong>${safeTeamName}</strong>. Select another team above or run the telemetry tool in iRacing.</span>
             `;
         }
         if (metricsGrid) metricsGrid.style.display = 'none';

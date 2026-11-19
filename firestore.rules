@@ -1,4 +1,74 @@
 rules_version = '2';
+
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Collection: settings/{docId}
+//   - settings/maintenance: public read, admin write
+//   - settings/admins: authenticated read (required by js/auth.js), hardcoded-admin write
+//   - settings/{other}: admin read/write
+//
+// Collection: users/{userId}
+//   - Contains profile & PII (email, driverName, discordName, iracingId, social URLs, customAvatarUrl, etc.)
+//   - Read: owner or admin only (prevents PII scraping)
+//   - Create/Update: owner or admin; isAdmin & role strictly restricted to hardcoded admins
+//
+// Collection: claims/{claimId}
+//   - Fields: discordId (string, == auth.uid), discordName (string <= 120),
+//             driverIdentity (string <= 120), avatar (string <= 2048),
+//             iracingId (string 1..32), status ('pending'), timestamp (timestamp)
+//
+// Collection: race_lineups/{eventId}/teams/{teamId}/messages/{msgId}
+//   - Fields: uid (string, == auth.uid), senderUid (optional string, == auth.uid),
+//             author (optional string <= 100), text (string 1..2000), timestamp (timestamp)
+//
+// Collection: race_lineups/{eventId}/teams/{teamId}/setups/{setupId} & setups/{setupId}
+//   - Fields: uploaderUid (string, == auth.uid on create, immutable on update),
+//             authorUid (optional string, immutable on update),
+//             name (string 1..150), car (string 1..120), track (string 1..120),
+//             fileName (string 1..255), downloadUrl (string 1..500000), etc.
+//
+// Collection: race_lineups/{eventId}/teams/{teamId}/checklist/{docId}
+//   - Fields: items (optional map <= 50 keys), notes (optional string <= 5000),
+//             notesUpdatedBy (optional string <= 120), notesUpdatedAt (optional timestamp),
+//             updatedBy (optional string <= 120), updatedAt (optional timestamp)
+//
+// Collection: race_laps/{eventId}/laps/{lapId}
+//   - Fields: driverName (string 1..120), uid (optional string == auth.uid),
+//             driverRating (optional number), car (optional string <= 120),
+//             carClass (optional string <= 64), lapTime (optional string <= 32),
+//             lapTimeSec (optional number), season (optional string <= 64),
+//             source (optional string <= 64), clean (optional bool), timestamp (optional timestamp)
+//
+// Collection: applications/{appId}
+//   - Fields: discordUid (string, == auth.uid), status ('pending'),
+//             iracingName (string 1..120), discordUsername (string 1..120),
+//             irating (string/number), experience (string <= 64), location (string <= 120),
+//             availability (list <= 10), classes (list <= 10), maturity (string <= 64), timestamp
+//
+// Collection: m2rc_registrations/{regId}
+//   - Fields: driverName (string 1..120), teamName (string 1..120), iracingId (string 1..32),
+//             carNumber (optional string 1..16), isRookie (optional bool),
+//             status ('pending'), uid (optional string == auth.uid), timestamp (optional timestamp)
+//
+// Collection: m2rc_stewarding/{docId}
+//   - Fields: protesterUid (string, == auth.uid), protesterName (string 1..120),
+//             accusedName (string 1..120), description (string 1..3000),
+//             videoUrl (optional string <= 500), roundNumber (optional int),
+//             lap (optional int), corner (optional int),
+//             status ('submitted'), decision (''), timestamp (optional timestamp)
+//
+// Collection: setup_jobs/{docId}
+//   - Fields: uid (string, == auth.uid on create, immutable on update for non-admins),
+//             status (optional string <= 64), statusMessage (optional string <= 500), etc.
+//
+// Collection: suggestions/{docId}
+//   - Fields: type (optional string <= 64), discord (optional string <= 120),
+//             message (string 1..3000), pageUrl (optional string <= 500),
+//             userId (optional string/null == auth.uid), status (optional 'new'), timestamp
+// ===============================================================
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -35,6 +105,230 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function areImmutableFieldsUnchanged(fields) {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
+    }
+
+    function isNonEmptyString(val, maxLen) {
+      return val is string && val.size() > 0 && val.size() <= maxLen;
+    }
+
+    function isOptionalString(data, field, maxLen) {
+      return !(field in data) || (data[field] is string && data[field].size() <= maxLen);
+    }
+
+    function isOptionalNullableString(data, field, maxLen) {
+      return !(field in data) || data[field] == null || (data[field] is string && data[field].size() <= maxLen);
+    }
+
+    function isOptionalTimestamp(data, field) {
+      return !(field in data) || data[field] is timestamp;
+    }
+
+    function isOptionalBool(data, field) {
+      return !(field in data) || data[field] is bool;
+    }
+
+    function isOptionalIntInRange(data, field, minVal, maxVal) {
+      return !(field in data) || (data[field] is int && data[field] >= minVal && data[field] <= maxVal);
+    }
+
+    function isOptionalNumberInRange(data, field, minVal, maxVal) {
+      return !(field in data) || ((data[field] is int || data[field] is float) && data[field] >= minVal && data[field] <= maxVal);
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidUserProfile(data) {
+      return data.keys().size() <= 30 &&
+        isOptionalNullableString(data, 'discordName', 120) &&
+        isOptionalNullableString(data, 'driverName', 120) &&
+        isOptionalNullableString(data, 'photoURL', 2048) &&
+        isOptionalNullableString(data, 'customAvatarUrl', 200000) &&
+        isOptionalNullableString(data, 'email', 254) &&
+        (!('iracingId' in data) || data.iracingId == null || (data.iracingId is string && data.iracingId.size() <= 64) || data.iracingId is int) &&
+        isOptionalNullableString(data, 'g61Url', 500) &&
+        isOptionalNullableString(data, 'driverClass', 64) &&
+        isOptionalNullableString(data, 'twitchUrl', 500) &&
+        isOptionalNullableString(data, 'tiktokUrl', 500) &&
+        isOptionalNullableString(data, 'youtubeUrl', 500) &&
+        (!('age' in data) || data.age == null || (data.age is string && data.age.size() <= 16) || (data.age is int && data.age >= 0 && data.age <= 120)) &&
+        isOptionalNullableString(data, 'country', 100) &&
+        isOptionalNullableString(data, 'favCar', 120) &&
+        isOptionalNullableString(data, 'favTrack', 120) &&
+        isOptionalNullableString(data, 'advice', 1000) &&
+        isOptionalTimestamp(data, 'lastSeen') &&
+        isOptionalTimestamp(data, 'lastUpdated');
+    }
+
+    function isValidClaimCreate(data) {
+      return hasOnlyAllowedFields(['discordId', 'discordName', 'driverIdentity', 'avatar', 'iracingId', 'timestamp', 'status']) &&
+        data.discordId == request.auth.uid &&
+        data.status == 'pending' &&
+        isNonEmptyString(data.iracingId, 32) &&
+        isOptionalString(data, 'discordName', 120) &&
+        isOptionalString(data, 'driverIdentity', 120) &&
+        isOptionalString(data, 'avatar', 2048) &&
+        isOptionalTimestamp(data, 'timestamp');
+    }
+
+    function isValidTeamMessage(data) {
+      return hasOnlyAllowedFields(['uid', 'senderUid', 'author', 'text', 'timestamp']) &&
+        data.uid == request.auth.uid &&
+        (!('senderUid' in data) || data.senderUid == request.auth.uid) &&
+        isNonEmptyString(data.text, 2000) &&
+        isOptionalString(data, 'author', 100) &&
+        isOptionalTimestamp(data, 'timestamp');
+    }
+
+    function isValidChecklist(data) {
+      return hasOnlyAllowedFields(['items', 'notes', 'notesUpdatedBy', 'notesUpdatedAt', 'updatedBy', 'updatedAt']) &&
+        (!('items' in data) || (data.items is map && data.items.keys().size() <= 50)) &&
+        isOptionalString(data, 'notes', 5000) &&
+        isOptionalString(data, 'notesUpdatedBy', 120) &&
+        isOptionalTimestamp(data, 'notesUpdatedAt') &&
+        isOptionalString(data, 'updatedBy', 120) &&
+        isOptionalTimestamp(data, 'updatedAt');
+    }
+
+    function isValidRaceLap(data) {
+      return data.keys().size() <= 15 &&
+        hasOnlyAllowedFields([
+          'driverName', 'driverRating', 'car', 'carClass', 'lapTime',
+          'lapTimeSec', 'season', 'timestamp', 'source', 'clean', 'uid',
+          'track', 'laps', 'bestLap', 'avgLap'
+        ]) &&
+        (!('uid' in data) || data.uid == request.auth.uid) &&
+        isNonEmptyString(data.driverName, 120) &&
+        isOptionalNumberInRange(data, 'driverRating', 0, 20000) &&
+        isOptionalString(data, 'car', 120) &&
+        isOptionalString(data, 'carClass', 64) &&
+        isOptionalString(data, 'lapTime', 32) &&
+        isOptionalNumberInRange(data, 'lapTimeSec', 0, 86400) &&
+        isOptionalString(data, 'season', 64) &&
+        isOptionalString(data, 'source', 64) &&
+        isOptionalString(data, 'track', 120) &&
+        isOptionalBool(data, 'clean') &&
+        isOptionalTimestamp(data, 'timestamp');
+    }
+
+    function isValidM2rcRegistrationCreate(data) {
+      return hasOnlyAllowedFields([
+          'driverName', 'iracingId', 'carNumber', 'teamName',
+          'isRookie', 'status', 'timestamp', 'uid'
+        ]) &&
+        (!('uid' in data) || data.uid == request.auth.uid) &&
+        data.status == 'pending' &&
+        isNonEmptyString(data.driverName, 120) &&
+        isNonEmptyString(data.teamName, 120) &&
+        isNonEmptyString(data.iracingId, 32) &&
+        isOptionalString(data, 'carNumber', 16) &&
+        isOptionalBool(data, 'isRookie') &&
+        isOptionalTimestamp(data, 'timestamp');
+    }
+
+    function isValidM2rcStewardingCreate(data) {
+      return hasOnlyAllowedFields([
+          'roundNumber', 'protesterName', 'protesterUid', 'accusedName',
+          'lap', 'corner', 'description', 'videoUrl', 'status', 'decision', 'timestamp'
+        ]) &&
+        data.protesterUid == request.auth.uid &&
+        data.status == 'submitted' &&
+        data.decision == '' &&
+        isNonEmptyString(data.protesterName, 120) &&
+        isNonEmptyString(data.accusedName, 120) &&
+        isNonEmptyString(data.description, 3000) &&
+        isOptionalString(data, 'videoUrl', 500) &&
+        isOptionalIntInRange(data, 'roundNumber', 1, 100) &&
+        isOptionalIntInRange(data, 'lap', 0, 10000) &&
+        isOptionalIntInRange(data, 'corner', 0, 100) &&
+        isOptionalTimestamp(data, 'timestamp');
+    }
+
+    function isValidApplicationCreate(data) {
+      return data.keys().size() <= 20 &&
+        hasOnlyAllowedFields([
+          'iracingName', 'discordUsername', 'discordUid', 'irating',
+          'experience', 'location', 'availability', 'classes',
+          'maturity', 'timestamp', 'status'
+        ]) &&
+        data.discordUid == request.auth.uid &&
+        data.status == 'pending' &&
+        isOptionalString(data, 'iracingName', 120) &&
+        isOptionalString(data, 'discordUsername', 120) &&
+        (!('irating' in data) || (data.irating is string && data.irating.size() <= 32) || (data.irating is int && data.irating >= 0 && data.irating <= 25000)) &&
+        isOptionalString(data, 'experience', 64) &&
+        isOptionalString(data, 'location', 120) &&
+        (!('availability' in data) || (data.availability is list && data.availability.size() <= 10)) &&
+        (!('classes' in data) || (data.classes is list && data.classes.size() <= 10)) &&
+        isOptionalString(data, 'maturity', 64) &&
+        isOptionalTimestamp(data, 'timestamp');
+    }
+
+    function isValidSetup(data) {
+      return data.keys().size() <= 35 &&
+        isNonEmptyString(data.name, 150) &&
+        isNonEmptyString(data.car, 120) &&
+        isNonEmptyString(data.track, 120) &&
+        isNonEmptyString(data.fileName, 255) &&
+        isNonEmptyString(data.downloadUrl, 500000) &&
+        isOptionalString(data, 'id', 128) &&
+        isOptionalString(data, 'teamId', 128) &&
+        isOptionalString(data, 'eventSlug', 128) &&
+        isOptionalString(data, 'carFolder', 128) &&
+        isOptionalString(data, 'category', 64) &&
+        isOptionalString(data, 'author', 120) &&
+        isOptionalString(data, 'conditions', 120) &&
+        isOptionalString(data, 'fuelLoad', 64) &&
+        isOptionalString(data, 'description', 2000) &&
+        isOptionalString(data, 'currentVersionId', 32) &&
+        isOptionalString(data, 'checksum', 128) &&
+        isOptionalString(data, 'uploaderUid', 128) &&
+        isOptionalString(data, 'authorUid', 128) &&
+        isOptionalString(data, 'uploaderName', 120) &&
+        isOptionalBool(data, 'isApprovedForEvent') &&
+        isOptionalBool(data, 'isArchived') &&
+        (!('versions' in data) || (data.versions is list && data.versions.size() <= 50));
+    }
+
+    function isValidSetupJob(data) {
+      return data.keys().size() <= 25 &&
+        isOptionalString(data, 'uid', 128) &&
+        isOptionalString(data, 'jobId', 128) &&
+        isOptionalString(data, 'setupId', 128) &&
+        isOptionalString(data, 'versionId', 32) &&
+        isOptionalString(data, 'setupName', 150) &&
+        isOptionalString(data, 'fileName', 255) &&
+        isOptionalString(data, 'car', 120) &&
+        isOptionalString(data, 'carName', 120) &&
+        isOptionalString(data, 'carFolder', 128) &&
+        isOptionalString(data, 'downloadUrl', 500000) &&
+        isOptionalString(data, 'checksum', 128) &&
+        isOptionalString(data, 'status', 64) &&
+        isOptionalString(data, 'statusMessage', 500) &&
+        isOptionalString(data, 'requestedByUid', 128) &&
+        isOptionalString(data, 'requestedByName', 120) &&
+        isOptionalString(data, 'teamId', 128) &&
+        isOptionalString(data, 'machineId', 128);
+    }
+
+    function isValidSuggestionCreate(data) {
+      return hasOnlyAllowedFields(['type', 'discord', 'message', 'timestamp', 'userId', 'pageUrl', 'status']) &&
+        isNonEmptyString(data.message, 3000) &&
+        isOptionalString(data, 'type', 64) &&
+        isOptionalString(data, 'discord', 120) &&
+        isOptionalString(data, 'pageUrl', 500) &&
+        (!('userId' in data) || data.userId == null || data.userId == request.auth.uid) &&
+        (!('status' in data) || data.status == 'new') &&
+        isOptionalTimestamp(data, 'timestamp');
+    }
+
     // ===============================================================
     // System Settings & Maintenance Mode
     // ===============================================================
@@ -45,15 +339,16 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Admins registry is readable by authenticated users and writable strictly by hardcoded admins
+    // Admins registry is readable by authenticated users (needed by js/auth.js enrichAuthData)
+    // and writable strictly by hardcoded admins
     match /settings/admins {
       allow read: if isAuthenticated();
       allow write: if isHardcodedAdmin();
     }
 
-    // Other general settings (excluding protected admins registry)
+    // Other general settings are restricted to admins only
     match /settings/{docId} {
-      allow read: if isAuthenticated();
+      allow read: if isAdmin();
       allow write: if isAdmin() && docId != 'admins';
     }
 
@@ -62,20 +357,24 @@ service cloud.firestore {
     // ===============================================================
 
     match /users/{userId} {
-      // Profiles are restricted to authenticated users to prevent scraping of PII
-      allow read: if isAuthenticated();
-      
-      // Creating a profile: owner can create, but CANNOT elevate itself. Only hardcoded admins can set admin/role fields.
+      // Strictly restrict profile/PII reads to the document owner or admins
+      allow read: if isOwner(userId) || isAdmin();
+
+      // Creating a profile: owner can create valid profile, but CANNOT elevate itself.
+      // Only hardcoded admins can set admin/role fields.
       allow create: if (
         isOwner(userId) &&
         !('isAdmin' in request.resource.data) &&
-        !('role' in request.resource.data)
+        !('role' in request.resource.data) &&
+        isValidUserProfile(request.resource.data)
       ) || isHardcodedAdmin();
 
-      // Updating a profile: owner or admin can update, but isAdmin and role can ONLY be modified by hardcoded admins
+      // Updating a profile: owner or admin can update valid profile,
+      // but isAdmin and role can ONLY be modified by hardcoded admins
       allow update: if isHardcodedAdmin() || (
         (isOwner(userId) || isAdmin()) &&
-        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isAdmin', 'role'])
+        areImmutableFieldsUnchanged(['isAdmin', 'role']) &&
+        isValidUserProfile(request.resource.data)
       );
 
       // Only admins can delete profiles
@@ -88,9 +387,7 @@ service cloud.firestore {
 
     match /claims/{claimId} {
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated() &&
-        request.resource.data.discordId == request.auth.uid &&
-        request.resource.data.status == 'pending';
+      allow create: if isAuthenticated() && isValidClaimCreate(request.resource.data);
       allow update, delete: if isAdmin();
     }
 
@@ -138,30 +435,38 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Race Lineups with team messaging & setups
+    // Race Lineups with team messaging, setups, and checklist
     match /race_lineups/{eventId} {
       allow read: if true;
       allow write: if isAdmin();
 
       match /teams/{teamId}/messages/{msgId} {
         allow read: if isAuthenticated();
-        allow create: if isAuthenticated() && (
-          (!('uid' in request.resource.data) || request.resource.data.uid == request.auth.uid) &&
-          (!('senderUid' in request.resource.data) || request.resource.data.senderUid == request.auth.uid)
-        );
+        allow create: if isAuthenticated() && isValidTeamMessage(request.resource.data);
         allow update, delete: if isAdmin();
       }
 
       match /teams/{teamId}/setups/{setupId} {
         allow read: if isAuthenticated();
-        allow create: if isAuthenticated() && (!('uploaderUid' in request.resource.data) || request.resource.data.uploaderUid == request.auth.uid);
-        allow update: if isAuthenticated() && (resource.data.uploaderUid == request.auth.uid || resource.data.authorUid == request.auth.uid || isAdmin());
+        allow create: if isAuthenticated() &&
+          request.resource.data.uploaderUid == request.auth.uid &&
+          isValidSetup(request.resource.data);
+        allow update: if isAuthenticated() && (
+          isAdmin() || (
+            (
+              resource.data.uploaderUid == request.auth.uid ||
+              ('authorUid' in resource.data && resource.data.authorUid == request.auth.uid)
+            ) &&
+            areImmutableFieldsUnchanged(['uploaderUid', 'authorUid']) &&
+            isValidSetup(request.resource.data)
+          )
+        );
         allow delete: if isAuthenticated() && (resource.data.uploaderUid == request.auth.uid || isAdmin());
       }
 
       match /teams/{teamId}/checklist/{docId} {
         allow read: if isAuthenticated();
-        allow create, update: if isAuthenticated();
+        allow create, update: if isAuthenticated() && isValidChecklist(request.resource.data);
         allow delete: if isAdmin();
       }
     }
@@ -184,7 +489,7 @@ service cloud.firestore {
 
       match /laps/{lapId} {
         allow read: if true;
-        allow create: if isAuthenticated();
+        allow create: if isAuthenticated() && isValidRaceLap(request.resource.data);
         allow update, delete: if isAdmin();
       }
     }
@@ -208,7 +513,7 @@ service cloud.firestore {
     // ===============================================================
 
     match /applications/{appId} {
-      allow create: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidApplicationCreate(request.resource.data);
       allow read: if isAuthenticated() && (
         resource.data.discordUid == request.auth.uid || isAdmin()
       );
@@ -217,13 +522,13 @@ service cloud.firestore {
 
     match /m2rc_registrations/{regId} {
       allow read: if true;
-      allow create: if isAuthenticated() && (!('uid' in request.resource.data) || request.resource.data.uid == request.auth.uid || regId == request.auth.uid);
+      allow create: if isAuthenticated() && isValidM2rcRegistrationCreate(request.resource.data);
       allow update, delete: if isAdmin();
     }
 
     match /m2rc_stewarding/{docId} {
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidM2rcStewardingCreate(request.resource.data);
       allow update, delete: if isAdmin();
     }
 
@@ -233,11 +538,18 @@ service cloud.firestore {
 
     match /setups/{setupId} {
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && (!('uploaderUid' in request.resource.data) || request.resource.data.uploaderUid == request.auth.uid);
+      allow create: if isAuthenticated() &&
+        request.resource.data.uploaderUid == request.auth.uid &&
+        isValidSetup(request.resource.data);
       allow update: if isAuthenticated() && (
-        resource.data.uploaderUid == request.auth.uid ||
-        resource.data.authorUid == request.auth.uid ||
-        isAdmin()
+        isAdmin() || (
+          (
+            resource.data.uploaderUid == request.auth.uid ||
+            ('authorUid' in resource.data && resource.data.authorUid == request.auth.uid)
+          ) &&
+          areImmutableFieldsUnchanged(['uploaderUid', 'authorUid']) &&
+          isValidSetup(request.resource.data)
+        )
       );
       allow delete: if isAdmin();
     }
@@ -250,8 +562,19 @@ service cloud.firestore {
 
     match /setup_jobs/{docId} {
       allow read: if isAuthenticated() && (resource.data.uid == request.auth.uid || isAdmin());
-      allow create: if isAuthenticated() && (request.resource.data.uid == request.auth.uid || isAdmin());
-      allow update: if isAuthenticated() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && (
+        isAdmin() || (
+          request.resource.data.uid == request.auth.uid &&
+          isValidSetupJob(request.resource.data)
+        )
+      );
+      allow update: if isAuthenticated() && (
+        isAdmin() || (
+          resource.data.uid == request.auth.uid &&
+          request.resource.data.uid == resource.data.uid &&
+          isValidSetupJob(request.resource.data)
+        )
+      );
       allow delete: if isAdmin();
     }
 
@@ -264,7 +587,7 @@ service cloud.firestore {
     }
 
     match /suggestions/{docId} {
-      allow create: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidSuggestionCreate(request.resource.data);
       allow read, update, delete: if isAdmin();
     }
 

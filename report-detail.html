@@ -209,7 +209,7 @@
 
             // Update hero
             const heroImg = document.getElementById('report-hero-img');
-            if (heroImg && data.bannerUrl) { heroImg.src = data.bannerUrl; }
+            const safeBanner = (typeof sanitizeHttpUrl === 'function' ? sanitizeHttpUrl(data.bannerUrl) : ''); if (heroImg && safeBanner) { heroImg.src = safeBanner; }
 
             // Update meta fields
             const rawDate = data.date && data.date.toDate ? data.date.toDate() : new Date();
@@ -219,22 +219,47 @@
             document.getElementById('report-author').textContent = `By ${data.author || 'GRiD UP'}`;
 
             // Render content
-            let formattedContent = data.content || '<p style="color:var(--text-muted)">No content available.</p>';
-            if (!formattedContent.includes('<p>') && !formattedContent.includes('<div')) {
-                // Remove raw headers hashtags like '### Chasing Top Accomplishments'
-                formattedContent = formattedContent.replace(/^(?:###|##)\s*(.+)$/gm, '<h3 style="color: var(--primary); margin-top: 2rem; margin-bottom: 1rem; font-family: var(--font-heading); font-size: 1.4rem;">$1</h3>');
-                // Convert double newlines into paragraphs
-                formattedContent = formattedContent.split(/\n\n+/).map(p => {
+            const esc = typeof escapeHtml === 'function' ? escapeHtml : (s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'));
+            function sanitizeReportHtml(rawHtml) {
+                const parser = new DOMParser();
+                const docFrag = parser.parseFromString(String(rawHtml || ''), 'text/html');
+                const allowedTags = new Set(['P','BR','STRONG','B','EM','I','U','H1','H2','H3','H4','UL','OL','LI','BLOCKQUOTE','A','SPAN','DIV','HR','IMG']);
+                const walk = (node) => {
+                    Array.from(node.childNodes).forEach(child => {
+                        if (child.nodeType === Node.ELEMENT_NODE) {
+                            if (!allowedTags.has(child.tagName)) { child.remove(); return; }
+                            Array.from(child.attributes).forEach(attr => {
+                                const name = attr.name.toLowerCase();
+                                if (name.startsWith('on') || name === 'srcdoc') { child.removeAttribute(attr.name); }
+                                else if (name === 'href' || name === 'src') {
+                                    const safe = typeof sanitizeHttpUrl === 'function' ? sanitizeHttpUrl(attr.value) : '';
+                                    if (safe) child.setAttribute(attr.name, safe);
+                                    else child.removeAttribute(attr.name);
+                                }
+                            });
+                            if (child.tagName === 'A') child.setAttribute('rel', 'noopener noreferrer');
+                            walk(child);
+                        }
+                    });
+                };
+                walk(docFrag.body);
+                return docFrag.body.innerHTML;
+            }
+            let formattedContent = data.content || '';
+            if (!formattedContent) {
+                formattedContent = '<p style="color:var(--text-muted)">No content available.</p>';
+            } else if (!formattedContent.includes('<p>') && !formattedContent.includes('<div')) {
+                let escaped = esc(formattedContent);
+                escaped = escaped.replace(/^(?:###|##)\s*(.+)$/gm, '<h3 style="color: var(--primary); margin-top: 2rem; margin-bottom: 1rem; font-family: var(--font-heading); font-size: 1.4rem;">$1</h3>');
+                formattedContent = escaped.split(/\n\n+/).map(p => {
                     if (p.trim().startsWith('<h3')) return p.trim();
-                    // Process bold tags **bold** -> <strong>bold</strong>
                     let processed = p.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                    // Format lists
                     processed = processed.replace(/^\s*-\s*(.+)$/gm, '<li style="margin-bottom: 0.5rem; margin-left: 1.5rem; list-style-type: square; color: var(--text-main);">$1</li>');
-                    if (processed.includes('<li')) {
-                        processed = `<ul style="margin: 1.5rem 0; padding-left: 1rem;">${processed}</ul>`;
-                    }
-                    return `<p style="margin-bottom: 1.5rem; line-height: 1.8;">${processed.replace(/\n/g, '<br>')}</p>`;
+                    if (processed.includes('<li')) { processed = '<ul style="margin: 1.5rem 0; padding-left: 1rem;">' + processed + '</ul>'; }
+                    return '<p style="margin-bottom: 1.5rem; line-height: 1.8;">' + processed.replace(/\n/g, '<br>') + '</p>';
                 }).join('\n');
+            } else {
+                formattedContent = sanitizeReportHtml(formattedContent);
             }
             document.getElementById('report-content').innerHTML = formattedContent;
 

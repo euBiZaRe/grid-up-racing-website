@@ -235,19 +235,21 @@
                     card.style.cssText = 'border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.4s cubic-bezier(0.23,1,0.32,1), box-shadow 0.4s ease; cursor: pointer; border: 1px solid var(--glass-border);';
                     card.onmouseover = () => { card.style.transform = 'translateY(-8px)'; card.style.boxShadow = '0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(0,207,255,0.15)'; card.style.borderColor = 'rgba(0,207,255,0.4)'; };
                     card.onmouseout = () => { card.style.transform = ''; card.style.boxShadow = ''; card.style.borderColor = 'var(--glass-border)'; };
-                    card.onclick = () => window.location.href = `report-detail.html?id=${slug}`;
+                    const esc = typeof escapeHtml === 'function' ? escapeHtml : (s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'));
+                    const safeBanner = (typeof sanitizeHttpUrl === 'function' ? sanitizeHttpUrl(banner) : '') || 'assets/bg-banner.png';
+                    card.onclick = () => window.location.href = `report-detail.html?id=${encodeURIComponent(slug)}`;
 
                     card.innerHTML = `
                         <div style="height: 200px; overflow: hidden; position: relative;">
-                            <img src="${banner}" alt="${data.title}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease;" onerror="this.src='assets/bg-banner.png'">
+                            <img src="${esc(safeBanner)}" alt="${esc(data.title || 'Race Report')}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease;" onerror="this.src='assets/bg-banner.png'">
                             <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(10,12,16,0.9) 0%, transparent 60%);"></div>
                         </div>
                         <div style="padding: 1.5rem; flex: 1; display: flex; flex-direction: column;">
-                            <p style="color: var(--primary); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.5rem;">${dateStr}</p>
-                            <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.75rem; font-family: var(--font-heading); letter-spacing: 0.05em;">${data.title}</h3>
-                            <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; flex: 1;">${data.summary || ''}</p>
+                            <p style="color: var(--primary); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.5rem;">${esc(dateStr)}</p>
+                            <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.75rem; font-family: var(--font-heading); letter-spacing: 0.05em;">${esc(data.title || 'Untitled Report')}</h3>
+                            <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; flex: 1;">${esc(data.summary || '')}</p>
                             <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--glass-border);">
-                                <span style="font-size: 0.75rem; color: var(--text-muted);">By ${data.author || 'GRiD UP'}</span>
+                                <span style="font-size: 0.75rem; color: var(--text-muted);">By ${esc(data.author || 'GRiD UP')}</span>
                                 <span style="font-size: 0.75rem; color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Read &rarr;</span>
                             </div>
                         </div>
@@ -303,31 +305,32 @@
                     card.style.cssText = 'border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.4s cubic-bezier(0.23,1,0.32,1), box-shadow 0.4s ease; cursor: pointer; border: 1px solid var(--glass-border);';
                     card.onmouseover = () => { card.style.transform = 'translateY(-8px)'; card.style.boxShadow = '0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(0,207,255,0.15)'; card.style.borderColor = 'rgba(0,207,255,0.4)'; };
                     card.onmouseout = () => { card.style.transform = ''; card.style.boxShadow = ''; card.style.borderColor = 'var(--glass-border)'; };
-                    card.onclick = () => window.location.href = `race-report.html?id=${id}`;
+                    const esc = typeof escapeHtml === 'function' ? escapeHtml : (s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'));
+                    card.onclick = () => window.location.href = `race-report.html?id=${encodeURIComponent(id)}`;
 
                     card.innerHTML = `
                         <div style="height: 140px; overflow: hidden; position: relative; background: linear-gradient(135deg, rgba(14,165,233,0.15) 0%, rgba(225,29,72,0.05) 100%); display:flex; align-items:center; justify-content:center;">
                             <div style="text-align:center; padding: 1rem;">
-                                <span class="badge badge-primary" style="margin-bottom:0.5rem; display:inline-block; font-size:0.65rem; background:rgba(14,165,233,0.2); border:1px solid rgba(14,165,233,0.4); color:#ffffff;">${sessionType}</span>
-                                <h4 style="font-family: var(--font-heading); color:#ffffff; font-size:1.1rem; margin:0; font-weight:800; text-transform:uppercase; letter-spacing:1px; line-height:1.2;">${trackName}</h4>
+                                <span class="badge badge-primary" style="margin-bottom:0.5rem; display:inline-block; font-size:0.65rem; background:rgba(14,165,233,0.2); border:1px solid rgba(14,165,233,0.4); color:#ffffff;">${esc(sessionType)}</span>
+                                <h4 style="font-family: var(--font-heading); color:#ffffff; font-size:1.1rem; margin:0; font-weight:800; text-transform:uppercase; letter-spacing:1px; line-height:1.2;">${esc(trackName)}</h4>
                             </div>
                             <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: var(--glass-border);"></div>
                         </div>
                         <div style="padding: 1.5rem; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
                             <div>
-                                <p style="color: var(--primary); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.75rem;">${dateStr}</p>
+                                <p style="color: var(--primary); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.75rem;">${esc(dateStr)}</p>
                                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.75rem; margin-bottom:1rem; font-size:0.8rem;">
                                     <div>
                                         <span style="color:var(--text-muted); display:block; font-size:0.7rem; text-transform:uppercase;">Total Laps</span>
-                                        <strong style="color:#ffffff; font-size:0.95rem;">${totalLaps} Laps</strong>
+                                        <strong style="color:#ffffff; font-size:0.95rem;">${esc(totalLaps)} Laps</strong>
                                     </div>
                                     <div>
                                         <span style="color:var(--text-muted); display:block; font-size:0.7rem; text-transform:uppercase;">Fuel Burned</span>
-                                        <strong style="color:#ffffff; font-size:0.95rem;">${summary.fuel_used || 0} L</strong>
+                                        <strong style="color:#ffffff; font-size:0.95rem;">${esc(summary.fuel_used || 0)} L</strong>
                                     </div>
                                     <div>
                                         <span style="color:var(--text-muted); display:block; font-size:0.7rem; text-transform:uppercase;">Fastest Lap</span>
-                                        <strong style="color:var(--accent-gold); font-size:0.95rem; font-family: monospace;">${fastestLap}</strong>
+                                        <strong style="color:var(--accent-gold); font-size:0.95rem; font-family: monospace;">${esc(fastestLap)}</strong>
                                     </div>
                                     <div>
                                         <span style="color:var(--text-muted); display:block; font-size:0.7rem; text-transform:uppercase;">Avg Pace</span>

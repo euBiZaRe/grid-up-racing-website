@@ -448,11 +448,19 @@ class TelemetryBridge:
                 target_v = parse_v(remote_logic)
 
                 if target_v > current_v:
+                    # Security: Require explicit SHA-256 checksum in manifest before accepting OTA code
+                    expected_sha256 = str(manifest.get('logic_sha256', '')).strip().lower()
+                    if not re.fullmatch(r'[0-9a-f]{64}', expected_sha256):
+                        raise ValueError("OTA update rejected: manifest missing valid 64-char SHA-256 logic_sha256 digest.")
+
                     self.log(f"[OTA] Newer telemetry logic found: v{remote_logic} (current: v{BRIDGE_VERSION}). Downloading...")
                     logic_url = f"https://raw.githubusercontent.com/euBiZaRe/grid-up-racing-website/master/telemetry-app/bridge_logic.py?_nocache={int(time.time())}"
                     req_logic = urllib.request.Request(logic_url, headers={'User-Agent': 'GRiD-UP-Telemetry-Client/1.0'})
                     with urllib.request.urlopen(req_logic, timeout=10.0) as resp_logic:
                         code_bytes = resp_logic.read()
+                        actual_sha256 = hashlib.sha256(code_bytes).hexdigest().lower()
+                        if actual_sha256 != expected_sha256:
+                            raise ValueError(f"OTA integrity check failed: expected {expected_sha256[:12]}..., got {actual_sha256[:12]}...")
                         code_text = code_bytes.decode('utf-8')
 
                     compile(code_text, '<ota_download>', 'exec')
@@ -1707,9 +1715,13 @@ class TelemetryBridge:
             if not hostname:
                 return False
             hostname_lower = hostname.lower()
-            if hostname_lower in ('localhost', '0.0.0.0', '127.0.0.1', '::1', '169.254.169.254'):
+
+            # Security: Restrict setup downloads strictly to official GRiD UP Firebase Storage bucket
+            allowed_hosts = {'firebasestorage.googleapis.com', 'storage.googleapis.com'}
+            if hostname_lower not in allowed_hosts:
                 return False
-            if hostname_lower.endswith('.local') or hostname_lower.endswith('.internal'):
+            path_lower = (parsed.path or '').lower()
+            if 'grid-up.firebasestorage.app' not in path_lower and 'grid-up.appspot.com' not in path_lower:
                 return False
 
             # Strict DNS resolution and private network check (SSRF / DNS rebinding prevention)
@@ -1735,15 +1747,23 @@ class TelemetryBridge:
             if not download_url:
                 raise ValueError("Job payload missing downloadUrl.")
 
+            if not re.fullmatch(r'[0-9a-f]{64}', expected_checksum):
+                raise ValueError("Job payload missing valid 64-char SHA-256 checksum.")
+
             if not self.is_safe_download_url(download_url):
-                raise ValueError("Insecure downloadUrl rejected (must be public HTTPS URL).")
+                raise ValueError("Insecure downloadUrl rejected (must be official GRiD UP Firebase Storage HTTPS URL).")
 
             self.update_job_status(job_id, 'downloading', f"Downloading setup for {car_name or 'car'}...")
             self.log(f"[Setup Installer] Downloading job {job_id} from {download_url[:60]}...")
 
+            class _NoRedirectHandler(urllib.request.HTTPRedirectHandler):
+                def redirect_request(self, req, fp, code, msg, headers, newurl):
+                    raise ValueError("HTTP redirects are not allowed for setup downloads.")
+
+            opener = urllib.request.build_opener(_NoRedirectHandler)
             req = urllib.request.Request(download_url, headers={'User-Agent': 'GRiD-UP-Telemetry-SetupInstaller/1.0'})
-            with urllib.request.urlopen(req, timeout=15) as resp:
-                data = resp.read()
+            with opener.open(req, timeout=15) as resp:
+                data = resp.read(3 * 1024 * 1024 + 1)
 
             if not data:
                 raise ValueError("Downloaded file is empty (0 bytes).")
@@ -1752,7 +1772,7 @@ class TelemetryBridge:
                 raise ValueError(f"Setup file exceeds 3MB limit ({len(data)} bytes).")
 
             computed_checksum = hashlib.sha256(data).hexdigest().lower()
-            if expected_checksum and computed_checksum != expected_checksum:
+            if computed_checksum != expected_checksum:
                 raise ValueError(f"SHA-256 Checksum mismatch! Expected {expected_checksum[:12]}..., got {computed_checksum[:12]}...")
 
             if len(data) < 16:

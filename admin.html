@@ -3907,8 +3907,6 @@ body.meeting-mode-active .btn-summary-confirm {
                     const safeIracingId = escapeHtml(data.iracingId || '');
                     const safeStatus = escapeHtml((data.status || 'pending').toLowerCase());
                     const safeStatusText = escapeHtml((data.status || 'pending').toUpperCase());
-                    const jsId = String(id).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-                    const jsDiscordId = String(data.discordId || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
                     
                     const row = document.createElement('tr');
                     row.innerHTML = `
@@ -3917,12 +3915,18 @@ body.meeting-mode-active .btn-summary-confirm {
                         <td data-label="Status"><span class="status-badge status-${safeStatus}">${safeStatusText}</span></td>
                         <td data-label="Actions">
                             <div class="action-btns" style="display: flex; gap: 5px; justify-content: flex-end; align-items: center;">
-                                ${data.status !== 'verified' ? `<button onclick="updateClaim('${jsId}', 'verified')" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.7rem;">Approve</button>` : ''}
-                                ${data.status === 'verified' ? (isAdmin ? `<span class="status-badge status-admin" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; display: inline-block;">ADMIN</span>` : `<button onclick="promoteUIDAsAdmin('${jsDiscordId}', '${jsId}')" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; color: var(--primary); border-color: var(--primary);">Promote</button>`) : ''}
-                                ${data.status !== 'denied' ? `<button onclick="updateClaim('${jsId}', 'denied')" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; border-color: #ff0099; color: #ff0099;">Deny</button>` : ''}
+                                ${data.status !== 'verified' ? `<button type="button" class="btn btn-primary btn-claim-approve" style="padding: 0.4rem 0.8rem; font-size: 0.7rem;">Approve</button>` : ''}
+                                ${data.status === 'verified' ? (isAdmin ? `<span class="status-badge status-admin" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; display: inline-block;">ADMIN</span>` : `<button type="button" class="btn btn-outline btn-claim-promote" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; color: var(--primary); border-color: var(--primary);">Promote</button>`) : ''}
+                                ${data.status !== 'denied' ? `<button type="button" class="btn btn-outline btn-claim-deny" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; border-color: #ff0099; color: #ff0099;">Deny</button>` : ''}
                             </div>
                         </td>
                     `;
+                    const approveBtn = row.querySelector('.btn-claim-approve');
+                    if (approveBtn) approveBtn.addEventListener('click', () => updateClaim(id, 'verified'));
+                    const promoteBtn = row.querySelector('.btn-claim-promote');
+                    if (promoteBtn) promoteBtn.addEventListener('click', () => promoteUIDAsAdmin(data.discordId || '', id));
+                    const denyBtn = row.querySelector('.btn-claim-deny');
+                    if (denyBtn) denyBtn.addEventListener('click', () => updateClaim(id, 'denied'));
                     list.appendChild(row);
                 });
             } catch (error) {
@@ -10697,26 +10701,30 @@ body.meeting-mode-active .btn-summary-confirm {
 
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td>${date}</td>
-                        <td><strong>${r.driverName}</strong></td>
-                        <td style="font-family: monospace;">${r.iracingId}</td>
-                        <td style="font-size: 1.1rem; color: var(--primary); font-weight: bold; text-align: center;">#${r.carNumber}</td>
-                        <td>${r.teamName || 'Privateer'}</td>
+                        <td>${escapeHtml(date)}</td>
+                        <td><strong>${escapeHtml(r.driverName || '')}</strong></td>
+                        <td style="font-family: monospace;">${escapeHtml(r.iracingId || '')}</td>
+                        <td style="font-size: 1.1rem; color: var(--primary); font-weight: bold; text-align: center;">#${escapeHtml(r.carNumber ?? '')}</td>
+                        <td>${escapeHtml(r.teamName || 'Privateer')}</td>
                         <td>${r.isRookie ? '<span style="color:var(--accent-gold); font-size:0.75rem; font-weight:bold;">ROOKIE</span>' : '<span style="color:#aaa; font-size:0.75rem;">PRO</span>'}</td>
-                        <td style="color: ${statusColor}; font-weight: bold; text-transform: uppercase; font-size: 0.8rem;">${r.status}</td>
+                        <td style="color: ${statusColor}; font-weight: bold; text-transform: uppercase; font-size: 0.8rem;">${escapeHtml(r.status || 'pending')}</td>
                         <td>
                             <div style="display:flex; gap: 5px;">
-                                ${r.status !== 'approved' ? `<button onclick="updateM2RCRegStatus('${id}', 'approved')" class="btn btn-primary" style="padding:0.3rem 0.6rem; font-size:0.7rem; background:#00ff88; color:#000; border:none;">Approve</button>` : ''}
-                                ${r.status !== 'denied' ? `<button onclick="updateM2RCRegStatus('${id}', 'denied')" class="btn btn-outline" style="padding:0.3rem 0.6rem; font-size:0.7rem; border-color:#ff3333; color:#ff3333;">Deny</button>` : ''}
+                                ${r.status !== 'approved' ? `<button type="button" class="btn btn-primary btn-m2rc-approve" style="padding:0.3rem 0.6rem; font-size:0.7rem; background:#00ff88; color:#000; border:none;">Approve</button>` : ''}
+                                ${r.status !== 'denied' ? `<button type="button" class="btn btn-outline btn-m2rc-deny" style="padding:0.3rem 0.6rem; font-size:0.7rem; border-color:#ff3333; color:#ff3333;">Deny</button>` : ''}
                             </div>
                         </td>
                     `;
+                    const approveBtn = tr.querySelector('.btn-m2rc-approve');
+                    if (approveBtn) approveBtn.addEventListener('click', () => updateM2RCRegStatus(id, 'approved'));
+                    const denyBtn = tr.querySelector('.btn-m2rc-deny');
+                    if (denyBtn) denyBtn.addEventListener('click', () => updateM2RCRegStatus(id, 'denied'));
                     list.appendChild(tr);
                 });
                 document.getElementById('m2rc-reg-count').textContent = `${count} Entries`;
             } catch(e) {
                 console.error(e);
-                list.innerHTML = `<tr><td colspan="8" style="text-align: center; color: red;">Error: ${e.message}</td></tr>`;
+                list.innerHTML = `<tr><td colspan="8" style="text-align: center; color: red;">Error: ${escapeHtml(e.message)}</td></tr>`;
             }
         }
 

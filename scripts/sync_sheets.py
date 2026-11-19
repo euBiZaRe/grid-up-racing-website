@@ -1,4 +1,5 @@
 import json
+import html as html_lib
 import firebase_admin
 from firebase_admin import credentials, firestore
 import requests
@@ -110,19 +111,23 @@ def generate_html(teams):
     
     html = ""
     for team in teams:
+        safe_name = html_lib.escape(str(team["name"] or ""), quote=True)
+        safe_class = html_lib.escape(str(team["car_class"] or ""), quote=True)
         html += f'''
                     <div class="lineup-item" style="margin-top: 1rem;">
-                        <span style="color: var(--primary); font-weight: 600;">{team["name"]}</span><br>
-                        <span style="font-size: 0.9rem; color: var(--text-muted);">{team["car_class"]}</span>
+                        <span style="color: var(--primary); font-weight: 600;">{safe_name}</span><br>
+                        <span style="font-size: 0.9rem; color: var(--text-muted);">{safe_class}</span>
                     </div>
                     <ul style="list-style: none; margin-top: 0.5rem; padding-left: 1rem; border-left: 2px solid var(--primary);">
         '''
         if team["captain"]:
-             html += f'                        <li>{team["captain"]} (C)</li>\n'
+             safe_cap = html_lib.escape(str(team["captain"]), quote=True)
+             html += f'                        <li>{safe_cap} (C)</li>\n'
              
         for driver in team["drivers"]:
             if driver != team["captain"]:
-                html += f'                        <li>{driver}</li>\n'
+                safe_drv = html_lib.escape(str(driver), quote=True)
+                html += f'                        <li>{safe_drv}</li>\n'
                 
         html += '                    </ul>'
     return html
