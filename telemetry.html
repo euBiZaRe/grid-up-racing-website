@@ -848,21 +848,17 @@
 
         @media (min-width: 1024px) {
             .telemetry-layout {
-                grid-template-columns: 1.4fr 1fr !important;
+                grid-template-columns: 1.35fr 1fr !important;
                 gap: 1.5rem !important;
-                max-height: calc(100vh - 170px);
-                overflow: hidden;
+                align-items: start;
             }
             .drivers-column {
-                max-height: calc(100vh - 170px);
-                overflow-y: auto;
+                overflow-y: visible;
                 padding-right: 0.25rem;
             }
             .race-info-column {
-                max-height: calc(100vh - 170px);
-                overflow-y: auto;
                 position: sticky;
-                top: 0;
+                top: 80px;
             }
             /* Custom sleek scrollbars */
             .drivers-column::-webkit-scrollbar,
@@ -970,8 +966,59 @@
         }
 
         .table-scroll-container {
-            max-height: 250px !important;
+            max-height: 420px !important;
             overflow-y: auto;
+            overflow-x: auto;
+            border-radius: 8px;
+        }
+
+        .timing-view-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 1.25rem;
+            margin-bottom: 0.75rem;
+            background: rgba(15, 15, 15, 0.6);
+            padding: 0.45rem 0.75rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+        }
+
+        .timing-tabs {
+            display: flex;
+            gap: 4px;
+        }
+
+        .tab-pill {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-muted);
+            padding: 0.35rem 0.85rem;
+            border-radius: 8px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            user-select: none;
+            letter-spacing: 0.03em;
+        }
+
+        .tab-pill.active {
+            background: rgba(59, 130, 246, 0.25);
+            border-color: rgba(59, 130, 246, 0.5);
+            color: #60a5fa;
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.2);
+        }
+
+        .tab-pill:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
         }
 
         .standings-relative-grid {
@@ -979,10 +1026,47 @@
             grid-template-columns: 1fr;
             gap: 1.25rem;
         }
-        @media (min-width: 1300px) {
-            .standings-relative-grid {
+        .standings-relative-grid.split-view {
+            grid-template-columns: 1fr;
+        }
+        @media (min-width: 1250px) {
+            .standings-relative-grid.split-view {
                 grid-template-columns: 1fr 1fr;
             }
+        }
+        .standings-relative-grid.single-view {
+            grid-template-columns: 1fr !important;
+        }
+
+        .standings-table {
+            width: 100%;
+            min-width: 320px;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            text-align: left;
+        }
+
+        .standings-table th {
+            color: var(--text-muted);
+            font-weight: 700;
+            padding: 0.55rem 0.45rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            text-transform: uppercase;
+            font-size: 0.68rem;
+            letter-spacing: 0.05em;
+            position: sticky;
+            top: 0;
+            background: #141414;
+            z-index: 10;
+            white-space: nowrap;
+        }
+
+        .standings-table td {
+            padding: 0.5rem 0.45rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            color: #e5e7eb;
+            font-size: 0.78rem;
+            white-space: nowrap;
         }
 
         /* ABS Indicator Animations */
@@ -1612,28 +1696,99 @@
             }
         }
 
-        // Draw rolling line trace graph for driver inputs (gas/brake/abs)
+        // Leaderboard & Relative View Modes (Split, Relative Only, Standings Only)
+        window.currentLeaderboardMode = localStorage.getItem('gridup_tel_view_mode') || 'split';
+
+        function setLeaderboardMode(mode) {
+            window.currentLeaderboardMode = mode || 'split';
+            try {
+                localStorage.setItem('gridup_tel_view_mode', window.currentLeaderboardMode);
+            } catch (e) {}
+
+            const relBtn = document.getElementById('tab-rel-btn');
+            const stdBtn = document.getElementById('tab-std-btn');
+            const splitBtn = document.getElementById('tab-split-btn');
+
+            if (relBtn) relBtn.classList.toggle('active', window.currentLeaderboardMode === 'relative');
+            if (stdBtn) stdBtn.classList.toggle('active', window.currentLeaderboardMode === 'standings');
+            if (splitBtn) splitBtn.classList.toggle('active', window.currentLeaderboardMode === 'split');
+
+            const relW = document.getElementById('relative-widget-container');
+            const stdW = document.getElementById('standings-widget-container');
+            const grid = document.getElementById('standings-rel-grid-el');
+
+            if (grid) {
+                grid.className = 'standings-relative-grid ' + (window.currentLeaderboardMode === 'split' ? 'split-view' : 'single-view');
+            }
+            if (relW) {
+                relW.style.display = (window.currentLeaderboardMode === 'standings') ? 'none' : 'block';
+            }
+            if (stdW) {
+                stdW.style.display = (window.currentLeaderboardMode === 'relative') ? 'none' : 'block';
+            }
+        }
+        window.setLeaderboardMode = setLeaderboardMode;
+
+        // Draw rolling line trace graph for driver inputs (gas/brake/abs/steering)
         function drawTraceGraph(canvas, history) {
+            if (!canvas) return;
             const ctx = canvas.getContext('2d');
             const w = canvas.width = canvas.offsetWidth;
             const h = canvas.height = canvas.offsetHeight;
+            if (w <= 0 || h <= 0) return;
             
             ctx.clearRect(0, 0, w, h);
-            if (history.length < 2) return;
-            
-            // Draw 50% line helper
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+
+            // 1. Draw Oscilloscope Grid Lines (0%, 25%, 50%, 75%, 100%)
             ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(0, h / 2);
-            ctx.lineTo(w, h / 2);
-            ctx.stroke();
+            [0.25, 0.5, 0.75].forEach(pct => {
+                const y = h * (1 - pct);
+                ctx.strokeStyle = pct === 0.5 ? 'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 0.04)';
+                ctx.setLineDash(pct === 0.5 ? [] : [2, 4]);
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(w, y);
+                ctx.stroke();
+            });
+            ctx.setLineDash([]);
+
+            // 2. Vertical time grid lines (every 2 seconds over a 10s window)
+            for (let i = 1; i < 5; i++) {
+                const x = (w / 5) * i;
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, h);
+                ctx.stroke();
+            }
+
+            // Grid Labels
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+            ctx.font = '8px monospace';
+            ctx.fillText('100%', 4, 9);
+            ctx.fillText('50%', 4, h / 2 + 3);
+            ctx.fillText('0%', 4, h - 3);
+
+            if (!history || history.length < 2) return;
             
             const step = w / Math.max(1, history.length - 1);
-            const startX = 0;
             
             ctx.lineJoin = 'round';
             ctx.lineCap = 'round';
+
+            // Draw Steering Line (Cyan #38bdf8, centered at 50% height)
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            for (let i = 0; i < history.length; i++) {
+                const x = i * step;
+                const strDeg = (history[i].steering || 0) * (180 / Math.PI);
+                const y = (h / 2) - ((strDeg / 360) * (h / 2));
+                const clampedY = Math.max(3, Math.min(h - 3, y));
+                if (i === 0) ctx.moveTo(x, clampedY);
+                else ctx.lineTo(x, clampedY);
+            }
+            ctx.stroke();
 
             // Draw Throttle line (green) — smoothed via quadratic curves
             ctx.strokeStyle = '#34d399';
@@ -1641,20 +1796,20 @@
             ctx.beginPath();
             
             let firstX = 0;
-            let firstY = h - (history[0].throttle / 100 * (h - 4)) - 2;
+            let firstY = h - (history[0].throttle / 100 * (h - 6)) - 3;
             ctx.moveTo(firstX, firstY);
             
             for (let i = 0; i < history.length - 1; i++) {
                 const x1 = i * step;
-                const y1 = h - (history[i].throttle / 100 * (h - 4)) - 2;
+                const y1 = h - (history[i].throttle / 100 * (h - 6)) - 3;
                 const x2 = (i + 1) * step;
-                const y2 = h - (history[i + 1].throttle / 100 * (h - 4)) - 2;
+                const y2 = h - (history[i + 1].throttle / 100 * (h - 6)) - 3;
                 const xc = (x1 + x2) / 2;
                 const yc = (y1 + y2) / 2;
                 ctx.quadraticCurveTo(x1, y1, xc, yc);
             }
             const lastX = w;
-            const lastY = h - (history[history.length - 1].throttle / 100 * (h - 4)) - 2;
+            const lastY = h - (history[history.length - 1].throttle / 100 * (h - 6)) - 3;
             ctx.lineTo(lastX, lastY);
             ctx.stroke();
             
@@ -1662,9 +1817,9 @@
             ctx.lineWidth = 2;
             for (let i = 0; i < history.length - 1; i++) {
                 const x1 = i * step;
-                const y1 = h - (history[i].brake / 100 * (h - 4)) - 2;
+                const y1 = h - (history[i].brake / 100 * (h - 6)) - 3;
                 const x2 = (i + 1) * step;
-                const y2 = h - (history[i + 1].brake / 100 * (h - 4)) - 2;
+                const y2 = h - (history[i + 1].brake / 100 * (h - 6)) - 3;
                 
                 // Color segments orange on ABS active, otherwise red
                 ctx.strokeStyle = (history[i].abs || history[i + 1].abs) ? '#f97316' : '#f87171';
@@ -1867,8 +2022,17 @@
                     }
 
                     let gearRaw = (isDriverSpectating && targetDriver && targetDriver.gear !== undefined) ? targetDriver.gear : tel.gear;
-                    let gearText = gearRaw === 0 ? "N" : gearRaw === -1 ? "R" : (gearRaw !== undefined && gearRaw !== null ? gearRaw : "N");
                     let displayRpm = (isDriverSpectating && targetDriver && targetDriver.rpm !== undefined) ? Math.round(targetDriver.rpm) : (tel.rpm || 0);
+                    if (displayRpm < 0) displayRpm = 0;
+
+                    let gearText = "N";
+                    if (gearRaw === -1) {
+                        gearText = (rawSpeed > 0.5 || displayRpm > 1000) ? "R" : "N";
+                    } else if (gearRaw > 0) {
+                        gearText = String(gearRaw);
+                    } else {
+                        gearText = "N";
+                    }
 
                     let displayPos = "P-";
                     if (targetDriver) {
@@ -1889,6 +2053,50 @@
                     const currentLapNum = (isDriverSpectating && targetDriver && typeof targetDriver.lap === 'number')
                         ? targetDriver.lap
                         : (typeof tel.lap === 'number' ? tel.lap : -1);
+                    const lapDisplay = (currentLapNum <= 0) ? 'Out Lap' : `Lap ${currentLapNum}`;
+
+                    const steerAngleRaw = typeof tel.steering === 'number' ? tel.steering : 0;
+                    const steerAngleDeg = Math.round(steerAngleRaw * (180 / Math.PI));
+                    const steerPct = Math.min(Math.max((steerAngleDeg / 360) * 100, -100), 100);
+
+                    // Chassis & Vitals
+                    const health = tel.health || {};
+                    const tyres = health.tyres || {};
+                    const formatTyreP = (p) => {
+                        if (!p || p <= 0) return '--';
+                        return useImperial ? `${p.toFixed(1)} PSI` : `${(p * 6.89476).toFixed(0)} kPa`;
+                    };
+                    const formatTyreT = (t) => {
+                        if (!t || t <= 0) return '--';
+                        return useImperial ? `${Math.round(t * 1.8 + 32)}°F` : `${Math.round(t)}°C`;
+                    };
+                    const getTyreBg = (t) => {
+                        if (!t || t <= 0) return 'rgba(255, 255, 255, 0.03)';
+                        if (t < 65) return 'rgba(56, 189, 248, 0.15)';
+                        if (t < 100) return 'rgba(16, 185, 129, 0.2)';
+                        if (t < 115) return 'rgba(245, 158, 11, 0.2)';
+                        return 'rgba(239, 68, 68, 0.25)';
+                    };
+
+                    const lfPress = formatTyreP(tyres.LF?.p);
+                    const lfTemp = formatTyreT(tyres.LF?.t);
+                    const lfBg = getTyreBg(tyres.LF?.t);
+
+                    const rfPress = formatTyreP(tyres.RF?.p);
+                    const rfTemp = formatTyreT(tyres.RF?.t);
+                    const rfBg = getTyreBg(tyres.RF?.t);
+
+                    const lrPress = formatTyreP(tyres.LR?.p);
+                    const lrTemp = formatTyreT(tyres.LR?.t);
+                    const lrBg = getTyreBg(tyres.LR?.t);
+
+                    const rrPress = formatTyreP(tyres.RR?.p);
+                    const rrTemp = formatTyreT(tyres.RR?.t);
+                    const rrBg = getTyreBg(tyres.RR?.t);
+
+                    const waterTemp = health.waterTemp ? (useImperial ? `${Math.round(health.waterTemp * 1.8 + 32)}°F` : `${Math.round(health.waterTemp)}°C`) : '--';
+                    const oilTemp = health.oilTemp ? (useImperial ? `${Math.round(health.oilTemp * 1.8 + 32)}°F` : `${Math.round(health.oilTemp)}°C`) : '--';
+                    const oilPress = health.oilPress ? (useImperial ? `${(health.oilPress * 14.5038).toFixed(1)} PSI` : `${health.oilPress.toFixed(1)} bar`) : '--';
 
                     const fuelTrackerKey = `${mid}_${targetDriver?.carIdx !== undefined ? targetDriver.carIdx : (tel.playerIdx !== undefined ? tel.playerIdx : 'player')}`;
 
@@ -2019,6 +2227,7 @@
                         history.push({
                             throttle: smoothT,
                             brake: smoothB,
+                            steering: steerAngleRaw,
                             abs: absActive,
                             timestamp: Date.now(),
                             telTimestamp: tel.timestamp || 0
@@ -2064,7 +2273,7 @@
 
                             <div class="driver-card-body">
                                 <div class="driver-main-specs">
-                                    <!-- Metrics Core (5 cards) -->
+                                    <!-- Metrics Core (6 cards) -->
                                     <div class="metrics-grid">
                                         <div class="metric-card">
                                             <span class="metric-title"><i data-lucide="gauge" style="width: 12px; height: 12px;"></i> Speed</span>
@@ -2094,41 +2303,126 @@
                                             <div class="metric-val ${deltaColorClass}">${deltaDisplay}</div>
                                             <span class="metric-delta-sub">${deltaSubText}</span>
                                         </div>
+                                        <div class="metric-card metric-timing">
+                                            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                                <span class="metric-title"><i data-lucide="clock" style="width: 12px; height: 12px;"></i> Lap Times</span>
+                                                <span style="font-size: 0.65rem; color: #60a5fa; font-weight: 700;">${lapDisplay}</span>
+                                            </div>
+                                            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 4px;">
+                                                <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">Last</span>
+                                                <span class="laptime-mono" style="font-size: 0.88rem; font-weight: 800; color: #fff;">${targetLastLap > 15 ? formatLapTime(targetLastLap) : '--:--.---'}</span>
+                                            </div>
+                                            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 2px;">
+                                                <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">Best</span>
+                                                <span class="laptime-mono" style="font-size: 0.8rem; font-weight: 700; color: #a78bfa;">${targetBestLap > 15 ? formatLapTime(targetBestLap) : '--:--.---'}</span>
+                                            </div>
+                                        </div>
                                     </div>
 
-                                    <div class="inputs-layout" style="display: grid; grid-template-columns: 1fr 1.6fr; gap: 1.25rem; margin-top: 1rem; align-items: stretch;">
-                                        <!-- Throttle / Brake Pedals -->
-                                        <div class="pedals-container" style="display: flex; flex-direction: column; justify-content: center; gap: 0.75rem;">
+                                    <!-- Pedals, Steering & Oscilloscope Layout -->
+                                    <div class="inputs-layout" style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 1rem; margin-top: 1rem; align-items: stretch;">
+                                        <!-- Throttle / Brake / Steering Pedals -->
+                                        <div class="pedals-container" style="display: flex; flex-direction: column; justify-content: center; gap: 0.6rem; background: rgba(10, 10, 10, 0.45); border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 12px; padding: 0.75rem 1rem;">
                                             <div class="pedal-bar-wrapper">
-                                                <div class="pedal-label">
-                                                    <span>Throttle</span>
-                                                    <span style="color: #34d399;">${throttleVal}%</span>
+                                                <div class="pedal-label" style="display: flex; justify-content: space-between; font-size: 0.7rem; margin-bottom: 3px;">
+                                                    <span style="font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Throttle</span>
+                                                    <span style="color: #34d399; font-weight: 900; font-family: monospace;">${throttleVal}%</span>
                                                 </div>
-                                                <div class="pedal-bar-bg">
-                                                    <div class="pedal-bar-fill throttle-fill" style="width: ${throttleVal}%;"></div>
+                                                <div class="pedal-bar-bg" style="height: 7px; background: rgba(255, 255, 255, 0.06); border-radius: 4px; overflow: hidden;">
+                                                    <div class="pedal-bar-fill throttle-fill" style="width: ${throttleVal}%; height: 100%; background: linear-gradient(90deg, #059669, #34d399); transition: width 0.08s linear;"></div>
                                                 </div>
                                             </div>
                                             <div class="pedal-bar-wrapper">
-                                                <div class="pedal-label">
-                                                    <span style="display:flex; align-items:center; gap:6px;">
+                                                <div class="pedal-label" style="display: flex; justify-content: space-between; font-size: 0.7rem; margin-bottom: 3px;">
+                                                    <span style="display:flex; align-items:center; gap:6px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">
                                                         Brake
-                                                        ${absActive ? `<span style="font-size:0.6rem; font-weight:900; color:#fff; background:#dc2626; border-radius:4px; padding:1px 5px; letter-spacing:1px; animation:abs-flash 0.3s steps(1) infinite;">ABS</span>` : ''}
+                                                        ${absActive ? `<span style="font-size:0.55rem; font-weight:900; color:#fff; background:#dc2626; border-radius:3px; padding:1px 4px; letter-spacing:1px; animation:abs-flash 0.3s steps(1) infinite;">ABS</span>` : ''}
                                                     </span>
-                                                    <span style="color: #f87171;">${brakeVal}%</span>
+                                                    <span style="color: #f87171; font-weight: 900; font-family: monospace;">${brakeVal}%</span>
                                                 </div>
-                                                <div class="pedal-bar-bg">
-                                                    <div class="pedal-bar-fill brake-fill" style="width: ${brakeVal}%; ${absActive ? 'animation:abs-bar-flash 0.3s steps(1) infinite;' : ''}"></div>
+                                                <div class="pedal-bar-bg" style="height: 7px; background: rgba(255, 255, 255, 0.06); border-radius: 4px; overflow: hidden;">
+                                                    <div class="pedal-bar-fill brake-fill" style="width: ${brakeVal}%; height: 100%; background: linear-gradient(90deg, #b91c1c, #f87171); ${absActive ? 'animation:abs-bar-flash 0.3s steps(1) infinite;' : ''} transition: width 0.08s linear;"></div>
+                                                </div>
+                                            </div>
+                                            <div class="pedal-bar-wrapper">
+                                                <div class="pedal-label" style="display: flex; justify-content: space-between; font-size: 0.7rem; margin-bottom: 3px;">
+                                                    <span style="font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Steering</span>
+                                                    <span style="color: #38bdf8; font-weight: 900; font-family: monospace;">${steerAngleDeg > 0 ? '+' : ''}${steerAngleDeg}°</span>
+                                                </div>
+                                                <div class="steer-bar-bg" style="height: 7px; background: rgba(255, 255, 255, 0.06); border-radius: 4px; position: relative; overflow: hidden;">
+                                                    <div style="position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: rgba(255, 255, 255, 0.25); transform: translateX(-50%); z-index: 2;"></div>
+                                                    <div class="steer-bar-fill" style="position: absolute; height: 100%; background: #38bdf8; transition: all 0.08s linear; ${steerPct < 0 ? `right: 50%; width: ${Math.abs(steerPct) / 2}%; border-radius: 4px 0 0 4px;` : `left: 50%; width: ${steerPct / 2}%; border-radius: 0 4px 4px 0;`}"></div>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <!-- Live Inputs Trace Graph -->
-                                        <div class="trace-container" style="background: rgba(10, 10, 10, 0.45); border: 1px solid rgba(255,255,255,0.04); border-radius: 10px; padding: 0.5rem; height: 95px; position: relative; overflow: hidden; display: flex; flex-direction: column;">
-                                            <div style="font-size: 0.6rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; display: flex; justify-content: space-between;">
-                                                <span>Telemetry Trace</span>
-                                                <span id="trace-abs-indicator-${mid}" style="color: #f97316; display: none; font-weight: 800; animation: blink 1s infinite;">ABS ACTIVE</span>
+                                        <div class="trace-container" style="background: rgba(10, 10, 10, 0.45); border: 1px solid rgba(255,255,255,0.04); border-radius: 12px; padding: 0.55rem 0.85rem; height: 110px; position: relative; overflow: hidden; display: flex; flex-direction: column;">
+                                            <div style="font-size: 0.65rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center;">
+                                                <div style="display: flex; align-items: center; gap: 8px;">
+                                                    <span>Oscilloscope Trace</span>
+                                                    <span style="display: flex; align-items: center; gap: 8px; font-size: 0.6rem; text-transform: none; font-weight: 500;">
+                                                        <span style="color: #34d399;">● Thr</span>
+                                                        <span style="color: #f87171;">● Brk</span>
+                                                        <span style="color: #38bdf8;">● Steer</span>
+                                                    </span>
+                                                </div>
+                                                <span id="trace-abs-indicator-${mid}" style="color: #f97316; display: none; font-weight: 800; font-size: 0.65rem; animation: blink 1s infinite;">ABS ACTIVE</span>
                                             </div>
-                                            <canvas id="trace-canvas-${mid}" style="width: 100%; height: 68px; background: rgba(0,0,0,0.25); border-radius: 6px;"></canvas>
+                                            <canvas id="trace-canvas-${mid}" style="width: 100%; height: 78px; background: rgba(0,0,0,0.35); border-radius: 6px;"></canvas>
+                                        </div>
+                                    </div>
+
+                                    <!-- Chassis & Tyre Diagnostics Panel -->
+                                    <div class="chassis-telemetry-panel" style="margin-top: 1rem; background: rgba(10, 10, 10, 0.35); border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 12px; padding: 0.75rem 1rem;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.65rem; flex-wrap: wrap; gap: 6px;">
+                                            <div style="display: flex; align-items: center; gap: 6px;">
+                                                <i data-lucide="disc" style="width: 14px; height: 14px; color: #38bdf8;"></i>
+                                                <span style="font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #ffffff;">Chassis & Tyre Telemetry</span>
+                                            </div>
+                                            <div style="display: flex; align-items: center; gap: 10px; font-size: 0.68rem; color: var(--text-muted); flex-wrap: wrap;">
+                                                <span>Water: <strong style="color: #fff;">${waterTemp}</strong></span>
+                                                <span>Oil: <strong style="color: #fff;">${oilTemp}</strong></span>
+                                                <span>Oil Press: <strong style="color: #fff;">${oilPress}</strong></span>
+                                            </div>
+                                        </div>
+
+                                        <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 0.65rem; align-items: center; max-width: 440px; margin: 0 auto;">
+                                            <!-- Left Front -->
+                                            <div style="background: ${lfBg}; border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.35rem 0.5rem; text-align: center;">
+                                                <div style="font-size: 0.6rem; font-weight: 800; color: var(--text-muted);">LF</div>
+                                                <div style="font-size: 0.82rem; font-weight: 900; color: #fff; font-family: monospace;">${lfPress}</div>
+                                                <div style="font-size: 0.68rem; color: #94a3b8; font-family: monospace;">${lfTemp}</div>
+                                            </div>
+
+                                            <!-- Car Silhouette Center -->
+                                            <div style="width: 26px; height: 50px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                                <div style="width: 5px; height: 10px; background: rgba(56,189,248,0.4); border-radius: 2px;"></div>
+                                            </div>
+
+                                            <!-- Right Front -->
+                                            <div style="background: ${rfBg}; border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.35rem 0.5rem; text-align: center;">
+                                                <div style="font-size: 0.6rem; font-weight: 800; color: var(--text-muted);">RF</div>
+                                                <div style="font-size: 0.82rem; font-weight: 900; color: #fff; font-family: monospace;">${rfPress}</div>
+                                                <div style="font-size: 0.68rem; color: #94a3b8; font-family: monospace;">${rfTemp}</div>
+                                            </div>
+
+                                            <!-- Left Rear -->
+                                            <div style="background: ${lrBg}; border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.35rem 0.5rem; text-align: center;">
+                                                <div style="font-size: 0.6rem; font-weight: 800; color: var(--text-muted);">LR</div>
+                                                <div style="font-size: 0.82rem; font-weight: 900; color: #fff; font-family: monospace;">${lrPress}</div>
+                                                <div style="font-size: 0.68rem; color: #94a3b8; font-family: monospace;">${lrTemp}</div>
+                                            </div>
+
+                                            <!-- Center spacer -->
+                                            <div></div>
+
+                                            <!-- Right Rear -->
+                                            <div style="background: ${rrBg}; border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.35rem 0.5rem; text-align: center;">
+                                                <div style="font-size: 0.6rem; font-weight: 800; color: var(--text-muted);">RR</div>
+                                                <div style="font-size: 0.82rem; font-weight: 900; color: #fff; font-family: monospace;">${rrPress}</div>
+                                                <div style="font-size: 0.68rem; color: #94a3b8; font-family: monospace;">${rrTemp}</div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -2163,21 +2457,39 @@
                 const activeSpectateCarNum = (primaryTel.isSpectating && (primaryTel.spectatingCarNum || primaryTel.drivers?.[primaryTel.camCarIdx]?.carNum)) || (primaryTel.camCarIdx !== undefined && primaryTel.camCarIdx !== primaryTel.playerIdx && primaryTel.drivers?.[primaryTel.camCarIdx]?.carNum);
 
                 if (primaryTel.drivers) {
-                    const sortedDrivers = Object.values(primaryTel.drivers)
-                        .filter(d => d && d.pos > 0)
-                        .sort((a, b) => a.pos - b.pos);
+                    const rawDrivers = Object.values(primaryTel.drivers).filter(d => d && (d.name || d.carNum));
+                    const sortedDrivers = rawDrivers.slice().sort((a, b) => {
+                        const posA = (typeof a.pos === 'number' && a.pos > 0) ? a.pos : 999999;
+                        const posB = (typeof b.pos === 'number' && b.pos > 0) ? b.pos : 999999;
+                        if (posA !== posB) return posA - posB;
+
+                        const bestA = (typeof a.bestLap === 'number' && a.bestLap > 15) ? a.bestLap : 999999;
+                        const bestB = (typeof b.bestLap === 'number' && b.bestLap > 15) ? b.bestLap : 999999;
+                        if (bestA !== bestB) return bestA - bestB;
+
+                        const lastA = (typeof a.lastLap === 'number' && a.lastLap > 15) ? a.lastLap : 999999;
+                        const lastB = (typeof b.lastLap === 'number' && b.lastLap > 15) ? b.lastLap : 999999;
+                        if (lastA !== lastB) return lastA - lastB;
+
+                        return (parseInt(a.carNum) || 0) - (parseInt(b.carNum) || 0);
+                    });
                     
-                    sortedDrivers.forEach(d => {
+                    sortedDrivers.forEach((d, idx) => {
                         const isThisSpectated = activeSpectateCarNum && String(activeSpectateCarNum) === String(d.carNum);
                         const rowClass = `${d.isPlayer ? 'standings-row-player' : ''} ${isThisSpectated ? 'standings-row-spectated' : ''}`.trim();
                         const classIndicator = d.classColor ? `<span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#${d.classColor}; margin-right:4px;"></span>` : '';
                         
+                        const inPit = d.surface === 2 || d.surface === 1 || d.inPit === true || d.in_pit === true;
+                        const pitBadge = inPit ? `<span style="font-size:0.55rem; color:#f59e0b; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.35); border-radius:3px; padding:1px 4px; font-weight:700; margin-left:6px; letter-spacing:0.5px;">PIT</span>` : '';
+
+                        const displayPos = (d.classPos > 0) ? d.classPos : ((d.pos > 0) ? d.pos : (d.bestLap > 15 ? (idx + 1) : '-'));
+
                         standingsRows += `
                             <tr class="${rowClass}">
-                                <td style="text-align: center; font-weight: bold;">${escapeHtml(d.classPos || d.pos)}</td>
-                                <td><span class="car-num-tag">${escapeHtml(d.carNum)}</span></td>
-                                <td><div style="display:flex; align-items:center; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${classIndicator}${escapeHtml(d.name)}</div></td>
-                                <td style="text-align: center;">${d.lap || 0}</td>
+                                <td style="text-align: center; font-weight: bold;">${escapeHtml(displayPos)}</td>
+                                <td><span class="car-num-tag">${escapeHtml(d.carNum || '-')}</span></td>
+                                <td><div style="display:flex; align-items:center; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${classIndicator}${escapeHtml(d.name)}${pitBadge}</div></td>
+                                <td style="text-align: center;">${(d.lap && d.lap > 0) ? d.lap : 0}</td>
                                 <td style="text-align: right;" class="laptime-mono">${formatLapTime(d.lastLap)}</td>
                                 <td style="text-align: right; color:#f3f4f6;" class="laptime-mono">${formatLapTime(d.bestLap)}</td>
                             </tr>
@@ -2367,9 +2679,27 @@
                             <div class="drivers-column">
                                 <div id="drivers-container"></div>
                                 
-                                <div class="standings-relative-grid">
+                                <div class="timing-view-bar">
+                                    <div class="timing-tabs">
+                                        <button type="button" class="tab-pill active" id="tab-split-btn" onclick="setLeaderboardMode('split')">
+                                            <i data-lucide="columns" style="width: 14px; height: 14px;"></i> Split View
+                                        </button>
+                                        <button type="button" class="tab-pill" id="tab-rel-btn" onclick="setLeaderboardMode('relative')">
+                                            <i data-lucide="arrow-up-down" style="width: 14px; height: 14px;"></i> Relative Gaps
+                                        </button>
+                                        <button type="button" class="tab-pill" id="tab-std-btn" onclick="setLeaderboardMode('standings')">
+                                            <i data-lucide="list-ordered" style="width: 14px; height: 14px;"></i> Full Standings
+                                        </button>
+                                    </div>
+                                    <div style="font-size: 0.68rem; color: var(--text-muted); display: flex; align-items: center; gap: 8px;">
+                                        <span style="display: inline-flex; align-items: center; gap: 4px;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #ef4444; display: inline-block;"></span> Ahead</span>
+                                        <span style="display: inline-flex; align-items: center; gap: 4px;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #3b82f6; display: inline-block;"></span> Behind</span>
+                                    </div>
+                                </div>
+
+                                <div class="standings-relative-grid split-view" id="standings-rel-grid-el">
                                     <!-- Live Standings Widget -->
-                                    <div class="info-widget">
+                                    <div class="info-widget" id="standings-widget-container">
                                         <h3 class="info-widget-title" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                                             <span style="display: flex; align-items: center; gap: 0.5rem;">
                                                 <i data-lucide="list-ordered" style="width: 16px; height: 16px;"></i> Live Session Standings
@@ -2396,7 +2726,7 @@
                                     </div>
 
                                     <!-- Relative black box widget -->
-                                    <div class="info-widget">
+                                    <div class="info-widget" id="relative-widget-container">
                                         <h3 class="info-widget-title" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                                             <span style="display: flex; align-items: center; gap: 0.5rem;">
                                                 <i data-lucide="arrow-up-down" style="width: 16px; height: 16px;"></i> Relative
@@ -2509,6 +2839,9 @@
                         </div>
                     `;
                     lucide.createIcons();
+                    if (typeof setLeaderboardMode === 'function') {
+                        setLeaderboardMode(window.currentLeaderboardMode);
+                    }
                 }
 
                 // Update only dynamic bodies so the scroll containers are preserved in the DOM
@@ -2531,6 +2864,10 @@
                     relativeDriverMeta.innerText = relativeSubTitle;
                 }
 
+                // Maintain active view mode
+                if (typeof setLeaderboardMode === 'function') {
+                    setLeaderboardMode(window.currentLeaderboardMode);
+                }
                 
                 // Update Stint Live Widget in Telemetry
                 const stintLapEl = document.getElementById('tel-stint-lap-count');
@@ -2543,7 +2880,8 @@
 
                 if (stintLapEl && primaryTel) {
                     const fuel = primaryTel.fuel || 0;
-                    const lap = primaryTel.lap || 0;
+                    const rawLap = primaryTel.lap || 0;
+                    const lap = rawLap > 0 ? rawLap : 0;
                     const primaryTrackerKey = `${primaryMid}_${primaryTel.playerIdx !== undefined ? primaryTel.playerIdx : 'player'}`;
                     const primaryTracker = fuelTrackers[primaryTrackerKey];
                     const burn = (primaryTracker && primaryTracker.burnHistory.length > 0)
@@ -2552,9 +2890,13 @@
                     const lapsLeft = burn > 0 ? (fuel / burn) : 0;
                     const minsLeft = Math.round((lapsLeft * (primaryTel.lastLap || 90)) / 60);
 
-                    stintLapEl.textContent = lap;
+                    stintLapEl.textContent = lap > 0 ? lap : '0 (Out Lap)';
                     stintFuelEl.textContent = useImperial ? `${(fuel * 0.264172).toFixed(1)}gal` : `${fuel.toFixed(1)}L`;
-                    stintPitEl.textContent = `~${minsLeft}m (${lapsLeft.toFixed(1)} Laps)`;
+                    if (fuel <= 0.05) {
+                        stintPitEl.textContent = `-- (In Pit)`;
+                    } else {
+                        stintPitEl.textContent = `~${minsLeft}m (${lapsLeft.toFixed(1)} Laps)`;
+                    }
 
                     if (stintTagEl) {
                         stintTagEl.textContent = `DRIVER: ${primaryDriverName.toUpperCase()}`;
@@ -2629,7 +2971,10 @@
                     if (progFill) {
                         progFill.style.width = `${pct}%`;
                     }
-                    if (progLapText) progLapText.innerText = `Lap ${primaryTel.lap || 0}`;
+                    if (progLapText) {
+                        const curLap = primaryTel.lap;
+                        progLapText.innerText = (typeof curLap === 'number' && curLap > 0) ? `Lap ${curLap}` : 'Out Lap';
+                    }
                 } else if (progContainer) {
                     progContainer.style.display = 'none';
                 }
@@ -2842,22 +3187,11 @@
             activeMids.forEach(mid => {
                 const canvas = document.getElementById(`trace-canvas-${mid}`);
                 const absIndicator = document.getElementById(`trace-abs-indicator-${mid}`);
-                const history = traceHistory[mid];
-                if (canvas && history && history.length >= 2) {
-                    if (window.debugHistoryTimer === undefined || Date.now() - window.debugHistoryTimer > 2000) {
-                        window.debugHistoryTimer = Date.now();
-                        console.log("Trace debug:", {
-                            length: history.length,
-                            durationMs: history[history.length - 1].timestamp - history[0].timestamp,
-                            newestAge: Date.now() - history[history.length - 1].timestamp,
-                            oldestAge: Date.now() - history[0].timestamp
-                        });
-                    }
+                const history = traceHistory[mid] || [];
+                if (canvas) {
                     drawTraceGraph(canvas, history);
-                    
-                    // Keep indicator synced with latest status in history
                     if (absIndicator) {
-                        const latestAbs = history[history.length - 1].abs;
+                        const latestAbs = history.length > 0 ? history[history.length - 1].abs : false;
                         absIndicator.style.display = latestAbs ? 'inline' : 'none';
                     }
                 }
