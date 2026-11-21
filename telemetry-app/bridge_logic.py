@@ -25,7 +25,7 @@ else:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 CONFIG_FILE = os.path.join(BASE_DIR, "config.json")
-BRIDGE_VERSION = "2.0.0-AUTHENTICATED"
+BRIDGE_VERSION = "2.1.0-FUEL-ENGINEER"
 RTDB_BASE_URL = "https://grid-up-racedash-default-rtdb.europe-west1.firebasedatabase.app"
 
 # Optional shared secret for the local dashboard gateway. Never hardcode it: set the DASH_TOKEN
@@ -82,6 +82,10 @@ class TelemetryBridge:
         self.stint_start_fuel = -1.0
         self.stint_start_time = -1.0
         self.current_stint_laps = []
+
+        # Fuel Engineer & Spotter Tracking States
+        self.driver_fuel_trackers = {}
+        self.current_telemetry_state = "DISCONNECTED"
 
     def get_machine_id(self):
         try:
@@ -961,26 +965,141 @@ class TelemetryBridge:
             elif target_best_lap > 15.0 and target_last_lap > 15.0:
                 delta = round(target_last_lap - target_best_lap, 3)
 
-            # Simple laps remaining calculation
-            if not hasattr(self, 'fuel_history'):
-                self.fuel_history = []
-                self.last_fuel_level = fuel_current
-                self.last_lap_num = -1
+            # --- TELEMETRY STATE MACHINE ---
+            if not self.ir.is_connected:
+                telemetry_state = "DISCONNECTED"
+            elif my_idx < 0:
+                telemetry_state = "WAITING"
+            elif not is_spectating and is_player_on_track:
+                telemetry_state = "DRIVING"
+            elif is_spectating:
+                telemetry_state = "SPOTTING"
+            else:
+                telemetry_state = "WAITING"
 
-            if current_lap_num > self.last_lap_num and self.last_lap_num != -1:
-                consumption = self.last_fuel_level - fuel_current
-                if 0 < consumption < 20:
-                    self.fuel_history.append(consumption)
-                    if len(self.fuel_history) > 3:
-                        self.fuel_history.pop(0)
-                self.last_fuel_level = fuel_current
-                self.last_lap_num = current_lap_num
-            elif self.last_lap_num == -1:
-                self.last_lap_num = current_lap_num
-                self.last_fuel_level = fuel_current
+            # --- FUEL MEASUREMENT & RESOLUTION (DRIVING & SPOTTING) ---
+            raw_fuel = self.get_safe('FuelLevel', 0.0)
+            raw_fuel_pct = self.get_safe('FuelLevelPct', 0.0)
+            sdk_fuel_per_hour = self.get_safe('FuelUsePerHour', 0.0)
 
-            avg_consumption = round(sum(self.fuel_history) / len(self.fuel_history), 2) if self.fuel_history else 0.0
-            laps_rem = round(fuel_current / avg_consumption, 1) if avg_consumption > 0.05 else (round(fuel_current / 3.0, 1) if fuel_current > 0 else 0.0)
+            # Fuel capacity discovery from car setup or default GT3/prototype capacity
+            fuel_capacity = 100.0
+            car_setup_snap = self.get_car_setup_snapshot()
+            if car_setup_snap and isinstance(car_setup_snap, dict) and 'fuel_capacity' in car_setup_snap:
+                try:
+                    fuel_capacity = float(car_setup_snap['fuel_capacity'])
+                except Exception:
+                    pass
+
+            target_fuel = 0.0
+            fuel_data_valid = False
+
+            # If the user is driving, or spotting their team/registered car, iRacing FuelLevel is populated
+            if raw_fuel is not None and float(raw_fuel) > 0.05:
+                target_fuel = round(float(raw_fuel), 2)
+                fuel_data_valid = True
+            elif target_car_idx == my_idx and raw_fuel is not None and float(raw_fuel) >= 0.0:
+                target_fuel = round(float(raw_fuel), 2)
+                fuel_data_valid = True
+            else:
+                # If camera is focused on an external competitor whose fuel is protected in iRacing shared memory
+                driver_key = f"{target_car_idx}_{target_name}"
+                if hasattr(self, 'driver_fuel_trackers') and driver_key in self.driver_fuel_trackers:
+                    prev_tracker = self.driver_fuel_trackers[driver_key]
+                    if prev_tracker.get('last_fuel', 0) > 0 and (time.time() - prev_tracker.get('last_update_ts', 0)) < 45.0:
+                        target_fuel = prev_tracker['last_fuel']
+                        fuel_data_valid = True
+                if not fuel_data_valid and is_spectating:
+                    telemetry_state = "LIMITED_DATA"
+
+            # Compute percentage
+            target_fuel_pct = round((target_fuel / fuel_capacity) * 100.0, 1) if (fuel_capacity > 0 and target_fuel > 0) else (round(raw_fuel_pct * 100.0, 1) if raw_fuel_pct > 0 else 0.0)
+
+            # --- PER-DRIVER FUEL TRACKING ENGINE ---
+            if not hasattr(self, 'driver_fuel_trackers'):
+                self.driver_fuel_trackers = {}
+
+            driver_key = f"{target_car_idx}_{target_name}"
+            if driver_key not in self.driver_fuel_trackers:
+                self.driver_fuel_trackers[driver_key] = {
+                    'car_idx': target_car_idx,
+                    'car_num': target_car_num,
+                    'driver_name': target_name,
+                    'last_fuel': target_fuel if fuel_data_valid else 0.0,
+                    'last_lap': target_lap,
+                    'last_lap_time': target_last_lap,
+                    'lap_consumptions': [],
+                    'lap_times': [],
+                    'refuel_events': [],
+                    'last_update_ts': time.time()
+                }
+
+            tracker = self.driver_fuel_trackers[driver_key]
+
+            # Completed lap transition
+            if target_lap > tracker['last_lap'] and tracker['last_lap'] > 0:
+                prev_fuel_val = tracker['last_fuel']
+                if fuel_data_valid and prev_fuel_val > 0 and target_fuel > 0:
+                    # Refuel jump check (pit stop)
+                    if target_fuel > prev_fuel_val + 1.2:
+                        tracker['refuel_events'].append({
+                            'lap': target_lap,
+                            'added': round(target_fuel - prev_fuel_val, 2),
+                            'ts': time.time()
+                        })
+                        self.log(f"[FUEL] Refuel detected for #{target_car_num} {target_name} on Lap {target_lap}: +{round(target_fuel - prev_fuel_val, 2)}L")
+                    else:
+                        consumed = prev_fuel_val - target_fuel
+                        if 0.3 <= consumed <= 15.0:
+                            tracker['lap_consumptions'].append(round(consumed, 3))
+                            if target_last_lap > 15.0:
+                                tracker['lap_times'].append(round(target_last_lap, 3))
+                            if len(tracker['lap_consumptions']) > 30:
+                                tracker['lap_consumptions'].pop(0)
+                            if len(tracker['lap_times']) > 30:
+                                tracker['lap_times'].pop(0)
+
+                tracker['last_fuel'] = target_fuel if fuel_data_valid else tracker['last_fuel']
+                tracker['last_lap'] = target_lap
+                tracker['last_lap_time'] = target_last_lap
+                tracker['last_update_ts'] = time.time()
+            elif tracker['last_lap'] <= 0:
+                tracker['last_lap'] = target_lap
+                if fuel_data_valid and target_fuel > 0:
+                    tracker['last_fuel'] = target_fuel
+
+            # Multi-period rolling averages
+            c_history = tracker['lap_consumptions']
+            c_count = len(c_history)
+            avg_3 = round(sum(c_history[-3:]) / len(c_history[-3:]), 3) if c_count >= 3 else (c_history[-1] if c_count > 0 else 0.0)
+            avg_5 = round(sum(c_history[-5:]) / len(c_history[-5:]), 3) if c_count >= 5 else (round(sum(c_history) / c_count, 3) if c_count > 0 else 0.0)
+            avg_10 = round(sum(c_history[-10:]) / len(c_history[-10:]), 3) if c_count >= 10 else (round(sum(c_history) / c_count, 3) if c_count > 0 else 0.0)
+
+            # Primary consumption rate (5-lap default)
+            primary_avg_consumption = avg_5 if avg_5 > 0.1 else (avg_3 if avg_3 > 0.1 else (c_history[-1] if c_count > 0 else 0.0))
+
+            # Lap time calculation for fuel rates
+            t_history = tracker['lap_times']
+            avg_lap_time = round(sum(t_history[-5:]) / len(t_history[-5:]), 3) if len(t_history) >= 1 else (target_last_lap if target_last_lap > 15.0 else 90.0)
+
+            # Fuel per hour (L/h)
+            calc_fuel_per_hour = 0.0
+            if sdk_fuel_per_hour and sdk_fuel_per_hour > 0.5:
+                calc_fuel_per_hour = round(float(sdk_fuel_per_hour), 2)
+            elif primary_avg_consumption > 0.1 and avg_lap_time > 15.0:
+                calc_fuel_per_hour = round((primary_avg_consumption / avg_lap_time) * 3600.0, 2)
+
+            # Time remaining on tank (seconds) & Laps remaining
+            time_remaining_sec = 0.0
+            laps_remaining = 0.0
+            if primary_avg_consumption > 0.05 and target_fuel > 0:
+                laps_remaining = round(target_fuel / primary_avg_consumption, 1)
+            if calc_fuel_per_hour > 0.5 and target_fuel > 0:
+                time_remaining_sec = round((target_fuel / calc_fuel_per_hour) * 3600.0, 1)
+            elif laps_remaining > 0 and avg_lap_time > 15.0:
+                time_remaining_sec = round(laps_remaining * avg_lap_time, 1)
+
+            self.fuel_history = c_history[-5:] if c_history else []
 
             # ABS Intervention
             is_abs = False
@@ -1007,19 +1126,19 @@ class TelemetryBridge:
                     current_throttle = self.get_safe('Throttle', 0.0)
                     current_brake = self.get_safe('BrakeRaw', 0.0) or self.get_safe('Brake', 0.0)
 
-            # Pedals & Fuel
+            # Pedals
             if not is_spectating and is_player_on_track:
                 target_throttle = int(current_throttle * 100)
                 target_brake = int(current_brake * 100)
                 target_brake_applied = int(self.get_safe('Brake', 0) * 100)
-                target_fuel = round(self.get_safe('FuelLevel', 0), 2)
                 target_abs = is_abs
             else:
                 target_throttle = 0
                 target_brake = 0
                 target_brake_applied = 0
-                target_fuel = 0.0
                 target_abs = False
+
+            telemetry_source = 'LOCAL_DRIVING' if (not is_spectating and is_player_on_track) else ('LOCAL_SPOTTING' if fuel_data_valid else 'LIMITED_DATA')
 
             telemetry = {
                 'speed': target_speed,
@@ -1029,8 +1148,21 @@ class TelemetryBridge:
                 'brake': target_brake,
                 'brake_applied': target_brake_applied,
                 'fuel': target_fuel,
-                'fuel_per_lap': avg_consumption,
-                'fuel_laps_rem': laps_rem,
+                'fuel_capacity': fuel_capacity,
+                'fuel_pct': target_fuel_pct,
+                'fuel_per_lap': primary_avg_consumption,
+                'fuel_avg_3': avg_3,
+                'fuel_avg_5': avg_5,
+                'fuel_avg_10': avg_10,
+                'fuel_per_hour': calc_fuel_per_hour,
+                'fuel_per_hour_sdk': round(float(sdk_fuel_per_hour), 2) if sdk_fuel_per_hour else 0.0,
+                'fuel_time_rem': time_remaining_sec,
+                'fuel_laps_rem': laps_remaining,
+                'fuel_data_valid': fuel_data_valid,
+                'fuel_history': c_history[-10:],
+                'avg_lap_time': avg_lap_time,
+                'telemetry_state': telemetry_state,
+                'telemetry_source': telemetry_source,
                 'lap': target_lap,
                 'position': target_pos,
                 'track_temp': round(self.get_safe('TrackTemp', 0), 1),
@@ -1072,7 +1204,7 @@ class TelemetryBridge:
                 'carNum': target_car_num,
                 'bestLap': target_best_lap,
                 'lastLap': target_last_lap,
-                'car_setup': self.get_car_setup_snapshot()
+                'car_setup': car_setup_snap
             }
 
             session = {
@@ -1081,8 +1213,10 @@ class TelemetryBridge:
                 'trackId': track_id,
                 'trackName': track_name,
                 'trackLength': track_len,
-                'fuel_level': fuel_current,
-                'laps_remaining': laps_rem,
+                'fuel_level': target_fuel,
+                'fuel_capacity': fuel_capacity,
+                'laps_remaining': laps_remaining,
+                'time_remaining': time_remaining_sec,
                 'session_time_remain': self.get_safe('SessionTimeRemain', 0),
                 'is_live': True
             }
@@ -1094,10 +1228,16 @@ class TelemetryBridge:
 
     def simulate_telemetry(self):
         telemetry = {
-            'speed': 0, 'rpm': 0, 'gear': 0, 'throttle': 0, 'brake': 0, 'fuel': 0, 'fuel_per_lap': 0.0, 'fuel_laps_rem': 0.0, 'lap': 0, 'position': 0, 'is_live': False, 'v': BRIDGE_VERSION
+            'speed': 185, 'rpm': 6400, 'gear': 4, 'throttle': 85, 'brake': 0, 'fuel': 42.5,
+            'fuel_capacity': 100.0, 'fuel_pct': 42.5, 'fuel_per_lap': 3.12, 'fuel_avg_3': 3.10, 'fuel_avg_5': 3.12, 'fuel_avg_10': 3.15,
+            'fuel_per_hour': 118.5, 'fuel_per_hour_sdk': 118.5, 'fuel_time_rem': 1290, 'fuel_laps_rem': 13.6,
+            'fuel_data_valid': True, 'fuel_history': [3.18, 3.14, 3.09, 3.12, 3.08], 'avg_lap_time': 94.8,
+            'telemetry_state': 'SIMULATING', 'telemetry_source': 'LOCAL_DRIVING',
+            'lap': 18, 'position': 4, 'is_live': False, 'v': BRIDGE_VERSION
         }
         session = {
-            'active': False, 'sid': -1, 'trackName': 'WAITING FOR SIMULATION...', 'is_live': False
+            'active': False, 'sid': -1, 'trackName': 'WAITING FOR SIMULATION...', 'is_live': False,
+            'fuel_level': 42.5, 'fuel_capacity': 100.0, 'laps_remaining': 13.6, 'time_remaining': 1290
         }
         return telemetry, session
 

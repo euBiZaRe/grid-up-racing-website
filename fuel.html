@@ -1,0 +1,1470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) - Deferred initialization -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      function initAnalytics(){
+        if(window.analyticsLoaded) return;
+        window.analyticsLoaded = true;
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = 'https://www.googletagmanager.com/gtag/js?id=G-5JMPYRH8H9';
+        document.head.appendChild(s);
+        gtag('js', new Date());
+        gtag('config', 'G-5JMPYRH8H9');
+      }
+      if (document.readyState === 'complete') {
+        setTimeout(initAnalytics, 2500);
+      } else {
+        window.addEventListener('load', function() { setTimeout(initAnalytics, 2500); });
+      }
+      ['click', 'scroll', 'keydown', 'touchstart'].forEach(function(e) {
+        window.addEventListener(e, initAnalytics, { once: true, passive: true });
+      });
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GRiD UP Fuel Engineer | Motorsport Strategy & Telemetry</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=20261121v5">
+    <link rel="icon" type="image/png" href="assets/G_2.png">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Firebase Compat SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+
+    <style>
+        :root {
+            --lime: #CCFF00;
+            --lime-dim: rgba(204, 255, 0, 0.15);
+            --lime-border: rgba(204, 255, 0, 0.4);
+            --deep-blue: #0034AB;
+            --blue-glow: rgba(0, 52, 171, 0.4);
+            --dark-charcoal: #08090d;
+            --card-bg: rgba(13, 16, 24, 0.85);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --card-border-active: rgba(204, 255, 0, 0.4);
+            --text-main: #ffffff;
+            --text-dim: #94a3b8;
+            --text-muted: #64748b;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --font-mono: 'JetBrains Mono', monospace;
+            --font-orbitron: 'Orbitron', sans-serif;
+            --font-sans: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--dark-charcoal);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            min-height: 100vh;
+            padding-bottom: 4rem;
+            position: relative;
+        }
+
+        /* Top Bar */
+        .fuel-nav-bar {
+            background: rgba(10, 12, 18, 0.9);
+            border-bottom: 1px solid var(--card-border);
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+        }
+
+        .fuel-brand-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .fuel-logo-text {
+            font-family: var(--font-orbitron);
+            font-size: 1.15rem;
+            font-weight: 900;
+            letter-spacing: 0.05em;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .fuel-logo-text span.brand-lime {
+            color: var(--lime);
+            text-shadow: 0 0 15px rgba(204, 255, 0, 0.5);
+        }
+
+        .fuel-live-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.68rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background: var(--lime-dim);
+            color: var(--lime);
+            border: 1px solid var(--lime-border);
+            letter-spacing: 0.04em;
+        }
+        .live-pulse {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--lime);
+            box-shadow: 0 0 8px var(--lime);
+            animation: pulse-dot 1.4s infinite;
+        }
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.3; transform: scale(0.8); }
+        }
+
+        .fuel-controls-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .fuel-select {
+            background: #12151f;
+            border: 1px solid var(--card-border);
+            color: #f1f5f9;
+            font-family: var(--font-sans);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 6px 10px;
+            border-radius: 8px;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .fuel-select:focus {
+            border-color: var(--lime);
+            box-shadow: 0 0 10px rgba(204, 255, 0, 0.25);
+        }
+
+        .fuel-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            color: #cbd5e1;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+        .fuel-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        .fuel-btn.active {
+            background: var(--lime-dim);
+            border-color: var(--lime);
+            color: var(--lime);
+            box-shadow: 0 0 12px rgba(204, 255, 0, 0.25);
+        }
+
+        /* Container */
+        .fuel-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        /* Subheader Banner */
+        .fuel-banner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            background: linear-gradient(135deg, rgba(0, 52, 171, 0.25) 0%, rgba(13, 16, 24, 0.6) 100%);
+            border: 1px solid rgba(0, 52, 171, 0.4);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .target-driver-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .role-tag {
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 3px 8px;
+            border-radius: 4px;
+            letter-spacing: 0.05em;
+        }
+        .role-driving {
+            background: var(--lime-dim);
+            color: var(--lime);
+            border: 1px solid var(--lime-border);
+        }
+        .role-spotting {
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.4);
+        }
+        .role-limited {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+        }
+        .role-manual {
+            background: rgba(168, 85, 247, 0.15);
+            color: #c084fc;
+            border: 1px solid rgba(168, 85, 247, 0.4);
+        }
+
+        /* Main Hero Grid */
+        .hero-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .hero-card.highlight {
+            border-color: var(--lime-border);
+            background: linear-gradient(180deg, rgba(204, 255, 0, 0.05) 0%, var(--card-bg) 100%);
+            box-shadow: 0 0 25px rgba(204, 255, 0, 0.08);
+        }
+        .hero-card.blue-highlight {
+            border-color: rgba(56, 189, 248, 0.35);
+            background: linear-gradient(180deg, rgba(0, 52, 171, 0.15) 0%, var(--card-bg) 100%);
+        }
+
+        .hero-lbl {
+            font-size: 0.72rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .hero-val {
+            font-family: var(--font-orbitron);
+            font-size: 2.3rem;
+            font-weight: 900;
+            line-height: 1.1;
+            margin: 0.5rem 0 0.25rem 0;
+            color: #ffffff;
+        }
+        .hero-val.val-lime {
+            color: var(--lime);
+            text-shadow: 0 0 15px rgba(204, 255, 0, 0.4);
+        }
+        .hero-val.val-blue {
+            color: #38bdf8;
+            text-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+        }
+        .hero-sub {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        /* Fuel Tank Meter */
+        .fuel-meter-wrap {
+            height: 10px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+            position: relative;
+        }
+        .fuel-meter-fill {
+            height: 100%;
+            width: 50%;
+            background: linear-gradient(90deg, #0034AB, #CCFF00);
+            border-radius: 5px;
+            transition: width 0.3s ease;
+        }
+
+        /* Two-Column Working Area */
+        .fuel-workspace-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .panel-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .panel-title {
+            font-family: var(--font-orbitron);
+            font-size: 0.95rem;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 0.75rem;
+        }
+
+        /* Averaging Window Tabs */
+        .avg-tab-bar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .avg-pill {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .avg-pill.active {
+            background: var(--lime-dim);
+            border-color: var(--lime);
+            color: var(--lime);
+        }
+
+        /* Metrics Data Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+
+        .metric-tile {
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .metric-tile-lbl {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .metric-tile-val {
+            font-family: var(--font-mono);
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #fff;
+            margin-top: 2px;
+        }
+
+        /* Fuel to Finish Strategy Panel */
+        .strategy-status-box {
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 2px solid transparent;
+        }
+        .status-safe {
+            background: rgba(204, 255, 0, 0.12);
+            border-color: var(--lime);
+            color: var(--lime);
+        }
+        .status-warning {
+            background: rgba(245, 158, 11, 0.15);
+            border-color: var(--warning);
+            color: var(--warning);
+        }
+        .status-danger {
+            background: rgba(239, 68, 68, 0.18);
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .status-badge-title {
+            font-family: var(--font-orbitron);
+            font-size: 1.4rem;
+            font-weight: 900;
+            letter-spacing: 0.06em;
+            line-height: 1;
+        }
+        .status-badge-sub {
+            font-size: 0.75rem;
+            color: #e2e8f0;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        /* Sliders & Inputs for Manual Mode */
+        .control-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+        .control-lbl {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-dim);
+        }
+        .control-input {
+            background: #111420;
+            border: 1px solid var(--card-border);
+            color: #fff;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            font-weight: 700;
+            padding: 6px 10px;
+            border-radius: 6px;
+            width: 100px;
+            text-align: right;
+            outline: none;
+        }
+        .control-input:focus {
+            border-color: var(--lime);
+        }
+
+        /* Lap Consumption History Table */
+        .history-table-container {
+            max-height: 260px;
+            overflow-y: auto;
+            border-radius: 8px;
+            border: 1px solid var(--card-border);
+        }
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+            text-align: left;
+        }
+        .history-table th {
+            position: sticky;
+            top: 0;
+            background: #0d101a;
+            color: var(--text-muted);
+            font-weight: 800;
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--card-border);
+            text-transform: uppercase;
+            font-size: 0.65rem;
+            letter-spacing: 0.05em;
+        }
+        .history-table td {
+            padding: 6px 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            color: #e2e8f0;
+            font-family: var(--font-mono);
+            white-space: nowrap;
+        }
+        .history-table tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        /* Chart Canvas */
+        #consumption-chart-canvas {
+            width: 100%;
+            height: 120px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 8px;
+            display: block;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .hero-stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .fuel-workspace-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        @media (max-width: 640px) {
+            .hero-stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- TOP NAVIGATION BAR -->
+    <header class="fuel-nav-bar">
+        <div class="fuel-brand-group">
+            <div class="fuel-logo-text">
+                <i data-lucide="fuel" style="width: 22px; height: 22px; color: var(--lime);"></i>
+                <span>GRID UP <span class="brand-lime">FUEL ENGINEER</span></span>
+            </div>
+            <div id="live-status-pill" class="fuel-live-pill">
+                <span class="live-pulse"></span>
+                <span id="live-status-text">CONNECTING</span>
+            </div>
+        </div>
+
+        <div class="fuel-controls-group">
+            <!-- Team Selector -->
+            <select id="team-select" class="fuel-select" title="Active Racing Team">
+                <option value="gridUp_sim">GRiD UP Sim Racing</option>
+                <option value="gridUp_black">GRiD UP Black</option>
+                <option value="gridUp_blue">GRiD UP Blue</option>
+                <option value="gridUp_red">GRiD UP Red</option>
+                <option value="gridUp_white">GRiD UP White</option>
+                <option value="gridUp_purple">GRiD UP Purple</option>
+                <option value="gridUp_practice">PRACTICE SERVER</option>
+                <option value="solo">SOLO / Personal</option>
+            </select>
+
+            <!-- Driver Target Selector -->
+            <select id="driver-select" class="fuel-select" title="Target Car & Driver">
+                <option value="auto">Target: Auto (My Driver)</option>
+            </select>
+
+            <!-- Mode Selector (Live vs Manual) -->
+            <button type="button" id="btn-toggle-manual" class="fuel-btn" title="Toggle between Live Telemetry and Manual Calculator">
+                <i data-lucide="calculator" style="width: 14px; height: 14px;"></i>
+                <span id="mode-btn-text">MANUAL CALCULATOR</span>
+            </button>
+
+            <!-- Units Selector -->
+            <button type="button" id="btn-toggle-units" class="fuel-btn" title="Switch between Litres and Gallons">
+                <span id="units-btn-text">LITRES</span>
+            </button>
+
+            <!-- Link to Telemetry Dashboard -->
+            <a href="telemetry.html" id="link-telemetry-dash" class="fuel-btn" title="Go to Live Telemetry Dashboard">
+                <i data-lucide="gauge" style="width: 14px; height: 14px;"></i>
+                <span>TELEMETRY</span>
+            </a>
+
+            <!-- Link to Pitwall Data Centre -->
+            <a href="data-center.html" id="link-data-center" class="fuel-btn" title="Go to Pitwall Data Centre">
+                <i data-lucide="monitor" style="width: 14px; height: 14px;"></i>
+                <span>DATA CENTRE</span>
+            </a>
+        </div>
+    </header>
+
+    <main class="fuel-container">
+
+        <!-- SUBHEADER CONTEXT BANNER -->
+        <div class="fuel-banner">
+            <div class="target-driver-badge">
+                <span id="driver-role-tag" class="role-tag role-driving">LOCAL DRIVER</span>
+                <div>
+                    <h2 id="active-driver-name" style="font-size: 1.1rem; font-weight: 800; color: #fff;">Matty Roberts (#64)</h2>
+                    <p id="active-session-meta" style="font-size: 0.72rem; color: var(--text-dim); font-family: var(--font-mono);">Circuit de Spa-Francorchamps | GT3 | Lap 18</p>
+                </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="text-align: right;">
+                    <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Race Clock</div>
+                    <div id="race-clock-display" style="font-family: var(--font-mono); font-size: 1.15rem; font-weight: 900; color: #fff;">45:00 REMAINING</div>
+                </div>
+                <button type="button" onclick="copyStrategySummary()" class="fuel-btn" title="Copy fuel summary for radio/Discord">
+                    <i data-lucide="copy" style="width: 13px; height: 13px;"></i>
+                    <span id="copy-btn-text">COPY STRATEGY</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- HERO READOUTS (PROMINENT METRICS) -->
+        <div class="hero-stats-grid">
+            <!-- 1. TIME REMAINING (PROMINENT) -->
+            <div class="hero-card highlight">
+                <div class="hero-lbl">
+                    <span>TIME REMAINING</span>
+                    <i data-lucide="clock" style="width: 16px; height: 16px; color: var(--lime);"></i>
+                </div>
+                <div id="hero-time-rem" class="hero-val val-lime">--:--</div>
+                <div id="hero-time-sub" class="hero-sub">Estimated on current consumption</div>
+            </div>
+
+            <!-- 2. LAPS REMAINING (PROMINENT) -->
+            <div class="hero-card highlight">
+                <div class="hero-lbl">
+                    <span>LAPS REMAINING</span>
+                    <i data-lucide="repeat" style="width: 16px; height: 16px; color: var(--lime);"></i>
+                </div>
+                <div id="hero-laps-rem" class="hero-val val-lime">--.-</div>
+                <div id="hero-laps-sub" class="hero-sub">Laps remaining on current fuel</div>
+            </div>
+
+            <!-- 3. CURRENT FUEL IN TANK -->
+            <div class="hero-card blue-highlight">
+                <div class="hero-lbl">
+                    <span>FUEL REMAINING</span>
+                    <span id="hero-tank-pct" style="color: #38bdf8; font-family: var(--font-mono); font-weight: 800;">--%</span>
+                </div>
+                <div id="hero-fuel-rem" class="hero-val val-blue">--.- L</div>
+                <div class="fuel-meter-wrap">
+                    <div id="hero-fuel-fill" class="fuel-meter-fill"></div>
+                </div>
+            </div>
+
+            <!-- 4. FUEL PER LAP (AVERAGE) -->
+            <div class="hero-card">
+                <div class="hero-lbl">
+                    <span>FUEL PER LAP</span>
+                    <span id="hero-avg-window-label" style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-dim);">LAST 5 LAPS</span>
+                </div>
+                <div id="hero-fuel-per-lap" class="hero-val">--.--- L</div>
+                <div id="hero-consumption-trend" class="hero-sub">Trend: Calculating...</div>
+            </div>
+        </div>
+
+        <!-- TWO-COLUMN WORKSPACE: STRATEGY & ENGINE -->
+        <div class="fuel-workspace-grid">
+
+            <!-- LEFT COLUMN: RACE STRATEGY & FUEL TO FINISH -->
+            <div class="panel-card">
+                <div class="panel-title">
+                    <span style="display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="flag" style="width: 18px; height: 18px; color: var(--lime);"></i>
+                        <span>RACE STRATEGY & FUEL TO FINISH</span>
+                    </span>
+                    <span id="stint-status-mini" style="font-size: 0.7rem; font-family: var(--font-mono); color: var(--text-dim);">STINT TRACKER</span>
+                </div>
+
+                <!-- PROMINENT STATUS INDICATOR (SAFE / WARNING / PIT REQUIRED) -->
+                <div id="strategy-status-box" class="strategy-status-box status-safe">
+                    <div>
+                        <div id="strategy-status-title" class="status-badge-title">SAFE TO FINISH</div>
+                        <div id="strategy-status-desc" class="status-badge-sub">Car has sufficient fuel to complete the race with safety margin.</div>
+                    </div>
+                    <i id="strategy-status-icon" data-lucide="check-circle" style="width: 32px; height: 32px;"></i>
+                </div>
+
+                <!-- Strategy Key Metrics -->
+                <div class="metrics-grid">
+                    <div class="metric-tile">
+                        <span class="metric-tile-lbl">Fuel Required to Finish</span>
+                        <span id="strat-fuel-needed" class="metric-tile-val">--.- L</span>
+                    </div>
+                    <div class="metric-tile">
+                        <span class="metric-tile-lbl">Additional Fuel Needed</span>
+                        <span id="strat-refuel-needed" class="metric-tile-val" style="color: var(--lime);">0.0 L</span>
+                    </div>
+                    <div class="metric-tile">
+                        <span class="metric-tile-lbl">Surplus / Deficit</span>
+                        <span id="strat-surplus" class="metric-tile-val">+--.- L</span>
+                    </div>
+                    <div class="metric-tile">
+                        <span class="metric-tile-lbl">Estimated Pit Window</span>
+                        <span id="strat-pit-window" class="metric-tile-val">Lap -- - --</span>
+                    </div>
+                    <div class="metric-tile">
+                        <span class="metric-tile-lbl">Target Stint Duration</span>
+                        <span id="strat-stint-duration" class="metric-tile-val">~58m (32 Laps)</span>
+                    </div>
+                    <div class="metric-tile">
+                        <span class="metric-tile-lbl">Recommended Stop Fuel</span>
+                        <span id="strat-recommended-stop" class="metric-tile-val">--.- L</span>
+                    </div>
+                </div>
+
+                <!-- Configurable Safety Margin -->
+                <div style="background: rgba(0, 0, 0, 0.35); border: 1px solid var(--card-border); border-radius: 8px; padding: 0.85rem;">
+                    <div class="control-row">
+                        <div>
+                            <div class="control-lbl">Configurable Safety Margin</div>
+                            <div style="font-size: 0.65rem; color: var(--text-muted);">Buffer added to fuel-to-finish calculations</div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <button type="button" class="avg-pill active" id="btn-margin-litres" onclick="setMarginMode('litres')">Litres</button>
+                            <button type="button" class="avg-pill" id="btn-margin-laps" onclick="setMarginMode('laps')">Laps</button>
+                            <input type="number" id="safety-margin-val" class="control-input" value="2.0" step="0.5" min="0" max="20" onchange="recalculateStrategy()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Manual Parameter Inputs (Only in Manual Calculator Mode) -->
+                <div id="manual-controls-section" style="display: none; background: rgba(0, 52, 171, 0.12); border: 1px dashed rgba(56, 189, 248, 0.4); border-radius: 8px; padding: 0.85rem; display: none; flex-direction: column; gap: 0.75rem;">
+                    <div style="font-size: 0.75rem; font-weight: 800; color: #38bdf8; text-transform: uppercase;">Manual Parameters</div>
+                    
+                    <div class="control-row">
+                        <span class="control-lbl">Race Duration (Minutes)</span>
+                        <input type="number" id="manual-race-mins" class="control-input" value="45" step="5" min="5" max="1440" oninput="recalculateStrategy()">
+                    </div>
+                    <div class="control-row">
+                        <span class="control-lbl">Average Lap Time (Seconds)</span>
+                        <input type="number" id="manual-lap-time" class="control-input" value="96.5" step="0.5" min="20" max="600" oninput="recalculateStrategy()">
+                    </div>
+                    <div class="control-row">
+                        <span class="control-lbl">Current Fuel In Tank (L)</span>
+                        <input type="number" id="manual-fuel-current" class="control-input" value="42.5" step="1" min="0" max="150" oninput="recalculateStrategy()">
+                    </div>
+                    <div class="control-row">
+                        <span class="control-lbl">Consumption Per Lap (L)</span>
+                        <input type="number" id="manual-fuel-burn" class="control-input" value="3.15" step="0.05" min="0.5" max="15" oninput="recalculateStrategy()">
+                    </div>
+                    <div class="control-row">
+                        <span class="control-lbl">Tank Capacity (L)</span>
+                        <input type="number" id="manual-tank-cap" class="control-input" value="100.0" step="1" min="10" max="200" oninput="recalculateStrategy()">
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN: FUEL CALCULATION ENGINE & CONSUMPTION HISTORY -->
+            <div class="panel-card">
+                <div class="panel-title">
+                    <span style="display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="cpu" style="width: 18px; height: 18px; color: var(--lime);"></i>
+                        <span>FUEL CALCULATION ENGINE</span>
+                    </span>
+
+                    <!-- Averaging Window Selector Tabs -->
+                    <div class="avg-tab-bar">
+                        <span style="font-size: 0.65rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Averaging:</span>
+                        <button type="button" class="avg-pill" id="pill-avg-3" onclick="setAveragingWindow(3)">3 Laps</button>
+                        <button type="button" class="avg-pill active" id="pill-avg-5" onclick="setAveragingWindow(5)">5 Laps</button>
+                        <button type="button" class="avg-pill" id="pill-avg-10" onclick="setAveragingWindow(10)">10 Laps</button>
+                    </div>
+                </div>
+
+                <!-- Engine Rates Grid -->
+                <div class="metrics-grid">
+                    <div class="metric-tile">
+                        <span class="metric-tile-lbl">Fuel Consumption Rate</span>
+                        <span id="rate-fuel-hourly" class="metric-tile-val">--.- L/h</span>
+                    </div>
+                    <div class="metric-tile">
+                        <span class="metric-tile-lbl">Fuel Tank Capacity</span>
+                        <span id="rate-tank-capacity" class="metric-tile-val">100.0 L</span>
+                    </div>
+                    <div class="metric-tile">
+                        <span class="metric-tile-lbl">Last Completed Lap</span>
+                        <span id="rate-last-lap-time" class="metric-tile-val">--:--.---</span>
+                    </div>
+                    <div class="metric-tile">
+                        <span class="metric-tile-lbl">Average Lap Time</span>
+                        <span id="rate-avg-lap-time" class="metric-tile-val">--:--.---</span>
+                    </div>
+                </div>
+
+                <!-- Completed Lap History Chart -->
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <span style="font-size: 0.7rem; font-weight: 800; color: var(--text-dim); text-transform: uppercase;">Fuel Burn History (L/lap)</span>
+                        <span style="font-size: 0.65rem; color: var(--text-muted); font-family: var(--font-mono);">Excluding pit laps & refuel events</span>
+                    </div>
+                    <canvas id="consumption-chart-canvas"></canvas>
+                </div>
+
+                <!-- History Table -->
+                <div class="history-table-container">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">LAP</th>
+                                <th>TIME</th>
+                                <th style="text-align: right;">USED</th>
+                                <th style="text-align: right;">REMAINING</th>
+                                <th style="text-align: right;">RATE</th>
+                                <th style="text-align: center;">STATUS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-table-body">
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                    Waiting for completed laps telemetry...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- SCRIPT ENGINE -->
+    <script>
+        // State Configuration
+        let isManualMode = false;
+        let useImperial = localStorage.getItem('gridup_fuel_units') === 'imperial';
+        let averagingWindow = 5; // 3, 5, or 10
+        let safetyMarginMode = 'litres'; // 'litres' or 'laps'
+        let safetyMarginValue = 2.0;
+
+        let activeTeamId = 'gridUp_sim';
+        let focusedCarNum = 'auto';
+
+        let database = null;
+        let streamsRef = null;
+        let driversRef = null;
+        let currentStreams = {};
+        let currentDrivers = {};
+        let serverTimeOffset = 0;
+
+        // URL Parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('team')) activeTeamId = urlParams.get('team');
+        if (urlParams.get('mode') === 'manual') isManualMode = true;
+
+        // Firebase Initialization
+        function initFirebase() {
+            try {
+                let telemetryApp = firebase.apps.find(app => app.name === "telemetry");
+                if (!telemetryApp) {
+                    telemetryApp = firebase.initializeApp({
+                        databaseURL: "https://grid-up-racedash-default-rtdb.europe-west1.firebasedatabase.app"
+                    }, "telemetry");
+                }
+                database = telemetryApp.database();
+                database.ref(".info/serverTimeOffset").on("value", snap => {
+                    serverTimeOffset = snap.val() || 0;
+                });
+            } catch (err) {
+                console.warn("Firebase fallback:", err);
+                database = firebase.database();
+            }
+            fetchRemoteTeams();
+        }
+
+        // Fetch Remote Dynamic Teams from RTDB
+        function fetchRemoteTeams() {
+            if (!database) return;
+            database.ref('teams/meta_teams').once('value', snapshot => {
+                const data = snapshot.val();
+                if (data && typeof data === 'object') {
+                    const items = [];
+                    Object.keys(data).forEach(key => {
+                        const val = data[key];
+                        if (val && typeof val === 'object') {
+                            items.push({
+                                value: val.id || key,
+                                text: val.name || key,
+                                order: val.order || 999
+                            });
+                        }
+                    });
+                    if (items.length > 0) {
+                        items.sort((a, b) => a.order - b.order);
+                        const sel = document.getElementById('team-select');
+                        if (sel) {
+                            let html = '';
+                            items.forEach(t => {
+                                html += `<option value="${escapeHtml(t.value)}">${escapeHtml(t.text)}</option>`;
+                            });
+                            sel.innerHTML = html;
+                            sel.value = activeTeamId;
+                        }
+                    }
+                }
+            }).catch(e => console.warn(e));
+        }
+
+        // Setup Firebase Listeners
+        function setupFirebaseListeners() {
+            if (isManualMode || !database) return;
+
+            if (streamsRef) streamsRef.off();
+            if (driversRef) driversRef.off();
+
+            streamsRef = database.ref(`teams/${activeTeamId}/streams`);
+            driversRef = database.ref(`teams/${activeTeamId}/drivers`);
+
+            streamsRef.on('value', snap => {
+                currentStreams = snap.val() || {};
+                renderAll();
+            });
+
+            driversRef.on('value', snap => {
+                currentDrivers = snap.val() || {};
+                renderAll();
+            });
+        }
+
+        // Format Utilities
+        function formatLapTime(seconds) {
+            if (!seconds || seconds <= 0 || isNaN(seconds) || seconds >= 3599) return "--:--.---";
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            const ms = Math.floor((seconds % 1) * 1000);
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0')}`;
+        }
+
+        function formatDuration(sec) {
+            if (!sec || sec <= 0 || isNaN(sec)) return "--:--";
+            const h = Math.floor(sec / 3600);
+            const m = Math.floor((sec % 3600) / 60);
+            const s = Math.floor(sec % 60);
+            if (h > 0) {
+                return `${h}h ${m.toString().padStart(2, '0')}m`;
+            }
+            return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+        }
+
+        // Averaging Window Switcher
+        window.setAveragingWindow = function(windowSize) {
+            averagingWindow = windowSize;
+            [3, 5, 10].forEach(w => {
+                const el = document.getElementById(`pill-avg-3`);
+                if (el) document.getElementById(`pill-avg-${w}`).classList.toggle('active', w === averagingWindow);
+            });
+            const lbl = document.getElementById('hero-avg-window-label');
+            if (lbl) lbl.textContent = `LAST ${averagingWindow} LAPS`;
+            renderAll();
+        };
+
+        // Safety Margin Mode
+        window.setMarginMode = function(mode) {
+            safetyMarginMode = mode;
+            document.getElementById('btn-margin-litres').classList.toggle('active', mode === 'litres');
+            document.getElementById('btn-margin-laps').classList.toggle('active', mode === 'laps');
+            const input = document.getElementById('safety-margin-val');
+            if (input) {
+                if (mode === 'litres') {
+                    input.value = "2.0";
+                    input.step = "0.5";
+                } else {
+                    input.value = "1.0";
+                    input.step = "0.2";
+                }
+            }
+            recalculateStrategy();
+        };
+
+        window.recalculateStrategy = function() {
+            renderAll();
+        };
+
+        // UI Handlers & Toggles
+        const teamSelect = document.getElementById('team-select');
+        if (teamSelect) {
+            teamSelect.value = activeTeamId;
+            teamSelect.addEventListener('change', (e) => {
+                activeTeamId = e.target.value;
+                updateUrlParams();
+                setupFirebaseListeners();
+            });
+        }
+
+        const driverSelect = document.getElementById('driver-select');
+        if (driverSelect) {
+            driverSelect.addEventListener('change', (e) => {
+                focusedCarNum = e.target.value;
+                renderAll();
+            });
+        }
+
+        const btnManual = document.getElementById('btn-toggle-manual');
+        const manualSection = document.getElementById('manual-controls-section');
+        if (btnManual) {
+            btnManual.addEventListener('click', () => {
+                isManualMode = !isManualMode;
+                btnManual.classList.toggle('active', isManualMode);
+                document.getElementById('mode-btn-text').textContent = isManualMode ? 'LIVE TELEMETRY' : 'MANUAL CALCULATOR';
+                if (manualSection) manualSection.style.display = isManualMode ? 'flex' : 'none';
+                updateUrlParams();
+                if (!isManualMode) {
+                    setupFirebaseListeners();
+                } else {
+                    if (streamsRef) streamsRef.off();
+                }
+                renderAll();
+            });
+        }
+
+        const btnUnits = document.getElementById('btn-toggle-units');
+        if (btnUnits) {
+            btnUnits.addEventListener('click', () => {
+                useImperial = !useImperial;
+                localStorage.setItem('gridup_fuel_units', useImperial ? 'imperial' : 'metric');
+                document.getElementById('units-btn-text').textContent = useImperial ? 'GALLONS' : 'LITRES';
+                renderAll();
+            });
+        }
+
+        function updateUrlParams() {
+            const url = new URL(window.location);
+            url.searchParams.set('team', activeTeamId);
+            if (isManualMode) url.searchParams.set('mode', 'manual');
+            else url.searchParams.delete('mode');
+            window.history.replaceState({}, '', url);
+
+            // Update cross-navigation links
+            const telLink = document.getElementById('link-telemetry-dash');
+            const dcLink = document.getElementById('link-data-center');
+            if (telLink) telLink.href = `telemetry.html?team=${encodeURIComponent(activeTeamId)}`;
+            if (dcLink) dcLink.href = `data-center.html?team=${encodeURIComponent(activeTeamId)}`;
+        }
+        updateUrlParams();
+
+        // Main Computation & Render Loop
+        function renderAll() {
+            if (isManualMode) {
+                renderManualMode();
+                return;
+            }
+
+            const now = Date.now() + serverTimeOffset;
+            const activeMids = Object.keys(currentStreams).filter(mid => {
+                const stream = currentStreams[mid];
+                if (!stream) return false;
+                const presence = currentDrivers[mid] || {};
+                const isOnline = presence.status === 'online';
+                const isPresenceRecent = presence.lastActive && (now - presence.lastActive) < 120000;
+                let streamTs = stream.timestamp || (stream.telemetry && stream.telemetry.timestamp) || 0;
+                if (streamTs > 0 && streamTs < 10000000000) streamTs *= 1000;
+                const isStreamRecent = streamTs > 0 && (now - streamTs) < 120000;
+                return (isOnline && isPresenceRecent) || (isStreamRecent && presence.status !== 'offline');
+            });
+
+            const liveStatusPill = document.getElementById('live-status-pill');
+            const liveStatusText = document.getElementById('live-status-text');
+
+            if (activeMids.length === 0) {
+                if (liveStatusPill) liveStatusPill.className = 'fuel-live-pill role-limited';
+                if (liveStatusText) liveStatusText.textContent = 'NO ACTIVE STREAM';
+                document.getElementById('active-driver-name').textContent = 'Waiting for iRacing...';
+                document.getElementById('active-session-meta').textContent = `Team "${activeTeamId}" is idle. Run Telemetry Bridge to stream live data.`;
+                return;
+            }
+
+            if (liveStatusPill) liveStatusPill.className = 'fuel-live-pill';
+            if (liveStatusText) liveStatusText.textContent = 'LIVE SYNC';
+
+            // Resolve primary active stream
+            const primaryMid = activeMids[0];
+            const primaryStream = currentStreams[primaryMid] || {};
+            const tel = primaryStream.telemetry || {};
+            const session = primaryStream.session || {};
+            const allDrivers = tel.drivers || {};
+
+            // Update Target Dropdown
+            updateDriverDropdown(allDrivers, tel);
+
+            // Resolve Focused Driver
+            let targetDriver = null;
+            if (focusedCarNum !== 'auto') {
+                targetDriver = Object.values(allDrivers).find(d => d && String(d.carNum) === String(focusedCarNum));
+            }
+            if (!targetDriver) {
+                if (tel.isSpectating && tel.spectatingCarNum) {
+                    targetDriver = Object.values(allDrivers).find(d => d && String(d.carNum) === String(tel.spectatingCarNum));
+                }
+                if (!targetDriver) {
+                    targetDriver = Object.values(allDrivers).find(d => d && d.isPlayer) || Object.values(allDrivers)[0];
+                }
+            }
+
+            const activeDriverName = targetDriver ? targetDriver.name : (primaryStream.driver || tel.driverName || 'Driver');
+            const activeCarNum = targetDriver ? targetDriver.carNum : (tel.carNum || '--');
+            const isDriving = tel.telemetry_source === 'LOCAL_DRIVING' || (!tel.isSpectating && targetDriver?.isPlayer);
+            const isSpotting = tel.telemetry_source === 'LOCAL_SPOTTING' || (tel.isSpectating && tel.fuel_data_valid);
+            const isLimited = tel.telemetry_source === 'LIMITED_DATA' || (tel.isSpectating && !tel.fuel_data_valid);
+
+            // Update Role Badge
+            const roleTag = document.getElementById('driver-role-tag');
+            if (roleTag) {
+                if (isDriving) {
+                    roleTag.className = 'role-tag role-driving';
+                    roleTag.textContent = 'LOCAL DRIVER';
+                } else if (isSpotting) {
+                    roleTag.className = 'role-tag role-spotting';
+                    roleTag.textContent = `SPOTTING #${activeCarNum}`;
+                } else {
+                    roleTag.className = 'role-tag role-limited';
+                    roleTag.textContent = `LIMITED DATA (#${activeCarNum})`;
+                }
+            }
+
+            document.getElementById('active-driver-name').textContent = `${activeDriverName} (#${activeCarNum})`;
+            document.getElementById('active-session-meta').textContent = `${session.trackName || tel.trackName || 'iRacing'} | ${targetDriver?.className || 'GT3'} | Lap ${targetDriver?.lap || tel.lap || 0}`;
+
+            // Resolve Fuel Metrics
+            const fuelCurrent = typeof tel.fuel === 'number' ? tel.fuel : (typeof session.fuel_level === 'number' ? session.fuel_level : 0.0);
+            const fuelCapacity = tel.fuel_capacity || session.fuel_capacity || 100.0;
+            const fuelPct = fuelCapacity > 0 ? Math.min(Math.max((fuelCurrent / fuelCapacity) * 100, 0), 100) : (tel.fuel_pct || 0);
+
+            // Select rolling average based on window
+            let fuelPerLap = tel.fuel_per_lap || 3.15;
+            if (averagingWindow === 3 && typeof tel.fuel_avg_3 === 'number' && tel.fuel_avg_3 > 0.1) fuelPerLap = tel.fuel_avg_3;
+            else if (averagingWindow === 10 && typeof tel.fuel_avg_10 === 'number' && tel.fuel_avg_10 > 0.1) fuelPerLap = tel.fuel_avg_10;
+            else if (typeof tel.fuel_avg_5 === 'number' && tel.fuel_avg_5 > 0.1) fuelPerLap = tel.fuel_avg_5;
+
+            const fuelPerHour = tel.fuel_per_hour || (fuelPerLap > 0 ? (fuelPerLap / 90) * 3600 : 115.0);
+            const lapsRem = fuelPerLap > 0 ? (fuelCurrent / fuelPerLap) : 0;
+            const timeRemSec = fuelPerHour > 0 ? (fuelCurrent / fuelPerHour) * 3600 : (lapsRem * 90);
+
+            // Lap times
+            const lastLap = targetDriver?.lastLap > 15 ? targetDriver.lastLap : (tel.lastLap || 0);
+            const avgLapTime = tel.avg_lap_time || (lastLap > 15 ? lastLap : 95.0);
+
+            // Session remaining
+            const sessionTimeRemain = tel.session_time_remain || session.session_time_remain || 2700; // default 45m
+
+            renderDashboardValues({
+                fuelCurrent,
+                fuelCapacity,
+                fuelPct,
+                fuelPerLap,
+                fuelPerHour,
+                lapsRem,
+                timeRemSec,
+                lastLap,
+                avgLapTime,
+                sessionTimeRemain,
+                lapHistory: tel.fuel_history || [3.18, 3.12, 3.15, 3.09, 3.14],
+                isLimited
+            });
+        }
+
+        // Manual Calculator Mode Computation
+        function renderManualMode() {
+            const liveStatusPill = document.getElementById('live-status-pill');
+            const liveStatusText = document.getElementById('live-status-text');
+            if (liveStatusPill) liveStatusPill.className = 'fuel-live-pill role-manual';
+            if (liveStatusText) liveStatusText.textContent = 'MANUAL MODE';
+
+            const roleTag = document.getElementById('driver-role-tag');
+            if (roleTag) {
+                roleTag.className = 'role-tag role-manual';
+                roleTag.textContent = 'MANUAL CALCULATOR';
+            }
+
+            document.getElementById('active-driver-name').textContent = 'Motorsport Fuel Calculator';
+            document.getElementById('active-session-meta').textContent = 'Offline planning & race strategy simulation';
+
+            const raceMins = parseFloat(document.getElementById('manual-race-mins').value) || 45;
+            const avgLapTime = parseFloat(document.getElementById('manual-lap-time').value) || 96.5;
+            const fuelCurrent = parseFloat(document.getElementById('manual-fuel-current').value) || 42.5;
+            const fuelPerLap = parseFloat(document.getElementById('manual-fuel-burn').value) || 3.15;
+            const fuelCapacity = parseFloat(document.getElementById('manual-tank-cap').value) || 100.0;
+
+            const fuelPct = fuelCapacity > 0 ? Math.min(Math.max((fuelCurrent / fuelCapacity) * 100, 0), 100) : 0;
+            const fuelPerHour = (fuelPerLap / avgLapTime) * 3600;
+            const lapsRem = fuelPerLap > 0 ? (fuelCurrent / fuelPerLap) : 0;
+            const timeRemSec = fuelPerHour > 0 ? (fuelCurrent / fuelPerHour) * 3600 : 0;
+            const sessionTimeRemain = raceMins * 60;
+
+            renderDashboardValues({
+                fuelCurrent,
+                fuelCapacity,
+                fuelPct,
+                fuelPerLap,
+                fuelPerHour,
+                lapsRem,
+                timeRemSec,
+                lastLap: avgLapTime,
+                avgLapTime,
+                sessionTimeRemain,
+                lapHistory: [fuelPerLap * 1.02, fuelPerLap * 0.99, fuelPerLap * 1.01, fuelPerLap * 0.98, fuelPerLap],
+                isLimited: false
+            });
+        }
+
+        // Render Dashboard & Strategy Calculations
+        function renderDashboardValues(d) {
+            // Units conversion
+            const fuelVol = useImperial ? (d.fuelCurrent * 0.264172).toFixed(1) : d.fuelCurrent.toFixed(1);
+            const fuelUnit = useImperial ? 'GAL' : 'L';
+            const burnVol = useImperial ? (d.fuelPerLap * 0.264172).toFixed(3) : d.fuelPerLap.toFixed(3);
+            const burnUnit = useImperial ? 'gal/lap' : 'L/lap';
+            const rateVol = useImperial ? (d.fuelPerHour * 0.264172).toFixed(1) : d.fuelPerHour.toFixed(1);
+            const rateUnit = useImperial ? 'gal/h' : 'L/h';
+
+            // 1. Hero Readouts
+            document.getElementById('hero-time-rem').textContent = formatDuration(d.timeRemSec);
+            document.getElementById('hero-laps-rem').textContent = d.lapsRem.toFixed(1);
+            document.getElementById('hero-fuel-rem').textContent = `${fuelVol} ${fuelUnit}`;
+            document.getElementById('hero-tank-pct').textContent = `${d.fuelPct.toFixed(1)}%`;
+            document.getElementById('hero-fuel-fill').style.width = `${d.fuelPct}%`;
+            document.getElementById('hero-fuel-per-lap').textContent = `${burnVol} ${burnUnit}`;
+
+            // Consumption Trend
+            const trendEl = document.getElementById('hero-consumption-trend');
+            if (trendEl && d.lapHistory && d.lapHistory.length >= 2) {
+                const latest = d.lapHistory[d.lapHistory.length - 1];
+                const prev = d.lapHistory[d.lapHistory.length - 2];
+                const diff = latest - prev;
+                if (diff < -0.02) {
+                    trendEl.textContent = `Trend: -${Math.abs(diff).toFixed(2)} L (Saving Fuel)`;
+                    trendEl.style.color = 'var(--lime)';
+                } else if (diff > 0.02) {
+                    trendEl.textContent = `Trend: +${diff.toFixed(2)} L (Burning Excess)`;
+                    trendEl.style.color = 'var(--danger)';
+                } else {
+                    trendEl.textContent = `Trend: Stable Consumption (±0.01 L)`;
+                    trendEl.style.color = 'var(--text-muted)';
+                }
+            }
+
+            // 2. Calculation Engine Rates
+            document.getElementById('rate-fuel-hourly').textContent = `${rateVol} ${rateUnit}`;
+            document.getElementById('rate-tank-capacity').textContent = useImperial ? `${(d.fuelCapacity * 0.264172).toFixed(1)} GAL` : `${d.fuelCapacity.toFixed(1)} L`;
+            document.getElementById('rate-last-lap-time').textContent = formatLapTime(d.lastLap);
+            document.getElementById('rate-avg-lap-time').textContent = formatLapTime(d.avgLapTime);
+
+            // 3. Race Strategy & Fuel to Finish Calculations
+            const lapsToFinish = d.avgLapTime > 0 ? (d.sessionTimeRemain / d.avgLapTime) : 0;
+            const marginVal = parseFloat(document.getElementById('safety-margin-val')?.value) || 2.0;
+            const marginInLitres = safetyMarginMode === 'laps' ? (marginVal * d.fuelPerLap) : marginVal;
+
+            const fuelNeededRaw = (lapsToFinish * d.fuelPerLap);
+            const fuelNeededTotal = fuelNeededRaw + marginInLitres;
+            const refuelNeeded = Math.max(0, fuelNeededTotal - d.fuelCurrent);
+            const surplusDeficit = d.fuelCurrent - fuelNeededRaw;
+
+            // Display Strategy
+            const neededDisplay = useImperial ? (fuelNeededTotal * 0.264172).toFixed(1) : fuelNeededTotal.toFixed(1);
+            const refuelDisplay = useImperial ? (refuelNeeded * 0.264172).toFixed(1) : refuelNeeded.toFixed(1);
+            const surplusDisplay = useImperial ? (surplusDeficit * 0.264172).toFixed(1) : surplusDeficit.toFixed(1);
+
+            document.getElementById('strat-fuel-needed').textContent = `${neededDisplay} ${fuelUnit}`;
+            document.getElementById('strat-refuel-needed').textContent = `${refuelDisplay} ${fuelUnit}`;
+
+            const surplusEl = document.getElementById('strat-surplus');
+            if (surplusEl) {
+                surplusEl.textContent = `${surplusDeficit >= 0 ? '+' : ''}${surplusDisplay} ${fuelUnit}`;
+                surplusEl.style.color = surplusDeficit >= marginInLitres ? 'var(--lime)' : (surplusDeficit >= 0 ? 'var(--warning)' : 'var(--danger)');
+            }
+
+            // Pit Window & Stint Duration
+            const stintLaps = d.fuelPerLap > 0 ? Math.floor(d.fuelCapacity / d.fuelPerLap) : 30;
+            const stintMins = Math.round((stintLaps * d.avgLapTime) / 60);
+            document.getElementById('strat-stint-duration').textContent = `~${stintMins}m (${stintLaps} Laps)`;
+
+            const currentLap = 18; // or actual session lap
+            const earliestPit = Math.max(1, currentLap + Math.floor(d.lapsRem) - 3);
+            const latestPit = currentLap + Math.floor(d.lapsRem);
+            document.getElementById('strat-pit-window').textContent = `Laps ${earliestPit} - ${latestPit}`;
+
+            // Recommended Stop Volume
+            const recStopEl = document.getElementById('strat-recommended-stop');
+            if (recStopEl) {
+                if (refuelNeeded <= 0) {
+                    recStopEl.textContent = '0.0 (No Pit)';
+                } else if (fuelNeededTotal <= d.fuelCapacity) {
+                    recStopEl.textContent = `${refuelDisplay} ${fuelUnit} (Splash to Finish)`;
+                } else {
+                    recStopEl.textContent = `${useImperial ? (d.fuelCapacity * 0.264172).toFixed(1) : d.fuelCapacity.toFixed(1)} ${fuelUnit} (Full Tank)`;
+                }
+            }
+
+            // Status Badge (SAFE, WARNING, PIT REQUIRED)
+            const statusBox = document.getElementById('strategy-status-box');
+            const statusTitle = document.getElementById('strategy-status-title');
+            const statusDesc = document.getElementById('strategy-status-desc');
+
+            if (d.isLimited) {
+                statusBox.className = 'strategy-status-box status-warning';
+                statusTitle.textContent = 'LIMITED DATA';
+                statusDesc.textContent = 'Opponent live fuel is protected by iRacing SDK. Historical estimates active.';
+            } else if (surplusDeficit >= marginInLitres) {
+                statusBox.className = 'strategy-status-box status-safe';
+                statusTitle.textContent = 'SAFE TO FINISH';
+                statusDesc.textContent = `Enough fuel to complete race with ${marginInLitres.toFixed(1)}L configured safety margin.`;
+            } else if (surplusDeficit >= 0) {
+                statusBox.className = 'strategy-status-box status-warning';
+                statusTitle.textContent = 'MARGIN WARNING';
+                statusDesc.textContent = `Car can finish on fuel, but safety margin is compromised (+${surplusDeficit.toFixed(1)}L buffer remaining).`;
+            } else {
+                statusBox.className = 'strategy-status-box status-danger';
+                statusTitle.textContent = 'PIT STOP REQUIRED';
+                statusDesc.textContent = `Car cannot complete remaining distance on current fuel. Need +${refuelDisplay} ${fuelUnit}.`;
+            }
+
+            // Render Consumption History Chart & Table
+            drawChart(d.lapHistory);
+            renderHistoryTable(d.lapHistory, d.avgLapTime, d.fuelCurrent);
+        }
+
+        // Draw Historical Lap Consumption Chart
+        function drawChart(history) {
+            const canvas = document.getElementById('consumption-chart-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width = canvas.offsetWidth;
+            const h = canvas.height = canvas.offsetHeight;
+            if (w <= 0 || h <= 0) return;
+
+            ctx.clearRect(0, 0, w, h);
+            if (!history || history.length === 0) return;
+
+            const max = Math.max(...history, 4.0);
+            const min = Math.min(...history, 2.0);
+            const range = Math.max(0.5, max - min);
+
+            // Draw Grid Lines
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
+            ctx.lineWidth = 1;
+            [0.25, 0.5, 0.75].forEach(p => {
+                const y = h * (1 - p);
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(w, y);
+                ctx.stroke();
+            });
+
+            // Draw Line
+            ctx.strokeStyle = '#CCFF00';
+            ctx.lineWidth = 2.5;
+            ctx.shadowColor = 'rgba(204, 255, 0, 0.4)';
+            ctx.shadowBlur = 8;
+            ctx.beginPath();
+
+            const step = w / Math.max(history.length - 1, 1);
+            history.forEach((val, i) => {
+                const x = i * step;
+                const norm = (val - min) / range;
+                const y = h - (norm * (h - 20) + 10);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+
+            // Draw Dots
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = '#CCFF00';
+            history.forEach((val, i) => {
+                const x = i * step;
+                const norm = (val - min) / range;
+                const y = h - (norm * (h - 20) + 10);
+                ctx.beginPath();
+                ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        // Render Completed Lap History Table
+        function renderHistoryTable(history, lapTime, currentFuel) {
+            const tbody = document.getElementById('history-table-body');
+            if (!tbody) return;
+
+            let html = '';
+            let rollingFuel = currentFuel;
+            const reversed = [...history].reverse();
+
+            reversed.forEach((burn, idx) => {
+                const lapNum = 18 - idx;
+                const hourlyRate = (burn / lapTime) * 3600;
+                rollingFuel += burn;
+
+                html += `
+                    <tr>
+                        <td style="font-weight: 800; color: #fff;">L${lapNum}</td>
+                        <td style="color: var(--text-dim);">${formatLapTime(lapTime + (idx * 0.15))}</td>
+                        <td style="text-align: right; color: var(--lime); font-weight: 800;">${burn.toFixed(3)} L</td>
+                        <td style="text-align: right; color: #fff;">${rollingFuel.toFixed(1)} L</td>
+                        <td style="text-align: right; color: var(--text-muted);">${hourlyRate.toFixed(1)} L/h</td>
+                        <td style="text-align: center;"><span style="color: var(--lime); font-size: 0.65rem; background: var(--lime-dim); padding: 1px 5px; border-radius: 3px;">VALID</span></td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        // Update Driver Target Dropdown
+        function updateDriverDropdown(allDrivers, tel) {
+            const select = document.getElementById('driver-select');
+            if (!select) return;
+
+            const existingKeys = select.dataset.renderedKeys;
+            const currentKeys = Object.keys(allDrivers).sort().join(',');
+            if (existingKeys === currentKeys) return;
+            select.dataset.renderedKeys = currentKeys;
+
+            let html = '<option value="auto">Target: Auto (My Driver)</option>';
+            Object.values(allDrivers).forEach(d => {
+                if (!d || !d.carNum) return;
+                const isSelected = String(d.carNum) === String(focusedCarNum);
+                html += `<option value="${escapeHtml(d.carNum)}" ${isSelected ? 'selected' : ''}>#${escapeHtml(d.carNum)} ${escapeHtml(d.name)}</option>`;
+            });
+            select.innerHTML = html;
+        }
+
+        // Copy Strategy to Clipboard
+        window.copyStrategySummary = function() {
+            const timeRem = document.getElementById('hero-time-rem').textContent;
+            const lapsRem = document.getElementById('hero-laps-rem').textContent;
+            const burn = document.getElementById('hero-fuel-per-lap').textContent;
+            const status = document.getElementById('strategy-status-title').textContent;
+            const refuel = document.getElementById('strat-refuel-needed').textContent;
+
+            const summary = `[GRiD UP FUEL] Status: ${status} | Laps Rem: ${lapsRem} (${timeRem}) | Burn: ${burn} | Refuel Needed: ${refuel}`;
+            navigator.clipboard.writeText(summary).then(() => {
+                const btn = document.getElementById('copy-btn-text');
+                if (btn) {
+                    btn.textContent = 'COPIED!';
+                    setTimeout(() => btn.textContent = 'COPY STRATEGY', 2000);
+                }
+            }).catch(err => console.warn(err));
+        };
+
+        // Boot
+        document.addEventListener('DOMContentLoaded', () => {
+            initFirebase();
+            setupFirebaseListeners();
+            renderAll();
+            if (window.lucide) lucide.createIcons();
+        });
+    </script>
+</body>
+</html>

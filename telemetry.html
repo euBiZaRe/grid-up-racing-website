@@ -1201,6 +1201,15 @@
                     </div>
                 </div>
 
+                <!-- Fuel Engineer Button -->
+                <div>
+                    <label class="selector-label">Race Strategy</label>
+                    <a href="fuel.html" id="btn-fuel-link" class="btn" style="display: flex; align-items: center; justify-content: center; gap: 8px; height: 42px; border-radius: 12px; font-weight: 800; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; padding: 0 1.15rem; background: rgba(204, 255, 0, 0.12); border: 1px solid rgba(204, 255, 0, 0.45); color: #CCFF00; transition: all 0.3s ease; text-decoration: none; box-shadow: 0 0 15px rgba(204, 255, 0, 0.15);">
+                        <i data-lucide="fuel" style="width: 15px; height: 15px; color: #CCFF00;"></i>
+                        <span>Fuel Engineer</span>
+                    </a>
+                </div>
+
                 <!-- Pitwall Data Centre Fullscreen Button -->
                 <div>
                     <label class="selector-label">Pitwall Command</label>
@@ -2797,13 +2806,16 @@
                                     </div>
                                 </div>
 
-                                <!-- Live Stint Strategy Widget -->
-                                <div class="info-widget" id="telemetry-stint-widget" style="margin-top: 1rem;">
+                                <!-- Live Fuel & Strategy Engineer Panel (Part 7) -->
+                                <div class="info-widget" id="telemetry-stint-widget" style="margin-top: 1rem; border-color: rgba(204, 255, 0, 0.3);">
                                     <h3 class="info-widget-title" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                                         <span style="display: flex; align-items: center; gap: 0.5rem;">
-                                            <i data-lucide="flag" style="width: 16px; height: 16px; color: #10b981;"></i> Stint Strategy & Live Tracker
+                                            <i data-lucide="fuel" style="width: 16px; height: 16px; color: #CCFF00;"></i> Fuel & Strategy Engineer
                                         </span>
-                                        <span id="tel-stint-active-tag" style="font-size: 0.65rem; color: #10b981; font-weight: 800; background: rgba(16,185,129,0.15); padding: 2px 8px; border-radius: 4px;">LIVE STINT</span>
+                                        <div style="display: flex; align-items: center; gap: 6px;">
+                                            <span id="tel-stint-active-tag" style="font-size: 0.62rem; color: #CCFF00; font-weight: 800; background: rgba(204,255,0,0.15); border: 1px solid rgba(204,255,0,0.3); padding: 2px 6px; border-radius: 4px;">LOCAL DRIVER</span>
+                                            <a href="fuel.html" id="tel-open-fuel-btn" class="btn btn-outline" style="font-size: 0.6rem; padding: 2px 6px; height: 22px; text-transform: uppercase; border-color: rgba(204,255,0,0.4); color: #CCFF00; text-decoration: none;">OPEN FULL →</a>
+                                        </div>
                                     </h3>
                                     
                                     <!-- Live Fuel & On Deck Alert Bar -->
@@ -2812,23 +2824,55 @@
                                         <span id="tel-ondeck-countdown">~8m to Pit</span>
                                     </div>
 
-                                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 0.75rem;">
-                                        <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px; padding: 0.4rem 0.6rem; text-align: center;">
-                                            <div style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase;">Stint Laps</div>
-                                            <div id="tel-stint-lap-count" style="font-size: 1rem; font-weight: 900; color: #fff;">0</div>
+                                    <!-- Hero Fuel Metrics -->
+                                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 0.5rem;">
+                                        <div style="background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 0.4rem 0.6rem; text-align: center;">
+                                            <div style="font-size: 0.58rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Fuel Left</div>
+                                            <div id="tel-stint-fuel-val" style="font-size: 1.05rem; font-weight: 900; color: #38bdf8; font-family: monospace;">--.- L</div>
                                         </div>
-                                        <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px; padding: 0.4rem 0.6rem; text-align: center;">
-                                            <div style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase;">Fuel Left</div>
-                                            <div id="tel-stint-fuel-val" style="font-size: 1rem; font-weight: 900; color: #34d399;">--</div>
+                                        <div style="background: rgba(0,0,0,0.35); border: 1px solid rgba(204,255,0,0.25); border-radius: 8px; padding: 0.4rem 0.6rem; text-align: center;">
+                                            <div style="font-size: 0.58rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Time Remaining</div>
+                                            <div id="tel-fuel-timerem-val" style="font-size: 1.05rem; font-weight: 900; color: #CCFF00; font-family: monospace;">--:--</div>
                                         </div>
-                                        <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px; padding: 0.4rem 0.6rem; text-align: center;">
-                                            <div style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase;">Pit Window</div>
-                                            <div id="tel-stint-pit-val" style="font-size: 1rem; font-weight: 900; color: #f59e0b;">~--m</div>
+                                        <div style="background: rgba(0,0,0,0.35); border: 1px solid rgba(204,255,0,0.25); border-radius: 8px; padding: 0.4rem 0.6rem; text-align: center;">
+                                            <div style="font-size: 0.58rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Laps Left</div>
+                                            <div id="tel-fuel-lapsrem-val" style="font-size: 1.05rem; font-weight: 900; color: #CCFF00; font-family: monospace;">--.-</div>
                                         </div>
                                     </div>
 
+                                    <!-- Secondary Fuel Rates Grid -->
+                                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.4rem; margin-bottom: 0.5rem;">
+                                        <div style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.04); border-radius: 6px; padding: 0.3rem 0.4rem; text-align: center;">
+                                            <div style="font-size: 0.55rem; color: var(--text-muted);">Fuel/Lap</div>
+                                            <div id="tel-fuel-burn-rate" style="font-size: 0.78rem; font-weight: 800; color: #fff; font-family: monospace;">--</div>
+                                        </div>
+                                        <div style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.04); border-radius: 6px; padding: 0.3rem 0.4rem; text-align: center;">
+                                            <div style="font-size: 0.55rem; color: var(--text-muted);">Fuel/Hour</div>
+                                            <div id="tel-fuel-hourly-rate" style="font-size: 0.78rem; font-weight: 800; color: #fff; font-family: monospace;">--</div>
+                                        </div>
+                                        <div style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.04); border-radius: 6px; padding: 0.3rem 0.4rem; text-align: center;">
+                                            <div style="font-size: 0.55rem; color: var(--text-muted);">Capacity</div>
+                                            <div id="tel-fuel-tank-capacity" style="font-size: 0.78rem; font-weight: 800; color: #fff; font-family: monospace;">100 L</div>
+                                        </div>
+                                        <div style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.04); border-radius: 6px; padding: 0.3rem 0.4rem; text-align: center;">
+                                            <div style="font-size: 0.55rem; color: var(--text-muted);">Tank %</div>
+                                            <div id="tel-fuel-tank-pct" style="font-size: 0.78rem; font-weight: 800; color: #38bdf8; font-family: monospace;">--%</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Fuel Tank Level Gauge Bar -->
+                                    <div style="height: 6px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden; margin-bottom: 0.65rem;">
+                                        <div id="tel-fuel-gauge-fill" style="width: 0%; height: 100%; background: linear-gradient(90deg, #0034AB, #CCFF00); border-radius: 3px; transition: width 0.3s ease;"></div>
+                                    </div>
+
+                                    <!-- Stint Summary Row -->
+                                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.65rem; color: var(--text-muted); padding: 0 4px 6px 4px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                        <span>Stint Laps: <strong id="tel-stint-lap-count" style="color: #fff;">0</strong></span>
+                                        <span>Pit Window: <strong id="tel-stint-pit-val" style="color: #f59e0b;">~--m</strong></span>
+                                    </div>
+
                                     <!-- Collapsible Stint Schedule List -->
-                                    <div class="table-scroll-container" style="max-height: 160px; overflow-y: auto;">
+                                    <div class="table-scroll-container" style="max-height: 120px; overflow-y: auto; margin-top: 0.5rem;">
                                         <table class="standings-table" style="font-size: 0.75rem;">
                                             <thead>
                                                 <tr>
@@ -2839,7 +2883,7 @@
                                                 </tr>
                                             </thead>
                                             <tbody id="tel-stint-table-body">
-                                                <tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 1rem;">Tracking active stint...</td></tr>
+                                                <tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 0.75rem;">Tracking active stint...</td></tr>
                                             </tbody>
                                         </table>
                                     </div>
@@ -2879,7 +2923,7 @@
                     setLeaderboardMode(window.currentLeaderboardMode);
                 }
                 
-                // Update Stint Live Widget in Telemetry
+                // Update Stint & Fuel Engineer Live Widget in Telemetry
                 const stintLapEl = document.getElementById('tel-stint-lap-count');
                 const stintFuelEl = document.getElementById('tel-stint-fuel-val');
                 const stintPitEl = document.getElementById('tel-stint-pit-val');
@@ -2888,8 +2932,23 @@
                 const stintOndeckName = document.getElementById('tel-ondeck-name');
                 const stintOndeckTime = document.getElementById('tel-ondeck-countdown');
 
+                const fuelTimeRemEl = document.getElementById('tel-fuel-timerem-val');
+                const fuelLapsRemEl = document.getElementById('tel-fuel-lapsrem-val');
+                const fuelBurnRateEl = document.getElementById('tel-fuel-burn-rate');
+                const fuelHourlyRateEl = document.getElementById('tel-fuel-hourly-rate');
+                const fuelCapacityEl = document.getElementById('tel-fuel-tank-capacity');
+                const fuelPctEl = document.getElementById('tel-fuel-tank-pct');
+                const fuelGaugeFillEl = document.getElementById('tel-fuel-gauge-fill');
+                const openFuelBtn = document.getElementById('tel-open-fuel-btn');
+
+                if (openFuelBtn && teamSelect) {
+                    openFuelBtn.href = `fuel.html?team=${encodeURIComponent(teamSelect.value)}`;
+                }
+
                 if (stintLapEl && primaryTel) {
-                    const fuel = primaryTel.fuel || 0;
+                    const fuel = typeof primaryTel.fuel === 'number' ? primaryTel.fuel : 0;
+                    const fuelCap = primaryTel.fuel_capacity || 100.0;
+                    const fuelPct = fuelCap > 0 ? Math.min(Math.max((fuel / fuelCap) * 100, 0), 100) : 0;
                     const rawLap = primaryTel.lap || 0;
                     const lap = rawLap > 0 ? rawLap : 0;
                     const primaryTrackerKey = `${primaryMid}_${primaryTel.playerIdx !== undefined ? primaryTel.playerIdx : 'player'}`;
@@ -2901,7 +2960,33 @@
                     const minsLeft = Math.round((lapsLeft * (primaryTel.lastLap || 90)) / 60);
 
                     stintLapEl.textContent = lap > 0 ? lap : '0 (Out Lap)';
-                    stintFuelEl.textContent = useImperial ? `${(fuel * 0.264172).toFixed(1)}gal` : `${fuel.toFixed(1)}L`;
+                    stintFuelEl.textContent = useImperial ? `${(fuel * 0.264172).toFixed(1)} gal` : `${fuel.toFixed(1)} L`;
+                    
+                    if (fuelTimeRemEl) {
+                        const h = Math.floor(minsLeft / 60);
+                        const m = minsLeft % 60;
+                        fuelTimeRemEl.textContent = h > 0 ? `${h}h ${m}m` : `${m}m 00s`;
+                    }
+                    if (fuelLapsRemEl) {
+                        fuelLapsRemEl.textContent = lapsLeft.toFixed(1);
+                    }
+                    if (fuelBurnRateEl) {
+                        fuelBurnRateEl.textContent = useImperial ? `${(burn * 0.264172).toFixed(2)}g` : `${burn.toFixed(2)}L`;
+                    }
+                    if (fuelHourlyRateEl) {
+                        const hourly = primaryTel.fuel_per_hour || ((burn / 90) * 3600);
+                        fuelHourlyRateEl.textContent = useImperial ? `${(hourly * 0.264172).toFixed(0)}g/h` : `${hourly.toFixed(0)}L/h`;
+                    }
+                    if (fuelCapacityEl) {
+                        fuelCapacityEl.textContent = useImperial ? `${(fuelCap * 0.264172).toFixed(0)} gal` : `${fuelCap.toFixed(0)} L`;
+                    }
+                    if (fuelPctEl) {
+                        fuelPctEl.textContent = `${fuelPct.toFixed(0)}%`;
+                    }
+                    if (fuelGaugeFillEl) {
+                        fuelGaugeFillEl.style.width = `${fuelPct}%`;
+                    }
+
                     if (fuel <= 0.05) {
                         stintPitEl.textContent = `-- (In Pit)`;
                     } else {
@@ -2909,7 +2994,24 @@
                     }
 
                     if (stintTagEl) {
-                        stintTagEl.textContent = `DRIVER: ${primaryDriverName.toUpperCase()}`;
+                        const isSpec = primaryTel.isSpectating;
+                        const isLimited = primaryTel.telemetry_source === 'LIMITED_DATA';
+                        if (isLimited) {
+                            stintTagEl.textContent = 'LIMITED DATA (OPPONENT)';
+                            stintTagEl.style.color = '#f59e0b';
+                            stintTagEl.style.background = 'rgba(245,158,11,0.15)';
+                            stintTagEl.style.borderColor = 'rgba(245,158,11,0.4)';
+                        } else if (isSpec) {
+                            stintTagEl.textContent = `SPOTTING: ${primaryDriverName.toUpperCase()}`;
+                            stintTagEl.style.color = '#38bdf8';
+                            stintTagEl.style.background = 'rgba(56,189,248,0.15)';
+                            stintTagEl.style.borderColor = 'rgba(56,189,248,0.4)';
+                        } else {
+                            stintTagEl.textContent = `DRIVER: ${primaryDriverName.toUpperCase()}`;
+                            stintTagEl.style.color = '#CCFF00';
+                            stintTagEl.style.background = 'rgba(204,255,0,0.15)';
+                            stintTagEl.style.borderColor = 'rgba(204,255,0,0.4)';
+                        }
                     }
 
                     if (stintOndeckAlert) {
@@ -3160,6 +3262,8 @@
 
             const dcLink = document.getElementById('btn-datacenter-link');
             if (dcLink) dcLink.href = `data-center.html?team=${encodeURIComponent(teamSelect.value)}`;
+            const fuelLink = document.getElementById('btn-fuel-link');
+            if (fuelLink) fuelLink.href = `fuel.html?team=${encodeURIComponent(teamSelect.value)}`;
         }
 
         // Direct sync helper to read admin cache
@@ -3193,6 +3297,8 @@
             hasAutoScrolled = false; // Reset auto-scroll lock state
             const dcLink = document.getElementById('btn-datacenter-link');
             if (dcLink) dcLink.href = `data-center.html?team=${encodeURIComponent(e.target.value)}`;
+            const fuelLink = document.getElementById('btn-fuel-link');
+            if (fuelLink) fuelLink.href = `fuel.html?team=${encodeURIComponent(e.target.value)}`;
             setupFirebaseListeners(e.target.value);
         });
 

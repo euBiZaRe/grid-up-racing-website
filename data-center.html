@@ -933,6 +933,12 @@
                 <span id="fs-text">FULLSCREEN</span>
             </button>
 
+            <!-- Fuel Engineer Link -->
+            <a href="fuel.html" id="link-fuel-page" class="dc-btn" style="color: #CCFF00; border-color: rgba(204, 255, 0, 0.4); background: rgba(204, 255, 0, 0.1);" title="Open Fuel Engineer">
+                <i data-lucide="fuel" style="width: 13px; height: 13px; color: #CCFF00;"></i>
+                <span>FUEL</span>
+            </a>
+
             <!-- Back to Standard Telemetry -->
             <a href="telemetry.html" id="link-standard-tel" class="dc-btn" title="Return to standard telemetry page">
                 <i data-lucide="arrow-left" style="width: 13px; height: 13px;"></i>
@@ -1422,15 +1428,19 @@
                 newUrl.searchParams.set('team', activeTeamId);
                 window.history.replaceState({}, '', newUrl);
                 
-                // Update standard link
+                // Update standard and fuel links
                 const standardLink = document.getElementById('link-standard-tel');
                 if (standardLink) standardLink.href = `telemetry.html?team=${encodeURIComponent(activeTeamId)}`;
+                const fuelLink = document.getElementById('link-fuel-page');
+                if (fuelLink) fuelLink.href = `fuel.html?team=${encodeURIComponent(activeTeamId)}`;
 
                 setupFirebaseListeners();
             });
         }
         const standardLink = document.getElementById('link-standard-tel');
         if (standardLink) standardLink.href = `telemetry.html?team=${encodeURIComponent(activeTeamId)}`;
+        const fuelLink = document.getElementById('link-fuel-page');
+        if (fuelLink) fuelLink.href = `fuel.html?team=${encodeURIComponent(activeTeamId)}`;
 
         // Fullscreen API toggle
         const btnFullscreen = document.getElementById('btn-fullscreen');
@@ -1943,7 +1953,7 @@
         // Fuel Strategy & Stint Planner
         function renderFuelStrategy(tel, targetDriver, primaryMid) {
             const fuel = typeof tel.fuel === 'number' ? tel.fuel : 15.0;
-            const burnLast = typeof tel.fuel_per_lap === 'number' && tel.fuel_per_lap > 0.2 ? tel.fuel_per_lap : 3.2;
+            const burnLast = typeof tel.fuel_per_lap === 'number' && tel.fuel_per_lap > 0.05 ? tel.fuel_per_lap : 3.2;
 
             const fuelKey = `${primaryMid}_${targetDriver?.carIdx || 'player'}`;
             if (!fuelTrackers[fuelKey]) {
@@ -1951,8 +1961,12 @@
             }
             const tracker = fuelTrackers[fuelKey];
 
-            const lapsLeft = burnLast > 0 ? (fuel / burnLast) : 0;
-            const minsLeft = Math.round((lapsLeft * (tel.lastLap || 90)) / 60);
+            const lapsLeft = typeof tel.fuel_laps_rem === 'number' && tel.fuel_laps_rem > 0 
+                ? tel.fuel_laps_rem 
+                : (burnLast > 0 ? (fuel / burnLast) : 0);
+            const minsLeft = typeof tel.fuel_time_rem === 'number' && tel.fuel_time_rem > 0 
+                ? Math.round(tel.fuel_time_rem / 60) 
+                : Math.round((lapsLeft * (tel.lastLap || 90)) / 60);
 
             const timeEl = document.getElementById('fuel-time-left');
             const tankEl = document.getElementById('fuel-tank-val');
@@ -1963,7 +1977,7 @@
             if (tankEl) tankEl.textContent = useImperial ? `${(fuel * 0.264172).toFixed(1)} GAL` : `${fuel.toFixed(1)} L`;
 
             if (barFill) {
-                const maxFuel = tel.fuelMax || 100;
+                const maxFuel = tel.fuelMax || tel.fuel_capacity || 100;
                 const pct = Math.min(Math.max((fuel / maxFuel) * 100, 0), 100);
                 barFill.style.width = `${pct}%`;
             }
@@ -1977,12 +1991,15 @@
             const avg5El = document.getElementById('fuel-burn-avg5');
             const neededEl = document.getElementById('fuel-needed-finish');
 
+            const avg3Val = typeof tel.fuel_avg_3 === 'number' && tel.fuel_avg_3 > 0 ? tel.fuel_avg_3 : burnLast;
+            const avg5Val = typeof tel.fuel_avg_5 === 'number' && tel.fuel_avg_5 > 0 ? tel.fuel_avg_5 : (burnLast * 0.98);
+
             if (burnLastEl) burnLastEl.textContent = useImperial ? `${(burnLast * 0.264172).toFixed(2)}g` : `${burnLast.toFixed(2)}L`;
-            if (avg2El) avg2El.textContent = useImperial ? `${(burnLast * 0.98 * 0.264172).toFixed(2)}g` : `${(burnLast * 0.98).toFixed(2)}L`;
-            if (avg5El) avg5El.textContent = useImperial ? `${(burnLast * 0.96 * 0.264172).toFixed(2)}g` : `${(burnLast * 0.96).toFixed(2)}L`;
+            if (avg2El) avg2El.textContent = useImperial ? `${(avg3Val * 0.264172).toFixed(2)}g` : `${avg3Val.toFixed(2)}L`;
+            if (avg5El) avg5El.textContent = useImperial ? `${(avg5Val * 0.264172).toFixed(2)}g` : `${avg5Val.toFixed(2)}L`;
 
             const lapsToFinish = Math.max(0, 32 - (targetDriver?.lap || 0));
-            const neededFuel = lapsToFinish * burnLast;
+            const neededFuel = lapsToFinish * (avg5Val || burnLast);
             if (neededEl) neededEl.textContent = useImperial ? `${(neededFuel * 0.264172).toFixed(1)}g` : `${neededFuel.toFixed(1)}L`;
 
             // Audio Alert if fuel < 2 laps
