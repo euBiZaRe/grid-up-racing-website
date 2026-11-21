@@ -459,7 +459,7 @@ async function loadDynamicContent() {
     const fullEventList = document.getElementById('full-event-list');
     
     // Attempt to load from cache first for instant UI
-    const SCRIPT_VER = '7';
+    const SCRIPT_VER = '10';
     if (localStorage.getItem('gridup_script_ver') !== SCRIPT_VER) {
         localStorage.removeItem('gridup_upcoming_events');
         localStorage.removeItem('gridup_past_events');
@@ -2075,8 +2075,8 @@ async function renderEventResults(eventId, targetElement) {
         docs.forEach(d => {
             const drivers = Array.isArray(d.drivers) ? d.drivers.join(', ') : (d.drivers || '');
             const finishPos = (d.finish || '-').trim();
-            // Finish color styling: P1 = Gold, P2 = Silver, P3 = Bronze, Rest = Blue
             const finishStyle = getFinishPositionStyle(finishPos);
+            const finishClass = getFinishPositionClass(finishPos);
             
             rowsHtml += `
                 <tr>
@@ -2089,7 +2089,7 @@ async function renderEventResults(eventId, targetElement) {
                         ${d.qualy || '-'}
                     </td>
                     <td>
-                        <span class="team-results-finish" style="${finishStyle}">${finishPos}</span>
+                        <span class="team-results-finish ${finishClass}" style="${finishStyle}">${finishPos}</span>
                     </td>
                 </tr>
             `;
@@ -2184,6 +2184,9 @@ async function openEventResultsModal(eventId, eventName = '') {
         let rowsHtml = '';
         docs.forEach(d => {
             const drivers = Array.isArray(d.drivers) ? d.drivers.join(', ') : (d.drivers || '');
+            const finishPos = (d.finish || '-').trim();
+            const finishStyle = getFinishPositionStyle(finishPos);
+            const finishClass = getFinishPositionClass(finishPos);
             rowsHtml += `
                 <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.06);">
                     <td style="padding: 1.1rem 1rem; text-align: left;">
@@ -2195,7 +2198,7 @@ async function openEventResultsModal(eventId, eventName = '') {
                         ${d.qualy || '-'}
                     </td>
                     <td style="padding: 1.1rem 1rem; text-align: right;">
-                        <strong style="font-family: var(--font-heading); ${finishStyle} font-weight: 900; font-size: 1.25rem; letter-spacing: 0.5px;">${finishPos}</strong>
+                        <strong class="${finishClass}" style="font-family: var(--font-heading); ${finishStyle} font-weight: 900; font-size: 1.25rem; letter-spacing: 0.5px;">${finishPos}</strong>
                     </td>
                 </tr>
             `;
@@ -2504,6 +2507,7 @@ async function loadAllResults() {
                 const drivers = Array.isArray(d.drivers) ? d.drivers.join(', ') : (d.drivers || 'TBA');
                 const finishPos = (d.finish || '-').trim();
                 const finishStyle = getFinishPositionStyle(finishPos);
+                const finishClass = getFinishPositionClass(finishPos);
                 rowsHtml += `
                     <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
                         <td class="col-team" style="padding: 0.5rem 0.75rem;">
@@ -2515,7 +2519,7 @@ async function loadAllResults() {
                             <span style="color: var(--text-muted); font-size: 0.85rem; font-variant-numeric: tabular-nums; display: inline-block;">${d.qualy || '-'}</span>
                         </td>
                         <td class="col-finish" style="padding: 0.5rem 0.75rem; width: 120px; text-align: center; white-space: nowrap;">
-                            <strong style="${finishStyle} font-weight: 900; font-size: 1.05rem; font-variant-numeric: tabular-nums; display: inline-block;">${finishPos}</strong>
+                            <strong class="${finishClass}" style="${finishStyle} font-weight: 900; font-size: 1.05rem; font-variant-numeric: tabular-nums; display: inline-block;">${finishPos}</strong>
                         </td>
                     </tr>
                 `;

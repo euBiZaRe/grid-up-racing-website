@@ -5049,3 +5049,21 @@ body[data-theme="theme-purple"]::before, body::before {
     transform: translateY(-2px) !important;
 }
 
+
+/* Finish Position Status Classes */
+.finish-gold {
+    color: #ffd700 !important;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5) !important;
+}
+.finish-silver {
+    color: #e2e8f0 !important;
+    text-shadow: 0 0 10px rgba(226, 232, 240, 0.4) !important;
+}
+.finish-bronze {
+    color: #cd7f32 !important;
+    text-shadow: 0 0 10px rgba(205, 127, 50, 0.5) !important;
+}
+.finish-blue {
+    color: #00cfff !important;
+    text-shadow: 0 0 8px rgba(0, 207, 255, 0.35) !important;
+}
