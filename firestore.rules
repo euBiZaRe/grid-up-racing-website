@@ -6,6 +6,7 @@ rules_version = '2';
 //
 // Collection: settings/{docId}
 //   - settings/maintenance: public read, admin write
+//   - settings/telemetry_routing: public read, admin write
 //   - settings/admins: authenticated read (required by js/auth.js), hardcoded-admin write
 //   - settings/{other}: admin read/write
 //
@@ -335,6 +336,13 @@ service cloud.firestore {
 
     // Maintenance mode settings must be publicly readable by all clients
     match /settings/maintenance {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Telemetry routing configuration is readable by all clients (including drivers/bridge)
+    // and writable strictly by admins
+    match /settings/telemetry_routing {
       allow read: if true;
       allow write: if isAdmin();
     }

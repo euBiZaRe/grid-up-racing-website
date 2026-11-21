@@ -2559,6 +2559,12 @@ body.meeting-mode-active .btn-summary-confirm {
                                     <option value="">Loading upcoming races...</option>
                                 </select>
                             </div>
+                            <div class="tb-telemetry-control-wrap" id="tb-telemetry-control-wrap" style="display: flex; align-items: center; gap: 8px;">
+                                <button type="button" onclick="toggleEventTelemetryBroadcast()" id="btn-telemetry-broadcast" class="btn btn-tool" style="font-size: 0.76rem; font-weight: 800; border-radius: 8px; padding: 0.45rem 0.9rem; display: inline-flex; align-items: center; gap: 7px; transition: all 0.25s ease;" title="Route assigned driver telemetry to this race's team channels">
+                                    <i class="fas fa-satellite-dish" id="icon-telemetry-broadcast" style="color: #94a3b8;"></i>
+                                    <span id="label-telemetry-broadcast">TELEMETRY: STANDBY (SOLO)</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -2584,6 +2590,11 @@ body.meeting-mode-active .btn-summary-confirm {
                                 <i class="fas fa-check-double" style="color: #a855f7;"></i>
                                 <span class="tb-stat-num" id="stat-ready-teams">0/6</span>
                                 <span class="tb-stat-lbl">READY</span>
+                            </div>
+                            <div class="tb-stat-pill" id="stat-telemetry-route-pill" title="Current live telemetry destination for drivers">
+                                <i class="fas fa-tower-broadcast" id="icon-telemetry-route" style="color: #94a3b8;"></i>
+                                <span class="tb-stat-num" id="stat-telemetry-route-val" style="font-size: 0.72rem; letter-spacing: 0.5px; color: #94a3b8;">SOLO</span>
+                                <span class="tb-stat-lbl">TELEMETRY</span>
                             </div>
                             <div class="tb-stat-pill" id="stat-avg-sof-pill" style="display:none;">
                                 <i class="fas fa-chart-line" style="color: #60a5fa;"></i>
@@ -6953,6 +6964,7 @@ body.meeting-mode-active .btn-summary-confirm {
                 window._adminBuilderCurrentEvent,
                 window._adminBuilderResponses || []
             );
+            updateTelemetryBroadcastUI();
         }
 
         // Live Header Counters & Sticky Bottom Bar Updater
@@ -7057,6 +7069,7 @@ body.meeting-mode-active .btn-summary-confirm {
 
         // Load Admin Builder Data from Firestore
         async function loadAdminBuilderData(forceReload = false, targetEventId = null) {
+            initTelemetryBroadcastRouting();
             const selectorEl = document.getElementById('lineup-event-selector');
             const userTargetId = targetEventId || (selectorEl ? selectorEl.value : null) || window._lastLoadedLineupEventId;
 
@@ -8131,6 +8144,15 @@ body.meeting-mode-active .btn-summary-confirm {
                     teams: window._adminBuilderCars
                 }, { merge: true });
 
+                // Auto-sync telemetry routing if this event is currently active
+                if (window._telemetryRoutingState && window._telemetryRoutingState.mode === 'event' && window._telemetryRoutingState.activeEventId === activeId) {
+                    try {
+                        await syncTelemetryRoutingForEvent(activeId, currentEvent ? currentEvent.name : activeId);
+                    } catch (syncErr) {
+                        console.warn("Could not auto-sync telemetry routing on publish:", syncErr);
+                    }
+                }
+
                 alert("Official team lineups published successfully! Team captains can now plan and schedule their team stints in the Stint Planner.");
             } catch (err) {
                 console.error("Error publishing lineups:", err);
@@ -8150,6 +8172,174 @@ body.meeting-mode-active .btn-summary-confirm {
             const activeId = selector ? selector.value : '';
             const carParam = (typeof carIdx === 'number') ? `&car=${carIdx}` : '';
             window.open(`team-telemetry.html${activeId ? `?event=${encodeURIComponent(activeId)}${carParam}` : ''}`, '_blank');
+        };
+
+        // ===============================================================
+        // Dynamic Telemetry Routing System
+        // ===============================================================
+        window._telemetryRoutingListenerAttached = false;
+        window._telemetryRoutingState = null;
+
+        function initTelemetryBroadcastRouting() {
+            if (window._telemetryRoutingListenerAttached || typeof db === 'undefined') return;
+            window._telemetryRoutingListenerAttached = true;
+
+            try {
+                db.collection("settings").doc("telemetry_routing").onSnapshot(doc => {
+                    window._telemetryRoutingState = doc.exists ? doc.data() : { mode: 'solo', activeEventId: null };
+                    updateTelemetryBroadcastUI();
+                }, err => {
+                    console.warn("Could not listen to telemetry_routing:", err);
+                });
+            } catch (e) {
+                console.warn("initTelemetryBroadcastRouting error:", e);
+            }
+        }
+
+        function updateTelemetryBroadcastUI() {
+            const btn = document.getElementById('btn-telemetry-broadcast');
+            const icon = document.getElementById('icon-telemetry-broadcast');
+            const label = document.getElementById('label-telemetry-broadcast');
+            const statVal = document.getElementById('stat-telemetry-route-val');
+            const statIcon = document.getElementById('icon-telemetry-route');
+            if (!btn || !label) return;
+
+            const selector = document.getElementById('lineup-event-selector');
+            const activeId = selector ? selector.value : null;
+            const state = window._telemetryRoutingState || { mode: 'solo', activeEventId: null };
+
+            const isEventMode = state.mode === 'event';
+            const isActiveForSelected = isEventMode && state.activeEventId && state.activeEventId === activeId;
+            const isActiveForOther = isEventMode && state.activeEventId && state.activeEventId !== activeId;
+
+            if (isActiveForSelected) {
+                btn.style.background = 'linear-gradient(135deg, rgba(0, 255, 136, 0.22), rgba(0, 207, 255, 0.15))';
+                btn.style.border = '1px solid #00ff88';
+                btn.style.color = '#00ff88';
+                btn.style.boxShadow = '0 0 16px rgba(0, 255, 136, 0.35)';
+                if (icon) {
+                    icon.className = 'fas fa-satellite-dish fa-fade';
+                    icon.style.color = '#00ff88';
+                }
+                label.textContent = `🔴 LIVE EVENT STREAMING (${state.assignedCount || 0} DRIVERS ROUTED)`;
+                btn.title = `Active on ${state.activeEventName || activeId}! Click to deactivate back to Solo/Practice.`;
+
+                if (statVal) {
+                    statVal.textContent = 'TEAM SQUADS';
+                    statVal.style.color = '#00ff88';
+                }
+                if (statIcon) statIcon.style.color = '#00ff88';
+            } else if (isActiveForOther) {
+                btn.style.background = 'rgba(251, 191, 36, 0.12)';
+                btn.style.border = '1px solid rgba(251, 191, 36, 0.4)';
+                btn.style.color = '#fbbf24';
+                btn.style.boxShadow = 'none';
+                if (icon) {
+                    icon.className = 'fas fa-triangle-exclamation';
+                    icon.style.color = '#fbbf24';
+                }
+                label.textContent = `SWITCH ROUTE TO THIS RACE`;
+                btn.title = `Currently streaming to: ${state.activeEventName || state.activeEventId}. Click to switch live streaming to this race.`;
+
+                if (statVal) {
+                    statVal.textContent = 'OTHER EVENT';
+                    statVal.style.color = '#fbbf24';
+                }
+                if (statIcon) statIcon.style.color = '#fbbf24';
+            } else {
+                // Standby / Solo
+                btn.style.background = 'rgba(255, 255, 255, 0.05)';
+                btn.style.border = '1px solid rgba(255, 255, 255, 0.15)';
+                btn.style.color = '#94a3b8';
+                btn.style.boxShadow = 'none';
+                if (icon) {
+                    icon.className = 'fas fa-satellite-dish';
+                    icon.style.color = '#94a3b8';
+                }
+                label.textContent = `TELEMETRY: STANDBY (SOLO)`;
+                btn.title = `Drivers are currently streaming to Solo / Practice mode. Click to activate team routing for this race.`;
+
+                if (statVal) {
+                    statVal.textContent = 'SOLO / PRACTICE';
+                    statVal.style.color = '#94a3b8';
+                }
+                if (statIcon) statIcon.style.color = '#94a3b8';
+            }
+        }
+
+        async function syncTelemetryRoutingForEvent(eventId, eventName) {
+            const driversMap = {};
+            const cars = window._adminBuilderCars || [];
+            cars.forEach(car => {
+                const teamId = car.id || (car.name ? car.name.toLowerCase().replace(/[^a-z0-9]/g, '_') : 'team');
+                const teamName = car.name || 'Team';
+                (car.drivers || []).forEach(d => {
+                    if (d && typeof d === 'string') {
+                        const cleanName = d.trim().toLowerCase();
+                        driversMap[cleanName] = {
+                            teamId: teamId,
+                            teamName: teamName,
+                            car: car.carModel || car.car || car.car_class || '',
+                            carNumber: car.carNumber || ''
+                        };
+                    }
+                });
+            });
+
+            const routingData = {
+                mode: 'event',
+                activeEventId: eventId,
+                activeEventName: eventName,
+                driversMap: driversMap,
+                assignedCount: Object.keys(driversMap).length,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                updatedBy: (window.auth && window.auth.currentUser) ? window.auth.currentUser.uid : 'admin'
+            };
+
+            await db.collection("settings").doc("telemetry_routing").set(routingData, { merge: true });
+            return routingData;
+        }
+
+        window.toggleEventTelemetryBroadcast = async function() {
+            const selector = document.getElementById('lineup-event-selector');
+            const activeId = selector ? selector.value : null;
+            if (!activeId) return alert("Please select an event first.");
+
+            const allEvts = (typeof ALL_EVENTS !== 'undefined' && ALL_EVENTS.length) ? ALL_EVENTS : (typeof UPCOMING_EVENTS !== 'undefined' ? UPCOMING_EVENTS : []);
+            const currentEvent = allEvts.find(e => e.id === activeId);
+            const eventName = currentEvent ? currentEvent.name : activeId;
+
+            const curState = window._telemetryRoutingState || { mode: 'solo' };
+            const isCurrentlyActiveForThis = (curState.mode === 'event' && curState.activeEventId === activeId);
+
+            const btn = document.getElementById('btn-telemetry-broadcast');
+            if (btn) btn.disabled = true;
+
+            try {
+                if (isCurrentlyActiveForThis) {
+                    // Turn OFF -> reset to Solo / Practice
+                    const deactData = {
+                        mode: 'solo',
+                        activeEventId: null,
+                        activeEventName: null,
+                        driversMap: {},
+                        assignedCount: 0,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        updatedBy: (window.auth && window.auth.currentUser) ? window.auth.currentUser.uid : 'admin'
+                    };
+                    await db.collection("settings").doc("telemetry_routing").set(deactData, { merge: true });
+                    alert("Telemetry routing set to STANDBY.\n\nAll driver apps will automatically stream to Solo / Practice mode.");
+                } else {
+                    // Turn ON for this event
+                    const routing = await syncTelemetryRoutingForEvent(activeId, eventName);
+                    alert(`🟢 Live Telemetry Route ACTIVATED for "${eventName}"!\n\n${routing.assignedCount} drivers mapped to their team pit walls.\nDrivers not entered in this event's lineup will automatically stream to Solo / Practice.`);
+                }
+            } catch (err) {
+                console.error("Error toggling telemetry routing:", err);
+                alert("Failed to update telemetry routing: " + err.message);
+            } finally {
+                if (btn) btn.disabled = false;
+            }
         };
 
 
