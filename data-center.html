@@ -665,12 +665,17 @@
 
         /* 2. Fuel Strategy & Stint Calculator */
         .fuel-body {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: auto 1fr;
-            gap: 6px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
             height: 100%;
             padding: 4px;
+            gap: 4px;
+        }
+        .fuel-main-stats-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
         }
         .fuel-main-stat {
             background: rgba(0, 0, 0, 0.4);
@@ -697,7 +702,6 @@
             color: var(--accent-green);
         }
         .fuel-bar-wrap {
-            grid-column: span 2;
             height: 8px;
             background: rgba(255, 255, 255, 0.08);
             border-radius: 4px;
@@ -712,7 +716,6 @@
             transition: width 0.3s ease;
         }
         .fuel-averages-grid {
-            grid-column: span 2;
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 4px;
@@ -1188,15 +1191,20 @@
                     </div>
                     <div class="dc-card-body">
                         <div class="fuel-body">
-                            <!-- Fuel Time Remaining -->
-                            <div class="fuel-main-stat">
-                                <span class="fuel-lbl">Fuel Time Left</span>
-                                <span id="fuel-time-left" class="fuel-val highlight">--:--</span>
-                            </div>
-                            <!-- Current Tank Volume -->
-                            <div class="fuel-main-stat">
-                                <span class="fuel-lbl">Fuel In Tank</span>
-                                <span id="fuel-tank-val" class="fuel-val">--.- L</span>
+                            <div class="fuel-main-stats-row">
+                                <!-- Fuel Time Remaining -->
+                                <div class="fuel-main-stat">
+                                    <span class="fuel-lbl">Fuel Time Left</span>
+                                    <span id="fuel-time-left" class="fuel-val highlight">--:--</span>
+                                </div>
+                                <!-- Current Tank Volume -->
+                                <div class="fuel-main-stat">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span class="fuel-lbl">Fuel In Tank</span>
+                                        <button type="button" onclick="promptCalibrateFuel()" style="background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); color: var(--accent-gold); font-size: 0.55rem; font-weight: 800; cursor: pointer; padding: 1px 5px; border-radius: 3px;" title="Manually calibrate fuel in litres">SET</button>
+                                    </div>
+                                    <span id="fuel-tank-val" class="fuel-val" onclick="promptCalibrateFuel()" style="cursor: pointer;" title="Click to manually set or calibrate fuel">--.- L</span>
+                                </div>
                             </div>
 
                             <!-- Fuel Tank Level Bar -->
@@ -1749,6 +1757,28 @@
             if (tc2El) tc2El.textContent = tel.tc2 !== undefined ? tel.tc2 : '9';
         }
 
+        // Class Normalizer Helper
+        function normalizeClass(d) {
+            const raw = ((d.className || '') + ' ' + (d.carName || '') + ' ' + (d.carClass || '') + ' ' + (d.carPath || '')).toLowerCase();
+            if (raw.includes('gtp') || raw.includes('lmdh') || raw.includes('v-series') || raw.includes('hybrid v8') || raw.includes('porsche 963') || raw.includes('arx-06')) {
+                return { key: 'GTP', name: 'GTP', color: d.classColor || 'e02424', order: 1 };
+            }
+            if (raw.includes('p217') || raw.includes('lmp2') || raw.includes('dallara')) {
+                return { key: 'LMP2', name: 'DALLARA P217', color: d.classColor || '38bdf8', order: 2 };
+            }
+            if (raw.includes('gt3') || raw.includes('imsa23') || raw.includes('296') || raw.includes('992') || raw.includes('amg') || raw.includes('m4') || raw.includes('720s') || raw.includes('vantage') || raw.includes('audi r8') || raw.includes('lamborghini') || raw.includes('corvette gt3')) {
+                return { key: 'GT3', name: 'GT3', color: d.classColor || 'f59e0b', order: 3 };
+            }
+            if (raw.includes('gt4')) {
+                return { key: 'GT4', name: 'GT4', color: d.classColor || '10b981', order: 4 };
+            }
+            if (raw.includes('tcr')) {
+                return { key: 'TCR', name: 'TCR', color: d.classColor || 'a855f7', order: 5 };
+            }
+            const fallback = (d.className || d.carClass || 'GT3').toUpperCase().trim();
+            return { key: fallback, name: fallback, color: d.classColor || '38bdf8', order: 99 };
+        }
+
         // Timing Tower & Leaderboard
         function renderTimingTower(allDrivers, targetDriver, tel) {
             const tbody = document.getElementById('timing-table-body');
@@ -1760,38 +1790,41 @@
                 return;
             }
 
-            // Target driver class name
-            const targetClass = (targetDriver && targetDriver.className) ? targetDriver.className : (driverList[0]?.className || 'GT3');
+            // Target driver class key
+            const targetClassKey = targetDriver ? normalizeClass(targetDriver).key : (driverList[0] ? normalizeClass(driverList[0]).key : 'GT3');
 
-            // Group drivers by class
+            // Group drivers by normalized class
             const classesMap = {};
             driverList.forEach(d => {
-                const cName = d.className || d.carClass || 'GT3';
-                if (!classesMap[cName]) {
-                    classesMap[cName] = {
-                        name: cName,
-                        color: d.classColor || '38bdf8',
+                const cInfo = normalizeClass(d);
+                if (!classesMap[cInfo.key]) {
+                    classesMap[cInfo.key] = {
+                        key: cInfo.key,
+                        name: cInfo.name,
+                        color: cInfo.color,
+                        order: cInfo.order,
                         drivers: []
                     };
                 }
-                classesMap[cName].drivers.push(d);
+                classesMap[cInfo.key].drivers.push(d);
             });
 
-            // Sort drivers inside each class by classPos or pos
+            // Sort drivers inside each class strictly by classPos (or overall pos fallback)
             Object.values(classesMap).forEach(cls => {
                 cls.drivers.sort((a, b) => {
-                    const posA = (typeof a.classPos === 'number' && a.classPos > 0) ? a.classPos : ((typeof a.pos === 'number' && a.pos > 0) ? a.pos : 99999);
-                    const posB = (typeof b.classPos === 'number' && b.classPos > 0) ? b.classPos : ((typeof b.pos === 'number' && b.pos > 0) ? b.pos : 99999);
+                    const posA = (typeof a.classPos === 'number' && a.classPos > 0) ? a.classPos : 99999;
+                    const posB = (typeof b.classPos === 'number' && b.classPos > 0) ? b.classPos : 99999;
                     if (posA !== posB) return posA - posB;
-                    const bestA = (typeof a.bestLap === 'number' && a.bestLap > 15) ? a.bestLap : 999999;
-                    const bestB = (typeof b.bestLap === 'number' && b.bestLap > 15) ? b.bestLap : 999999;
-                    if (bestA !== bestB) return bestA - bestB;
+                    const overallA = (typeof a.pos === 'number' && a.pos > 0) ? a.pos : 99999;
+                    const overallB = (typeof b.pos === 'number' && b.pos > 0) ? b.pos : 99999;
+                    if (overallA !== overallB) return overallA - overallB;
                     return (parseInt(a.carNum) || 0) - (parseInt(b.carNum) || 0);
                 });
             });
 
-            // Order classes: Best overall position in that class
+            // Order classes by hierarchy order or best overall position
             const sortedClasses = Object.values(classesMap).sort((a, b) => {
+                if (a.order !== b.order) return a.order - b.order;
                 const bestPosA = a.drivers[0]?.pos || 99999;
                 const bestPosB = b.drivers[0]?.pos || 99999;
                 return bestPosA - bestPosB;
@@ -1803,7 +1836,7 @@
             let rowsHtml = '';
 
             sortedClasses.forEach(cls => {
-                const isTargetClass = cls.name === targetClass || (targetDriver && cls.drivers.some(d => String(d.carNum) === String(targetDriver.carNum)));
+                const isTargetClass = cls.key === targetClassKey || (targetDriver && cls.drivers.some(d => String(d.carNum) === String(targetDriver.carNum)));
                 const maxDriversToShow = isTargetClass ? 10 : 3;
 
                 // Compute class SOF
@@ -1849,8 +1882,8 @@
                     const isTarget = targetDriver && String(targetDriver.carNum) === String(d.carNum);
                     const rowClass = isPlayer ? 'row-player' : (isTarget ? 'row-focused' : '');
 
-                    // Position styling
-                    const displayPos = (d.classPos > 0) ? d.classPos : ((d.pos > 0) ? d.pos : (idx + 1));
+                    // Position styling (class position guaranteed 1, 2, 3...)
+                    const displayPos = (d.classPos > 0) ? d.classPos : (idx + 1);
                     let posColorClass = 'pos-other';
                     if (displayPos === 1) posColorClass = 'pos-p1';
                     else if (displayPos === 2) posColorClass = 'pos-p2';
@@ -1924,18 +1957,26 @@
             select.innerHTML = html;
         }
 
-        // Tactical Battle Relative Box
+        // Tactical Battle Relative Box (Filtered to Same Class Rivals)
         function renderBattleRelative(allDrivers, targetDriver) {
             if (!targetDriver) return;
 
+            const targetClassKey = normalizeClass(targetDriver).key;
             const driverList = Object.values(allDrivers).filter(d => d && typeof d === 'object');
+            
+            // Prefer comparing against rivals in the same class
+            let classRivals = driverList.filter(d => normalizeClass(d).key === targetClassKey);
+            if (classRivals.length <= 1) {
+                classRivals = driverList; // Fallback to overall track if solo in class
+            }
+
             const targetPos = (targetDriver.classPos > 0) ? targetDriver.classPos : targetDriver.pos;
 
-            // Find car immediately ahead & behind in class or on track
+            // Find car immediately ahead & behind in class
             let carAhead = null;
             let carBehind = null;
 
-            driverList.forEach(d => {
+            classRivals.forEach(d => {
                 if (String(d.carNum) === String(targetDriver.carNum)) return;
                 const dPos = (d.classPos > 0) ? d.classPos : d.pos;
                 if (!dPos || !targetPos) return;
@@ -1972,7 +2013,7 @@
             } else {
                 if (aheadPosEl) aheadPosEl.textContent = 'P1';
                 if (aheadCarEl) aheadCarEl.textContent = 'LEAD';
-                if (aheadNameEl) aheadNameEl.textContent = 'Clear Track';
+                if (aheadNameEl) aheadNameEl.textContent = 'Class Leader';
                 if (aheadGapEl) aheadGapEl.textContent = '--.---';
             }
 
@@ -2018,26 +2059,74 @@
             }
         }
 
+        // Helper: Get realistic tank capacity per car
+        function getCarTankCapacity(d, tel) {
+            if (tel.fuelMax && tel.fuelMax > 10) return tel.fuelMax;
+            if (tel.fuel_capacity && tel.fuel_capacity > 10) return tel.fuel_capacity;
+            const raw = ((d?.className || '') + ' ' + (d?.carName || '') + ' ' + (tel?.carName || '')).toLowerCase();
+            if (raw.includes('p217') || raw.includes('lmp2')) return 75.0; // Dallara P217 LMP2 is 75L
+            if (raw.includes('gtp') || raw.includes('lmdh')) return 110.0;
+            if (raw.includes('gt3')) return 115.0;
+            if (raw.includes('gt4')) return 105.0;
+            if (raw.includes('tcr')) return 100.0;
+            if (raw.includes('cup')) return 110.0;
+            if (raw.includes('formula') || raw.includes('f4') || raw.includes('f3')) return 45.0;
+            if (raw.includes('mx-5') || raw.includes('miata')) return 45.0;
+            return 100.0;
+        }
+
+        // Manual Fuel Calibration for Spotters
+        window.userFuelOverrides = {};
+        window.promptCalibrateFuel = function() {
+            const currentVal = document.getElementById('fuel-tank-val')?.textContent || '35.0';
+            const numMatch = currentVal.match(/[\d\.]+/);
+            const initVal = numMatch ? numMatch[0] : '35.0';
+            const input = prompt("Enter current fuel level for this car (in Litres):", initVal);
+            if (input !== null) {
+                const parsed = parseFloat(input);
+                if (!isNaN(parsed) && parsed >= 0) {
+                    window.userFuelOverride = parsed;
+                    window.userFuelOverrideLap = window.lastSeenTargetLap || 0;
+                    renderAll();
+                }
+            }
+        };
+
         // Fuel Strategy & Stint Planner
         function renderFuelStrategy(tel, targetDriver, primaryMid) {
-            // 1. Resolve Fuel:
-            // Check direct telemetry first
-            let fuel = (typeof tel.fuel === 'number' && tel.fuel > 0.05) ? tel.fuel : 0;
-            let isEstimated = Boolean(tel.fuel_is_estimated);
+            window.lastSeenTargetLap = targetDriver?.lap || 0;
+            const fuelCap = getCarTankCapacity(targetDriver, tel);
 
-            // If local stream has 0 (e.g. spotter), check if another active stream is the actual driver
-            if (fuel <= 0.05 && targetDriver) {
-                for (const mid of Object.keys(currentStreams)) {
-                    const st = currentStreams[mid];
-                    if (!st || !st.telemetry) continue;
-                    const dName = (st.driver || st.telemetry.driverName || '').toLowerCase();
-                    const cNum = String(st.telemetry.carNum || '');
-                    if ((targetDriver.name && dName.includes(targetDriver.name.toLowerCase())) || 
-                        (targetDriver.carNum && cNum === String(targetDriver.carNum))) {
-                        if (typeof st.telemetry.fuel === 'number' && st.telemetry.fuel > 0.05) {
-                            fuel = st.telemetry.fuel;
-                            isEstimated = false;
-                            break;
+            // 1. Resolve Fuel:
+            let fuel = 0;
+            let isEstimated = false;
+            let isUserCalibrated = false;
+
+            // Check if user has calibrated fuel manually
+            if (typeof window.userFuelOverride === 'number') {
+                const lapsSinceCal = Math.max(0, (targetDriver?.lap || 0) - (window.userFuelOverrideLap || 0));
+                const burnRate = typeof tel.fuel_per_lap === 'number' && tel.fuel_per_lap > 0.05 ? tel.fuel_per_lap : 2.85;
+                fuel = Math.max(0.0, window.userFuelOverride - (lapsSinceCal * burnRate));
+                isUserCalibrated = true;
+            } else if (typeof tel.fuel === 'number' && tel.fuel > 0.05 && !tel.fuel_is_estimated) {
+                // Direct live telemetry from physical car sensor
+                fuel = tel.fuel;
+                isEstimated = false;
+            } else {
+                // Check if another stream in currentStreams is the active driver
+                if (targetDriver) {
+                    for (const mid of Object.keys(currentStreams)) {
+                        const st = currentStreams[mid];
+                        if (!st || !st.telemetry) continue;
+                        const dName = (st.driver || st.telemetry.driverName || '').toLowerCase();
+                        const cNum = String(st.telemetry.carNum || '');
+                        if ((targetDriver.name && dName.includes(targetDriver.name.toLowerCase())) || 
+                            (targetDriver.carNum && cNum === String(targetDriver.carNum))) {
+                            if (typeof st.telemetry.fuel === 'number' && st.telemetry.fuel > 0.05 && !st.telemetry.fuel_is_estimated) {
+                                fuel = st.telemetry.fuel;
+                                isEstimated = false;
+                                break;
+                            }
                         }
                     }
                 }
@@ -2046,13 +2135,11 @@
             // 2. Burn rate resolution
             const burnLast = typeof tel.fuel_per_lap === 'number' && tel.fuel_per_lap > 0.05 
                 ? tel.fuel_per_lap 
-                : (typeof tel.fuel_avg_5 === 'number' && tel.fuel_avg_5 > 0.05 ? tel.fuel_avg_5 : 3.2);
+                : (typeof tel.fuel_avg_5 === 'number' && tel.fuel_avg_5 > 0.05 ? tel.fuel_avg_5 : (fuelCap > 100 ? 3.2 : 2.85));
 
-            // 3. If fuel is still 0 (e.g. spectator or spotter where iRacing masks FuelLevel and driver is offline),
-            // calculate estimated fuel from tank capacity and stint laps burned!
-            const fuelCap = tel.fuelMax || tel.fuel_capacity || 100.0;
-            if (fuel <= 0.05) {
-                const stintLaps = targetDriver?.lap ? (targetDriver.lap % 30) : 0;
+            // 3. Fallback estimation if not set
+            if (fuel <= 0.05 && !isUserCalibrated) {
+                const stintLaps = targetDriver?.lap ? (targetDriver.lap % 25) : 0;
                 fuel = Math.max(5.0, fuelCap - (stintLaps * burnLast));
                 isEstimated = true;
             }
@@ -2061,11 +2148,8 @@
             if (!fuelTrackers[fuelKey]) {
                 fuelTrackers[fuelKey] = { history: [burnLast] };
             }
-            const tracker = fuelTrackers[fuelKey];
 
-            const lapsLeft = typeof tel.fuel_laps_rem === 'number' && tel.fuel_laps_rem > 0 && !isEstimated
-                ? tel.fuel_laps_rem 
-                : (burnLast > 0 ? (fuel / burnLast) : 0);
+            const lapsLeft = burnLast > 0 ? (fuel / burnLast) : 0;
             const avgLapTime = (targetDriver?.lastLap && targetDriver.lastLap > 15) ? targetDriver.lastLap : (tel.lastLap || 90);
             const minsLeft = Math.round((lapsLeft * avgLapTime) / 60);
 
@@ -2081,7 +2165,13 @@
             }
             if (tankEl) {
                 const unitStr = useImperial ? `${(fuel * 0.264172).toFixed(1)} GAL` : `${fuel.toFixed(1)} L`;
-                tankEl.innerHTML = `${unitStr} ${isEstimated ? '<span style="font-size:0.58rem; color:var(--accent-gold); font-weight:800; border:1px solid rgba(245,158,11,0.4); padding:1px 4px; border-radius:3px; vertical-align:middle; margin-left:4px;">EST</span>' : ''}`;
+                let badge = '';
+                if (isUserCalibrated) {
+                    badge = '<span style="font-size:0.55rem; color:#CCFF00; font-weight:800; border:1px solid rgba(204,255,0,0.4); padding:1px 4px; border-radius:3px; vertical-align:middle; margin-left:4px;">SET</span>';
+                } else if (isEstimated) {
+                    badge = '<span style="font-size:0.55rem; color:var(--accent-gold); font-weight:800; border:1px solid rgba(245,158,11,0.4); padding:1px 4px; border-radius:3px; vertical-align:middle; margin-left:4px;">EST</span>';
+                }
+                tankEl.innerHTML = `${unitStr} ${badge}`;
             }
 
             if (barFill) {
