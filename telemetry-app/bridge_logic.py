@@ -25,7 +25,7 @@ else:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 CONFIG_FILE = os.path.join(BASE_DIR, "config.json")
-BRIDGE_VERSION = "2.1.2-FUEL-ENGINEER"
+BRIDGE_VERSION = "2.1.3-STABLE-FLAGS"
 RTDB_BASE_URL = "https://grid-up-racedash-default-rtdb.europe-west1.firebasedatabase.app"
 
 # Optional shared secret for the local dashboard gateway. Never hardcode it: set the DASH_TOKEN
@@ -873,9 +873,49 @@ class TelemetryBridge:
             gear_arr = self.get_safe('CarIdxGear', [])
             rpm_arr = self.get_safe('CarIdxRPM', [])
 
+            # Flags resolution & bitmasks
+            session_flags = int(self.get_safe('SessionFlags', 0))
+            car_idx_flags_arr = self.get_safe('CarIdxSessionFlags', [])
+
+            FLAG_CHECKERED = 0x00000001
+            FLAG_WHITE = 0x00000002
+            FLAG_GREEN = 0x00000004
+            FLAG_YELLOW = 0x00000008
+            FLAG_RED = 0x00000010
+            FLAG_BLUE = 0x00000020
+            FLAG_DEBRIS = 0x00000040
+            FLAG_YELLOW_WAVING = 0x00000100
+            FLAG_CAUTION = 0x00004000
+            FLAG_CAUTION_WAVING = 0x00008000
+            FLAG_BLACK = 0x00010000        # Black Flag (penalty / drive-through / stop-and-go)
+            FLAG_DISQUALIFY = 0x00020000   # Disqualified
+            FLAG_SERVICIBLE = 0x00040000   # Serviceable in pit
+            FLAG_FURLED = 0x00080000       # Furled Black Flag (Black & White warning)
+            FLAG_REPAIR = 0x00100000       # Meatball Flag (Mechanical defect, pit repair required)
+
+            def decode_flags(f_val):
+                res = []
+                if not f_val:
+                    return res
+                if f_val & FLAG_REPAIR:
+                    res.append('meatball')
+                if f_val & FLAG_BLACK:
+                    res.append('black')
+                if f_val & FLAG_DISQUALIFY:
+                    res.append('dq')
+                if f_val & FLAG_FURLED:
+                    res.append('black_white')
+                if f_val & FLAG_BLUE:
+                    res.append('blue')
+                if f_val & (FLAG_YELLOW | FLAG_YELLOW_WAVING | FLAG_CAUTION | FLAG_CAUTION_WAVING):
+                    res.append('yellow')
+                return res
+
             if not hasattr(self, 'car_prev_progress'):
                 self.car_prev_progress = {}
                 self.car_prev_time = time.time()
+            if not hasattr(self, 'driver_last_valid_pos'):
+                self.driver_last_valid_pos = {}
 
             now_ts = time.time()
             dt = max(0.01, now_ts - getattr(self, 'car_prev_time', now_ts - 0.1))
@@ -887,51 +927,86 @@ class TelemetryBridge:
                     if idx == target_car_idx:
                         target_driver_meta = d
 
+                    # Skip pace car or ghost slots
+                    if d.get('IsPaceCar', False) or d.get('UserName') == 'Pace Car' or not d.get('UserName'):
+                        continue
+
                     dist = lap_dist_arr[idx] if (type(lap_dist_arr) in (list, tuple) and idx < len(lap_dist_arr)) else -1.0
                     surface = track_surface_arr[idx] if (type(track_surface_arr) in (list, tuple) and idx < len(track_surface_arr)) else -1
+                    is_on_pit = (surface == 1 or surface == 2)
                     
+                    raw_pos = pos_arr[idx] if (type(pos_arr) in (list, tuple) and idx < len(pos_arr)) else 0
+                    raw_class_pos = class_pos_arr[idx] if (type(class_pos_arr) in (list, tuple) and idx < len(class_pos_arr)) else 0
+                    raw_lap = lap_arr[idx] if (type(lap_arr) in (list, tuple) and idx < len(lap_arr)) else 0
+                    driver_last = last_lap_arr[idx] if (type(last_lap_arr) in (list, tuple) and idx < len(last_lap_arr)) else -1.0
+                    driver_best = best_lap_arr[idx] if (type(best_lap_arr) in (list, tuple) and idx < len(best_lap_arr)) else -1.0
+                    driver_gear = gear_arr[idx] if (type(gear_arr) in (list, tuple) and idx < len(gear_arr)) else 0
+                    driver_rpm = rpm_arr[idx] if (type(rpm_arr) in (list, tuple) and idx < len(rpm_arr)) else 0.0
+                    f2_val = f2_times[idx] if (type(f2_times) in (list, tuple) and idx < len(f2_times)) else 0.0
+
+                    # Position persistence & anti-flicker
+                    cached_pos = self.driver_last_valid_pos.get(idx, {'pos': 99, 'classPos': 99, 'lap': 0})
+                    if raw_pos > 0:
+                        cached_pos['pos'] = raw_pos
+                    driver_pos = cached_pos['pos']
+
+                    if raw_class_pos > 0:
+                        cached_pos['classPos'] = raw_class_pos
+                    driver_class_pos = cached_pos['classPos']
+
+                    if raw_lap > 0:
+                        cached_pos['lap'] = raw_lap
+                    driver_lap = cached_pos['lap']
+                    self.driver_last_valid_pos[idx] = cached_pos
+
+                    # Per-driver flags
+                    car_flags = 0
+                    if type(car_idx_flags_arr) in (list, tuple) and idx < len(car_idx_flags_arr):
+                        car_flags = int(car_idx_flags_arr[idx] or 0)
+                    elif idx == target_car_idx or idx == my_idx:
+                        car_flags = session_flags
+
+                    driver_flags = decode_flags(car_flags)
+
+                    # Speed estimation
+                    car_speed = 0.0
+                    prev_p = self.car_prev_progress.get(idx, dist)
+                    if dist >= 0 and prev_p >= 0 and dt > 0.01:
+                        d_prog = dist - prev_p
+                        if d_prog < -0.5:
+                            d_prog += 1.0  # crossed finish line
+                        if 0.0 <= d_prog < 0.2:
+                            car_speed = round((d_prog * track_len) / dt, 1)
+
                     if dist >= 0:
-                        driver_pos = pos_arr[idx] if (type(pos_arr) in (list, tuple) and idx < len(pos_arr)) else 0
-                        driver_class_pos = class_pos_arr[idx] if (type(class_pos_arr) in (list, tuple) and idx < len(class_pos_arr)) else 0
-                        driver_lap = lap_arr[idx] if (type(lap_arr) in (list, tuple) and idx < len(lap_arr)) else 0
-                        driver_last = last_lap_arr[idx] if (type(last_lap_arr) in (list, tuple) and idx < len(last_lap_arr)) else -1.0
-                        driver_best = best_lap_arr[idx] if (type(best_lap_arr) in (list, tuple) and idx < len(best_lap_arr)) else -1.0
-                        driver_gear = gear_arr[idx] if (type(gear_arr) in (list, tuple) and idx < len(gear_arr)) else 0
-                        driver_rpm = rpm_arr[idx] if (type(rpm_arr) in (list, tuple) and idx < len(rpm_arr)) else 0.0
-                        f2_val = f2_times[idx] if (type(f2_times) in (list, tuple) and idx < len(f2_times)) else 0.0
-
-                        # Speed estimation
-                        car_speed = 0.0
-                        prev_p = self.car_prev_progress.get(idx, dist)
-                        if dist >= 0 and prev_p >= 0 and dt > 0.01:
-                            d_prog = dist - prev_p
-                            if d_prog < -0.5:
-                                d_prog += 1.0  # crossed finish line
-                            if 0.0 <= d_prog < 0.2:
-                                car_speed = round((d_prog * track_len) / dt, 1)
-
                         self.car_prev_progress[idx] = dist
 
-                        drivers[str(idx)] = {
-                            'name': d['UserName'],
-                            'carNum': d['CarNumber'],
-                            'classId': d['CarClassID'],
-                            'className': d.get('CarClassShortName', str(d['CarClassID'])),
-                            'classColor': hex(d['CarClassColor'])[2:].zfill(6),
-                            'carPath': d.get('CarPath', ''),
-                            'progress': dist,
-                            'surface': surface,
-                            'pos': driver_pos,
-                            'classPos': driver_class_pos,
-                            'lap': driver_lap,
-                            'lastLap': driver_last,
-                            'bestLap': driver_best,
-                            'gear': driver_gear,
-                            'rpm': round(driver_rpm),
-                            'speed': car_speed,
-                            'isPlayer': idx == my_idx,
-                            'f2Time': f2_val
-                        }
+                    clean_progress = dist if dist >= 0 else self.car_prev_progress.get(idx, 0.0)
+
+                    drivers[str(idx)] = {
+                        'name': d['UserName'],
+                        'carNum': d['CarNumber'],
+                        'classId': d['CarClassID'],
+                        'className': d.get('CarClassShortName', str(d['CarClassID'])),
+                        'classColor': hex(d['CarClassColor'])[2:].zfill(6),
+                        'carPath': d.get('CarPath', ''),
+                        'progress': clean_progress,
+                        'surface': surface,
+                        'inPit': is_on_pit,
+                        'pos': driver_pos,
+                        'classPos': driver_class_pos,
+                        'lap': driver_lap,
+                        'lastLap': driver_last,
+                        'bestLap': driver_best,
+                        'gear': driver_gear,
+                        'rpm': round(driver_rpm),
+                        'speed': car_speed,
+                        'isPlayer': idx == my_idx,
+                        'f2Time': f2_val,
+                        'inc': d.get('CurDriverIncidentCount', 0),
+                        'flags': driver_flags,
+                        'flagBitmask': car_flags
+                    }
 
             self.car_prev_time = now_ts
             self.ir.freeze_var_buffer_latest()
@@ -1264,6 +1339,9 @@ class TelemetryBridge:
                     }
                 },
                 'session_time': round(self.get_safe('SessionTime', 0.0), 3),
+                'session_flags': session_flags,
+                'target_flags': decode_flags(session_flags if (target_car_idx == my_idx or is_spectating) else 0),
+                'target_flag_bitmask': session_flags,
                 'drivers': drivers,
                 'is_live': True,
                 'v': BRIDGE_VERSION,

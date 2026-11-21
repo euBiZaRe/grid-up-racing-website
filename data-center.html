@@ -587,6 +587,46 @@
             letter-spacing: 0.05em;
         }
 
+        /* Penalty & Mechanical Flag Badges */
+        .badge-flag {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-size: 0.55rem;
+            font-weight: 900;
+            letter-spacing: 0.04em;
+            line-height: 1;
+            vertical-align: middle;
+        }
+        .flag-meatball {
+            background: rgba(255, 102, 0, 0.22);
+            border: 1px solid #ff6600;
+            color: #ff9933;
+            animation: flag-pulse 1.4s infinite ease-in-out;
+        }
+        .flag-black {
+            background: rgba(0, 0, 0, 0.85);
+            border: 1px solid #f59e0b;
+            color: #fbbf24;
+            animation: flag-pulse 1.4s infinite ease-in-out;
+        }
+        .flag-bw {
+            background: rgba(255, 255, 255, 0.16);
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            color: #ffffff;
+        }
+        .flag-blue {
+            background: rgba(2, 132, 199, 0.22);
+            border: 1px solid #38bdf8;
+            color: #38bdf8;
+        }
+        @keyframes flag-pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.65; transform: scale(0.97); }
+        }
+
         /* Bottom Command Trio (3 Panels) */
         .bottom-trio-grid {
             display: grid;
@@ -992,7 +1032,10 @@
                         <i data-lucide="gauge" style="width: 14px; height: 14px; color: var(--accent-gold);"></i>
                         <span>COCKPIT ELECTRONICS & POWER</span>
                     </div>
-                    <span id="cockpit-car-tag" style="color: var(--accent-cyan); font-family: var(--font-mono); font-size: 0.65rem;">GT3</span>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span id="cockpit-flag-badge" style="display: none;"></span>
+                        <span id="cockpit-car-tag" style="color: var(--accent-cyan); font-family: var(--font-mono); font-size: 0.65rem;">GT3</span>
+                    </div>
                 </div>
                 <div class="dc-card-body">
                     <div class="cockpit-grid">
@@ -1601,6 +1644,16 @@
                 return;
             }
 
+            // Sort activeMids deterministically by newest update timestamp to prevent stream switching jitter
+            activeMids.sort((a, b) => {
+                const streamA = currentStreams[a] || {};
+                const streamB = currentStreams[b] || {};
+                const tsA = streamA.timestamp || streamA.telemetry?.timestamp || 0;
+                const tsB = streamB.timestamp || streamB.telemetry?.timestamp || 0;
+                if (tsA !== tsB) return tsB - tsA;
+                return String(a).localeCompare(String(b));
+            });
+
             // Pick primary active stream
             const primaryMid = activeMids[0];
             const primaryStream = currentStreams[primaryMid] || {};
@@ -1756,6 +1809,32 @@
             if (absEl) absEl.textContent = tel.abs !== undefined ? tel.abs : '5';
             if (tc1El) tc1El.textContent = tel.tc !== undefined ? tel.tc : '5';
             if (tc2El) tc2El.textContent = tel.tc2 !== undefined ? tel.tc2 : '9';
+
+            // Active Flag Alert in Cockpit Header
+            const flagBadgeEl = document.getElementById('cockpit-flag-badge');
+            if (flagBadgeEl) {
+                const targetFlags = targetDriver?.flags || tel.target_flags || [];
+                if (targetFlags.includes('meatball')) {
+                    flagBadgeEl.style.display = 'inline-flex';
+                    flagBadgeEl.className = 'badge-flag flag-meatball';
+                    flagBadgeEl.innerHTML = `<svg width="12" height="9" viewBox="0 0 12 9"><rect width="12" height="9" fill="#000" rx="1"/><circle cx="6" cy="4.5" r="2.8" fill="#ff6600"/></svg> MEATBALL (REPAIR)`;
+                } else if (targetFlags.includes('black') || targetFlags.includes('dq')) {
+                    flagBadgeEl.style.display = 'inline-flex';
+                    flagBadgeEl.className = 'badge-flag flag-black';
+                    flagBadgeEl.innerHTML = `<svg width="12" height="9" viewBox="0 0 12 9"><rect width="12" height="9" fill="#000" stroke="#f59e0b" stroke-width="1" rx="1"/></svg> BLACK FLAG (PENALTY)`;
+                } else if (targetFlags.includes('black_white')) {
+                    flagBadgeEl.style.display = 'inline-flex';
+                    flagBadgeEl.className = 'badge-flag flag-bw';
+                    flagBadgeEl.innerHTML = `<svg width="12" height="9" viewBox="0 0 12 9"><polygon points="0,0 12,0 0,9" fill="#000"/><polygon points="12,0 12,9 0,9" fill="#fff"/><rect width="12" height="9" fill="none" stroke="#888" stroke-width="0.5"/></svg> B&W WARNING`;
+                } else if (targetFlags.includes('blue')) {
+                    flagBadgeEl.style.display = 'inline-flex';
+                    flagBadgeEl.className = 'badge-flag flag-blue';
+                    flagBadgeEl.innerHTML = `<svg width="12" height="9" viewBox="0 0 12 9"><rect width="12" height="9" fill="#0284c7" rx="1"/></svg> BLUE FLAG`;
+                } else {
+                    flagBadgeEl.style.display = 'none';
+                    flagBadgeEl.innerHTML = '';
+                }
+            }
         }
 
         // Class Normalizer Helper
@@ -1791,6 +1870,24 @@
                 return;
             }
 
+            // Persistence cache to prevent position jumping on momentary 0s
+            window.driverClassPosCache = window.driverClassPosCache || {};
+            window.driverOverallPosCache = window.driverOverallPosCache || {};
+
+            driverList.forEach(d => {
+                const cNum = String(d.carNum || '');
+                if (typeof d.classPos === 'number' && d.classPos > 0) {
+                    window.driverClassPosCache[cNum] = d.classPos;
+                } else if (window.driverClassPosCache[cNum]) {
+                    d.classPos = window.driverClassPosCache[cNum];
+                }
+                if (typeof d.pos === 'number' && d.pos > 0) {
+                    window.driverOverallPosCache[cNum] = d.pos;
+                } else if (window.driverOverallPosCache[cNum]) {
+                    d.pos = window.driverOverallPosCache[cNum];
+                }
+            });
+
             // Target driver class key
             const targetClassKey = targetDriver ? normalizeClass(targetDriver).key : (driverList[0] ? normalizeClass(driverList[0]).key : 'GT3');
 
@@ -1810,7 +1907,7 @@
                 classesMap[cInfo.key].drivers.push(d);
             });
 
-            // Sort drivers inside each class strictly by classPos (or overall pos fallback)
+            // Sort drivers inside each class strictly and monotonically
             Object.values(classesMap).forEach(cls => {
                 cls.drivers.sort((a, b) => {
                     const posA = (typeof a.classPos === 'number' && a.classPos > 0) ? a.classPos : 99999;
@@ -1819,6 +1916,9 @@
                     const overallA = (typeof a.pos === 'number' && a.pos > 0) ? a.pos : 99999;
                     const overallB = (typeof b.pos === 'number' && b.pos > 0) ? b.pos : 99999;
                     if (overallA !== overallB) return overallA - overallB;
+                    const distA = ((a.lap || 0) * 1.0) + (a.progress || 0);
+                    const distB = ((b.lap || 0) * 1.0) + (b.progress || 0);
+                    if (Math.abs(distB - distA) > 0.0001) return distB - distA;
                     return (parseInt(a.carNum) || 0) - (parseInt(b.carNum) || 0);
                 });
             });
@@ -1904,14 +2004,33 @@
                     const deltaColor = deltaVal < 0 ? 'var(--accent-green)' : (deltaVal > 0 ? 'var(--accent-red)' : 'var(--text-muted)');
                     const deltaStr = deltaVal !== 0 ? (deltaVal > 0 ? `+${deltaVal.toFixed(2)}` : deltaVal.toFixed(2)) : '-';
 
+                    // Flags for this driver
+                    let flagHtml = '';
+                    const dFlags = Array.isArray(d.flags) ? d.flags : [];
+                    if (dFlags.includes('meatball')) {
+                        flagHtml += `<span class="badge-flag flag-meatball" title="MEATBALL FLAG: Mandatory pit for mechanical repairs"><svg width="12" height="9" viewBox="0 0 12 9"><rect width="12" height="9" fill="#000" rx="1"/><circle cx="6" cy="4.5" r="2.8" fill="#ff6600"/></svg> REPAIR</span>`;
+                    }
+                    if (dFlags.includes('black') || dFlags.includes('dq')) {
+                        flagHtml += `<span class="badge-flag flag-black" title="BLACK FLAG: Penalty / Drive-Through / Stop & Go"><svg width="12" height="9" viewBox="0 0 12 9"><rect width="12" height="9" fill="#000" stroke="#f59e0b" stroke-width="1" rx="1"/></svg> PENALTY</span>`;
+                    }
+                    if (dFlags.includes('black_white')) {
+                        flagHtml += `<span class="badge-flag flag-bw" title="BLACK & WHITE FLAG: Warning / Track Limits"><svg width="12" height="9" viewBox="0 0 12 9"><polygon points="0,0 12,0 0,9" fill="#000"/><polygon points="12,0 12,9 0,9" fill="#fff"/><rect width="12" height="9" fill="none" stroke="#888" stroke-width="0.5"/></svg> WARN</span>`;
+                    }
+                    if (dFlags.includes('blue')) {
+                        flagHtml += `<span class="badge-flag flag-blue" title="BLUE FLAG: Yield to faster car"><svg width="12" height="9" viewBox="0 0 12 9"><rect width="12" height="9" fill="#0284c7" rx="1"/></svg> BLUE</span>`;
+                    }
+
                     rowsHtml += `
                         <tr class="${rowClass}" onclick="focusDriver('${escapeHtml(d.carNum)}')">
                             <td style="text-align: center;"><span class="pos-badge ${posColorClass}">P${displayPos}</span></td>
                             <td><span class="carnum-chip">#${escapeHtml(d.carNum || '-')}</span></td>
                             <td>
-                                <div style="display: flex; align-items: center; gap: 6px;">
-                                    ${d.classColor ? `<span style="width: 5px; height: 5px; border-radius: 50%; background: #${d.classColor};"></span>` : ''}
-                                    <span style="font-weight: 700; color: #fff;">${escapeHtml(d.name || 'Unknown')}</span>
+                                <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
+                                    <div style="display: flex; align-items: center; gap: 6px;">
+                                        ${d.classColor ? `<span style="width: 5px; height: 5px; border-radius: 50%; background: #${d.classColor};"></span>` : ''}
+                                        <span style="font-weight: 700; color: #fff;">${escapeHtml(d.name || 'Unknown')}</span>
+                                    </div>
+                                    ${flagHtml ? `<div style="display: flex; gap: 3px; align-items: center;">${flagHtml}</div>` : ''}
                                 </div>
                             </td>
                             <td><span class="irating-chip">${d.irating ? `${(d.irating / 1000).toFixed(1)}k` : '--'}</span></td>
