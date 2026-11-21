@@ -2075,20 +2075,8 @@ async function renderEventResults(eventId, targetElement) {
         docs.forEach(d => {
             const drivers = Array.isArray(d.drivers) ? d.drivers.join(', ') : (d.drivers || '');
             const finishPos = (d.finish || '-').trim();
-            
-            // Finish color styling matching event podiums and results modal
-            let finishStyle = 'color: #ffbe0b;';
-            if (finishPos.toUpperCase() === 'P1') {
-                finishStyle = 'color: #ffd700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.4);';
-            } else if (finishPos.toUpperCase() === 'P2') {
-                finishStyle = 'color: #e2e8f0; text-shadow: 0 0 10px rgba(226, 232, 240, 0.3);';
-            } else if (finishPos.toUpperCase() === 'P3') {
-                finishStyle = 'color: #f59e0b; text-shadow: 0 0 10px rgba(245, 158, 11, 0.3);';
-            } else if (/^P([4-5])$/i.test(finishPos)) {
-                finishStyle = 'color: #00ff88;';
-            } else if (/^P([6-9]|10)$/i.test(finishPos)) {
-                finishStyle = 'color: #00cfff;';
-            }
+            // Finish color styling: P1 = Gold, P2 = Silver, P3 = Bronze, Rest = Blue
+            const finishStyle = getFinishPositionStyle(finishPos);
             
             rowsHtml += `
                 <tr>
@@ -2207,7 +2195,7 @@ async function openEventResultsModal(eventId, eventName = '') {
                         ${d.qualy || '-'}
                     </td>
                     <td style="padding: 1.1rem 1rem; text-align: right;">
-                        <strong style="font-family: var(--font-heading); color: #ffbe0b; font-weight: 900; font-size: 1.25rem; letter-spacing: 0.5px;">${d.finish || '-'}</strong>
+                        <strong style="font-family: var(--font-heading); ${finishStyle} font-weight: 900; font-size: 1.25rem; letter-spacing: 0.5px;">${finishPos}</strong>
                     </td>
                 </tr>
             `;
@@ -2514,6 +2502,8 @@ async function loadAllResults() {
             let rowsHtml = '';
             results.forEach(d => {
                 const drivers = Array.isArray(d.drivers) ? d.drivers.join(', ') : (d.drivers || 'TBA');
+                const finishPos = (d.finish || '-').trim();
+                const finishStyle = getFinishPositionStyle(finishPos);
                 rowsHtml += `
                     <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
                         <td class="col-team" style="padding: 0.5rem 0.75rem;">
@@ -2525,7 +2515,7 @@ async function loadAllResults() {
                             <span style="color: var(--text-muted); font-size: 0.85rem; font-variant-numeric: tabular-nums; display: inline-block;">${d.qualy || '-'}</span>
                         </td>
                         <td class="col-finish" style="padding: 0.5rem 0.75rem; width: 120px; text-align: center; white-space: nowrap;">
-                            <strong style="color: var(--primary); font-weight: 900; font-size: 1rem; font-variant-numeric: tabular-nums; display: inline-block;">${d.finish || '-'}</strong>
+                            <strong style="${finishStyle} font-weight: 900; font-size: 1.05rem; font-variant-numeric: tabular-nums; display: inline-block;">${finishPos}</strong>
                         </td>
                     </tr>
                 `;
