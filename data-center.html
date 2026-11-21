@@ -1762,6 +1762,27 @@
             if (lapsEl) lapsEl.textContent = lapNum > 0 ? `L${lapNum}` : 'OUT';
         }
 
+        // Helper: Generate exact graphical SVG flag icons matching real motorsport standards
+        function getFlagIconSvg(type, width = 16, height = 11) {
+            if (type === 'blue') {
+                // Image 1: Blue background with diagonal yellow stripe from bottom-left to top-right
+                return `<svg width="${width}" height="${height}" viewBox="0 0 18 12" style="border-radius: 2px; overflow: hidden; display: inline-block; vertical-align: middle; border: 1px solid rgba(255,255,255,0.25);" title="BLUE FLAG: Faster car approaching"><rect width="18" height="12" fill="#0038d6"/><polygon points="0,7 0,12 5,12 18,5 18,0 13,0" fill="#ffea00"/></svg>`;
+            }
+            if (type === 'black_white') {
+                // Image 2: Diagonally divided black (top-left) and white (bottom-right)
+                return `<svg width="${width}" height="${height}" viewBox="0 0 18 12" style="border-radius: 2px; overflow: hidden; display: inline-block; vertical-align: middle; border: 1px solid rgba(255,255,255,0.35);" title="BLACK & WHITE FLAG: Track Limits / Warning"><polygon points="0,12 18,0 18,12" fill="#ffffff"/><polygon points="0,0 18,0 0,12" fill="#050505"/></svg>`;
+            }
+            if (type === 'meatball') {
+                // Image 3: Solid black background with centered vibrant orange circle
+                return `<svg width="${width}" height="${height}" viewBox="0 0 18 12" style="border-radius: 2px; overflow: hidden; display: inline-block; vertical-align: middle; border: 1px solid rgba(255,255,255,0.25);" title="MEATBALL FLAG: Mechanical Defect / Mandatory Repair"><rect width="18" height="12" fill="#050505"/><circle cx="9" cy="6" r="4.2" fill="#ff7700"/></svg>`;
+            }
+            if (type === 'black' || type === 'dq') {
+                // Image 4: Solid pitch black flag with distinct subtle outline
+                return `<svg width="${width}" height="${height}" viewBox="0 0 18 12" style="border-radius: 2px; overflow: hidden; display: inline-block; vertical-align: middle; border: 1px solid rgba(245,158,11,0.6);" title="BLACK FLAG: Penalty / Drive-Through / Stop & Go"><rect width="18" height="12" fill="#050505"/></svg>`;
+            }
+            return '';
+        }
+
         // Cockpit & Electronics
         function renderCockpit(tel, targetDriver, driverName, carNum) {
             const carNameEl = document.getElementById('cockpit-car-name');
@@ -1817,19 +1838,19 @@
                 if (targetFlags.includes('meatball')) {
                     flagBadgeEl.style.display = 'inline-flex';
                     flagBadgeEl.className = 'badge-flag flag-meatball';
-                    flagBadgeEl.innerHTML = `<svg width="12" height="9" viewBox="0 0 12 9"><rect width="12" height="9" fill="#000" rx="1"/><circle cx="6" cy="4.5" r="2.8" fill="#ff6600"/></svg> MEATBALL (REPAIR)`;
+                    flagBadgeEl.innerHTML = `${getFlagIconSvg('meatball', 18, 12)} <span style="margin-left:3px;">MEATBALL (REPAIR)</span>`;
                 } else if (targetFlags.includes('black') || targetFlags.includes('dq')) {
                     flagBadgeEl.style.display = 'inline-flex';
                     flagBadgeEl.className = 'badge-flag flag-black';
-                    flagBadgeEl.innerHTML = `<svg width="12" height="9" viewBox="0 0 12 9"><rect width="12" height="9" fill="#000" stroke="#f59e0b" stroke-width="1" rx="1"/></svg> BLACK FLAG (PENALTY)`;
+                    flagBadgeEl.innerHTML = `${getFlagIconSvg('black', 18, 12)} <span style="margin-left:3px;">BLACK FLAG (PENALTY)</span>`;
                 } else if (targetFlags.includes('black_white')) {
                     flagBadgeEl.style.display = 'inline-flex';
                     flagBadgeEl.className = 'badge-flag flag-bw';
-                    flagBadgeEl.innerHTML = `<svg width="12" height="9" viewBox="0 0 12 9"><polygon points="0,0 12,0 0,9" fill="#000"/><polygon points="12,0 12,9 0,9" fill="#fff"/><rect width="12" height="9" fill="none" stroke="#888" stroke-width="0.5"/></svg> B&W WARNING`;
+                    flagBadgeEl.innerHTML = `${getFlagIconSvg('black_white', 18, 12)} <span style="margin-left:3px;">B&W WARNING</span>`;
                 } else if (targetFlags.includes('blue')) {
                     flagBadgeEl.style.display = 'inline-flex';
                     flagBadgeEl.className = 'badge-flag flag-blue';
-                    flagBadgeEl.innerHTML = `<svg width="12" height="9" viewBox="0 0 12 9"><rect width="12" height="9" fill="#0284c7" rx="1"/></svg> BLUE FLAG`;
+                    flagBadgeEl.innerHTML = `${getFlagIconSvg('blue', 18, 12)} <span style="margin-left:3px;">BLUE FLAG</span>`;
                 } else {
                     flagBadgeEl.style.display = 'none';
                     flagBadgeEl.innerHTML = '';
@@ -2008,16 +2029,16 @@
                     let flagHtml = '';
                     const dFlags = Array.isArray(d.flags) ? d.flags : [];
                     if (dFlags.includes('meatball')) {
-                        flagHtml += `<span class="badge-flag flag-meatball" title="MEATBALL FLAG: Mandatory pit for mechanical repairs"><svg width="12" height="9" viewBox="0 0 12 9"><rect width="12" height="9" fill="#000" rx="1"/><circle cx="6" cy="4.5" r="2.8" fill="#ff6600"/></svg> REPAIR</span>`;
+                        flagHtml += `<span class="badge-flag flag-meatball" title="MEATBALL FLAG: Mandatory pit for mechanical repairs">${getFlagIconSvg('meatball', 15, 10)} <span>REPAIR</span></span>`;
                     }
                     if (dFlags.includes('black') || dFlags.includes('dq')) {
-                        flagHtml += `<span class="badge-flag flag-black" title="BLACK FLAG: Penalty / Drive-Through / Stop & Go"><svg width="12" height="9" viewBox="0 0 12 9"><rect width="12" height="9" fill="#000" stroke="#f59e0b" stroke-width="1" rx="1"/></svg> PENALTY</span>`;
+                        flagHtml += `<span class="badge-flag flag-black" title="BLACK FLAG: Penalty / Drive-Through / Stop & Go">${getFlagIconSvg('black', 15, 10)} <span>PENALTY</span></span>`;
                     }
                     if (dFlags.includes('black_white')) {
-                        flagHtml += `<span class="badge-flag flag-bw" title="BLACK & WHITE FLAG: Warning / Track Limits"><svg width="12" height="9" viewBox="0 0 12 9"><polygon points="0,0 12,0 0,9" fill="#000"/><polygon points="12,0 12,9 0,9" fill="#fff"/><rect width="12" height="9" fill="none" stroke="#888" stroke-width="0.5"/></svg> WARN</span>`;
+                        flagHtml += `<span class="badge-flag flag-bw" title="BLACK & WHITE FLAG: Warning / Track Limits">${getFlagIconSvg('black_white', 15, 10)} <span>WARN</span></span>`;
                     }
                     if (dFlags.includes('blue')) {
-                        flagHtml += `<span class="badge-flag flag-blue" title="BLUE FLAG: Yield to faster car"><svg width="12" height="9" viewBox="0 0 12 9"><rect width="12" height="9" fill="#0284c7" rx="1"/></svg> BLUE</span>`;
+                        flagHtml += `<span class="badge-flag flag-blue" title="BLUE FLAG: Yield to faster car">${getFlagIconSvg('blue', 15, 10)} <span>BLUE</span></span>`;
                     }
 
                     rowsHtml += `
