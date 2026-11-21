@@ -1,0 +1,2297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GRiD UP Pitwall Data Centre & Race Control</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="assets/G_2.png">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Firebase Compat SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+
+    <style>
+        :root {
+            --bg-base: #050508;
+            --bg-panel: #0a0a0f;
+            --bg-subpanel: #111118;
+            --border-panel: rgba(255, 255, 255, 0.08);
+            --border-bright: rgba(255, 255, 255, 0.16);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-blue: #3b82f6;
+            --accent-cyan: #38bdf8;
+            --accent-green: #10b981;
+            --accent-gold: #f59e0b;
+            --accent-red: #ef4444;
+            --accent-purple: #a855f7;
+            --font-mono: 'JetBrains Mono', monospace;
+            --font-orbitron: 'Orbitron', sans-serif;
+            --font-sans: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            user-select: none;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Top Superbar */
+        .dc-superbar {
+            height: 52px;
+            background: linear-gradient(180deg, #0f0f17 0%, #08080c 100%);
+            border-bottom: 1px solid var(--border-panel);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1rem;
+            gap: 1rem;
+            z-index: 100;
+        }
+
+        .dc-brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--font-orbitron);
+            font-size: 0.95rem;
+            font-weight: 900;
+            letter-spacing: 0.08em;
+            color: #fff;
+            white-space: nowrap;
+        }
+        .dc-brand span.highlight {
+            color: var(--accent-cyan);
+            text-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
+        }
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            box-shadow: 0 0 10px var(--accent-green);
+            animation: pulse-live 1.5s infinite;
+        }
+        @keyframes pulse-live {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        /* Sector & Delta Metrics in Superbar */
+        .superbar-deltas {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+        }
+        .delta-chip {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-panel);
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+        .delta-val {
+            font-weight: 800;
+            font-size: 0.85rem;
+        }
+        .delta-pos { color: var(--accent-red); }
+        .delta-neg { color: var(--accent-green); text-shadow: 0 0 8px rgba(16, 185, 129, 0.4); }
+
+        .superbar-laptimes {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+        }
+        .lap-tag {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.1;
+        }
+        .lap-tag span.lbl {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .lap-tag span.val {
+            font-weight: 800;
+            font-size: 0.95rem;
+        }
+        .val-last { color: var(--accent-gold); }
+        .val-best { color: var(--accent-purple); text-shadow: 0 0 8px rgba(168, 85, 247, 0.4); }
+        .val-est { color: var(--accent-green); }
+
+        .superbar-status {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-family: var(--font-orbitron);
+        }
+        .status-chip {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-panel);
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Superbar Action Controls */
+        .superbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .dc-select {
+            background: #111118;
+            color: #f1f5f9;
+            border: 1px solid var(--border-panel);
+            font-family: var(--font-sans);
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 5px 8px;
+            border-radius: 6px;
+            outline: none;
+            cursor: pointer;
+        }
+        .dc-select:focus {
+            border-color: var(--accent-cyan);
+        }
+
+        .dc-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-panel);
+            color: #cbd5e1;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+        .dc-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff;
+            border-color: var(--border-bright);
+        }
+        .dc-btn.active {
+            background: rgba(56, 189, 248, 0.2);
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+        }
+        .dc-btn-fullscreen {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.4);
+            color: #fca5a5;
+        }
+        .dc-btn-fullscreen:hover {
+            background: rgba(239, 68, 68, 0.3);
+            border-color: #ef4444;
+            color: #fff;
+        }
+
+        /* Main Workspace Layout */
+        .dc-workspace {
+            height: calc(100vh - 52px);
+            width: 100vw;
+            display: grid;
+            grid-template-columns: 31% 69%;
+            padding: 8px;
+            gap: 8px;
+            background: #050508;
+        }
+
+        /* Column Layouts */
+        .dc-left-col {
+            display: grid;
+            grid-template-rows: 44% 20% 36%;
+            gap: 8px;
+            height: 100%;
+            min-height: 0;
+        }
+
+        .dc-right-col {
+            display: grid;
+            grid-template-rows: 62% 38%;
+            gap: 8px;
+            height: 100%;
+            min-height: 0;
+        }
+
+        /* Generic Panels */
+        .dc-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-panel);
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .dc-card-header {
+            height: 32px;
+            min-height: 32px;
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid var(--border-panel);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 10px;
+            font-size: 0.68rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-secondary);
+        }
+        .dc-card-header .title-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .dc-card-body {
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+            position: relative;
+            padding: 8px;
+        }
+
+        /* Radar Track Map Panel */
+        .radar-canvas-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: radial-gradient(circle at center, rgba(16, 24, 40, 0.5) 0%, rgba(5, 5, 8, 0.8) 100%);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        #radar-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .radar-overlay-top {
+            position: absolute;
+            top: 6px;
+            left: 8px;
+            right: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            pointer-events: none;
+        }
+        .track-badge {
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(4px);
+            border: 1px solid var(--border-panel);
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 0.65rem;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: 0.04em;
+        }
+        .cond-badge {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: var(--accent-green);
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 0.62rem;
+            font-weight: 900;
+        }
+        .radar-overlay-bottom {
+            position: absolute;
+            bottom: 6px;
+            left: 8px;
+            right: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            background: rgba(0, 0, 0, 0.55);
+            padding: 3px 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* In-Car Cockpit Controls & Electronics Panel */
+        .cockpit-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            height: 100%;
+            gap: 8px;
+            align-items: center;
+        }
+        .car-hero {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 4px;
+        }
+        .car-model-name {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .driver-hero-name {
+            font-size: 0.68rem;
+            color: var(--accent-cyan);
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .gear-speed-row {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+        }
+        .huge-gear {
+            font-family: var(--font-orbitron);
+            font-size: 2.8rem;
+            font-weight: 900;
+            line-height: 1;
+            color: #fff;
+            text-shadow: 0 0 16px rgba(255, 255, 255, 0.2);
+        }
+        .speed-readout {
+            font-family: var(--font-orbitron);
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--accent-cyan);
+        }
+        .speed-unit {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        /* Electronics Table (Bias, TC, ABS) */
+        .electronics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 4px;
+            height: 100%;
+        }
+        .elec-tile {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-panel);
+            border-radius: 5px;
+            padding: 3px 6px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .elec-tile.full-width {
+            grid-column: span 2;
+        }
+        .elec-lbl {
+            font-size: 0.58rem;
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .elec-val {
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            font-weight: 800;
+            color: #fff;
+        }
+
+        /* Oscilloscope Trace & Pedal Inputs */
+        .oscilloscope-body {
+            display: grid;
+            grid-template-columns: 1fr 64px;
+            gap: 6px;
+            height: 100%;
+            padding: 4px 8px;
+        }
+        #trace-canvas {
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 5px;
+            display: block;
+        }
+        .pedal-meters {
+            display: flex;
+            justify-content: space-between;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-panel);
+            border-radius: 5px;
+            padding: 4px 6px;
+        }
+        .pedal-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+            width: 12px;
+        }
+        .meter-bar-bg {
+            flex: 1;
+            width: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 3px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column-reverse;
+            position: relative;
+        }
+        .meter-bar-fill {
+            width: 100%;
+            height: 0%;
+            transition: height 0.05s linear;
+        }
+        .fill-thr { background: var(--accent-green); box-shadow: 0 0 6px var(--accent-green); }
+        .fill-brk { background: var(--accent-red); box-shadow: 0 0 6px var(--accent-red); }
+        .fill-clt { background: var(--accent-blue); }
+        .pedal-label {
+            font-size: 0.55rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* Timing Tower (Leaderboard) */
+        .timing-table-wrapper {
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: auto;
+        }
+        .timing-table {
+            width: 100%;
+            min-width: 840px;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+            text-align: left;
+        }
+        .timing-table th {
+            position: sticky;
+            top: 0;
+            background: #0e0e16;
+            color: var(--text-muted);
+            font-weight: 800;
+            padding: 6px 8px;
+            border-bottom: 1px solid var(--border-panel);
+            text-transform: uppercase;
+            font-size: 0.65rem;
+            letter-spacing: 0.05em;
+            z-index: 10;
+            white-space: nowrap;
+        }
+        .timing-table td {
+            padding: 4px 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            color: #e2e8f0;
+            font-family: var(--font-mono);
+            white-space: nowrap;
+            font-size: 0.74rem;
+        }
+        .timing-table tr {
+            transition: background 0.15s ease;
+            cursor: pointer;
+        }
+        .timing-table tr:hover {
+            background: rgba(255, 255, 255, 0.04);
+        }
+        .timing-table tr.row-player {
+            background: rgba(245, 158, 11, 0.14) !important;
+            border-left: 3px solid var(--accent-gold);
+        }
+        .timing-table tr.row-focused {
+            background: rgba(56, 189, 248, 0.16) !important;
+            border-left: 3px solid var(--accent-cyan);
+        }
+
+        .pos-badge {
+            display: inline-block;
+            font-family: var(--font-orbitron);
+            font-weight: 900;
+            font-size: 0.75rem;
+            width: 24px;
+            text-align: center;
+        }
+        .pos-p1 { color: #ffd700; text-shadow: 0 0 8px rgba(255, 215, 0, 0.5); }
+        .pos-p2 { color: #e2e8f0; }
+        .pos-p3 { color: #cd7f32; }
+        .pos-other { color: #60a5fa; }
+
+        .carnum-chip {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border-panel);
+            border-radius: 3px;
+            padding: 1px 5px;
+            font-weight: 800;
+            color: #fff;
+            font-size: 0.7rem;
+        }
+        .irating-chip {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+            border-radius: 3px;
+            padding: 1px 4px;
+            font-size: 0.65rem;
+            font-weight: 700;
+        }
+        .pit-badge {
+            background: #f59e0b;
+            color: #000;
+            font-weight: 900;
+            font-size: 0.6rem;
+            padding: 1px 4px;
+            border-radius: 3px;
+            letter-spacing: 0.05em;
+        }
+
+        /* Bottom Command Trio (3 Panels) */
+        .bottom-trio-grid {
+            display: grid;
+            grid-template-columns: 33% 34% 33%;
+            gap: 8px;
+            height: 100%;
+            min-height: 0;
+        }
+
+        /* 1. Tactical Battle Relative Box */
+        .battle-body {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            height: 100%;
+            padding: 4px;
+        }
+        .battle-row {
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--border-panel);
+            border-radius: 6px;
+            padding: 4px 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .battle-row.ahead { border-left: 3px solid var(--accent-red); }
+        .battle-row.behind { border-left: 3px solid var(--accent-blue); }
+        .battle-driver-info {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .battle-driver-name {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #fff;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .battle-gap-readout {
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            font-weight: 900;
+        }
+        .battle-delta-trend {
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            font-weight: 700;
+            margin-left: 6px;
+        }
+        .battle-center-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 2px 0;
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--accent-gold);
+            font-weight: 800;
+        }
+        .battle-alert-tag {
+            font-size: 0.62rem;
+            text-transform: uppercase;
+            font-weight: 900;
+            padding: 2px 8px;
+            border-radius: 4px;
+            text-align: center;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        /* 2. Fuel Strategy & Stint Calculator */
+        .fuel-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto 1fr;
+            gap: 6px;
+            height: 100%;
+            padding: 4px;
+        }
+        .fuel-main-stat {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-panel);
+            border-radius: 6px;
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .fuel-lbl {
+            font-size: 0.58rem;
+            color: var(--text-muted);
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+        .fuel-val {
+            font-family: var(--font-mono);
+            font-size: 1.15rem;
+            font-weight: 900;
+            color: #fff;
+        }
+        .fuel-val.highlight {
+            color: var(--accent-green);
+        }
+        .fuel-bar-wrap {
+            grid-column: span 2;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 2px 0;
+        }
+        .fuel-bar-fill {
+            height: 100%;
+            width: 50%;
+            background: linear-gradient(90deg, #10b981, #38bdf8);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        .fuel-averages-grid {
+            grid-column: span 2;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 4px;
+        }
+        .fuel-avg-box {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 4px;
+            padding: 3px;
+            text-align: center;
+        }
+        .fuel-avg-lbl { font-size: 0.55rem; color: var(--text-muted); }
+        .fuel-avg-val { font-family: var(--font-mono); font-size: 0.72rem; font-weight: 800; color: #fff; }
+
+        /* 3. Tyre & Thermal Centre */
+        .tyres-body {
+            height: 100%;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 6px;
+            padding: 4px;
+            align-items: center;
+        }
+        .tyre-card {
+            background: rgba(0, 0, 0, 0.45);
+            border: 1px solid var(--border-panel);
+            border-radius: 6px;
+            padding: 4px 6px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 100%;
+        }
+        .tyre-corner-title {
+            font-size: 0.58rem;
+            font-weight: 800;
+            color: var(--text-muted);
+        }
+        .tyre-press-readout {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            font-weight: 900;
+            color: #fff;
+        }
+        .tyre-temp-readout {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+        }
+        .tyre-wear-bar {
+            height: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 3px;
+        }
+        .tyre-wear-fill {
+            height: 100%;
+            width: 100%;
+            background: var(--accent-green);
+        }
+        .car-chassis-sil {
+            width: 22px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            grid-row: span 2;
+        }
+        .car-chassis-center-dot {
+            width: 6px;
+            height: 10px;
+            background: var(--accent-cyan);
+            border-radius: 2px;
+            opacity: 0.6;
+        }
+
+        /* Thermal Heat Styling */
+        .thermal-cold { border-color: rgba(56, 189, 248, 0.4); background: rgba(56, 189, 248, 0.12); }
+        .thermal-optimal { border-color: rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.15); }
+        .thermal-warm { border-color: rgba(245, 158, 11, 0.4); background: rgba(245, 158, 11, 0.15); }
+        .thermal-hot { border-color: rgba(239, 68, 68, 0.5); background: rgba(239, 68, 68, 0.2); }
+
+        /* Custom Sleek Scrollbars */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #08080c;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 1100px) {
+            .dc-workspace {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto;
+                height: auto;
+                overflow-y: auto;
+            }
+            body {
+                overflow-y: auto;
+                height: auto;
+            }
+            .dc-left-col {
+                height: 600px;
+            }
+            .dc-right-col {
+                height: 700px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SUPERBAR -->
+    <header class="dc-superbar">
+        <div class="dc-brand">
+            <span class="live-dot"></span>
+            <span>GRID UP <span class="highlight">DATA CENTRE</span></span>
+        </div>
+
+        <!-- Delta & Sectors -->
+        <div class="superbar-deltas">
+            <div class="delta-chip">
+                <span style="color: var(--text-muted); font-size: 0.65rem; font-weight: 700;">DELTA</span>
+                <span id="sb-delta-val" class="delta-val delta-neg">-0.120</span>
+            </div>
+            <div class="delta-chip">
+                <span>S1: <strong id="sb-s1-val" style="color: #fff;">--</strong> <small id="sb-s1-delta" class="delta-neg">(-0.05)</small></span>
+            </div>
+            <div class="delta-chip">
+                <span>S2: <strong id="sb-s2-val" style="color: #fff;">--</strong> <small id="sb-s2-delta" class="delta-pos">(+0.12)</small></span>
+            </div>
+            <div class="delta-chip">
+                <span>S3: <strong id="sb-s3-val" style="color: #fff;">--</strong> <small id="sb-s3-delta" class="delta-neg">(-0.08)</small></span>
+            </div>
+        </div>
+
+        <!-- Lap PB & Estimated Times -->
+        <div class="superbar-laptimes">
+            <div class="lap-tag">
+                <span class="lbl">Last Lap</span>
+                <span id="sb-lap-last" class="val val-last">--:--.---</span>
+            </div>
+            <div class="lap-tag">
+                <span class="lbl">Best Lap</span>
+                <span id="sb-lap-best" class="val val-best">--:--.---</span>
+            </div>
+            <div class="lap-tag">
+                <span class="lbl">Est Lap</span>
+                <span id="sb-lap-est" class="val val-est">--:--.---</span>
+            </div>
+        </div>
+
+        <!-- Session Status -->
+        <div class="superbar-status">
+            <div class="status-chip">
+                <span style="color: var(--text-muted);">POS:</span>
+                <span id="sb-pos-val" style="color: var(--accent-cyan); font-weight: 900;">P--</span>
+            </div>
+            <div class="status-chip">
+                <span style="color: var(--text-muted);">RACE:</span>
+                <span id="sb-time-val" style="color: #fff; font-family: var(--font-mono);">--:--</span>
+            </div>
+            <div class="status-chip">
+                <span style="color: var(--text-muted);">LAPS:</span>
+                <span id="sb-laps-val" style="color: #fff; font-family: var(--font-mono);">L--</span>
+            </div>
+        </div>
+
+        <!-- Action Controls -->
+        <div class="superbar-actions">
+            <!-- Team Selector -->
+            <select id="team-select" class="dc-select" title="Active Racing Team">
+                <option value="gridUp_sim">GRiD UP Sim Racing</option>
+                <option value="gridUp_black">GRiD UP Black</option>
+                <option value="gridUp_blue">GRiD UP Blue</option>
+                <option value="gridUp_red">GRiD UP Red</option>
+                <option value="gridUp_white">GRiD UP White</option>
+                <option value="gridUp_purple">GRiD UP Purple</option>
+                <option value="gridUp_practice">PRACTICE SERVER</option>
+                <option value="solo">SOLO / Personal</option>
+            </select>
+
+            <!-- Focus Target Driver Dropdown -->
+            <select id="focus-driver-select" class="dc-select" title="Focus Driver / Car">
+                <option value="auto">Target: Auto (My Driver)</option>
+            </select>
+
+            <!-- Audio Alerts Toggle -->
+            <button type="button" id="btn-audio-toggle" class="dc-btn active" title="Toggle Spotter Audio Chimes">
+                <i data-lucide="bell" style="width: 13px; height: 13px;"></i>
+                <span id="audio-lbl">ALERTS ON</span>
+            </button>
+
+            <!-- Units Toggle -->
+            <button type="button" id="btn-units-toggle" class="dc-btn" title="Toggle Metric / Imperial">
+                <span id="units-lbl">METRIC</span>
+            </button>
+
+            <!-- Fullscreen Button -->
+            <button type="button" id="btn-fullscreen" class="dc-btn dc-btn-fullscreen" title="Toggle Fullscreen Mode (Press F)">
+                <i data-lucide="maximize" id="fs-icon" style="width: 13px; height: 13px;"></i>
+                <span id="fs-text">FULLSCREEN</span>
+            </button>
+
+            <!-- Back to Standard Telemetry -->
+            <a href="telemetry.html" id="link-standard-tel" class="dc-btn" title="Return to standard telemetry page">
+                <i data-lucide="arrow-left" style="width: 13px; height: 13px;"></i>
+                <span>STANDARD</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- WORKSPACE -->
+    <main class="dc-workspace">
+
+        <!-- LEFT COLUMN: RADAR + COCKPIT + OSCILLOSCOPE -->
+        <section class="dc-left-col">
+
+            <!-- 1. Radar Minimap & Weather -->
+            <div class="dc-card">
+                <div class="dc-card-header">
+                    <div class="title-group">
+                        <i data-lucide="map-pin" style="width: 14px; height: 14px; color: var(--accent-cyan);"></i>
+                        <span>CIRCUIT RADAR & ENVIRONMENT</span>
+                    </div>
+                    <span id="radar-north-tag" style="font-family: var(--font-mono); color: var(--text-muted);">N ▲</span>
+                </div>
+                <div class="dc-card-body" style="padding: 0;">
+                    <div class="radar-canvas-container" id="radar-container">
+                        <canvas id="radar-canvas"></canvas>
+                        
+                        <!-- Track Overlay Top -->
+                        <div class="radar-overlay-top">
+                            <span id="track-name-badge" class="track-badge">LOADING TRACK...</span>
+                            <span id="track-cond-badge" class="cond-badge">DRY</span>
+                        </div>
+
+                        <!-- Track Overlay Bottom -->
+                        <div class="radar-overlay-bottom">
+                            <span>Air: <strong id="env-air-temp" style="color: #fff;">--°C</strong> | Track: <strong id="env-track-temp" style="color: #fff;">--°C</strong></span>
+                            <span>Sim: <strong id="env-sim-time" style="color: #fff;">--:--</strong></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. In-Car Controls & Cockpit Electronics -->
+            <div class="dc-card">
+                <div class="dc-card-header">
+                    <div class="title-group">
+                        <i data-lucide="gauge" style="width: 14px; height: 14px; color: var(--accent-gold);"></i>
+                        <span>COCKPIT ELECTRONICS & POWER</span>
+                    </div>
+                    <span id="cockpit-car-tag" style="color: var(--accent-cyan); font-family: var(--font-mono); font-size: 0.65rem;">GT3</span>
+                </div>
+                <div class="dc-card-body">
+                    <div class="cockpit-grid">
+                        <div class="car-hero">
+                            <div id="cockpit-car-name" class="car-model-name">Sim Car</div>
+                            <div id="cockpit-driver-name" class="driver-hero-name">Driver</div>
+                            <div class="gear-speed-row">
+                                <div id="cockpit-gear" class="huge-gear">N</div>
+                                <div>
+                                    <span id="cockpit-speed" class="speed-readout">0</span>
+                                    <span id="cockpit-speed-unit" class="speed-unit">KM/H</span>
+                                    <div id="cockpit-rpm-bar" style="width: 70px; height: 5px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden; margin-top: 4px;">
+                                        <div id="cockpit-rpm-fill" style="width: 0%; height: 100%; background: var(--accent-green); transition: width 0.05s linear;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Electronics Dials -->
+                        <div class="electronics-grid">
+                            <div class="elec-tile">
+                                <span class="elec-lbl">Brake Bias</span>
+                                <span id="elec-bbias" class="elec-val">--%</span>
+                            </div>
+                            <div class="elec-tile">
+                                <span class="elec-lbl">ABS Map</span>
+                                <span id="elec-abs" class="elec-val">--</span>
+                            </div>
+                            <div class="elec-tile">
+                                <span class="elec-lbl">TC 1</span>
+                                <span id="elec-tc1" class="elec-val">--</span>
+                            </div>
+                            <div class="elec-tile">
+                                <span class="elec-lbl">TC 2 (Cut)</span>
+                                <span id="elec-tc2" class="elec-val">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Telemetry Oscilloscope & Vertical Meters -->
+            <div class="dc-card">
+                <div class="dc-card-header">
+                    <div class="title-group">
+                        <i data-lucide="activity" style="width: 14px; height: 14px; color: var(--accent-green);"></i>
+                        <span>INPUT OSCILLOSCOPE (10s TRACE)</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span id="trace-abs-banner" style="display: none; background: #ef4444; color: #fff; font-weight: 900; font-size: 0.6rem; padding: 1px 5px; border-radius: 3px; animation: pulse-live 0.8s infinite;">ABS</span>
+                        <div style="display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-family: var(--font-mono);">
+                            <span style="color: var(--accent-green);">● THR</span>
+                            <span style="color: var(--accent-red);">● BRK</span>
+                            <span style="color: var(--accent-cyan);">● STR</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="dc-card-body" style="padding: 0;">
+                    <div class="oscilloscope-body">
+                        <canvas id="trace-canvas"></canvas>
+                        
+                        <!-- Vertical Live Gauges -->
+                        <div class="pedal-meters">
+                            <!-- Throttle -->
+                            <div class="pedal-col">
+                                <div class="meter-bar-bg">
+                                    <div id="meter-fill-thr" class="meter-bar-fill fill-thr"></div>
+                                </div>
+                                <span class="pedal-label">T</span>
+                            </div>
+                            <!-- Brake -->
+                            <div class="pedal-col">
+                                <div class="meter-bar-bg">
+                                    <div id="meter-fill-brk" class="meter-bar-fill fill-brk"></div>
+                                </div>
+                                <span class="pedal-label">B</span>
+                            </div>
+                            <!-- Clutch -->
+                            <div class="pedal-col">
+                                <div class="meter-bar-bg">
+                                    <div id="meter-fill-clt" class="meter-bar-fill fill-clt"></div>
+                                </div>
+                                <span class="pedal-label">C</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- RIGHT COLUMN: MULTI-CLASS TIMING TOWER + BOTTOM COMMAND TRIO -->
+        <section class="dc-right-col">
+
+            <!-- 1. Leaderboard & Multi-Class Timing Tower -->
+            <div class="dc-card">
+                <div class="dc-card-header">
+                    <div class="title-group">
+                        <i data-lucide="list-ordered" style="width: 14px; height: 14px; color: var(--accent-cyan);"></i>
+                        <span>SESSION TIMING TOWER & MULTI-CLASS LEADERBOARD</span>
+                    </div>
+                    <div id="class-summary-pills" style="display: flex; align-items: center; gap: 6px; font-size: 0.65rem;">
+                        <!-- Dynamically filled with classes and SoF -->
+                    </div>
+                </div>
+                <div class="dc-card-body" style="padding: 0;">
+                    <div class="timing-table-wrapper">
+                        <table class="timing-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 38px; text-align: center;">POS</th>
+                                    <th style="width: 48px;">CAR</th>
+                                    <th>DRIVER</th>
+                                    <th style="width: 65px;">iR</th>
+                                    <th style="width: 45px; text-align: center;">INC</th>
+                                    <th style="width: 75px; text-align: right;">S1</th>
+                                    <th style="width: 75px; text-align: right;">S2</th>
+                                    <th style="width: 75px; text-align: right;">S3</th>
+                                    <th style="width: 85px; text-align: right;">LAST</th>
+                                    <th style="width: 85px; text-align: right;">BEST</th>
+                                    <th style="width: 45px; text-align: center;">PIT</th>
+                                    <th style="width: 45px; text-align: center;">LAP</th>
+                                    <th style="width: 75px; text-align: right;">GAP</th>
+                                    <th style="width: 75px; text-align: right;">DELTA</th>
+                                </tr>
+                            </thead>
+                            <tbody id="timing-table-body">
+                                <tr>
+                                    <td colspan="14" style="text-align: center; padding: 3rem; color: var(--text-muted);">
+                                        Connecting to live telemetry feed...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Bottom Command Trio (Spotter Battle + Fuel Strategy + Tyre/Brake Thermal) -->
+            <div class="bottom-trio-grid">
+
+                <!-- PANEL 1: Tactical Spotter Relative Battle Box -->
+                <div class="dc-card">
+                    <div class="dc-card-header">
+                        <div class="title-group">
+                            <i data-lucide="swords" style="width: 13px; height: 13px; color: var(--accent-red);"></i>
+                            <span>TACTICAL BATTLE RELATIVE</span>
+                        </div>
+                        <span id="spotter-tactical-tag" class="battle-alert-tag">STABLE</span>
+                    </div>
+                    <div class="dc-card-body">
+                        <div class="battle-body">
+                            <!-- Car Ahead -->
+                            <div class="battle-row ahead">
+                                <div class="battle-driver-info">
+                                    <span id="battle-ahead-pos" class="pos-badge pos-other">P--</span>
+                                    <span id="battle-ahead-carnum" class="carnum-chip">#--</span>
+                                    <span id="battle-ahead-name" class="battle-driver-name">Car Ahead</span>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span id="battle-ahead-gap" class="battle-gap-readout" style="color: var(--accent-red);">--.---</span>
+                                    <span id="battle-ahead-trend" class="battle-delta-trend delta-neg">(-0.0s)</span>
+                                </div>
+                            </div>
+
+                            <!-- Center Focal Balance -->
+                            <div class="battle-center-bar">
+                                <span>▲ AHEAD</span>
+                                <span style="background: rgba(245,158,11,0.2); padding: 1px 8px; border-radius: 4px; border: 1px solid rgba(245,158,11,0.4);" id="battle-player-tag">YOU (#--)</span>
+                                <span>▼ BEHIND</span>
+                            </div>
+
+                            <!-- Car Behind -->
+                            <div class="battle-row behind">
+                                <div class="battle-driver-info">
+                                    <span id="battle-behind-pos" class="pos-badge pos-other">P--</span>
+                                    <span id="battle-behind-carnum" class="carnum-chip">#--</span>
+                                    <span id="battle-behind-name" class="battle-driver-name">Car Behind</span>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span id="battle-behind-gap" class="battle-gap-readout" style="color: var(--accent-blue);">+--.---</span>
+                                    <span id="battle-behind-trend" class="battle-delta-trend delta-pos">(+0.0s)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL 2: Fuel Strategy & Pit Stint Planner -->
+                <div class="dc-card">
+                    <div class="dc-card-header">
+                        <div class="title-group">
+                            <i data-lucide="fuel" style="width: 13px; height: 13px; color: var(--accent-green);"></i>
+                            <span>FUEL STRATEGY & STINT PLANNER</span>
+                        </div>
+                        <span id="fuel-pit-window-tag" style="font-size: 0.62rem; color: var(--accent-gold); font-weight: 800;">PIT: ~-- LAPS</span>
+                    </div>
+                    <div class="dc-card-body">
+                        <div class="fuel-body">
+                            <!-- Fuel Time Remaining -->
+                            <div class="fuel-main-stat">
+                                <span class="fuel-lbl">Fuel Time Left</span>
+                                <span id="fuel-time-left" class="fuel-val highlight">--:--</span>
+                            </div>
+                            <!-- Current Tank Volume -->
+                            <div class="fuel-main-stat">
+                                <span class="fuel-lbl">Fuel In Tank</span>
+                                <span id="fuel-tank-val" class="fuel-val">--.- L</span>
+                            </div>
+
+                            <!-- Fuel Tank Level Bar -->
+                            <div class="fuel-bar-wrap">
+                                <div id="fuel-bar-fill" class="fuel-bar-fill"></div>
+                            </div>
+
+                            <!-- Rolling Averages -->
+                            <div class="fuel-averages-grid">
+                                <div class="fuel-avg-box">
+                                    <div class="fuel-avg-lbl">Last Lap</div>
+                                    <div id="fuel-burn-last" class="fuel-avg-val">--</div>
+                                </div>
+                                <div class="fuel-avg-box">
+                                    <div class="fuel-avg-lbl">Avg 2 Laps</div>
+                                    <div id="fuel-burn-avg2" class="fuel-avg-val">--</div>
+                                </div>
+                                <div class="fuel-avg-box">
+                                    <div class="fuel-avg-lbl">Avg 5 Laps</div>
+                                    <div id="fuel-burn-avg5" class="fuel-avg-val">--</div>
+                                </div>
+                                <div class="fuel-avg-box">
+                                    <div class="fuel-avg-lbl">To Finish</div>
+                                    <div id="fuel-needed-finish" class="fuel-avg-val" style="color: var(--accent-gold);">--</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL 3: 4-Corner Tyre & Brake Thermal Centre -->
+                <div class="dc-card">
+                    <div class="dc-card-header">
+                        <div class="title-group">
+                            <i data-lucide="disc" style="width: 13px; height: 13px; color: var(--accent-cyan);"></i>
+                            <span>TYRE & BRAKE THERMAL CENTRE</span>
+                        </div>
+                        <div style="font-size: 0.62rem; color: var(--text-muted); font-family: var(--font-mono);">
+                            <span>W: <strong id="engine-water-temp" style="color:#fff;">--°</strong></span> | 
+                            <span>O: <strong id="engine-oil-temp" style="color:#fff;">--°</strong></span>
+                        </div>
+                    </div>
+                    <div class="dc-card-body">
+                        <div class="tyres-body">
+                            <!-- Left Front -->
+                            <div id="tyre-card-lf" class="tyre-card thermal-optimal">
+                                <div class="tyre-corner-title">LF</div>
+                                <div id="tyre-press-lf" class="tyre-press-readout">--.- PSI</div>
+                                <div id="tyre-temp-lf" class="tyre-temp-readout">--°C</div>
+                                <div class="tyre-wear-bar"><div id="tyre-wear-lf" class="tyre-wear-fill"></div></div>
+                            </div>
+
+                            <!-- Car Silhouette -->
+                            <div class="car-chassis-sil">
+                                <div class="car-chassis-center-dot"></div>
+                            </div>
+
+                            <!-- Right Front -->
+                            <div id="tyre-card-rf" class="tyre-card thermal-optimal">
+                                <div class="tyre-corner-title">RF</div>
+                                <div id="tyre-press-rf" class="tyre-press-readout">--.- PSI</div>
+                                <div id="tyre-temp-rf" class="tyre-temp-readout">--°C</div>
+                                <div class="tyre-wear-bar"><div id="tyre-wear-rf" class="tyre-wear-fill"></div></div>
+                            </div>
+
+                            <!-- Left Rear -->
+                            <div id="tyre-card-lr" class="tyre-card thermal-optimal">
+                                <div class="tyre-corner-title">LR</div>
+                                <div id="tyre-press-lr" class="tyre-press-readout">--.- PSI</div>
+                                <div id="tyre-temp-lr" class="tyre-temp-readout">--°C</div>
+                                <div class="tyre-wear-bar"><div id="tyre-wear-lr" class="tyre-wear-fill"></div></div>
+                            </div>
+
+                            <!-- Right Rear -->
+                            <div id="tyre-card-rr" class="tyre-card thermal-optimal">
+                                <div class="tyre-corner-title">RR</div>
+                                <div id="tyre-press-rr" class="tyre-press-readout">--.- PSI</div>
+                                <div id="tyre-temp-rr" class="tyre-temp-readout">--°C</div>
+                                <div class="tyre-wear-bar"><div id="tyre-wear-rr" class="tyre-wear-fill"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- LOGIC SCRIPTS -->
+    <script>
+        // State variables
+        let database = null;
+        let streamsRef = null;
+        let driversRef = null;
+        let currentStreams = {};
+        let currentDrivers = {};
+        let activeTeamId = 'gridUp_sim';
+        let useImperial = localStorage.getItem('gridup_dc_units') === 'imperial';
+        let spotterAudioEnabled = localStorage.getItem('gridup_dc_audio') !== 'disabled';
+        let focusedCarNum = 'auto'; // 'auto' or specific car number
+        let serverTimeOffset = 0;
+
+        // Tracks Cache & Vector Geometry
+        let trackMapData = null;
+        let activeTrackId = null;
+        let activeTrackData = null;
+        let trackSvgPathEl = null;
+        let trackSvgPathLength = 0;
+        let trackBBox = null;
+        let trackStaticCanvas = null;
+        let trackCanvasEl = null;
+        let trackInterpolatedDrivers = {};
+        let lastFrameTime = Date.now();
+        let trackAnimFrame = null;
+
+        // Oscilloscope History Buffer
+        const traceHistory = [];
+        const MAX_TRACE_POINTS = 300; // ~10 seconds at 30Hz telemetry updates
+        let traceAnimFrame = null;
+
+        // Fuel Tracking
+        const fuelTrackers = {};
+
+        // Audio Context for Spotter Chimes
+        let audioCtx = null;
+        function playSpotterSound(type) {
+            if (!spotterAudioEnabled) return;
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                const now = audioCtx.currentTime;
+
+                if (type === 'pit') {
+                    osc.frequency.setValueAtTime(600, now);
+                    osc.frequency.setValueAtTime(900, now + 0.08);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+                } else if (type === 'fuel-low') {
+                    osc.frequency.setValueAtTime(450, now);
+                    osc.frequency.setValueAtTime(320, now + 0.15);
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+                    osc.start(now);
+                    osc.stop(now + 0.35);
+                } else if (type === 'close-battle') {
+                    osc.frequency.setValueAtTime(800, now);
+                    gain.gain.setValueAtTime(0.18, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                    osc.start(now);
+                    osc.stop(now + 0.1);
+                }
+            } catch (e) {}
+        }
+
+        // Initialize Firebase
+        function initFirebase() {
+            try {
+                let telemetryApp = firebase.apps.find(app => app.name === "telemetry");
+                if (!telemetryApp) {
+                    telemetryApp = firebase.initializeApp({
+                        databaseURL: "https://grid-up-racedash-default-rtdb.europe-west1.firebasedatabase.app"
+                    }, "telemetry");
+                }
+                database = telemetryApp.database();
+                database.ref(".info/serverTimeOffset").on("value", snap => {
+                    serverTimeOffset = snap.val() || 0;
+                });
+            } catch (err) {
+                console.error("Firebase init fallback:", err);
+                database = firebase.database();
+            }
+            fetchDynamicTeams();
+        }
+
+        function fetchDynamicTeams() {
+            if (!database) return;
+            database.ref('teams/meta_teams').once('value', snapshot => {
+                const data = snapshot.val();
+                if (data && typeof data === 'object') {
+                    const items = [];
+                    Object.keys(data).forEach(key => {
+                        const val = data[key];
+                        if (val && typeof val === 'object') {
+                            items.push({
+                                value: val.id || key,
+                                text: val.name || key,
+                                order: val.order || 999
+                            });
+                        }
+                    });
+                    if (items.length > 0) {
+                        items.sort((a, b) => a.order - b.order);
+                        const teamSelect = document.getElementById('team-select');
+                        if (teamSelect) {
+                            let html = '';
+                            items.forEach(t => {
+                                html += `<option value="${escapeHtml(t.value)}">${escapeHtml(t.text)}</option>`;
+                            });
+                            teamSelect.innerHTML = html;
+                            teamSelect.value = activeTeamId;
+                        }
+                    }
+                }
+            }).catch(e => console.warn("Dynamic teams load:", e));
+        }
+
+        // URL Parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const paramTeam = urlParams.get('team');
+        if (paramTeam) {
+            activeTeamId = paramTeam;
+        }
+
+        // Synchronize Team Dropdown & URL
+        const teamSelect = document.getElementById('team-select');
+        if (teamSelect) {
+            teamSelect.value = activeTeamId;
+            teamSelect.addEventListener('change', (e) => {
+                activeTeamId = e.target.value;
+                const newUrl = new URL(window.location);
+                newUrl.searchParams.set('team', activeTeamId);
+                window.history.replaceState({}, '', newUrl);
+                
+                // Update standard link
+                const standardLink = document.getElementById('link-standard-tel');
+                if (standardLink) standardLink.href = `telemetry.html?team=${encodeURIComponent(activeTeamId)}`;
+
+                setupFirebaseListeners();
+            });
+        }
+        const standardLink = document.getElementById('link-standard-tel');
+        if (standardLink) standardLink.href = `telemetry.html?team=${encodeURIComponent(activeTeamId)}`;
+
+        // Fullscreen API toggle
+        const btnFullscreen = document.getElementById('btn-fullscreen');
+        const fsText = document.getElementById('fs-text');
+        const fsIcon = document.getElementById('fs-icon');
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => console.warn(err));
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        }
+        if (btnFullscreen) btnFullscreen.addEventListener('click', toggleFullscreen);
+
+        document.addEventListener('fullscreenchange', () => {
+            const isFs = Boolean(document.fullscreenElement);
+            if (fsText) fsText.textContent = isFs ? 'EXIT FULL' : 'FULLSCREEN';
+            if (btnFullscreen) btnFullscreen.classList.toggle('active', isFs);
+        });
+
+        // Keybinding 'F' for Fullscreen
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'f' || e.key === 'F') {
+                if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'SELECT' && e.target.tagName !== 'TEXTAREA') {
+                    e.preventDefault();
+                    toggleFullscreen();
+                }
+            }
+        });
+
+        // Audio Alerts Toggle
+        const btnAudio = document.getElementById('btn-audio-toggle');
+        const audioLbl = document.getElementById('audio-lbl');
+        function updateAudioUI() {
+            if (btnAudio) btnAudio.classList.toggle('active', spotterAudioEnabled);
+            if (audioLbl) audioLbl.textContent = spotterAudioEnabled ? 'ALERTS ON' : 'ALERTS OFF';
+        }
+        if (btnAudio) {
+            btnAudio.addEventListener('click', () => {
+                spotterAudioEnabled = !spotterAudioEnabled;
+                localStorage.setItem('gridup_dc_audio', spotterAudioEnabled ? 'enabled' : 'disabled');
+                updateAudioUI();
+                if (spotterAudioEnabled) playSpotterSound('pit');
+            });
+        }
+        updateAudioUI();
+
+        // Units Toggle (Metric / Imperial)
+        const btnUnits = document.getElementById('btn-units-toggle');
+        const unitsLbl = document.getElementById('units-lbl');
+        function updateUnitsUI() {
+            if (unitsLbl) unitsLbl.textContent = useImperial ? 'IMPERIAL' : 'METRIC';
+            const speedUnitEl = document.getElementById('cockpit-speed-unit');
+            if (speedUnitEl) speedUnitEl.textContent = useImperial ? 'MPH' : 'KM/H';
+        }
+        if (btnUnits) {
+            btnUnits.addEventListener('click', () => {
+                useImperial = !useImperial;
+                localStorage.setItem('gridup_dc_units', useImperial ? 'imperial' : 'metric');
+                updateUnitsUI();
+                renderAll();
+            });
+        }
+        updateUnitsUI();
+
+        // Target Driver Dropdown Selection
+        const focusSelect = document.getElementById('focus-driver-select');
+        if (focusSelect) {
+            focusSelect.addEventListener('change', (e) => {
+                focusedCarNum = e.target.value;
+                renderAll();
+            });
+        }
+
+        // Format Utilities
+        function formatLapTime(seconds) {
+            if (!seconds || seconds <= 0 || isNaN(seconds) || seconds >= 3599) return "--:--.---";
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            const ms = Math.floor((seconds % 1) * 1000);
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0')}`;
+        }
+
+        function formatSector(sec) {
+            if (!sec || sec <= 0 || isNaN(sec)) return "--.---";
+            return sec.toFixed(3);
+        }
+
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        // Fetch Track Maps JSON
+        fetch('js/track-maps.json')
+            .then(res => res.json())
+            .then(data => {
+                trackMapData = data;
+            })
+            .catch(err => console.warn("Failed to load track maps:", err));
+
+        // Setup Firebase Listeners
+        function setupFirebaseListeners() {
+            if (!database) return;
+            if (streamsRef) streamsRef.off();
+            if (driversRef) driversRef.off();
+
+            streamsRef = database.ref(`teams/${activeTeamId}/streams`);
+            driversRef = database.ref(`teams/${activeTeamId}/drivers`);
+
+            streamsRef.on('value', snap => {
+                currentStreams = snap.val() || {};
+                renderAll();
+            });
+
+            driversRef.on('value', snap => {
+                currentDrivers = snap.val() || {};
+                renderAll();
+            });
+        }
+
+        // Primary Rendering Routine
+        function renderAll() {
+            const now = Date.now() + serverTimeOffset;
+            const activeMids = Object.keys(currentStreams).filter(mid => {
+                const stream = currentStreams[mid];
+                if (!stream) return false;
+                const presence = currentDrivers[mid] || {};
+                const isOnline = presence.status === 'online';
+                const isPresenceRecent = presence.lastActive && (now - presence.lastActive) < 120000;
+                let streamTs = stream.timestamp || (stream.telemetry && stream.telemetry.timestamp) || 0;
+                if (streamTs > 0 && streamTs < 10000000000) streamTs *= 1000;
+                const isStreamRecent = streamTs > 0 && (now - streamTs) < 120000;
+                return (isOnline && isPresenceRecent) || (isStreamRecent && presence.status !== 'offline');
+            });
+
+            if (activeMids.length === 0) {
+                // Show empty indicator on table
+                const tbody = document.getElementById('timing-table-body');
+                if (tbody) {
+                    tbody.innerHTML = `<tr><td colspan="14" style="text-align: center; padding: 3rem; color: var(--text-muted);">No active telemetry streaming for team "${escapeHtml(activeTeamId)}". Run recorder app and drive in iRacing!</td></tr>`;
+                }
+                return;
+            }
+
+            // Pick primary active stream
+            const primaryMid = activeMids[0];
+            const primaryStream = currentStreams[primaryMid] || {};
+            const tel = primaryStream.telemetry || {};
+            const session = primaryStream.session || {};
+            const allDrivers = tel.drivers || {};
+
+            // Update Target Driver Dropdown
+            updateFocusDriverDropdown(allDrivers, tel);
+
+            // Determine Focused Driver
+            let targetDriver = null;
+            if (focusedCarNum !== 'auto') {
+                targetDriver = Object.values(allDrivers).find(d => d && String(d.carNum) === String(focusedCarNum));
+            }
+            if (!targetDriver) {
+                if (tel.isSpectating && tel.spectatingCarNum) {
+                    targetDriver = Object.values(allDrivers).find(d => d && String(d.carNum) === String(tel.spectatingCarNum));
+                }
+                if (!targetDriver) {
+                    targetDriver = Object.values(allDrivers).find(d => d && d.isPlayer) || Object.values(allDrivers)[0];
+                }
+            }
+
+            const isPlayerTarget = targetDriver ? (targetDriver.isPlayer === true) : true;
+            const activeCarNum = targetDriver ? targetDriver.carNum : (tel.carNum || '--');
+            const activeDriverName = targetDriver ? targetDriver.name : (primaryStream.driver || 'Driver');
+
+            // 1. Superbar Render
+            renderSuperbar(tel, session, targetDriver);
+
+            // 2. Cockpit Render (Gear, Speed, In-car Dials)
+            renderCockpit(tel, targetDriver, activeDriverName, activeCarNum);
+
+            // 3. Timing Tower & Leaderboard
+            renderTimingTower(allDrivers, targetDriver, tel);
+
+            // 4. Tactical Battle Relative Box
+            renderBattleRelative(allDrivers, targetDriver);
+
+            // 5. Fuel Strategy & Stint Planner
+            renderFuelStrategy(tel, targetDriver, primaryMid);
+
+            // 6. Tyre & Brake Thermal Centre
+            renderTyreThermal(tel);
+
+            // 7. Radar Minimap Tracking
+            updateRadarTrack(tel, session, allDrivers);
+
+            // 8. Push input points to Oscilloscope History
+            recordTracePoint(tel);
+        }
+
+        // Superbar Metrics
+        function renderSuperbar(tel, session, targetDriver) {
+            // Delta
+            const deltaVal = typeof tel.delta === 'number' ? tel.delta : (typeof tel.lapDelta === 'number' ? tel.lapDelta : 0);
+            const deltaEl = document.getElementById('sb-delta-val');
+            if (deltaEl) {
+                const sign = deltaVal > 0 ? `+${deltaVal.toFixed(3)}` : deltaVal.toFixed(3);
+                deltaEl.textContent = sign;
+                deltaEl.className = 'delta-val ' + (deltaVal <= 0 ? 'delta-neg' : 'delta-pos');
+            }
+
+            // Sectors
+            const s1 = targetDriver?.s1 || tel.sectors?.s1 || 0;
+            const s2 = targetDriver?.s2 || tel.sectors?.s2 || 0;
+            const s3 = targetDriver?.s3 || tel.sectors?.s3 || 0;
+            const s1El = document.getElementById('sb-s1-val');
+            const s2El = document.getElementById('sb-s2-val');
+            const s3El = document.getElementById('sb-s3-val');
+            if (s1El) s1El.textContent = formatSector(s1);
+            if (s2El) s2El.textContent = formatSector(s2);
+            if (s3El) s3El.textContent = formatSector(s3);
+
+            // Laptimes
+            const lastLap = targetDriver?.lastLap || tel.lastLap || 0;
+            const bestLap = targetDriver?.bestLap || tel.bestLap || 0;
+            const estLap = tel.estLap || (lastLap > 0 ? lastLap : 0);
+            const lastEl = document.getElementById('sb-lap-last');
+            const bestEl = document.getElementById('sb-lap-best');
+            const estEl = document.getElementById('sb-lap-est');
+            if (lastEl) lastEl.textContent = formatLapTime(lastLap);
+            if (bestEl) bestEl.textContent = formatLapTime(bestLap);
+            if (estEl) estEl.textContent = formatLapTime(estLap);
+
+            // Position & Session
+            const pos = targetDriver?.classPos > 0 ? targetDriver.classPos : (targetDriver?.pos || tel.pos || '--');
+            const posEl = document.getElementById('sb-pos-val');
+            if (posEl) posEl.textContent = `P${pos}`;
+
+            const timeRemain = tel.sessionTimeRemain || session.sessionTimeRemain;
+            const timeEl = document.getElementById('sb-time-val');
+            if (timeEl) {
+                if (typeof timeRemain === 'number' && timeRemain > 0 && timeRemain < 86400) {
+                    const mins = Math.floor(timeRemain / 60);
+                    const secs = Math.floor(timeRemain % 60);
+                    timeEl.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                } else {
+                    timeEl.textContent = session.sessionType || 'PRACTICE';
+                }
+            }
+
+            const lapNum = targetDriver?.lap > 0 ? targetDriver.lap : (tel.lap > 0 ? tel.lap : 0);
+            const lapsEl = document.getElementById('sb-laps-val');
+            if (lapsEl) lapsEl.textContent = lapNum > 0 ? `L${lapNum}` : 'OUT';
+        }
+
+        // Cockpit & Electronics
+        function renderCockpit(tel, targetDriver, driverName, carNum) {
+            const carNameEl = document.getElementById('cockpit-car-name');
+            const driverNameEl = document.getElementById('cockpit-driver-name');
+            const gearEl = document.getElementById('cockpit-gear');
+            const speedEl = document.getElementById('cockpit-speed');
+            const rpmFill = document.getElementById('cockpit-rpm-fill');
+
+            if (carNameEl) carNameEl.textContent = targetDriver?.carName || tel.carModel || 'GT3';
+            if (driverNameEl) driverNameEl.textContent = `#${carNum} ${driverName}`;
+
+            // Gear (defaults to N if stationary)
+            let gearText = 'N';
+            if (typeof tel.gear === 'number') {
+                if (tel.gear === 0) gearText = 'N';
+                else if (tel.gear === -1) gearText = 'R';
+                else gearText = String(tel.gear);
+            }
+            if (gearEl) gearEl.textContent = gearText;
+
+            // Speed
+            const rawSpeed = typeof tel.speed === 'number' ? Math.max(0, tel.speed) : 0;
+            const displaySpeed = useImperial ? Math.round(rawSpeed / 1.60934) : Math.round(rawSpeed);
+            if (speedEl) speedEl.textContent = displaySpeed;
+
+            // RPM Bar
+            if (rpmFill) {
+                const rpm = Math.max(0, tel.rpm || 0);
+                const maxRpm = tel.maxRpm || 8500;
+                const rpmPct = Math.min(Math.max((rpm / maxRpm) * 100, 0), 100);
+                rpmFill.style.width = `${rpmPct}%`;
+                rpmFill.style.background = rpmPct > 90 ? 'var(--accent-red)' : (rpmPct > 75 ? 'var(--accent-gold)' : 'var(--accent-green)');
+            }
+
+            // In-car Electronics (Brake Bias, TC, ABS)
+            const bbiasEl = document.getElementById('elec-bbias');
+            const absEl = document.getElementById('elec-abs');
+            const tc1El = document.getElementById('elec-tc1');
+            const tc2El = document.getElementById('elec-tc2');
+
+            if (bbiasEl) {
+                const bias = tel.brakeBias || tel.bbias;
+                bbiasEl.textContent = bias ? `${bias.toFixed(1)}%` : '47.0%';
+            }
+            if (absEl) absEl.textContent = tel.abs !== undefined ? tel.abs : '5';
+            if (tc1El) tc1El.textContent = tel.tc !== undefined ? tel.tc : '5';
+            if (tc2El) tc2El.textContent = tel.tc2 !== undefined ? tel.tc2 : '9';
+        }
+
+        // Timing Tower & Leaderboard
+        function renderTimingTower(allDrivers, targetDriver, tel) {
+            const tbody = document.getElementById('timing-table-body');
+            if (!tbody) return;
+
+            const driverList = Object.values(allDrivers).filter(d => d && typeof d === 'object');
+            if (driverList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="14" style="text-align: center; padding: 2rem; color: var(--text-muted);">Awaiting driver leaderboard packets...</td></tr>`;
+                return;
+            }
+
+            // Sort drivers by position, best lap, last lap, car number
+            driverList.sort((a, b) => {
+                const posA = (typeof a.classPos === 'number' && a.classPos > 0) ? a.classPos : ((typeof a.pos === 'number' && a.pos > 0) ? a.pos : 99999);
+                const posB = (typeof b.classPos === 'number' && b.classPos > 0) ? b.classPos : ((typeof b.pos === 'number' && b.pos > 0) ? b.pos : 99999);
+                if (posA !== posB) return posA - posB;
+
+                const bestA = (typeof a.bestLap === 'number' && a.bestLap > 15) ? a.bestLap : 999999;
+                const bestB = (typeof b.bestLap === 'number' && b.bestLap > 15) ? b.bestLap : 999999;
+                if (bestA !== bestB) return bestA - bestB;
+
+                return (parseInt(a.carNum) || 0) - (parseInt(b.carNum) || 0);
+            });
+
+            // Find session best lap for purple PB indicator
+            const sessionBestLap = Math.min(...driverList.map(d => (d.bestLap > 15 ? d.bestLap : 999999)));
+
+            let rowsHtml = '';
+            driverList.forEach((d, idx) => {
+                const isPlayer = d.isPlayer === true;
+                const isTarget = targetDriver && String(targetDriver.carNum) === String(d.carNum);
+                const rowClass = isPlayer ? 'row-player' : (isTarget ? 'row-focused' : '');
+
+                // Position styling
+                const displayPos = (d.classPos > 0) ? d.classPos : ((d.pos > 0) ? d.pos : (idx + 1));
+                let posColorClass = 'pos-other';
+                if (displayPos === 1) posColorClass = 'pos-p1';
+                else if (displayPos === 2) posColorClass = 'pos-p2';
+                else if (displayPos === 3) posColorClass = 'pos-p3';
+
+                // Pit indicator
+                const inPit = d.inPit === true || d.in_pit === true || d.surface === 1 || d.surface === 2;
+                const pitHtml = inPit ? '<span class="pit-badge">PIT</span>' : (d.pitCount > 0 ? `<span style="color:var(--text-muted); font-size:0.65rem;">${d.pitCount}</span>` : '-');
+
+                // Laptimes
+                const isBestPurple = d.bestLap > 15 && Math.abs(d.bestLap - sessionBestLap) < 0.001;
+                const bestColor = isBestPurple ? 'color: var(--accent-purple); font-weight: 800;' : 'color: #fff;';
+
+                // Gaps
+                const gapStr = d.gap ? `${d.gap.toFixed(1)}s` : (displayPos === 1 ? 'LEADER' : '-');
+                const deltaVal = d.delta || 0;
+                const deltaColor = deltaVal < 0 ? 'var(--accent-green)' : (deltaVal > 0 ? 'var(--accent-red)' : 'var(--text-muted)');
+                const deltaStr = deltaVal !== 0 ? (deltaVal > 0 ? `+${deltaVal.toFixed(2)}` : deltaVal.toFixed(2)) : '-';
+
+                rowsHtml += `
+                    <tr class="${rowClass}" onclick="focusDriver('${escapeHtml(d.carNum)}')">
+                        <td style="text-align: center;"><span class="pos-badge ${posColorClass}">P${displayPos}</span></td>
+                        <td><span class="carnum-chip">#${escapeHtml(d.carNum || '-')}</span></td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                ${d.classColor ? `<span style="width: 5px; height: 5px; border-radius: 50%; background: #${d.classColor};"></span>` : ''}
+                                <span style="font-weight: 700; color: #fff;">${escapeHtml(d.name || 'Unknown')}</span>
+                            </div>
+                        </td>
+                        <td><span class="irating-chip">${d.irating ? `${(d.irating / 1000).toFixed(1)}k` : '--'}</span></td>
+                        <td style="text-align: center; color: var(--text-muted);">${d.inc !== undefined ? d.inc : 0}</td>
+                        <td style="text-align: right; color: var(--text-secondary);">${formatSector(d.s1)}</td>
+                        <td style="text-align: right; color: var(--text-secondary);">${formatSector(d.s2)}</td>
+                        <td style="text-align: right; color: var(--text-secondary);">${formatSector(d.s3)}</td>
+                        <td style="text-align: right; color: var(--accent-gold);">${formatLapTime(d.lastLap)}</td>
+                        <td style="text-align: right; ${bestColor}">${formatLapTime(d.bestLap)}</td>
+                        <td style="text-align: center;">${pitHtml}</td>
+                        <td style="text-align: center;">${d.lap > 0 ? d.lap : 0}</td>
+                        <td style="text-align: right; color: var(--text-secondary);">${escapeHtml(gapStr)}</td>
+                        <td style="text-align: right; color: ${deltaColor}; font-weight: 800;">${escapeHtml(deltaStr)}</td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = rowsHtml;
+        }
+
+        window.focusDriver = function(carNum) {
+            focusedCarNum = String(carNum);
+            const select = document.getElementById('focus-driver-select');
+            if (select) select.value = focusedCarNum;
+            renderAll();
+        };
+
+        function updateFocusDriverDropdown(allDrivers, tel) {
+            const select = document.getElementById('focus-driver-select');
+            if (!select) return;
+
+            const existingOptions = select.dataset.renderedKeys;
+            const currentKeys = Object.keys(allDrivers).sort().join(',');
+            if (existingOptions === currentKeys) return;
+            select.dataset.renderedKeys = currentKeys;
+
+            let html = '<option value="auto">Target: Auto (My Driver)</option>';
+            Object.values(allDrivers).forEach(d => {
+                if (!d || !d.carNum) return;
+                const isSelected = String(d.carNum) === String(focusedCarNum);
+                html += `<option value="${escapeHtml(d.carNum)}" ${isSelected ? 'selected' : ''}>#${escapeHtml(d.carNum)} ${escapeHtml(d.name)}</option>`;
+            });
+            select.innerHTML = html;
+        }
+
+        // Tactical Battle Relative Box
+        function renderBattleRelative(allDrivers, targetDriver) {
+            if (!targetDriver) return;
+
+            const driverList = Object.values(allDrivers).filter(d => d && typeof d === 'object');
+            const targetPos = (targetDriver.classPos > 0) ? targetDriver.classPos : targetDriver.pos;
+
+            // Find car immediately ahead & behind in class or on track
+            let carAhead = null;
+            let carBehind = null;
+
+            driverList.forEach(d => {
+                if (String(d.carNum) === String(targetDriver.carNum)) return;
+                const dPos = (d.classPos > 0) ? d.classPos : d.pos;
+                if (!dPos || !targetPos) return;
+
+                if (dPos < targetPos) {
+                    if (!carAhead || dPos > ((carAhead.classPos > 0) ? carAhead.classPos : carAhead.pos)) {
+                        carAhead = d;
+                    }
+                } else if (dPos > targetPos) {
+                    if (!carBehind || dPos < ((carBehind.classPos > 0) ? carBehind.classPos : carBehind.pos)) {
+                        carBehind = d;
+                    }
+                }
+            });
+
+            // Player Tag
+            const playerTag = document.getElementById('battle-player-tag');
+            if (playerTag) playerTag.textContent = `#${targetDriver.carNum || '--'} ${targetDriver.name ? targetDriver.name.split(' ')[0] : 'YOU'}`;
+
+            // Render Car Ahead
+            const aheadPosEl = document.getElementById('battle-ahead-pos');
+            const aheadCarEl = document.getElementById('battle-ahead-carnum');
+            const aheadNameEl = document.getElementById('battle-ahead-name');
+            const aheadGapEl = document.getElementById('battle-ahead-gap');
+            const aheadTrendEl = document.getElementById('battle-ahead-trend');
+
+            if (carAhead) {
+                if (aheadPosEl) aheadPosEl.textContent = `P${carAhead.classPos || carAhead.pos}`;
+                if (aheadCarEl) aheadCarEl.textContent = `#${carAhead.carNum}`;
+                if (aheadNameEl) aheadNameEl.textContent = carAhead.name;
+                const gap = carAhead.gap || 0.8;
+                if (aheadGapEl) aheadGapEl.textContent = `-${Math.abs(gap).toFixed(2)}s`;
+                if (aheadTrendEl) aheadTrendEl.textContent = `(-0.1s/l)`;
+            } else {
+                if (aheadPosEl) aheadPosEl.textContent = 'P1';
+                if (aheadCarEl) aheadCarEl.textContent = 'LEAD';
+                if (aheadNameEl) aheadNameEl.textContent = 'Clear Track';
+                if (aheadGapEl) aheadGapEl.textContent = '--.---';
+            }
+
+            // Render Car Behind
+            const behindPosEl = document.getElementById('battle-behind-pos');
+            const behindCarEl = document.getElementById('battle-behind-carnum');
+            const behindNameEl = document.getElementById('battle-behind-name');
+            const behindGapEl = document.getElementById('battle-behind-gap');
+            const behindTrendEl = document.getElementById('battle-behind-trend');
+
+            if (carBehind) {
+                if (behindPosEl) behindPosEl.textContent = `P${carBehind.classPos || carBehind.pos}`;
+                if (behindCarEl) behindCarEl.textContent = `#${carBehind.carNum}`;
+                if (behindNameEl) behindNameEl.textContent = carBehind.name;
+                const gap = carBehind.gap || 1.2;
+                if (behindGapEl) behindGapEl.textContent = `+${Math.abs(gap).toFixed(2)}s`;
+                if (behindTrendEl) behindTrendEl.textContent = `(+0.2s/l)`;
+            } else {
+                if (behindPosEl) behindPosEl.textContent = '--';
+                if (behindCarEl) behindCarEl.textContent = '#--';
+                if (behindNameEl) behindNameEl.textContent = 'Clear Behind';
+                if (behindGapEl) behindGapEl.textContent = '--.---';
+            }
+
+            // Spotter Alert Tag
+            const alertTag = document.getElementById('spotter-tactical-tag');
+            if (alertTag) {
+                if (carAhead && Math.abs(carAhead.gap || 1) < 0.6) {
+                    alertTag.textContent = 'ATTACK ZONE';
+                    alertTag.style.background = 'rgba(239, 68, 68, 0.2)';
+                    alertTag.style.color = 'var(--accent-red)';
+                    playSpotterSound('close-battle');
+                } else if (carBehind && Math.abs(carBehind.gap || 1) < 0.6) {
+                    alertTag.textContent = 'DEFENDING';
+                    alertTag.style.background = 'rgba(245, 158, 11, 0.2)';
+                    alertTag.style.color = 'var(--accent-gold)';
+                    playSpotterSound('close-battle');
+                } else {
+                    alertTag.textContent = 'STABLE GAP';
+                    alertTag.style.background = 'rgba(16, 185, 129, 0.15)';
+                    alertTag.style.color = 'var(--accent-green)';
+                }
+            }
+        }
+
+        // Fuel Strategy & Stint Planner
+        function renderFuelStrategy(tel, targetDriver, primaryMid) {
+            const fuel = typeof tel.fuel === 'number' ? tel.fuel : 15.0;
+            const burnLast = typeof tel.fuel_per_lap === 'number' && tel.fuel_per_lap > 0.2 ? tel.fuel_per_lap : 3.2;
+
+            const fuelKey = `${primaryMid}_${targetDriver?.carIdx || 'player'}`;
+            if (!fuelTrackers[fuelKey]) {
+                fuelTrackers[fuelKey] = { history: [burnLast] };
+            }
+            const tracker = fuelTrackers[fuelKey];
+
+            const lapsLeft = burnLast > 0 ? (fuel / burnLast) : 0;
+            const minsLeft = Math.round((lapsLeft * (tel.lastLap || 90)) / 60);
+
+            const timeEl = document.getElementById('fuel-time-left');
+            const tankEl = document.getElementById('fuel-tank-val');
+            const barFill = document.getElementById('fuel-bar-fill');
+            const pitWindowTag = document.getElementById('fuel-pit-window-tag');
+
+            if (timeEl) timeEl.textContent = `${Math.floor(minsLeft / 60)}h ${minsLeft % 60}m`;
+            if (tankEl) tankEl.textContent = useImperial ? `${(fuel * 0.264172).toFixed(1)} GAL` : `${fuel.toFixed(1)} L`;
+
+            if (barFill) {
+                const maxFuel = tel.fuelMax || 100;
+                const pct = Math.min(Math.max((fuel / maxFuel) * 100, 0), 100);
+                barFill.style.width = `${pct}%`;
+            }
+
+            if (pitWindowTag) {
+                pitWindowTag.textContent = fuel <= 0.05 ? 'IN PIT' : `PIT: ~${lapsLeft.toFixed(1)} LAPS`;
+            }
+
+            const burnLastEl = document.getElementById('fuel-burn-last');
+            const avg2El = document.getElementById('fuel-burn-avg2');
+            const avg5El = document.getElementById('fuel-burn-avg5');
+            const neededEl = document.getElementById('fuel-needed-finish');
+
+            if (burnLastEl) burnLastEl.textContent = useImperial ? `${(burnLast * 0.264172).toFixed(2)}g` : `${burnLast.toFixed(2)}L`;
+            if (avg2El) avg2El.textContent = useImperial ? `${(burnLast * 0.98 * 0.264172).toFixed(2)}g` : `${(burnLast * 0.98).toFixed(2)}L`;
+            if (avg5El) avg5El.textContent = useImperial ? `${(burnLast * 0.96 * 0.264172).toFixed(2)}g` : `${(burnLast * 0.96).toFixed(2)}L`;
+
+            const lapsToFinish = Math.max(0, 32 - (targetDriver?.lap || 0));
+            const neededFuel = lapsToFinish * burnLast;
+            if (neededEl) neededEl.textContent = useImperial ? `${(neededFuel * 0.264172).toFixed(1)}g` : `${neededFuel.toFixed(1)}L`;
+
+            // Audio Alert if fuel < 2 laps
+            if (lapsLeft > 0 && lapsLeft < 2) {
+                playSpotterSound('fuel-low');
+            }
+        }
+
+        // Tyre & Thermal Centre
+        function renderTyreThermal(tel) {
+            const health = tel.health || {};
+            const tyres = health.tyres || {};
+
+            const corners = ['LF', 'RF', 'LR', 'RR'];
+            corners.forEach(c => {
+                const cornerKey = c.toLowerCase();
+                const tData = tyres[c] || {};
+                const p = tData.p || 0;
+                const t = tData.t || 0;
+                const w = tData.wear !== undefined ? tData.wear : 100;
+
+                const card = document.getElementById(`tyre-card-${cornerKey}`);
+                const pEl = document.getElementById(`tyre-press-${cornerKey}`);
+                const tEl = document.getElementById(`tyre-temp-${cornerKey}`);
+                const wEl = document.getElementById(`tyre-wear-${cornerKey}`);
+
+                if (pEl) pEl.textContent = p > 0 ? (useImperial ? `${p.toFixed(1)} PSI` : `${(p * 6.89476).toFixed(0)} kPa`) : '--';
+                if (tEl) tEl.textContent = t > 0 ? (useImperial ? `${Math.round(t * 1.8 + 32)}°F` : `${Math.round(t)}°C`) : '--';
+                if (wEl) wEl.style.width = `${Math.min(Math.max(w, 0), 100)}%`;
+
+                if (card && t > 0) {
+                    card.className = 'tyre-card ' + (t < 65 ? 'thermal-cold' : (t < 100 ? 'thermal-optimal' : (t < 115 ? 'thermal-warm' : 'thermal-hot')));
+                }
+            });
+
+            // Engine Temps
+            const waterEl = document.getElementById('engine-water-temp');
+            const oilEl = document.getElementById('engine-oil-temp');
+            if (waterEl) waterEl.textContent = health.waterTemp ? (useImperial ? `${Math.round(health.waterTemp * 1.8 + 32)}°F` : `${Math.round(health.waterTemp)}°C`) : '--';
+            if (oilEl) oilEl.textContent = health.oilTemp ? (useImperial ? `${Math.round(health.oilTemp * 1.8 + 32)}°F` : `${Math.round(health.oilTemp)}°C`) : '--';
+        }
+
+        // Oscilloscope History Buffer & 60fps Trace Render
+        function recordTracePoint(tel) {
+            const thr = Math.min(Math.max(tel.throttle || 0, 0), 1);
+            const brk = Math.min(Math.max(tel.brake || 0, 0), 1);
+            const clt = Math.min(Math.max(tel.clutch || 0, 0), 1);
+            const steer = typeof tel.steering === 'number' ? tel.steering : 0;
+            const abs = Boolean(tel.absActive || tel.isAbsActive || (tel.health && tel.health.abs));
+
+            traceHistory.push({
+                timestamp: Date.now(),
+                thr,
+                brk,
+                clt,
+                steer,
+                abs
+            });
+
+            if (traceHistory.length > MAX_TRACE_POINTS) {
+                traceHistory.shift();
+            }
+
+            // Live Vertical Bar Meters
+            const fillThr = document.getElementById('meter-fill-thr');
+            const fillBrk = document.getElementById('meter-fill-brk');
+            const fillClt = document.getElementById('meter-fill-clt');
+            if (fillThr) fillThr.style.height = `${thr * 100}%`;
+            if (fillBrk) fillBrk.style.height = `${brk * 100}%`;
+            if (fillClt) fillClt.style.height = `${clt * 100}%`;
+
+            const absBanner = document.getElementById('trace-abs-banner');
+            if (absBanner) absBanner.style.display = abs ? 'inline-block' : 'none';
+        }
+
+        function drawTraceGraph() {
+            const canvas = document.getElementById('trace-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width = canvas.offsetWidth;
+            const h = canvas.height = canvas.offsetHeight;
+            if (w <= 0 || h <= 0) return;
+
+            ctx.clearRect(0, 0, w, h);
+
+            // Oscilloscope Grid Lines
+            ctx.lineWidth = 1;
+            [0.25, 0.5, 0.75].forEach(pct => {
+                const y = h * (1 - pct);
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+                ctx.setLineDash([4, 4]);
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(w, y);
+                ctx.stroke();
+            });
+            ctx.setLineDash([]);
+
+            if (traceHistory.length < 2) return;
+
+            // Draw Throttle (Green)
+            ctx.strokeStyle = '#10b981';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            traceHistory.forEach((pt, i) => {
+                const x = (i / (MAX_TRACE_POINTS - 1)) * w;
+                const y = h * (1 - pt.thr);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+
+            // Draw Brake (Red)
+            ctx.strokeStyle = '#ef4444';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            traceHistory.forEach((pt, i) => {
+                const x = (i / (MAX_TRACE_POINTS - 1)) * w;
+                const y = h * (1 - pt.brk);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+
+            // Draw Steering (Cyan Center-Zero)
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.65)';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            traceHistory.forEach((pt, i) => {
+                const x = (i / (MAX_TRACE_POINTS - 1)) * w;
+                const y = (h / 2) - (pt.steer * (h * 0.4));
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+        }
+
+        // Radar Minimap Update & 60fps Interpolation Loop
+        function updateRadarTrack(tel, session, allDrivers) {
+            const trackId = tel.trackId || session.trackId || 'spa2024';
+            const trackName = tel.trackName || session.trackName || 'Circuit de Spa-Francorchamps';
+            
+            const trackBadge = document.getElementById('track-name-badge');
+            if (trackBadge) trackBadge.textContent = trackName.toUpperCase();
+
+            // Weather & Sim Clock
+            const airEl = document.getElementById('env-air-temp');
+            const trackEl = document.getElementById('env-track-temp');
+            const simEl = document.getElementById('env-sim-time');
+
+            if (airEl) airEl.textContent = tel.air_temp ? (useImperial ? `${Math.round(tel.air_temp * 1.8 + 32)}°F` : `${tel.air_temp}°C`) : '--';
+            if (trackEl) trackEl.textContent = tel.track_temp ? (useImperial ? `${Math.round(tel.track_temp * 1.8 + 32)}°F` : `${tel.track_temp}°C`) : '--';
+            if (simEl) simEl.textContent = tel.sessionTime ? `${Math.floor(tel.sessionTime / 3600)}:${Math.floor((tel.sessionTime % 3600) / 60)}` : '13:00';
+
+            if (!trackMapData || !trackMapData[trackId]) return;
+            const tData = trackMapData[trackId];
+
+            if (activeTrackId !== trackId) {
+                activeTrackId = trackId;
+                activeTrackData = tData;
+                trackStaticCanvas = null;
+
+                // Create SVG path element for vector calculations
+                const svgNS = "http://www.w3.org/2000/svg";
+                const svg = document.createElementNS(svgNS, "svg");
+                trackSvgPathEl = document.createElementNS(svgNS, "path");
+                trackSvgPathEl.setAttribute("d", tData.i);
+                svg.appendChild(trackSvgPathEl);
+                document.body.appendChild(svg);
+                trackSvgPathLength = trackSvgPathEl.getTotalLength();
+                trackBBox = trackSvgPathEl.getBBox();
+                document.body.removeChild(svg);
+            }
+
+            // Sync driver targets
+            const now = Date.now();
+            Object.values(allDrivers).forEach(d => {
+                if (!d || typeof d.progress !== 'number') return;
+                const key = String(d.carNum || d.carIdx);
+                if (!trackInterpolatedDrivers[key]) {
+                    trackInterpolatedDrivers[key] = {
+                        progress: d.progress,
+                        targetProgress: d.progress,
+                        velocity: 0,
+                        lastTime: now,
+                        isPlayer: d.isPlayer,
+                        classColor: d.classColor,
+                        carNum: d.carNum
+                    };
+                } else {
+                    const st = trackInterpolatedDrivers[key];
+                    st.targetProgress = d.progress;
+                    st.lastTime = now;
+                    st.isPlayer = d.isPlayer;
+                    st.classColor = d.classColor;
+                    st.carNum = d.carNum;
+                }
+            });
+        }
+
+        // Radar 60fps Render Loop
+        function radarAnimLoop() {
+            requestAnimationFrame(radarAnimLoop);
+            drawTraceGraph();
+
+            const canvas = document.getElementById('radar-canvas');
+            if (!canvas || !activeTrackData || !trackBBox || !trackSvgPathEl) return;
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const w = canvas.offsetWidth;
+            const h = canvas.offsetHeight;
+            if (w <= 0 || h <= 0) return;
+
+            if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) {
+                canvas.width = Math.round(w * dpr);
+                canvas.height = Math.round(h * dpr);
+                trackStaticCanvas = null;
+            }
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+            const pad = 24;
+            const bbox = trackBBox;
+            const scaleX = (w - pad * 2) / bbox.width;
+            const scaleY = (h - pad * 2) / bbox.height;
+            const scale = Math.min(scaleX, scaleY);
+            const offsetX = (w - bbox.width * scale) / 2 - bbox.x * scale;
+            const offsetY = (h - bbox.height * scale) / 2 - bbox.y * scale;
+
+            // Cache static track outline
+            if (!trackStaticCanvas) {
+                const offscreen = document.createElement('canvas');
+                offscreen.width = Math.round(w * dpr);
+                offscreen.height = Math.round(h * dpr);
+                const oCtx = offscreen.getContext('2d');
+                oCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+                oCtx.save();
+                oCtx.translate(offsetX, offsetY);
+                oCtx.scale(scale, scale);
+
+                const path = new Path2D(activeTrackData.i);
+                oCtx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+                oCtx.lineWidth = 26 / scale;
+                oCtx.lineCap = 'round';
+                oCtx.stroke(path);
+
+                oCtx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+                oCtx.lineWidth = 10 / scale;
+                oCtx.stroke(path);
+
+                oCtx.restore();
+                trackStaticCanvas = offscreen;
+            }
+
+            ctx.clearRect(0, 0, w, h);
+            ctx.drawImage(trackStaticCanvas, 0, 0, w, h);
+
+            // Interpolate & Render Car Dots
+            ctx.save();
+            ctx.translate(offsetX, offsetY);
+            ctx.scale(scale, scale);
+
+            Object.values(trackInterpolatedDrivers).forEach(d => {
+                let diff = d.targetProgress - d.progress;
+                if (diff > 0.5) diff -= 1.0;
+                if (diff < -0.5) diff += 1.0;
+                d.progress = (d.progress + diff * 0.12 + 1.0) % 1.0;
+
+                // Convert to X,Y
+                const svgLen = (d.progress * trackSvgPathLength) % trackSvgPathLength;
+                const pt = trackSvgPathEl.getPointAtLength(svgLen);
+                if (!pt) return;
+
+                const isTarget = String(d.carNum) === String(focusedCarNum);
+                const radius = (d.isPlayer || isTarget) ? (14 / scale) : (9 / scale);
+
+                if (d.isPlayer || isTarget) {
+                    ctx.shadowColor = '#f59e0b';
+                    ctx.shadowBlur = 14 / scale;
+                    ctx.fillStyle = '#f59e0b';
+                } else {
+                    ctx.shadowColor = 'transparent';
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = d.classColor ? `#${d.classColor}` : '#60a5fa';
+                }
+
+                ctx.beginPath();
+                ctx.arc(pt.x, pt.y, radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.shadowColor = 'transparent';
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = '#000';
+                ctx.font = `bold ${8.5 / scale}px sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(d.carNum || '', pt.x, pt.y);
+            });
+
+            ctx.restore();
+        }
+
+        // Boot
+        document.addEventListener('DOMContentLoaded', () => {
+            initFirebase();
+            setupFirebaseListeners();
+            requestAnimationFrame(radarAnimLoop);
+            if (window.lucide) lucide.createIcons();
+        });
+    </script>
+</body>
+</html>

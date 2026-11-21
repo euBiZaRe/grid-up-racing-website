@@ -1201,6 +1201,16 @@
                     </div>
                 </div>
 
+                <!-- Pitwall Data Centre Fullscreen Button -->
+                <div>
+                    <label class="selector-label">Pitwall Command</label>
+                    <a href="data-center.html" id="btn-datacenter-link" class="btn" style="display: flex; align-items: center; justify-content: center; gap: 8px; height: 42px; border-radius: 12px; font-weight: 800; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; padding: 0 1.15rem; background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(168, 85, 247, 0.25)); border: 1px solid rgba(239, 68, 68, 0.5); color: #fca5a5; transition: all 0.3s ease; text-decoration: none; box-shadow: 0 0 15px rgba(239, 68, 68, 0.15);">
+                        <i data-lucide="monitor" style="width: 15px; height: 15px; color: #ef4444;"></i>
+                        <span>Data Centre</span>
+                        <span style="font-size: 0.6rem; background: #ef4444; color: #fff; padding: 1px 5px; border-radius: 4px; font-weight: 900;">FULLSCREEN</span>
+                    </a>
+                </div>
+
                 <!-- Lap Analysis Button -->
                 <div>
                     <label class="selector-label">Telemetry Analysis</label>
@@ -3147,6 +3157,9 @@
                 hasAutoScrolled = false;
                 setupFirebaseListeners(teamSelect.value);
             }
+
+            const dcLink = document.getElementById('btn-datacenter-link');
+            if (dcLink) dcLink.href = `data-center.html?team=${encodeURIComponent(teamSelect.value)}`;
         }
 
         // Direct sync helper to read admin cache
@@ -3178,6 +3191,8 @@
         // Dropdown Event Listener
         teamSelect.addEventListener('change', (e) => {
             hasAutoScrolled = false; // Reset auto-scroll lock state
+            const dcLink = document.getElementById('btn-datacenter-link');
+            if (dcLink) dcLink.href = `data-center.html?team=${encodeURIComponent(e.target.value)}`;
             setupFirebaseListeners(e.target.value);
         });
 
