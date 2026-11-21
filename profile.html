@@ -869,13 +869,12 @@
                             </div>
                         </div>
                         <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;">
-                            <a href="https://github.com/euBiZaRe/grid-up-racing-website/releases/latest" target="_blank" rel="noopener noreferrer" 
-                                
+                            <button type="button" id="btn-download-recorder" onclick="downloadTelemetryRecorder()" 
                                class="btn btn-primary" 
-                               style="padding: 0.75rem 1.4rem; font-size: 0.85rem; font-weight: 800; letter-spacing: 0.5px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 0 20px rgba(0, 207, 255, 0.3); text-decoration: none; border-radius: 8px;">
+                               style="padding: 0.75rem 1.4rem; font-size: 0.85rem; font-weight: 800; letter-spacing: 0.5px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 0 20px rgba(0, 207, 255, 0.3); border: none; cursor: pointer; border-radius: 8px;">
                                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                                 DOWNLOAD RECORDER (.EXE)
-                            </a>
+                            </button>
                             <div style="display: flex; gap: 0.6rem; align-items: center; font-size: 0.68rem; color: var(--text-muted); font-family: monospace;">
                                 <span>Windows 10/11 64-bit • Auto-Updating</span>
                             </div>
@@ -1438,6 +1437,30 @@
             fb.style.color = isSuccess ? '#00ff88' : '#fbbf24';
             fb.textContent = msg;
         }
+
+        window.downloadTelemetryRecorder = function() {
+            const btn = document.getElementById('btn-download-recorder');
+            const originalHtml = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> DOWNLOADING...`;
+                btn.disabled = true;
+            }
+
+            const a = document.createElement('a');
+            a.href = 'downloads/GridUpTelemetryRecorder.exe';
+            a.download = 'GridUpTelemetryRecorder.exe';
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            setTimeout(() => {
+                if (btn) {
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                }
+            }, 2500);
+        };
  
         async function saveProfile() {
             const user = firebase.auth().currentUser;

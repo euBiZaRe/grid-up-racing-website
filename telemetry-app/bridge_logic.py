@@ -2018,3 +2018,18 @@ class TelemetryBridge:
 
         t = threading.Thread(target=worker, daemon=True)
         t.start()
+
+if __name__ == "__main__":
+    print("=" * 65)
+    print("   GRiD UP SIM RACING - TELEMETRY RECORDER & PITWALL BRIDGE")
+    print(f"   Version:    {BRIDGE_VERSION}")
+    print("=" * 65)
+    bridge = TelemetryBridge()
+    print("[+] Ready for iRacing simulator connection...")
+    print("[*] WebSocket server: ws://127.0.0.1:23099")
+    print("[*] Local Web Pairing: http://127.0.0.1:9099")
+    try:
+        bridge.loop()
+    except KeyboardInterrupt:
+        print("\n[-] Shutting down bridge cleanly...")
+        bridge.running = False
