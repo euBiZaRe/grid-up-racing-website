@@ -25,7 +25,7 @@ else:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 CONFIG_FILE = os.path.join(BASE_DIR, "config.json")
-BRIDGE_VERSION = "2.1.1-FUEL-ENGINEER"
+BRIDGE_VERSION = "2.1.2-FUEL-ENGINEER"
 RTDB_BASE_URL = "https://grid-up-racedash-default-rtdb.europe-west1.firebasedatabase.app"
 
 # Optional shared secret for the local dashboard gateway. Never hardcode it: set the DASH_TOKEN
@@ -982,14 +982,43 @@ class TelemetryBridge:
             raw_fuel_pct = self.get_safe('FuelLevelPct', 0.0)
             sdk_fuel_per_hour = self.get_safe('FuelUsePerHour', 0.0)
 
-            # Fuel capacity discovery from car setup or default GT3/prototype capacity
-            fuel_capacity = 100.0
+            # Automatic car tank capacity and class discovery
+            target_car_str = f"{target_car_name} {target_class} {target_driver_meta.get('CarScreenName', '') if target_driver_meta else ''}".lower()
+            if 'p217' in target_car_str or 'lmp2' in target_car_str or 'dallara' in target_car_str:
+                fuel_capacity = 75.0
+            elif 'gtp' in target_car_str or 'lmdh' in target_car_str or '963' in target_car_str or 'v-series' in target_car_str or 'acura' in target_car_str:
+                fuel_capacity = 110.0
+            elif 'gt3' in target_car_str or 'imsa23' in target_car_str:
+                fuel_capacity = 115.0
+            elif 'gt4' in target_car_str:
+                fuel_capacity = 105.0
+            elif 'cup' in target_car_str:
+                fuel_capacity = 110.0
+            else:
+                fuel_capacity = 100.0
+
             car_setup_snap = self.get_car_setup_snapshot()
             if car_setup_snap and isinstance(car_setup_snap, dict) and 'fuel_capacity' in car_setup_snap:
                 try:
-                    fuel_capacity = float(car_setup_snap['fuel_capacity'])
+                    c_val = float(car_setup_snap['fuel_capacity'])
+                    if c_val > 10 and not is_spectating:
+                        fuel_capacity = c_val
                 except Exception:
                     pass
+
+            # Class-specific fuel consumption benchmark based on track length
+            track_km = track_len / 1000.0 if track_len > 500 else 7.004
+            if fuel_capacity == 75.0:  # LMP2
+                default_burn = round(track_km * 0.25, 2)  # ~1.75L at Spa
+            elif fuel_capacity == 110.0 and ('gtp' in target_car_str or 'lmdh' in target_car_str):
+                default_burn = round(track_km * 0.31, 2)  # ~2.17L at Spa
+            elif fuel_capacity >= 115.0:  # GT3
+                default_burn = round(track_km * 0.40, 2)  # ~2.80L at Spa
+            else:
+                default_burn = round(track_km * 0.33, 2)
+
+            pit_road_arr = self.get_safe('CarIdxOnPitRoad', [])
+            is_on_pit_road = bool(pit_road_arr[target_car_idx]) if (type(pit_road_arr) in (list, tuple) and target_car_idx < len(pit_road_arr)) else False
 
             target_fuel = 0.0
             fuel_data_valid = False
@@ -1018,7 +1047,6 @@ class TelemetryBridge:
                 # If still 0, initialize estimated fuel from fuel capacity and stint laps
                 if target_fuel <= 0.05 and is_spectating:
                     stint_laps = max(0, target_lap % 30) if target_lap > 0 else 0
-                    default_burn = 3.1
                     target_fuel = round(max(5.0, fuel_capacity - (stint_laps * default_burn)), 2)
                     fuel_data_valid = True
                     fuel_is_estimated = True
@@ -1035,17 +1063,21 @@ class TelemetryBridge:
 
             driver_key = f"{target_car_idx}_{target_name}"
             if driver_key not in self.driver_fuel_trackers:
+                stint_laps_init = max(0, target_lap % 25) if target_lap > 0 else 0
+                init_est_fuel = target_fuel if target_fuel > 0 else round(max(5.0, fuel_capacity - (stint_laps_init * default_burn)), 2)
                 self.driver_fuel_trackers[driver_key] = {
                     'car_idx': target_car_idx,
                     'car_num': target_car_num,
                     'driver_name': target_name,
-                    'last_fuel': target_fuel if fuel_data_valid else 0.0,
-                    'estimated_fuel': target_fuel if fuel_is_estimated else 0.0,
+                    'last_fuel': init_est_fuel,
+                    'estimated_fuel': init_est_fuel,
                     'fuel_is_estimated': fuel_is_estimated,
                     'last_lap': target_lap,
                     'last_lap_time': target_last_lap,
-                    'lap_consumptions': [],
-                    'lap_times': [],
+                    'stint_start_lap': 0,
+                    'is_on_pit_road': is_on_pit_road,
+                    'lap_consumptions': [default_burn],
+                    'lap_times': [target_last_lap] if target_last_lap > 15 else [125.0],
                     'refuel_events': [],
                     'last_update_ts': time.time()
                 }
@@ -1054,15 +1086,32 @@ class TelemetryBridge:
             if fuel_is_estimated and tracker.get('estimated_fuel', 0) <= 0:
                 tracker['estimated_fuel'] = target_fuel
 
+            # Automated Pit Stop Detection & Refuel Reset
+            was_on_pit = tracker.get('is_on_pit_road', False)
+            tracker['is_on_pit_road'] = is_on_pit_road
+            if was_on_pit and not is_on_pit_road:
+                tracker['stint_start_lap'] = target_lap
+                tracker['estimated_fuel'] = fuel_capacity
+                tracker['last_fuel'] = fuel_capacity
+                target_fuel = fuel_capacity
+                self.log(f"[STINT] Pit exit detected for #{target_car_num} {target_name}. Refueled to full tank ({fuel_capacity}L) on Lap {target_lap}.")
+
             # Completed lap transition
             if target_lap > tracker['last_lap'] and tracker['last_lap'] > 0:
                 prev_fuel_val = tracker['last_fuel']
                 if fuel_is_estimated:
                     # Deduct consumption on lap completion
-                    lap_burn = tracker['lap_consumptions'][-1] if tracker['lap_consumptions'] else 3.1
+                    lap_burn = tracker['lap_consumptions'][-1] if tracker['lap_consumptions'] else default_burn
                     tracker['estimated_fuel'] = round(max(2.0, tracker.get('estimated_fuel', fuel_capacity) - lap_burn), 2)
                     target_fuel = tracker['estimated_fuel']
                     tracker['last_fuel'] = target_fuel
+                    tracker['lap_consumptions'].append(lap_burn)
+                    if target_last_lap > 15.0:
+                        tracker['lap_times'].append(round(target_last_lap, 3))
+                    if len(tracker['lap_consumptions']) > 30:
+                        tracker['lap_consumptions'].pop(0)
+                    if len(tracker['lap_times']) > 30:
+                        tracker['lap_times'].pop(0)
                 elif fuel_data_valid and prev_fuel_val > 0 and target_fuel > 0:
                     # Refuel jump check (pit stop)
                     if target_fuel > prev_fuel_val + 1.2:

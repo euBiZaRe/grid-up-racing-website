@@ -669,7 +669,7 @@
             flex-direction: column;
             justify-content: space-between;
             height: 100%;
-            padding: 4px;
+            padding: 2px;
             gap: 4px;
         }
         .fuel-main-stats-row {
@@ -681,38 +681,39 @@
             background: rgba(0, 0, 0, 0.4);
             border: 1px solid var(--border-panel);
             border-radius: 6px;
-            padding: 6px;
+            padding: 3px 6px;
             display: flex;
             flex-direction: column;
             justify-content: center;
         }
         .fuel-lbl {
-            font-size: 0.58rem;
+            font-size: 0.55rem;
             color: var(--text-muted);
             font-weight: 800;
             text-transform: uppercase;
         }
         .fuel-val {
             font-family: var(--font-mono);
-            font-size: 1.15rem;
+            font-size: 1.05rem;
             font-weight: 900;
+            line-height: 1.15;
             color: #fff;
         }
         .fuel-val.highlight {
             color: var(--accent-green);
         }
         .fuel-bar-wrap {
-            height: 8px;
+            height: 6px;
             background: rgba(255, 255, 255, 0.08);
-            border-radius: 4px;
+            border-radius: 3px;
             overflow: hidden;
-            margin: 2px 0;
+            margin: 1px 0;
         }
         .fuel-bar-fill {
             height: 100%;
             width: 50%;
             background: linear-gradient(90deg, #10b981, #38bdf8);
-            border-radius: 4px;
+            border-radius: 3px;
             transition: width 0.3s ease;
         }
         .fuel-averages-grid {
@@ -724,10 +725,10 @@
             background: rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(255, 255, 255, 0.04);
             border-radius: 4px;
-            padding: 3px;
+            padding: 2px 3px;
             text-align: center;
         }
-        .fuel-avg-lbl { font-size: 0.55rem; color: var(--text-muted); }
+        .fuel-avg-lbl { font-size: 0.52rem; color: var(--text-muted); }
         .fuel-avg-val { font-family: var(--font-mono); font-size: 0.72rem; font-weight: 800; color: #fff; }
 
         /* 3. Tyre & Thermal Centre */
@@ -1142,7 +1143,7 @@
                         </div>
                         <span id="spotter-tactical-tag" class="battle-alert-tag">STABLE</span>
                     </div>
-                    <div class="dc-card-body">
+                    <div class="dc-card-body" style="padding: 4px 6px;">
                         <div class="battle-body">
                             <!-- Car Ahead -->
                             <div class="battle-row ahead">
@@ -1189,7 +1190,7 @@
                         </div>
                         <span id="fuel-pit-window-tag" style="font-size: 0.62rem; color: var(--accent-gold); font-weight: 800;">PIT: ~-- LAPS</span>
                     </div>
-                    <div class="dc-card-body">
+                    <div class="dc-card-body" style="padding: 4px 6px;">
                         <div class="fuel-body">
                             <div class="fuel-main-stats-row">
                                 <!-- Fuel Time Remaining -->
@@ -1247,7 +1248,7 @@
                             <span>O: <strong id="engine-oil-temp" style="color:#fff;">--°</strong></span>
                         </div>
                     </div>
-                    <div class="dc-card-body">
+                    <div class="dc-card-body" style="padding: 4px 6px;">
                         <div class="tyres-body">
                             <!-- Left Front -->
                             <div id="tyre-card-lf" class="tyre-card thermal-optimal">
@@ -2061,18 +2062,18 @@
 
         // Helper: Get realistic tank capacity per car
         function getCarTankCapacity(d, tel) {
-            if (tel.fuelMax && tel.fuelMax > 10) return tel.fuelMax;
-            if (tel.fuel_capacity && tel.fuel_capacity > 10) return tel.fuel_capacity;
-            const raw = ((d?.className || '') + ' ' + (d?.carName || '') + ' ' + (tel?.carName || '')).toLowerCase();
-            if (raw.includes('p217') || raw.includes('lmp2')) return 75.0; // Dallara P217 LMP2 is 75L
-            if (raw.includes('gtp') || raw.includes('lmdh')) return 110.0;
-            if (raw.includes('gt3')) return 115.0;
+            const raw = ((d?.className || '') + ' ' + (d?.carName || '') + ' ' + (tel?.carName || '') + ' ' + (tel?.spectatingDriverName || '')).toLowerCase();
+            if (raw.includes('p217') || raw.includes('lmp2') || raw.includes('dallara')) return 75.0; // Dallara P217 LMP2 is strictly 75L
+            if (raw.includes('gtp') || raw.includes('lmdh') || raw.includes('cadillac') || raw.includes('963') || raw.includes('acura') || raw.includes('bmw m hybrid')) return 110.0;
+            if (raw.includes('gt3') || raw.includes('imsa23')) return 115.0;
             if (raw.includes('gt4')) return 105.0;
             if (raw.includes('tcr')) return 100.0;
             if (raw.includes('cup')) return 110.0;
             if (raw.includes('formula') || raw.includes('f4') || raw.includes('f3')) return 45.0;
             if (raw.includes('mx-5') || raw.includes('miata')) return 45.0;
-            return 100.0;
+            if (tel.fuelMax && tel.fuelMax > 10) return tel.fuelMax;
+            if (tel.fuel_capacity && tel.fuel_capacity > 10 && tel.fuel_capacity !== 100.0) return tel.fuel_capacity;
+            return 75.0;
         }
 
         // Manual Fuel Calibration for Spotters
@@ -2105,13 +2106,13 @@
             // Check if user has calibrated fuel manually
             if (typeof window.userFuelOverride === 'number') {
                 const lapsSinceCal = Math.max(0, (targetDriver?.lap || 0) - (window.userFuelOverrideLap || 0));
-                const burnRate = typeof tel.fuel_per_lap === 'number' && tel.fuel_per_lap > 0.05 ? tel.fuel_per_lap : 2.85;
+                const burnRate = typeof tel.fuel_per_lap === 'number' && tel.fuel_per_lap > 0.05 ? tel.fuel_per_lap : 1.75;
                 fuel = Math.max(0.0, window.userFuelOverride - (lapsSinceCal * burnRate));
                 isUserCalibrated = true;
-            } else if (typeof tel.fuel === 'number' && tel.fuel > 0.05 && !tel.fuel_is_estimated) {
-                // Direct live telemetry from physical car sensor
+            } else if (typeof tel.fuel === 'number' && tel.fuel > 0.05) {
+                // Direct live telemetry from physical car sensor or bridge automated tracker
                 fuel = tel.fuel;
-                isEstimated = false;
+                isEstimated = Boolean(tel.fuel_is_estimated);
             } else {
                 // Check if another stream in currentStreams is the active driver
                 if (targetDriver) {
@@ -2122,9 +2123,9 @@
                         const cNum = String(st.telemetry.carNum || '');
                         if ((targetDriver.name && dName.includes(targetDriver.name.toLowerCase())) || 
                             (targetDriver.carNum && cNum === String(targetDriver.carNum))) {
-                            if (typeof st.telemetry.fuel === 'number' && st.telemetry.fuel > 0.05 && !st.telemetry.fuel_is_estimated) {
+                            if (typeof st.telemetry.fuel === 'number' && st.telemetry.fuel > 0.05) {
                                 fuel = st.telemetry.fuel;
-                                isEstimated = false;
+                                isEstimated = Boolean(st.telemetry.fuel_is_estimated);
                                 break;
                             }
                         }
@@ -2132,15 +2133,31 @@
                 }
             }
 
-            // 2. Burn rate resolution
-            const burnLast = typeof tel.fuel_per_lap === 'number' && tel.fuel_per_lap > 0.05 
+            // 2. Burn rate resolution (L/lap)
+            const rawBurn = typeof tel.fuel_per_lap === 'number' && tel.fuel_per_lap > 0.05 
                 ? tel.fuel_per_lap 
-                : (typeof tel.fuel_avg_5 === 'number' && tel.fuel_avg_5 > 0.05 ? tel.fuel_avg_5 : (fuelCap > 100 ? 3.2 : 2.85));
+                : (typeof tel.fuel_avg_5 === 'number' && tel.fuel_avg_5 > 0.05 ? tel.fuel_avg_5 : 0);
 
-            // 3. Fallback estimation if not set
+            let burnLast = rawBurn;
+            if (burnLast <= 0.05) {
+                const trackLenKm = (tel.trackLength ? tel.trackLength / 1000 : 7.004);
+                const rawName = ((targetDriver?.className || '') + ' ' + (targetDriver?.carName || '') + ' ' + (tel?.carName || '')).toLowerCase();
+                if (rawName.includes('p217') || rawName.includes('lmp2') || rawName.includes('dallara')) {
+                    burnLast = trackLenKm * 0.25; // ~1.75L for Spa LMP2
+                } else if (rawName.includes('gtp') || rawName.includes('lmdh')) {
+                    burnLast = trackLenKm * 0.31; // ~2.17L for Spa GTP
+                } else if (rawName.includes('gt3') || rawName.includes('imsa23')) {
+                    burnLast = trackLenKm * 0.40; // ~2.80L for Spa GT3
+                } else {
+                    burnLast = trackLenKm * 0.32;
+                }
+            }
+            burnLast = Math.round(burnLast * 100) / 100;
+
+            // 3. Fallback estimation if fuel is still 0
             if (fuel <= 0.05 && !isUserCalibrated) {
-                const stintLaps = targetDriver?.lap ? (targetDriver.lap % 25) : 0;
-                fuel = Math.max(5.0, fuelCap - (stintLaps * burnLast));
+                const stintLaps = targetDriver?.stintLaps !== undefined ? targetDriver.stintLaps : (targetDriver?.lap ? (targetDriver.lap % 25) : 0);
+                fuel = Math.max(3.0, fuelCap - (stintLaps * burnLast));
                 isEstimated = true;
             }
 
@@ -2169,7 +2186,7 @@
                 if (isUserCalibrated) {
                     badge = '<span style="font-size:0.55rem; color:#CCFF00; font-weight:800; border:1px solid rgba(204,255,0,0.4); padding:1px 4px; border-radius:3px; vertical-align:middle; margin-left:4px;">SET</span>';
                 } else if (isEstimated) {
-                    badge = '<span style="font-size:0.55rem; color:var(--accent-gold); font-weight:800; border:1px solid rgba(245,158,11,0.4); padding:1px 4px; border-radius:3px; vertical-align:middle; margin-left:4px;">EST</span>';
+                    badge = '<span style="font-size:0.55rem; color:var(--accent-gold); font-weight:800; border:1px solid rgba(245,158,11,0.4); padding:1px 4px; border-radius:3px; vertical-align:middle; margin-left:4px;">CALC</span>';
                 }
                 tankEl.innerHTML = `${unitStr} ${badge}`;
             }
@@ -2189,14 +2206,15 @@
             const avg5El = document.getElementById('fuel-burn-avg5');
             const neededEl = document.getElementById('fuel-needed-finish');
 
-            const avg3Val = typeof tel.fuel_avg_3 === 'number' && tel.fuel_avg_3 > 0 ? tel.fuel_avg_3 : burnLast;
-            const avg5Val = typeof tel.fuel_avg_5 === 'number' && tel.fuel_avg_5 > 0 ? tel.fuel_avg_5 : (burnLast * 0.98);
+            const avg3Val = typeof tel.fuel_avg_3 === 'number' && tel.fuel_avg_3 > 0.05 ? tel.fuel_avg_3 : burnLast;
+            const avg5Val = typeof tel.fuel_avg_5 === 'number' && tel.fuel_avg_5 > 0.05 ? tel.fuel_avg_5 : (burnLast * 0.99);
 
             if (burnLastEl) burnLastEl.textContent = useImperial ? `${(burnLast * 0.264172).toFixed(2)}g` : `${burnLast.toFixed(2)}L`;
             if (avg2El) avg2El.textContent = useImperial ? `${(avg3Val * 0.264172).toFixed(2)}g` : `${avg3Val.toFixed(2)}L`;
             if (avg5El) avg5El.textContent = useImperial ? `${(avg5Val * 0.264172).toFixed(2)}g` : `${avg5Val.toFixed(2)}L`;
 
-            const lapsToFinish = Math.max(0, 32 - (targetDriver?.lap || 0));
+            const sessionTimeRem = typeof tel.session_time_remain === 'number' && tel.session_time_remain > 10 ? tel.session_time_remain : (typeof tel.fuel_time_rem === 'number' ? tel.fuel_time_rem : 0);
+            const lapsToFinish = sessionTimeRem > 0 && avgLapTime > 15 ? Math.ceil(sessionTimeRem / avgLapTime) : Math.max(0, 32 - (targetDriver?.lap || 0));
             const neededFuel = lapsToFinish * (avg5Val || burnLast);
             if (neededEl) neededEl.textContent = useImperial ? `${(neededFuel * 0.264172).toFixed(1)}g` : `${neededFuel.toFixed(1)}L`;
 

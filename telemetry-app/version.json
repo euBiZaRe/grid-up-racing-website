@@ -1,7 +1,7 @@
 {
-  "logic_version": "2.1.1",
-  "logic_sha256": "c7611da9c507f44685198bb132818df66d21642f25f3f984b7046948c134078a",
-  "binary_version": "2.1.1",
+  "logic_version": "2.1.2",
+  "logic_sha256": "6b6b1e4864760e91aa8c4ea6d7fa87edc7dc78d6a7e86d96ac76967c3a04c747",
+  "binary_version": "2.1.2",
   "binary_url": "https://github.com/euBiZaRe/grid-up-racing-website/releases/latest",
-  "notes": "Added multi-class timing tower separation (top 10 for focused class, top 3 for other classes) and intelligent estimated fuel fallback when spotting."
+  "notes": "Added automated pit stop detection & refuel reset, car-specific tank capacity (75L for LMP2 Dallara P217), track-length benchmark burn rates, and fixed stint averages card visibility."
 }
