@@ -883,6 +883,57 @@
                     </div>
                 </div>
 
+                <!-- Telemetry Driver Pairing & Live Routing Status -->
+                <div id="telemetry-pairing-section" class="compact-card" style="display: none; margin-top: 1.25rem; border: 1px solid rgba(0, 207, 255, 0.25); background: radial-gradient(circle at top left, rgba(0, 207, 255, 0.05), transparent 70%), rgba(20, 20, 24, 0.7); border-radius: 12px; padding: 1.5rem;">
+                    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 1.25rem; margin-bottom: 1.25rem;">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.35rem;">
+                                <span style="font-size: 0.65rem; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; background: rgba(0, 255, 136, 0.12); color: #00ff88; padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid rgba(0, 255, 136, 0.3);">
+                                    BRIDGE AUTHENTICATION
+                                </span>
+                                <span id="telemetry-pair-driver-name" style="font-size: 0.85rem; font-weight: 800; color: #fff; letter-spacing: 0.5px;">--</span>
+                            </div>
+                            <h3 style="font-size: 1.15rem; font-weight: 900; color: #fff; margin: 0 0 0.3rem 0; display: flex; align-items: center; gap: 8px;">
+                                <i class="fas fa-link" style="color: var(--primary);"></i> Connect Recorder to Your Account
+                            </h3>
+                            <p style="color: var(--text-muted); font-size: 0.78rem; margin: 0; line-height: 1.45; max-width: 600px;">
+                                Link your local desktop app to your verified profile. Once linked, the app streams telemetry securely without storing any passwords or database keys.
+                            </p>
+                        </div>
+
+                        <!-- Live Stream Routing Badge -->
+                        <div style="background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 0.6rem 0.9rem; min-width: 220px;">
+                            <div style="font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 0.25rem; display: flex; align-items: center; gap: 5px;">
+                                <i class="fas fa-satellite-dish" style="color: var(--primary);"></i> Current Stream Destination
+                            </div>
+                            <div id="telemetry-live-target-badge" style="font-size: 0.82rem; font-weight: 800; color: #00ff88; display: flex; align-items: center; gap: 6px;">
+                                <span class="status-dot green"></span> <span>PRACTICE / SOLO</span>
+                            </div>
+                            <div id="telemetry-live-target-sub" style="font-size: 0.68rem; color: rgba(255,255,255,0.55); margin-top: 0.15rem;">
+                                Standby mode active
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pairing Actions Row -->
+                    <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; background: rgba(0,0,0,0.25); border-radius: 8px; padding: 1rem; border: 1px solid rgba(255,255,255,0.06);">
+                        <button type="button" id="btn-pair-local-bridge" onclick="pairLocalTelemetryBridge()" class="btn btn-primary" style="padding: 0.65rem 1.25rem; font-size: 0.8rem; font-weight: 800; letter-spacing: 0.5px; display: inline-flex; align-items: center; gap: 8px; border-radius: 8px;">
+                            <i class="fas fa-plug-circle-bolt"></i> 1-CLICK PAIR LOCAL APP
+                        </button>
+
+                        <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 260px;">
+                            <span style="font-size: 0.72rem; color: var(--text-muted); white-space: nowrap;">Or manual key:</span>
+                            <div style="position: relative; flex: 1;">
+                                <input type="text" id="telemetry-driver-key-input" readonly value="Generating key..." style="width: 100%; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); color: #00ff88; font-family: monospace; font-size: 0.75rem; padding: 0.45rem 2rem 0.45rem 0.65rem; border-radius: 6px;" />
+                                <button type="button" onclick="copyDriverStreamKey()" style="position: absolute; right: 5px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: var(--primary); cursor: pointer; padding: 3px;" title="Copy Driver Stream Key">
+                                    <i class="fas fa-copy" id="copy-stream-key-icon"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="telemetry-pair-feedback" style="display: none; margin-top: 0.75rem; font-size: 0.75rem; padding: 0.5rem 0.85rem; border-radius: 6px;"></div>
+                </div>
+
                 <!-- Locked State Notice (Visible if not yet authorized) -->
                 <div id="telemetry-locked-notice" class="compact-card" style="display: none; text-align: center; padding: 2.5rem 1.5rem; border: 1px dashed rgba(255,255,255,0.15);">
                     <div style="font-size: 2rem; margin-bottom: 0.5rem;">🔒</div>
@@ -1244,12 +1295,148 @@
                 if (badgeEl) badgeEl.textContent = accessRole.toUpperCase();
                 if (headerPill) headerPill.style.display = 'inline-flex';
                 if (tabPill) tabPill.style.display = 'inline-block';
+                initTelemetryPairingCard(user, userData, verifiedDriverName);
             } else {
                 if (downloadSection) downloadSection.style.display = 'none';
+                const pairingSection = document.getElementById('telemetry-pairing-section');
+                if (pairingSection) pairingSection.style.display = 'none';
                 if (lockedNotice) lockedNotice.style.display = 'block';
                 if (headerPill) headerPill.style.display = 'none';
                 if (tabPill) tabPill.style.display = 'none';
             }
+        }
+
+        let _currentDriverStreamKey = '';
+        let _currentDriverNameResolved = '';
+
+        async function initTelemetryPairingCard(user, userData, verifiedDriverName) {
+            const pairingSection = document.getElementById('telemetry-pairing-section');
+            if (!pairingSection || !user) return;
+            pairingSection.style.display = 'block';
+
+            const driverName = verifiedDriverName || (userData && userData.driverName) || user.displayName || 'Driver';
+            _currentDriverNameResolved = driverName;
+
+            const nameEl = document.getElementById('telemetry-pair-driver-name');
+            if (nameEl) nameEl.textContent = driverName;
+
+            // Compute deterministic Driver Stream Key
+            let keyHash = 0;
+            for (let i = 0; i < driverName.length; i++) {
+                keyHash = ((keyHash << 5) - keyHash) + driverName.charCodeAt(i);
+                keyHash |= 0;
+            }
+            const hashHex = Math.abs(keyHash).toString(16).toUpperCase().padStart(4, '0').substring(0, 4);
+            const streamKey = `GRiD-${user.uid.substring(0, 8).toUpperCase()}-${hashHex}`;
+            _currentDriverStreamKey = streamKey;
+
+            const keyInput = document.getElementById('telemetry-driver-key-input');
+            if (keyInput) keyInput.value = streamKey;
+
+            // Load and display current live telemetry route
+            updateDriverTelemetryRouteBadge(driverName);
+        }
+
+        async function updateDriverTelemetryRouteBadge(driverName) {
+            const badge = document.getElementById('telemetry-live-target-badge');
+            const sub = document.getElementById('telemetry-live-target-sub');
+            if (!badge || !sub || typeof db === 'undefined') return;
+
+            try {
+                const doc = await db.collection("settings").doc("telemetry_routing").get();
+                if (!doc.exists) return;
+                const data = doc.data();
+
+                if (data.mode === 'event' && data.activeEventId) {
+                    const normName = (driverName || '').trim().toLowerCase();
+                    const assigned = data.driversMap && data.driversMap[normName];
+
+                    if (assigned) {
+                        badge.innerHTML = `<span class="status-dot green"></span> <span style="color: #00ff88;">🔥 ${escapeHTML(assigned.teamName || 'Assigned Team')}</span>`;
+                        sub.textContent = `Event: ${escapeHTML(data.activeEventName || data.activeEventId)} • Live pit wall active`;
+                    } else {
+                        badge.innerHTML = `<span class="status-dot" style="background:#94a3b8;"></span> <span style="color: #94a3b8;">PRACTICE / SOLO</span>`;
+                        sub.textContent = `Event: ${escapeHTML(data.activeEventName || data.activeEventId)} (Not entered in lineup)`;
+                    }
+                } else {
+                    badge.innerHTML = `<span class="status-dot green"></span> <span style="color: #00ff88;">PRACTICE / SOLO</span>`;
+                    sub.textContent = 'Standby mode: All sessions stream to solo';
+                }
+            } catch (e) {
+                console.warn("Could not check telemetry routing badge:", e);
+            }
+        }
+
+        window.copyDriverStreamKey = function() {
+            const keyInput = document.getElementById('telemetry-driver-key-input');
+            if (!keyInput || !keyInput.value) return;
+            navigator.clipboard.writeText(keyInput.value).then(() => {
+                const icon = document.getElementById('copy-stream-key-icon');
+                if (icon) icon.className = 'fas fa-check';
+                showPairingFeedback("Stream Key copied to clipboard! Paste it into config.json.", true);
+                setTimeout(() => {
+                    if (icon) icon.className = 'fas fa-copy';
+                }, 2000);
+            }).catch(() => {
+                keyInput.select();
+                document.execCommand('copy');
+                showPairingFeedback("Stream Key copied!", true);
+            });
+        };
+
+        window.pairLocalTelemetryBridge = async function() {
+            const btn = document.getElementById('btn-pair-local-bridge');
+            const user = firebase.auth().currentUser;
+            if (!user) return alert("Please log in first.");
+
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Connecting to Bridge...`;
+            }
+
+            const payload = {
+                uid: user.uid,
+                driverName: _currentDriverNameResolved || user.displayName || 'Driver',
+                streamKey: _currentDriverStreamKey,
+                timestamp: Date.now()
+            };
+
+            // Attempt local loopback handshake on port 9099 (Telemetry Bridge pairing port)
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 3500);
+
+                const response = await fetch('http://127.0.0.1:9099/pair', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+
+                if (response.ok) {
+                    showPairingFeedback(`✅ Success! Local Telemetry Recorder paired with "${payload.driverName}". Live telemetry is now authenticated.`, true);
+                } else {
+                    throw new Error(`Bridge returned status ${response.status}`);
+                }
+            } catch (err) {
+                showPairingFeedback(`⚠️ Telemetry Bridge app is not currently running on this PC. Start the app on your computer, then click Pair again (or copy the Manual Stream Key above into config.json).`, false);
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="fas fa-plug-circle-bolt"></i> 1-CLICK PAIR LOCAL APP`;
+                }
+            }
+        };
+
+        function showPairingFeedback(msg, isSuccess) {
+            const fb = document.getElementById('telemetry-pair-feedback');
+            if (!fb) return;
+            fb.style.display = 'block';
+            fb.style.background = isSuccess ? 'rgba(0, 255, 136, 0.12)' : 'rgba(251, 191, 36, 0.12)';
+            fb.style.border = `1px solid ${isSuccess ? 'rgba(0, 255, 136, 0.35)' : 'rgba(251, 191, 36, 0.35)'}`;
+            fb.style.color = isSuccess ? '#00ff88' : '#fbbf24';
+            fb.textContent = msg;
         }
  
         async function saveProfile() {
