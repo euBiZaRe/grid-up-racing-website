@@ -37,7 +37,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" media="print" onload="this.media='all'"><noscript><link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet"></noscript>
-    <link rel="stylesheet" href="style.css?v=24">
+    <link rel="stylesheet" href="style.css?v=20261121v3">
     <link rel="icon" type="image/png" href="assets/G_2.png">
     <meta name="description" content="Race reports and post-race analysis from GRiD UP Sim Racing. Covering iRacing endurance and sprint events throughout the 2026 season.">
     <meta name="keywords" content="GRiD UP race reports, grid up sim racing reports, iRacing race recap, sim racing news">
@@ -172,7 +172,7 @@
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-    <script defer src="script.js?v=24"></script>
+    <script defer src="script.js?v=20261121v3"></script>
     <script defer src="js/auth.js?v=11"></script>
     <script>
     function formatLapTime(secs) {
@@ -192,7 +192,7 @@
 
         let activeTab = 'all';
 
-        // Wait for Firebase db from script.js
+        // Wait for Firebase db from script.js?v=20261121v3
         let attempts = 0;
         while (typeof db === 'undefined' && attempts < 20) {
             await new Promise(r => setTimeout(r, 200));
@@ -232,7 +232,7 @@
 
                     const card = document.createElement('div');
                     card.className = 'glass';
-                    card.style.cssText = 'border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.4s cubic-bezier(0.23,1,0.32,1), box-shadow 0.4s ease; cursor: pointer; border: 1px solid var(--glass-border);';
+                    card.style.css?v=20261121v3 = 'border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.4s cubic-bezier(0.23,1,0.32,1), box-shadow 0.4s ease; cursor: pointer; border: 1px solid var(--glass-border);';
                     card.onmouseover = () => { card.style.transform = 'translateY(-8px)'; card.style.boxShadow = '0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(0,207,255,0.15)'; card.style.borderColor = 'rgba(0,207,255,0.4)'; };
                     card.onmouseout = () => { card.style.transform = ''; card.style.boxShadow = ''; card.style.borderColor = 'var(--glass-border)'; };
                     const esc = typeof escapeHtml === 'function' ? escapeHtml : (s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'));
@@ -302,7 +302,7 @@
 
                     const card = document.createElement('div');
                     card.className = 'glass';
-                    card.style.cssText = 'border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.4s cubic-bezier(0.23,1,0.32,1), box-shadow 0.4s ease; cursor: pointer; border: 1px solid var(--glass-border);';
+                    card.style.css?v=20261121v3 = 'border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.4s cubic-bezier(0.23,1,0.32,1), box-shadow 0.4s ease; cursor: pointer; border: 1px solid var(--glass-border);';
                     card.onmouseover = () => { card.style.transform = 'translateY(-8px)'; card.style.boxShadow = '0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(0,207,255,0.15)'; card.style.borderColor = 'rgba(0,207,255,0.4)'; };
                     card.onmouseout = () => { card.style.transform = ''; card.style.boxShadow = ''; card.style.borderColor = 'var(--glass-border)'; };
                     const esc = typeof escapeHtml === 'function' ? escapeHtml : (s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'));

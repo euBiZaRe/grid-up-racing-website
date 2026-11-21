@@ -459,7 +459,7 @@ async function loadDynamicContent() {
     const fullEventList = document.getElementById('full-event-list');
     
     // Attempt to load from cache first for instant UI
-    const SCRIPT_VER = '10';
+    const SCRIPT_VER = '11';
     if (localStorage.getItem('gridup_script_ver') !== SCRIPT_VER) {
         localStorage.removeItem('gridup_upcoming_events');
         localStorage.removeItem('gridup_past_events');
@@ -1993,6 +1993,33 @@ function downloadTeamApp() {
     
     // Start auto-detection
     initAutoResults();
+
+// Universal Result Position Coloring: P1 = Gold, P2 = Silver, P3 = Bronze, Rest = Blue
+function getFinishPositionStyle(posStr) {
+    if (!posStr) return 'color: #00cfff !important; text-shadow: 0 0 8px rgba(0, 207, 255, 0.35);';
+    const s = String(posStr).trim().toUpperCase().replace(/\s+/g, '');
+    if (s === 'P1' || s === 'P01' || s === '1' || s === '1ST' || s === 'FIRST') {
+        return 'color: #ffd700 !important; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);';
+    }
+    if (s === 'P2' || s === 'P02' || s === '2' || s === '2ND' || s === 'SECOND') {
+        return 'color: #e2e8f0 !important; text-shadow: 0 0 10px rgba(226, 232, 240, 0.4);';
+    }
+    if (s === 'P3' || s === 'P03' || s === '3' || s === '3RD' || s === 'THIRD') {
+        return 'color: #cd7f32 !important; text-shadow: 0 0 10px rgba(205, 127, 50, 0.5);';
+    }
+    return 'color: #00cfff !important; text-shadow: 0 0 8px rgba(0, 207, 255, 0.35);';
+}
+window.getFinishPositionStyle = getFinishPositionStyle;
+
+function getFinishPositionClass(posStr) {
+    if (!posStr) return 'finish-blue';
+    const s = String(posStr).trim().toUpperCase().replace(/\s+/g, '');
+    if (s === 'P1' || s === 'P01' || s === '1' || s === '1ST' || s === 'FIRST') return 'finish-gold';
+    if (s === 'P2' || s === 'P02' || s === '2' || s === '2ND' || s === 'SECOND') return 'finish-silver';
+    if (s === 'P3' || s === 'P03' || s === '3' || s === '3RD' || s === 'THIRD') return 'finish-bronze';
+    return 'finish-blue';
+}
+window.getFinishPositionClass = getFinishPositionClass;
 
 async function renderEventResults(eventId, targetElement) {
     if (!targetElement) return;
