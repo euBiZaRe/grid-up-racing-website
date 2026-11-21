@@ -1,6 +1,6 @@
 {
-  "logic_version": "1.6.1",
-  "binary_version": "1.5.0",
-  "binary_url": "https://raw.githubusercontent.com/euBiZaRe/grid-up-racing-website/master/telemetry-app/GridUpTelemetryRecorder.exe",
-  "notes": "Security hardening: hardened WebSocket origin validation against CSWSH and URL parser confusion."
+  "logic_version": "2.0.0",
+  "binary_version": "2.0.0",
+  "binary_url": "https://github.com/euBiZaRe/grid-up-racing-website/releases/latest",
+  "notes": "Added secure web profile pairing and dynamic event telemetry channel routing from Team Builder."
 }

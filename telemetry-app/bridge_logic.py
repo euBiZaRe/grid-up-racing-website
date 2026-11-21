@@ -16,6 +16,7 @@ import urllib.request
 import urllib.error
 import urllib.parse
 import ipaddress
+from http.server import HTTPServer, BaseHTTPRequestHandler
 
 # Resolve base directory dynamically
 if getattr(sys, 'frozen', False):
@@ -24,7 +25,9 @@ else:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 CONFIG_FILE = os.path.join(BASE_DIR, "config.json")
-BRIDGE_VERSION = "1.6.1"
+BRIDGE_VERSION = "2.0.0-AUTHENTICATED"
+RTDB_BASE_URL = "https://grid-up-racedash-default-rtdb.europe-west1.firebasedatabase.app"
+
 # Optional shared secret for the local dashboard gateway. Never hardcode it: set the DASH_TOKEN
 # environment variable (same value on the gateway) or "dashToken" in config.json.
 def get_local_dash_token(config=None):
@@ -46,6 +49,8 @@ class TelemetryBridge:
         self.config = {
             "teamId": "solo",
             "driverName": "GRiD UP Driver",
+            "streamKey": "",
+            "driverUid": "",
             "machineId": self.get_machine_id()
         }
         self.load_config()
@@ -250,6 +255,153 @@ class TelemetryBridge:
             return False
         except Exception:
             return False
+
+    # --- Cloud RTDB Streaming & Rest Helpers ---
+    def send_rtdb_payload(self, path, payload):
+        """Sends payload to Realtime Database via Admin SDK if initialized, or direct REST API."""
+        if self.has_firebase:
+            try:
+                db.reference(path).set(payload)
+                return True
+            except Exception:
+                pass
+        try:
+            url = f"{RTDB_BASE_URL}/{path}.json"
+            data_bytes = json.dumps(payload).encode('utf-8')
+            req = urllib.request.Request(
+                url,
+                data=data_bytes,
+                headers={'Content-Type': 'application/json'},
+                method='PUT'
+            )
+            with urllib.request.urlopen(req, timeout=1.5):
+                return True
+        except Exception:
+            return False
+
+    # --- Dynamic Telemetry Channel Routing from Firestore ---
+    def sync_telemetry_routing(self):
+        """Checks Firestore settings/telemetry_routing and dynamically sets destination teamId."""
+        try:
+            url = "https://firestore.googleapis.com/v1/projects/grid-up/databases/(default)/documents/settings/telemetry_routing"
+            req = urllib.request.Request(url, headers={'User-Agent': f'GRiDUP-Bridge/{BRIDGE_VERSION}'})
+            with urllib.request.urlopen(req, timeout=3.0) as res:
+                if res.status == 200:
+                    raw = json.loads(res.read().decode('utf-8'))
+                    fields = raw.get('fields', {})
+                    mode = fields.get('mode', {}).get('stringValue', 'solo')
+                    active_event = fields.get('activeEventName', {}).get('stringValue', '')
+                    active_event_id = fields.get('activeEventId', {}).get('stringValue', '')
+
+                    if mode == 'event' and active_event_id:
+                        drivers_map_val = fields.get('driversMap', {}).get('mapValue', {}).get('fields', {})
+                        driver_name_clean = (self.config.get('driverName') or '').strip().lower()
+
+                        if driver_name_clean in drivers_map_val:
+                            entry = drivers_map_val[driver_name_clean].get('mapValue', {}).get('fields', {})
+                            target_team = entry.get('teamId', {}).get('stringValue', 'solo')
+                            target_team_name = entry.get('teamName', {}).get('stringValue', target_team)
+
+                            if self.config.get('teamId') != target_team:
+                                self.config['teamId'] = target_team
+                                self.save_config()
+                                self.log(f"[EVENT ROUTE ACTIVE] Switched to: {target_team_name} ({target_team}) for '{active_event}'")
+                                if self.status_callback:
+                                    self.status_callback("route", {"teamId": target_team, "teamName": target_team_name, "event": active_event})
+                        else:
+                            if self.config.get('teamId') != 'solo':
+                                self.config['teamId'] = 'solo'
+                                self.save_config()
+                                self.log(f"[STANDBY] '{self.config.get('driverName')}' not in '{active_event}' lineup -> Practice / Solo")
+                    else:
+                        if self.config.get('teamId') != 'solo':
+                            self.config['teamId'] = 'solo'
+                            self.save_config()
+                            self.log("[STANDBY] No active race event -> routed to Practice / Solo")
+        except Exception:
+            pass
+
+    # --- Local Pairing Listener (1-Click Web Pairing) ---
+    def start_pairing_listener(self):
+        """Starts a local loopback HTTP server on 127.0.0.1:9099 for 1-Click web pairing from profile.html."""
+        bridge_self = self
+
+        class PairingHandler(BaseHTTPRequestHandler):
+            def log_message(self, format, *args):
+                pass  # Suppress stdout noise
+
+            def do_OPTIONS(self):
+                self.send_response(200)
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.send_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+                self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+                self.end_headers()
+
+            def do_GET(self):
+                self.send_response(200)
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                status_payload = {
+                    'status': 'online',
+                    'version': BRIDGE_VERSION,
+                    'driverName': bridge_self.config.get('driverName', 'GRiD UP Driver'),
+                    'teamId': bridge_self.config.get('teamId', 'solo'),
+                    'streamKey': bridge_self.config.get('streamKey', '')
+                }
+                self.wfile.write(json.dumps(status_payload).encode('utf-8'))
+
+            def do_POST(self):
+                if self.path == '/pair':
+                    try:
+                        content_len = int(self.headers.get('Content-Length', 0))
+                        body = self.rfile.read(content_len)
+                        data = json.loads(body.decode('utf-8'))
+
+                        driver_name = str(data.get('driverName', '')).strip()
+                        stream_key = str(data.get('streamKey', '')).strip()
+                        driver_uid = str(data.get('uid', '')).strip()
+
+                        if driver_name:
+                            bridge_self.config['driverName'] = driver_name
+                        if stream_key:
+                            bridge_self.config['streamKey'] = stream_key
+                        if driver_uid:
+                            bridge_self.config['driverUid'] = driver_uid
+
+                        bridge_self.save_config()
+                        bridge_self.log(f"[+] Paired via Web Portal! Driver: {driver_name} | Key: {stream_key}")
+
+                        # Trigger immediate routing check with new driver name
+                        threading.Thread(target=bridge_self.sync_telemetry_routing, daemon=True).start()
+
+                        if bridge_self.status_callback:
+                            bridge_self.status_callback("config", bridge_self.config)
+
+                        self.send_response(200)
+                        self.send_header('Access-Control-Allow-Origin', '*')
+                        self.send_header('Content-Type', 'application/json')
+                        self.end_headers()
+                        res = {'status': 'ok', 'paired': True, 'driverName': driver_name}
+                        self.wfile.write(json.dumps(res).encode('utf-8'))
+                    except Exception as e:
+                        self.send_response(400)
+                        self.send_header('Access-Control-Allow-Origin', '*')
+                        self.end_headers()
+                        self.wfile.write(f'{{"error": "{str(e)}"}}'.encode('utf-8'))
+                else:
+                    self.send_response(404)
+                    self.end_headers()
+
+        def run_server():
+            try:
+                server = HTTPServer(('127.0.0.1', 9099), PairingHandler)
+                bridge_self.log("Local pairing listener active on http://127.0.0.1:9099 (Ready for 1-Click web pairing)")
+                server.serve_forever()
+            except Exception as e:
+                bridge_self.log(f"Pairing listener note: {e}")
+
+        threading.Thread(target=run_server, daemon=True).start()
 
     # --- WebSocket Server Implementation ---
     def start_websocket_server(self):
@@ -952,6 +1104,9 @@ class TelemetryBridge:
     def loop(self):
         self.running = True
         self.start_websocket_server()
+        self.start_pairing_listener()
+        threading.Thread(target=self.sync_telemetry_routing, daemon=True).start()
+
         if self.has_firebase:
             self.start_setup_installer_worker()
         
@@ -974,9 +1129,14 @@ class TelemetryBridge:
         last_fb_update = 0
         last_presence_update = 0
         last_conn_status = False
+        last_routing_sync = time.time()
 
         while self.running:
             loop_start = time.time()
+            if (loop_start - last_routing_sync) >= 30.0:
+                last_routing_sync = loop_start
+                threading.Thread(target=self.sync_telemetry_routing, daemon=True).start()
+
             curr_conn = self.ir.is_connected
             
             if curr_conn != last_conn_status:
@@ -1179,43 +1339,42 @@ class TelemetryBridge:
             }
             self.broadcast(packet)
 
-            if self.has_firebase and curr_conn:
+            # Cloud Realtime Telemetry & Presence Streaming
+            if curr_conn:
+                stream_identifier = self.config.get('streamKey') or self.config['machineId']
+                team_target = self.config.get('teamId') or 'solo'
                 is_spec = telemetry.get('isSpectating', False) if isinstance(telemetry, dict) else False
                 spec_name = telemetry.get('driverName') if is_spec else self.config['driverName']
                 spec_num = telemetry.get('carNum') if is_spec else self.get_safe('CarNumber', '-')
 
                 if (loop_start - last_presence_update) >= 5.0:
-                    try:
-                        presence = {
-                            'name': spec_name or self.config['driverName'],
-                            'status': 'online',
-                            'lastActive': {'.sv': 'timestamp'},
-                            'protocol': 'v2',
-                            'carNum': spec_num or '-',
-                            'isSpectating': is_spec,
-                            'spectatingDriver': spec_name if is_spec else None,
-                            'spectatingCarNum': spec_num if is_spec else None
-                        }
-                        db.reference(f"teams/{self.config['teamId']}/drivers/{self.config['machineId']}").set(presence)
-                        last_presence_update = loop_start
-                    except Exception as e:
-                        pass
-                
+                    presence = {
+                        'name': spec_name or self.config['driverName'],
+                        'status': 'online',
+                        'lastActive': int(loop_start * 1000),
+                        'protocol': 'v2',
+                        'carNum': spec_num or '-',
+                        'isSpectating': is_spec,
+                        'spectatingDriver': spec_name if is_spec else None,
+                        'spectatingCarNum': spec_num if is_spec else None,
+                        'uid': self.config.get('driverUid', '')
+                    }
+                    self.send_rtdb_payload(f"teams/{team_target}/drivers/{stream_identifier}", presence)
+                    last_presence_update = loop_start
+
                 if should_consume:
-                    try:
-                        diag_msg = f"Streaming Spectating (#{spec_num} {spec_name})" if is_spec else 'Streaming Standalone'
-                        heartbeat = {
-                            'telemetry': telemetry,
-                            'session': session,
-                            'timestamp': time.time(),
-                            'is_live': True,
-                            'v': BRIDGE_VERSION,
-                            'diag': {'status': 'OK', 'msg': diag_msg}
-                        }
-                        db.reference(f"teams/{self.config['teamId']}/streams/{self.config['machineId']}").set(heartbeat)
-                        last_fb_update = loop_start
-                    except Exception as e:
-                        pass
+                    diag_msg = f"Streaming Spectating (#{spec_num} {spec_name})" if is_spec else 'Streaming Standalone'
+                    heartbeat = {
+                        'telemetry': telemetry,
+                        'session': session,
+                        'timestamp': loop_start,
+                        'is_live': True,
+                        'v': BRIDGE_VERSION,
+                        'diag': {'status': 'OK', 'msg': diag_msg},
+                        'uid': self.config.get('driverUid', '')
+                    }
+                    self.send_rtdb_payload(f"teams/{team_target}/streams/{stream_identifier}", heartbeat)
+                    last_fb_update = loop_start
 
             elapsed = time.time() - loop_start
             sleep_time = max(0, (1.0 / 120.0) - elapsed)
