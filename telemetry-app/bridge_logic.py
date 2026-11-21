@@ -10,6 +10,7 @@ import hashlib
 import base64
 import re
 import irsdk
+import math
 import firebase_admin
 from firebase_admin import credentials, db, firestore
 import urllib.request
@@ -25,7 +26,7 @@ else:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 CONFIG_FILE = os.path.join(BASE_DIR, "config.json")
-BRIDGE_VERSION = "2.1.4-IRATING-PROJ"
+BRIDGE_VERSION = "2.1.5-TOWER-FIX"
 RTDB_BASE_URL = "https://grid-up-racedash-default-rtdb.europe-west1.firebasedatabase.app"
 
 # Optional shared secret for the local dashboard gateway. Never hardcode it: set the DASH_TOKEN
@@ -997,36 +998,66 @@ class TelemetryBridge:
                         user_id_val = 0
 
                     lic_str = str(d.get('LicString', '') or '').strip()
-                    lic_parts = lic_str.split() if lic_str else []
-                    lic_level = d.get('LicLevel', 0)
+                    try:
+                        lic_level = int(d.get('LicLevel', 0) or 0)
+                    except:
+                        lic_level = 0
 
-                    if len(lic_parts) > 0 and lic_parts[0]:
-                        lic_class = lic_parts[0].upper()
-                    elif lic_level >= 21:
-                        lic_class = 'PRO'
-                    elif lic_level >= 17:
-                        lic_class = 'A'
-                    elif lic_level >= 13:
-                        lic_class = 'B'
-                    elif lic_level >= 9:
-                        lic_class = 'C'
-                    elif lic_level >= 5:
-                        lic_class = 'D'
-                    else:
-                        lic_class = 'R'
+                    try:
+                        lic_sub_level = int(d.get('LicSubLevel', 0) or 0)
+                    except:
+                        lic_sub_level = 0
+
+                    lic_class = None
+                    if lic_str:
+                        u_str = lic_str.upper()
+                        if 'PRO' in u_str or 'PWC' in u_str or u_str.startswith('P '):
+                            lic_class = 'PRO'
+                        elif 'CLASS A' in u_str or u_str.startswith('A ') or u_str == 'A':
+                            lic_class = 'A'
+                        elif 'CLASS B' in u_str or u_str.startswith('B ') or u_str == 'B':
+                            lic_class = 'B'
+                        elif 'CLASS C' in u_str or u_str.startswith('C ') or u_str == 'C':
+                            lic_class = 'C'
+                        elif 'CLASS D' in u_str or u_str.startswith('D ') or u_str == 'D':
+                            lic_class = 'D'
+                        elif 'ROOKIE' in u_str or u_str.startswith('R ') or u_str == 'R':
+                            lic_class = 'R'
+
+                    if not lic_class:
+                        # Scaled or fast-track thresholds (>=9)
+                        if lic_level >= 20:
+                            lic_class = 'PRO'
+                        elif lic_level >= 17:
+                            lic_class = 'A'
+                        elif lic_level >= 13:
+                            lic_class = 'B'
+                        elif lic_level >= 9:
+                            lic_class = 'C'
+                        # Standard iRacing SDK LicLevel (1=R, 2=D, 3=C, 4=B, 5=A, 6=Pro)
+                        elif lic_level >= 6:
+                            lic_class = 'PRO'
+                        elif lic_level == 5:
+                            lic_class = 'A'
+                        elif lic_level == 4:
+                            lic_class = 'B'
+                        elif lic_level == 3:
+                            lic_class = 'C'
+                        elif lic_level == 2:
+                            lic_class = 'D'
+                        else:
+                            lic_class = 'R'
 
                     sr_val = 0.0
-                    if len(lic_parts) > 1:
-                        try:
-                            sr_val = round(float(lic_parts[1]), 2)
-                        except (ValueError, TypeError):
-                            sr_val = 0.0
-                    if sr_val <= 0.0 and d.get('LicSubLevel') is not None:
-                        try:
-                            sub_lvl = float(d.get('LicSubLevel', 0))
-                            sr_val = round(sub_lvl / 100.0, 2)
-                        except (ValueError, TypeError):
-                            sr_val = 0.0
+                    if lic_sub_level > 0:
+                        sr_val = round(lic_sub_level / 100.0, 2)
+                    elif lic_str:
+                        m = re.search(r'\b([0-4]\.\d{1,2})\b', lic_str)
+                        if m:
+                            try:
+                                sr_val = float(m.group(1))
+                            except:
+                                pass
 
                     drivers[str(idx)] = {
                         'name': d['UserName'],
@@ -1053,13 +1084,19 @@ class TelemetryBridge:
                         'flagBitmask': car_flags,
                         'irating': irating_val,
                         'licClass': lic_class,
+                        'licLevel': lic_level,
+                        'licSubLevel': lic_sub_level,
                         'sr': sr_val,
                         'licString': lic_str or f"{lic_class} {sr_val:.2f}",
                         'userId': user_id_val,
-                        'projIR': 0
+                        'projIR': 0,
+                        'gap': 0.0,
+                        'gapStr': 'LEADER',
+                        'delta': 0.0,
+                        'deltaStr': '-'
                     }
 
-                # Multi-player class-based Elo Projected iRating
+                # Multi-player class-based Elo Projected iRating & Real-time Gap/Delta
                 class_groups = {}
                 for d_idx_str, d_obj in drivers.items():
                     cid = d_obj.get('classId', 0)
@@ -1068,6 +1105,55 @@ class TelemetryBridge:
                     class_groups[cid].append(d_obj)
 
                 for cid, c_drivers in class_groups.items():
+                    # Sort drivers strictly by class running position
+                    c_drivers.sort(key=lambda x: (x.get('classPos', 999) if x.get('classPos', 0) > 0 else 999, -(float(x.get('lap', 0)) + float(x.get('progress', 0.0)))))
+
+                    # 1. Real-time Gap to Class Leader & Interval Delta to Car Ahead
+                    if len(c_drivers) > 0:
+                        class_leader = c_drivers[0]
+                        lead_dist = float(class_leader.get('lap', 0)) + float(class_leader.get('progress', 0.0))
+                        
+                        valid_laps = [dr['bestLap'] for dr in c_drivers if dr.get('bestLap', 0) > 15]
+                        if not valid_laps:
+                            valid_laps = [dr['lastLap'] for dr in c_drivers if dr.get('lastLap', 0) > 15]
+                        bench_lap = (sum(valid_laps) / len(valid_laps)) if valid_laps else 90.0
+
+                        for idx_in_cls, dr in enumerate(c_drivers):
+                            c_pos = dr.get('classPos', idx_in_cls + 1)
+                            if c_pos <= 0:
+                                c_pos = idx_in_cls + 1
+
+                            if idx_in_cls == 0 or c_pos == 1:
+                                dr['gap'] = 0.0
+                                dr['gapStr'] = 'LEADER'
+                                dr['delta'] = 0.0
+                                dr['deltaStr'] = '-'
+                            else:
+                                car_dist = float(dr.get('lap', 0)) + float(dr.get('progress', 0.0))
+                                diff_lead = max(0.0, lead_dist - car_dist)
+
+                                if diff_lead >= 1.0:
+                                    laps_down = int(math.floor(diff_lead))
+                                    dr['gap'] = round(diff_lead * bench_lap, 1)
+                                    dr['gapStr'] = f"+{laps_down} LAP" if laps_down == 1 else f"+{laps_down} LAPS"
+                                else:
+                                    gap_sec = round(diff_lead * bench_lap, 1)
+                                    dr['gap'] = gap_sec
+                                    dr['gapStr'] = f"+{gap_sec:.1f}s"
+
+                                ahead_dr = c_drivers[idx_in_cls - 1]
+                                ahead_dist = float(ahead_dr.get('lap', 0)) + float(ahead_dr.get('progress', 0.0))
+                                diff_ahead = max(0.0, ahead_dist - car_dist)
+
+                                if diff_ahead >= 1.0:
+                                    dr['delta'] = round(diff_ahead * bench_lap, 1)
+                                    dr['deltaStr'] = f"+{int(math.floor(diff_ahead))} L"
+                                else:
+                                    int_sec = round(diff_ahead * bench_lap, 1)
+                                    dr['delta'] = int_sec
+                                    dr['deltaStr'] = f"+{int_sec:.1f}s"
+
+                    # 2. Elo Projected iRating
                     ranked = [dr for dr in c_drivers if dr.get('irating', 0) > 0]
                     n_ranked = len(ranked)
                     if n_ranked <= 1:

@@ -2056,31 +2056,65 @@
         }
 
         function getLicenceBadge(d) {
-            let licClass = (d.licClass || '').toUpperCase();
-            if (!licClass && d.licString) {
-                licClass = (d.licString.split(' ')[0] || '').toUpperCase();
+            let licClass = null;
+
+            // 1. Check licString (e.g. "A 3.82", "Class A 3.82", "B 4.01", "D 2.50")
+            const licStr = String(d.licString || '').toUpperCase();
+            if (licStr) {
+                if (licStr.includes('PRO') || licStr.includes('PWC') || licStr.startsWith('P ')) {
+                    licClass = 'PRO';
+                } else if (licStr.includes('CLASS A') || licStr.startsWith('A ') || licStr === 'A') {
+                    licClass = 'A';
+                } else if (licStr.includes('CLASS B') || licStr.startsWith('B ') || licStr === 'B') {
+                    licClass = 'B';
+                } else if (licStr.includes('CLASS C') || licStr.startsWith('C ') || licStr === 'C') {
+                    licClass = 'C';
+                } else if (licStr.includes('CLASS D') || licStr.startsWith('D ') || licStr === 'D') {
+                    licClass = 'D';
+                } else if (licStr.includes('ROOKIE') || licStr.startsWith('R ') || licStr === 'R') {
+                    licClass = 'R';
+                }
             }
+
+            // 2. Check licClass field if already parsed and valid
+            if (!licClass && d.licClass) {
+                const c = String(d.licClass).toUpperCase();
+                if (['PRO', 'A', 'B', 'C', 'D'].includes(c)) {
+                    licClass = c;
+                }
+            }
+
+            // 3. Fallback to numeric licLevel
             if (!licClass) {
-                const lvl = d.licLevel || 0;
-                if (lvl >= 21) licClass = 'PRO';
+                const lvl = parseInt(d.licLevel || 0) || 0;
+                if (lvl >= 20) licClass = 'PRO';
                 else if (lvl >= 17) licClass = 'A';
                 else if (lvl >= 13) licClass = 'B';
                 else if (lvl >= 9) licClass = 'C';
-                else if (lvl >= 5) licClass = 'D';
+                else if (lvl >= 6) licClass = 'PRO';
+                else if (lvl === 5) licClass = 'A';
+                else if (lvl === 4) licClass = 'B';
+                else if (lvl === 3) licClass = 'C';
+                else if (lvl === 2) licClass = 'D';
+                else if (d.licClass) licClass = String(d.licClass).toUpperCase();
                 else licClass = 'R';
             }
-            const clsKey = licClass.toLowerCase();
-            return `<span class="lic-badge lic-${clsKey}" title="Licence Class: ${licClass}">${licClass}</span>`;
+
+            const clsKey = (licClass || 'R').toLowerCase();
+            return `<span class="lic-badge lic-${clsKey}" title="Licence: ${licClass}">${licClass}</span>`;
         }
 
         function getSafetyRatingHtml(d) {
-            let srVal = typeof d.sr === 'number' ? d.sr : null;
+            let srVal = (typeof d.sr === 'number' && d.sr > 0) ? d.sr : null;
+            if (srVal === null && typeof d.licSubLevel === 'number' && d.licSubLevel > 0) {
+                srVal = Math.round((d.licSubLevel / 100.0) * 100) / 100;
+            }
             if (srVal === null && d.licString) {
-                const parts = d.licString.split(' ');
-                if (parts.length > 1) srVal = parseFloat(parts[1]);
+                const match = String(d.licString).match(/\b([0-4]\.\d{1,2})\b/);
+                if (match) srVal = parseFloat(match[1]);
             }
             if (srVal === null || isNaN(srVal) || srVal <= 0) {
-                return '<span style="color:var(--text-muted);">-</span>';
+                return '<span style="color:var(--text-muted); font-size:0.7rem;">-</span>';
             }
             let srColorClass = 'sr-high';
             if (srVal < 2.0) srColorClass = 'sr-low';
@@ -2210,6 +2244,47 @@
 
                 // Calculate projected iRating within this class
                 calculateProjectedIRating(cls.drivers);
+
+                // Calculate real-time Gap (to Class Leader) and Delta (interval to car ahead)
+                if (cls.drivers.length > 0) {
+                    const classLeader = cls.drivers[0];
+                    const leadDist = ((classLeader.lap || 0) * 1.0) + (classLeader.progress || 0);
+
+                    const validLaps = cls.drivers.map(d => (d.bestLap > 15 ? d.bestLap : (d.lastLap > 15 ? d.lastLap : 0))).filter(t => t > 15);
+                    const benchLap = validLaps.length > 0 ? (validLaps.reduce((sum, v) => sum + v, 0) / validLaps.length) : (sessionBestLap > 15 && sessionBestLap < 9999 ? sessionBestLap : 90.0);
+
+                    cls.drivers.forEach((d, idx) => {
+                        const displayPos = (d.classPos > 0) ? d.classPos : (idx + 1);
+
+                        if (idx === 0 || displayPos === 1) {
+                            d.calculatedGapStr = 'LEADER';
+                            d.calculatedDeltaStr = '-';
+                        } else {
+                            const carDist = ((d.lap || 0) * 1.0) + (d.progress || 0);
+                            let diffLead = Math.max(0, leadDist - carDist);
+
+                            if (diffLead >= 1.0) {
+                                const lapsDown = Math.floor(diffLead);
+                                d.calculatedGapStr = `+${lapsDown} LAP${lapsDown > 1 ? 'S' : ''}`;
+                            } else {
+                                const gapSec = diffLead * benchLap;
+                                d.calculatedGapStr = `+${gapSec.toFixed(1)}s`;
+                            }
+
+                            const carAhead = cls.drivers[idx - 1];
+                            const aheadDist = ((carAhead.lap || 0) * 1.0) + (carAhead.progress || 0);
+                            let diffAhead = Math.max(0, aheadDist - carDist);
+
+                            if (diffAhead >= 1.0) {
+                                const lapsAhead = Math.floor(diffAhead);
+                                d.calculatedDeltaStr = `+${lapsAhead} L`;
+                            } else {
+                                const intSec = diffAhead * benchLap;
+                                d.calculatedDeltaStr = `+${intSec.toFixed(1)}s`;
+                            }
+                        }
+                    });
+                }
             });
 
             // Order classes by hierarchy order or best overall position
@@ -2287,11 +2362,10 @@
                     const isBestPurple = d.bestLap > 15 && Math.abs(d.bestLap - sessionBestLap) < 0.001;
                     const bestColor = isBestPurple ? 'color: var(--accent-purple); font-weight: 800;' : 'color: #fff;';
 
-                    // Gaps
-                    const gapStr = d.gap ? `${d.gap.toFixed(1)}s` : (displayPos === 1 ? 'LEADER' : '-');
-                    const deltaVal = d.delta || 0;
-                    const deltaColor = deltaVal < 0 ? 'var(--accent-green)' : (deltaVal > 0 ? 'var(--accent-red)' : 'var(--text-muted)');
-                    const deltaStr = deltaVal !== 0 ? (deltaVal > 0 ? `+${deltaVal.toFixed(2)}` : deltaVal.toFixed(2)) : '-';
+                    // Gaps to Leader & Interval Delta to Car Ahead
+                    const gapStr = d.calculatedGapStr || d.gapStr || (displayPos === 1 ? 'LEADER' : (typeof d.gap === 'number' && d.gap > 0 ? `+${d.gap.toFixed(1)}s` : '-'));
+                    const deltaStr = d.calculatedDeltaStr || d.deltaStr || (displayPos === 1 ? '-' : (typeof d.delta === 'number' && d.delta > 0 ? `+${d.delta.toFixed(1)}s` : '-'));
+                    const deltaColor = (displayPos === 1 || deltaStr === '-') ? 'var(--text-muted)' : 'var(--accent-gold)';
 
                     // Flags for this driver
                     let flagHtml = '';
