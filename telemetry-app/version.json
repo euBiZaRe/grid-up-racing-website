@@ -1,7 +1,7 @@
 {
-  "logic_version": "2.1.0",
-  "logic_sha256": "cf7bbd26db597d02d31b5cc9b1518a102f9803d52795109661a3aba7b108c82b",
-  "binary_version": "2.1.0",
+  "logic_version": "2.1.1",
+  "logic_sha256": "c7611da9c507f44685198bb132818df66d21642f25f3f984b7046948c134078a",
+  "binary_version": "2.1.1",
   "binary_url": "https://github.com/euBiZaRe/grid-up-racing-website/releases/latest",
-  "notes": "Added Fuel Engineer calculation engine with per-driver rolling averages and robust spotting/spectating fuel tracking."
+  "notes": "Added multi-class timing tower separation (top 10 for focused class, top 3 for other classes) and intelligent estimated fuel fallback when spotting."
 }

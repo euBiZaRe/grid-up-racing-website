@@ -1760,72 +1760,140 @@
                 return;
             }
 
-            // Sort drivers by position, best lap, last lap, car number
-            driverList.sort((a, b) => {
-                const posA = (typeof a.classPos === 'number' && a.classPos > 0) ? a.classPos : ((typeof a.pos === 'number' && a.pos > 0) ? a.pos : 99999);
-                const posB = (typeof b.classPos === 'number' && b.classPos > 0) ? b.classPos : ((typeof b.pos === 'number' && b.pos > 0) ? b.pos : 99999);
-                if (posA !== posB) return posA - posB;
+            // Target driver class name
+            const targetClass = (targetDriver && targetDriver.className) ? targetDriver.className : (driverList[0]?.className || 'GT3');
 
-                const bestA = (typeof a.bestLap === 'number' && a.bestLap > 15) ? a.bestLap : 999999;
-                const bestB = (typeof b.bestLap === 'number' && b.bestLap > 15) ? b.bestLap : 999999;
-                if (bestA !== bestB) return bestA - bestB;
+            // Group drivers by class
+            const classesMap = {};
+            driverList.forEach(d => {
+                const cName = d.className || d.carClass || 'GT3';
+                if (!classesMap[cName]) {
+                    classesMap[cName] = {
+                        name: cName,
+                        color: d.classColor || '38bdf8',
+                        drivers: []
+                    };
+                }
+                classesMap[cName].drivers.push(d);
+            });
 
-                return (parseInt(a.carNum) || 0) - (parseInt(b.carNum) || 0);
+            // Sort drivers inside each class by classPos or pos
+            Object.values(classesMap).forEach(cls => {
+                cls.drivers.sort((a, b) => {
+                    const posA = (typeof a.classPos === 'number' && a.classPos > 0) ? a.classPos : ((typeof a.pos === 'number' && a.pos > 0) ? a.pos : 99999);
+                    const posB = (typeof b.classPos === 'number' && b.classPos > 0) ? b.classPos : ((typeof b.pos === 'number' && b.pos > 0) ? b.pos : 99999);
+                    if (posA !== posB) return posA - posB;
+                    const bestA = (typeof a.bestLap === 'number' && a.bestLap > 15) ? a.bestLap : 999999;
+                    const bestB = (typeof b.bestLap === 'number' && b.bestLap > 15) ? b.bestLap : 999999;
+                    if (bestA !== bestB) return bestA - bestB;
+                    return (parseInt(a.carNum) || 0) - (parseInt(b.carNum) || 0);
+                });
+            });
+
+            // Order classes: Best overall position in that class
+            const sortedClasses = Object.values(classesMap).sort((a, b) => {
+                const bestPosA = a.drivers[0]?.pos || 99999;
+                const bestPosB = b.drivers[0]?.pos || 99999;
+                return bestPosA - bestPosB;
             });
 
             // Find session best lap for purple PB indicator
             const sessionBestLap = Math.min(...driverList.map(d => (d.bestLap > 15 ? d.bestLap : 999999)));
 
             let rowsHtml = '';
-            driverList.forEach((d, idx) => {
-                const isPlayer = d.isPlayer === true;
-                const isTarget = targetDriver && String(targetDriver.carNum) === String(d.carNum);
-                const rowClass = isPlayer ? 'row-player' : (isTarget ? 'row-focused' : '');
 
-                // Position styling
-                const displayPos = (d.classPos > 0) ? d.classPos : ((d.pos > 0) ? d.pos : (idx + 1));
-                let posColorClass = 'pos-other';
-                if (displayPos === 1) posColorClass = 'pos-p1';
-                else if (displayPos === 2) posColorClass = 'pos-p2';
-                else if (displayPos === 3) posColorClass = 'pos-p3';
+            sortedClasses.forEach(cls => {
+                const isTargetClass = cls.name === targetClass || (targetDriver && cls.drivers.some(d => String(d.carNum) === String(targetDriver.carNum)));
+                const maxDriversToShow = isTargetClass ? 10 : 3;
 
-                // Pit indicator
-                const inPit = d.inPit === true || d.in_pit === true || d.surface === 1 || d.surface === 2;
-                const pitHtml = inPit ? '<span class="pit-badge">PIT</span>' : (d.pitCount > 0 ? `<span style="color:var(--text-muted); font-size:0.65rem;">${d.pitCount}</span>` : '-');
+                // Compute class SOF
+                const ratings = cls.drivers.map(d => d.irating).filter(r => typeof r === 'number' && r > 0);
+                const classSof = ratings.length > 0 ? Math.round(ratings.reduce((s, r) => s + r, 0) / ratings.length) : 0;
 
-                // Laptimes
-                const isBestPurple = d.bestLap > 15 && Math.abs(d.bestLap - sessionBestLap) < 0.001;
-                const bestColor = isBestPurple ? 'color: var(--accent-purple); font-weight: 800;' : 'color: #fff;';
-
-                // Gaps
-                const gapStr = d.gap ? `${d.gap.toFixed(1)}s` : (displayPos === 1 ? 'LEADER' : '-');
-                const deltaVal = d.delta || 0;
-                const deltaColor = deltaVal < 0 ? 'var(--accent-green)' : (deltaVal > 0 ? 'var(--accent-red)' : 'var(--text-muted)');
-                const deltaStr = deltaVal !== 0 ? (deltaVal > 0 ? `+${deltaVal.toFixed(2)}` : deltaVal.toFixed(2)) : '-';
-
+                // Class Header Banner Row
                 rowsHtml += `
-                    <tr class="${rowClass}" onclick="focusDriver('${escapeHtml(d.carNum)}')">
-                        <td style="text-align: center;"><span class="pos-badge ${posColorClass}">P${displayPos}</span></td>
-                        <td><span class="carnum-chip">#${escapeHtml(d.carNum || '-')}</span></td>
-                        <td>
-                            <div style="display: flex; align-items: center; gap: 6px;">
-                                ${d.classColor ? `<span style="width: 5px; height: 5px; border-radius: 50%; background: #${d.classColor};"></span>` : ''}
-                                <span style="font-weight: 700; color: #fff;">${escapeHtml(d.name || 'Unknown')}</span>
+                    <tr class="class-header-row" style="background: rgba(15, 23, 42, 0.85); border-top: 1px solid rgba(255,255,255,0.15); border-bottom: 1px solid rgba(255,255,255,0.08);">
+                        <td colspan="14" style="padding: 6px 12px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span style="display: inline-block; width: 4px; height: 16px; background: #${cls.color}; border-radius: 2px;"></span>
+                                    <span style="font-weight: 900; font-size: 0.78rem; letter-spacing: 0.08em; color: #fff;">${escapeHtml(cls.name.toUpperCase())}</span>
+                                    <span style="font-size: 0.68rem; color: var(--text-muted); font-weight: 700;">• ${cls.drivers.length} DRIVERS</span>
+                                    ${isTargetClass ? `<span style="font-size: 0.62rem; font-weight: 800; color: #CCFF00; background: rgba(204,255,0,0.15); border: 1px solid rgba(204,255,0,0.35); padding: 1px 7px; border-radius: 4px; letter-spacing: 0.05em;">FOCUSED CLASS (TOP 10)</span>` : `<span style="font-size: 0.62rem; font-weight: 700; color: var(--text-muted); background: rgba(255,255,255,0.06); padding: 1px 6px; border-radius: 4px;">TOP 3</span>`}
+                                </div>
+                                <div style="font-size: 0.68rem; color: var(--text-muted); font-family: var(--font-mono); font-weight: 700;">
+                                    ${classSof > 0 ? `SOF ${(classSof / 1000).toFixed(1)}k` : ''}
+                                </div>
                             </div>
                         </td>
-                        <td><span class="irating-chip">${d.irating ? `${(d.irating / 1000).toFixed(1)}k` : '--'}</span></td>
-                        <td style="text-align: center; color: var(--text-muted);">${d.inc !== undefined ? d.inc : 0}</td>
-                        <td style="text-align: right; color: var(--text-secondary);">${formatSector(d.s1)}</td>
-                        <td style="text-align: right; color: var(--text-secondary);">${formatSector(d.s2)}</td>
-                        <td style="text-align: right; color: var(--text-secondary);">${formatSector(d.s3)}</td>
-                        <td style="text-align: right; color: var(--accent-gold);">${formatLapTime(d.lastLap)}</td>
-                        <td style="text-align: right; ${bestColor}">${formatLapTime(d.bestLap)}</td>
-                        <td style="text-align: center;">${pitHtml}</td>
-                        <td style="text-align: center;">${d.lap > 0 ? d.lap : 0}</td>
-                        <td style="text-align: right; color: var(--text-secondary);">${escapeHtml(gapStr)}</td>
-                        <td style="text-align: right; color: ${deltaColor}; font-weight: 800;">${escapeHtml(deltaStr)}</td>
                     </tr>
                 `;
+
+                // Determine slice of drivers
+                const visibleDrivers = cls.drivers.slice(0, maxDriversToShow);
+
+                // If targetDriver is in this class but beyond maxDriversToShow, make sure target driver is included!
+                let targetIncluded = false;
+                if (isTargetClass && targetDriver) {
+                    targetIncluded = visibleDrivers.some(d => String(d.carNum) === String(targetDriver.carNum));
+                    if (!targetIncluded) {
+                        const targetInAll = cls.drivers.find(d => String(d.carNum) === String(targetDriver.carNum));
+                        if (targetInAll) {
+                            visibleDrivers.push(targetInAll);
+                        }
+                    }
+                }
+
+                visibleDrivers.forEach((d, idx) => {
+                    const isPlayer = d.isPlayer === true;
+                    const isTarget = targetDriver && String(targetDriver.carNum) === String(d.carNum);
+                    const rowClass = isPlayer ? 'row-player' : (isTarget ? 'row-focused' : '');
+
+                    // Position styling
+                    const displayPos = (d.classPos > 0) ? d.classPos : ((d.pos > 0) ? d.pos : (idx + 1));
+                    let posColorClass = 'pos-other';
+                    if (displayPos === 1) posColorClass = 'pos-p1';
+                    else if (displayPos === 2) posColorClass = 'pos-p2';
+                    else if (displayPos === 3) posColorClass = 'pos-p3';
+
+                    // Pit indicator
+                    const inPit = d.inPit === true || d.in_pit === true || d.surface === 1 || d.surface === 2;
+                    const pitHtml = inPit ? '<span class="pit-badge">PIT</span>' : (d.pitCount > 0 ? `<span style="color:var(--text-muted); font-size:0.65rem;">${d.pitCount}</span>` : '-');
+
+                    // Laptimes
+                    const isBestPurple = d.bestLap > 15 && Math.abs(d.bestLap - sessionBestLap) < 0.001;
+                    const bestColor = isBestPurple ? 'color: var(--accent-purple); font-weight: 800;' : 'color: #fff;';
+
+                    // Gaps
+                    const gapStr = d.gap ? `${d.gap.toFixed(1)}s` : (displayPos === 1 ? 'LEADER' : '-');
+                    const deltaVal = d.delta || 0;
+                    const deltaColor = deltaVal < 0 ? 'var(--accent-green)' : (deltaVal > 0 ? 'var(--accent-red)' : 'var(--text-muted)');
+                    const deltaStr = deltaVal !== 0 ? (deltaVal > 0 ? `+${deltaVal.toFixed(2)}` : deltaVal.toFixed(2)) : '-';
+
+                    rowsHtml += `
+                        <tr class="${rowClass}" onclick="focusDriver('${escapeHtml(d.carNum)}')">
+                            <td style="text-align: center;"><span class="pos-badge ${posColorClass}">P${displayPos}</span></td>
+                            <td><span class="carnum-chip">#${escapeHtml(d.carNum || '-')}</span></td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    ${d.classColor ? `<span style="width: 5px; height: 5px; border-radius: 50%; background: #${d.classColor};"></span>` : ''}
+                                    <span style="font-weight: 700; color: #fff;">${escapeHtml(d.name || 'Unknown')}</span>
+                                </div>
+                            </td>
+                            <td><span class="irating-chip">${d.irating ? `${(d.irating / 1000).toFixed(1)}k` : '--'}</span></td>
+                            <td style="text-align: center; color: var(--text-muted);">${d.inc !== undefined ? d.inc : 0}</td>
+                            <td style="text-align: right; color: var(--text-secondary);">${formatSector(d.s1)}</td>
+                            <td style="text-align: right; color: var(--text-secondary);">${formatSector(d.s2)}</td>
+                            <td style="text-align: right; color: var(--text-secondary);">${formatSector(d.s3)}</td>
+                            <td style="text-align: right; color: var(--accent-gold);">${formatLapTime(d.lastLap)}</td>
+                            <td style="text-align: right; ${bestColor}">${formatLapTime(d.bestLap)}</td>
+                            <td style="text-align: center;">${pitHtml}</td>
+                            <td style="text-align: center;">${d.lap > 0 ? d.lap : 0}</td>
+                            <td style="text-align: right; color: var(--text-secondary);">${escapeHtml(gapStr)}</td>
+                            <td style="text-align: right; color: ${deltaColor}; font-weight: 800;">${escapeHtml(deltaStr)}</td>
+                        </tr>
+                    `;
+                });
             });
 
             tbody.innerHTML = rowsHtml;
@@ -1952,8 +2020,42 @@
 
         // Fuel Strategy & Stint Planner
         function renderFuelStrategy(tel, targetDriver, primaryMid) {
-            const fuel = typeof tel.fuel === 'number' ? tel.fuel : 15.0;
-            const burnLast = typeof tel.fuel_per_lap === 'number' && tel.fuel_per_lap > 0.05 ? tel.fuel_per_lap : 3.2;
+            // 1. Resolve Fuel:
+            // Check direct telemetry first
+            let fuel = (typeof tel.fuel === 'number' && tel.fuel > 0.05) ? tel.fuel : 0;
+            let isEstimated = Boolean(tel.fuel_is_estimated);
+
+            // If local stream has 0 (e.g. spotter), check if another active stream is the actual driver
+            if (fuel <= 0.05 && targetDriver) {
+                for (const mid of Object.keys(currentStreams)) {
+                    const st = currentStreams[mid];
+                    if (!st || !st.telemetry) continue;
+                    const dName = (st.driver || st.telemetry.driverName || '').toLowerCase();
+                    const cNum = String(st.telemetry.carNum || '');
+                    if ((targetDriver.name && dName.includes(targetDriver.name.toLowerCase())) || 
+                        (targetDriver.carNum && cNum === String(targetDriver.carNum))) {
+                        if (typeof st.telemetry.fuel === 'number' && st.telemetry.fuel > 0.05) {
+                            fuel = st.telemetry.fuel;
+                            isEstimated = false;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // 2. Burn rate resolution
+            const burnLast = typeof tel.fuel_per_lap === 'number' && tel.fuel_per_lap > 0.05 
+                ? tel.fuel_per_lap 
+                : (typeof tel.fuel_avg_5 === 'number' && tel.fuel_avg_5 > 0.05 ? tel.fuel_avg_5 : 3.2);
+
+            // 3. If fuel is still 0 (e.g. spectator or spotter where iRacing masks FuelLevel and driver is offline),
+            // calculate estimated fuel from tank capacity and stint laps burned!
+            const fuelCap = tel.fuelMax || tel.fuel_capacity || 100.0;
+            if (fuel <= 0.05) {
+                const stintLaps = targetDriver?.lap ? (targetDriver.lap % 30) : 0;
+                fuel = Math.max(5.0, fuelCap - (stintLaps * burnLast));
+                isEstimated = true;
+            }
 
             const fuelKey = `${primaryMid}_${targetDriver?.carIdx || 'player'}`;
             if (!fuelTrackers[fuelKey]) {
@@ -1961,29 +2063,35 @@
             }
             const tracker = fuelTrackers[fuelKey];
 
-            const lapsLeft = typeof tel.fuel_laps_rem === 'number' && tel.fuel_laps_rem > 0 
+            const lapsLeft = typeof tel.fuel_laps_rem === 'number' && tel.fuel_laps_rem > 0 && !isEstimated
                 ? tel.fuel_laps_rem 
                 : (burnLast > 0 ? (fuel / burnLast) : 0);
-            const minsLeft = typeof tel.fuel_time_rem === 'number' && tel.fuel_time_rem > 0 
-                ? Math.round(tel.fuel_time_rem / 60) 
-                : Math.round((lapsLeft * (tel.lastLap || 90)) / 60);
+            const avgLapTime = (targetDriver?.lastLap && targetDriver.lastLap > 15) ? targetDriver.lastLap : (tel.lastLap || 90);
+            const minsLeft = Math.round((lapsLeft * avgLapTime) / 60);
 
             const timeEl = document.getElementById('fuel-time-left');
             const tankEl = document.getElementById('fuel-tank-val');
             const barFill = document.getElementById('fuel-bar-fill');
             const pitWindowTag = document.getElementById('fuel-pit-window-tag');
 
-            if (timeEl) timeEl.textContent = `${Math.floor(minsLeft / 60)}h ${minsLeft % 60}m`;
-            if (tankEl) tankEl.textContent = useImperial ? `${(fuel * 0.264172).toFixed(1)} GAL` : `${fuel.toFixed(1)} L`;
+            if (timeEl) {
+                const h = Math.floor(minsLeft / 60);
+                const m = minsLeft % 60;
+                timeEl.textContent = h > 0 ? `${h}h ${m}m` : `${m}m`;
+            }
+            if (tankEl) {
+                const unitStr = useImperial ? `${(fuel * 0.264172).toFixed(1)} GAL` : `${fuel.toFixed(1)} L`;
+                tankEl.innerHTML = `${unitStr} ${isEstimated ? '<span style="font-size:0.58rem; color:var(--accent-gold); font-weight:800; border:1px solid rgba(245,158,11,0.4); padding:1px 4px; border-radius:3px; vertical-align:middle; margin-left:4px;">EST</span>' : ''}`;
+            }
 
             if (barFill) {
-                const maxFuel = tel.fuelMax || tel.fuel_capacity || 100;
-                const pct = Math.min(Math.max((fuel / maxFuel) * 100, 0), 100);
+                const pct = Math.min(Math.max((fuel / fuelCap) * 100, 0), 100);
                 barFill.style.width = `${pct}%`;
             }
 
+            const inPit = targetDriver?.surface === 1 || targetDriver?.surface === 2 || (targetDriver?.inPit === true);
             if (pitWindowTag) {
-                pitWindowTag.textContent = fuel <= 0.05 ? 'IN PIT' : `PIT: ~${lapsLeft.toFixed(1)} LAPS`;
+                pitWindowTag.textContent = inPit ? 'IN PIT' : `PIT: ~${lapsLeft.toFixed(1)} LAPS`;
             }
 
             const burnLastEl = document.getElementById('fuel-burn-last');
@@ -2003,7 +2111,7 @@
             if (neededEl) neededEl.textContent = useImperial ? `${(neededFuel * 0.264172).toFixed(1)}g` : `${neededFuel.toFixed(1)}L`;
 
             // Audio Alert if fuel < 2 laps
-            if (lapsLeft > 0 && lapsLeft < 2) {
+            if (lapsLeft > 0 && lapsLeft < 2 && !inPit) {
                 playSpotterSound('fuel-low');
             }
         }

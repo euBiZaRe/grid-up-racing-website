@@ -25,7 +25,7 @@ else:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 CONFIG_FILE = os.path.join(BASE_DIR, "config.json")
-BRIDGE_VERSION = "2.1.0-FUEL-ENGINEER"
+BRIDGE_VERSION = "2.1.1-FUEL-ENGINEER"
 RTDB_BASE_URL = "https://grid-up-racedash-default-rtdb.europe-west1.firebasedatabase.app"
 
 # Optional shared secret for the local dashboard gateway. Never hardcode it: set the DASH_TOKEN
@@ -993,6 +993,7 @@ class TelemetryBridge:
 
             target_fuel = 0.0
             fuel_data_valid = False
+            fuel_is_estimated = False
 
             # If the user is driving, or spotting their team/registered car, iRacing FuelLevel is populated
             if raw_fuel is not None and float(raw_fuel) > 0.05:
@@ -1002,13 +1003,26 @@ class TelemetryBridge:
                 target_fuel = round(float(raw_fuel), 2)
                 fuel_data_valid = True
             else:
-                # If camera is focused on an external competitor whose fuel is protected in iRacing shared memory
+                # If camera is focused on an external competitor or spotting a car where iRacing masks FuelLevel
                 driver_key = f"{target_car_idx}_{target_name}"
                 if hasattr(self, 'driver_fuel_trackers') and driver_key in self.driver_fuel_trackers:
                     prev_tracker = self.driver_fuel_trackers[driver_key]
-                    if prev_tracker.get('last_fuel', 0) > 0 and (time.time() - prev_tracker.get('last_update_ts', 0)) < 45.0:
+                    if prev_tracker.get('estimated_fuel', 0) > 0:
+                        target_fuel = round(prev_tracker['estimated_fuel'], 2)
+                        fuel_data_valid = True
+                        fuel_is_estimated = True
+                    elif prev_tracker.get('last_fuel', 0) > 0 and (time.time() - prev_tracker.get('last_update_ts', 0)) < 45.0:
                         target_fuel = prev_tracker['last_fuel']
                         fuel_data_valid = True
+
+                # If still 0, initialize estimated fuel from fuel capacity and stint laps
+                if target_fuel <= 0.05 and is_spectating:
+                    stint_laps = max(0, target_lap % 30) if target_lap > 0 else 0
+                    default_burn = 3.1
+                    target_fuel = round(max(5.0, fuel_capacity - (stint_laps * default_burn)), 2)
+                    fuel_data_valid = True
+                    fuel_is_estimated = True
+
                 if not fuel_data_valid and is_spectating:
                     telemetry_state = "LIMITED_DATA"
 
@@ -1026,6 +1040,8 @@ class TelemetryBridge:
                     'car_num': target_car_num,
                     'driver_name': target_name,
                     'last_fuel': target_fuel if fuel_data_valid else 0.0,
+                    'estimated_fuel': target_fuel if fuel_is_estimated else 0.0,
+                    'fuel_is_estimated': fuel_is_estimated,
                     'last_lap': target_lap,
                     'last_lap_time': target_last_lap,
                     'lap_consumptions': [],
@@ -1035,11 +1051,19 @@ class TelemetryBridge:
                 }
 
             tracker = self.driver_fuel_trackers[driver_key]
+            if fuel_is_estimated and tracker.get('estimated_fuel', 0) <= 0:
+                tracker['estimated_fuel'] = target_fuel
 
             # Completed lap transition
             if target_lap > tracker['last_lap'] and tracker['last_lap'] > 0:
                 prev_fuel_val = tracker['last_fuel']
-                if fuel_data_valid and prev_fuel_val > 0 and target_fuel > 0:
+                if fuel_is_estimated:
+                    # Deduct consumption on lap completion
+                    lap_burn = tracker['lap_consumptions'][-1] if tracker['lap_consumptions'] else 3.1
+                    tracker['estimated_fuel'] = round(max(2.0, tracker.get('estimated_fuel', fuel_capacity) - lap_burn), 2)
+                    target_fuel = tracker['estimated_fuel']
+                    tracker['last_fuel'] = target_fuel
+                elif fuel_data_valid and prev_fuel_val > 0 and target_fuel > 0:
                     # Refuel jump check (pit stop)
                     if target_fuel > prev_fuel_val + 1.2:
                         tracker['refuel_events'].append({
@@ -1159,6 +1183,7 @@ class TelemetryBridge:
                 'fuel_time_rem': time_remaining_sec,
                 'fuel_laps_rem': laps_remaining,
                 'fuel_data_valid': fuel_data_valid,
+                'fuel_is_estimated': fuel_is_estimated,
                 'fuel_history': c_history[-10:],
                 'avg_lap_time': avg_lap_time,
                 'telemetry_state': telemetry_state,
