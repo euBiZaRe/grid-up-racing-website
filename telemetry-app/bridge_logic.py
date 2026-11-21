@@ -25,7 +25,7 @@ else:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 CONFIG_FILE = os.path.join(BASE_DIR, "config.json")
-BRIDGE_VERSION = "2.1.3-STABLE-FLAGS"
+BRIDGE_VERSION = "2.1.4-IRATING-PROJ"
 RTDB_BASE_URL = "https://grid-up-racedash-default-rtdb.europe-west1.firebasedatabase.app"
 
 # Optional shared secret for the local dashboard gateway. Never hardcode it: set the DASH_TOKEN
@@ -983,6 +983,51 @@ class TelemetryBridge:
 
                     clean_progress = dist if dist >= 0 else self.car_prev_progress.get(idx, 0.0)
 
+                    # iRating, Licence Class, SR, and CustID extraction
+                    irating_raw = d.get('IRating', 0)
+                    try:
+                        irating_val = int(irating_raw) if irating_raw is not None else 0
+                    except (ValueError, TypeError):
+                        irating_val = 0
+
+                    user_id_raw = d.get('UserID', d.get('CustID', 0))
+                    try:
+                        user_id_val = int(user_id_raw) if user_id_raw is not None else 0
+                    except (ValueError, TypeError):
+                        user_id_val = 0
+
+                    lic_str = str(d.get('LicString', '') or '').strip()
+                    lic_parts = lic_str.split() if lic_str else []
+                    lic_level = d.get('LicLevel', 0)
+
+                    if len(lic_parts) > 0 and lic_parts[0]:
+                        lic_class = lic_parts[0].upper()
+                    elif lic_level >= 21:
+                        lic_class = 'PRO'
+                    elif lic_level >= 17:
+                        lic_class = 'A'
+                    elif lic_level >= 13:
+                        lic_class = 'B'
+                    elif lic_level >= 9:
+                        lic_class = 'C'
+                    elif lic_level >= 5:
+                        lic_class = 'D'
+                    else:
+                        lic_class = 'R'
+
+                    sr_val = 0.0
+                    if len(lic_parts) > 1:
+                        try:
+                            sr_val = round(float(lic_parts[1]), 2)
+                        except (ValueError, TypeError):
+                            sr_val = 0.0
+                    if sr_val <= 0.0 and d.get('LicSubLevel') is not None:
+                        try:
+                            sub_lvl = float(d.get('LicSubLevel', 0))
+                            sr_val = round(sub_lvl / 100.0, 2)
+                        except (ValueError, TypeError):
+                            sr_val = 0.0
+
                     drivers[str(idx)] = {
                         'name': d['UserName'],
                         'carNum': d['CarNumber'],
@@ -1005,8 +1050,60 @@ class TelemetryBridge:
                         'f2Time': f2_val,
                         'inc': d.get('CurDriverIncidentCount', 0),
                         'flags': driver_flags,
-                        'flagBitmask': car_flags
+                        'flagBitmask': car_flags,
+                        'irating': irating_val,
+                        'licClass': lic_class,
+                        'sr': sr_val,
+                        'licString': lic_str or f"{lic_class} {sr_val:.2f}",
+                        'userId': user_id_val,
+                        'projIR': 0
                     }
+
+                # Multi-player class-based Elo Projected iRating
+                class_groups = {}
+                for d_idx_str, d_obj in drivers.items():
+                    cid = d_obj.get('classId', 0)
+                    if cid not in class_groups:
+                        class_groups[cid] = []
+                    class_groups[cid].append(d_obj)
+
+                for cid, c_drivers in class_groups.items():
+                    ranked = [dr for dr in c_drivers if dr.get('irating', 0) > 0]
+                    n_ranked = len(ranked)
+                    if n_ranked <= 1:
+                        for dr in c_drivers:
+                            dr['projIR'] = 0
+                        continue
+
+                    # Official multi-player Elo split scaling: K = 200.0 / n_ranked
+                    k_factor = 200.0 / n_ranked
+                    for i_dr in ranked:
+                        r_i = i_dr['irating']
+                        pos_i = i_dr.get('classPos', 999)
+                        if pos_i <= 0:
+                            pos_i = 999
+
+                        expected_score = 0.0
+                        actual_score = 0.0
+
+                        for j_dr in ranked:
+                            if j_dr is i_dr:
+                                continue
+                            r_j = j_dr['irating']
+                            pos_j = j_dr.get('classPos', 999)
+                            if pos_j <= 0:
+                                pos_j = 999
+
+                            p_ij = 1.0 / (1.0 + (10.0 ** ((r_j - r_i) / 400.0)))
+                            expected_score += p_ij
+
+                            if pos_i < pos_j:
+                                actual_score += 1.0
+                            elif pos_i == pos_j:
+                                actual_score += 0.5
+
+                        proj_delta = int(round(k_factor * (actual_score - expected_score)))
+                        i_dr['projIR'] = proj_delta
 
             self.car_prev_time = now_ts
             self.ir.freeze_var_buffer_latest()

@@ -570,12 +570,17 @@
             font-size: 0.7rem;
         }
         .irating-chip {
-            background: rgba(59, 130, 246, 0.15);
-            color: #60a5fa;
+            font-family: var(--font-mono);
+            background: rgba(59, 130, 246, 0.12);
+            color: #93c5fd;
+            border: 1px solid rgba(59, 130, 246, 0.25);
             border-radius: 3px;
-            padding: 1px 4px;
-            font-size: 0.65rem;
+            padding: 1px 5px;
+            font-size: 0.68rem;
             font-weight: 700;
+            display: inline-block;
+            text-align: right;
+            white-space: nowrap;
         }
         .pit-badge {
             background: #f59e0b;
@@ -585,6 +590,99 @@
             padding: 1px 4px;
             border-radius: 3px;
             letter-spacing: 0.05em;
+        }
+
+        /* Licence Class Badges */
+        .lic-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 18px;
+            border-radius: 3px;
+            font-size: 0.62rem;
+            font-weight: 900;
+            font-family: var(--font-orbitron);
+            line-height: 1;
+            text-align: center;
+            letter-spacing: 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+            user-select: none;
+        }
+        .lic-pro { background: #0b0f19; color: #f59e0b; border: 1px solid #f59e0b; }
+        .lic-a   { background: #2563eb; color: #ffffff; }
+        .lic-b   { background: #16a34a; color: #ffffff; }
+        .lic-c   { background: #eab308; color: #000000; font-weight: 900; }
+        .lic-d   { background: #ea580c; color: #ffffff; }
+        .lic-r   { background: #e11d48; color: #ffffff; }
+
+        /* Safety Rating */
+        .sr-val {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+        .sr-val.sr-high { color: #4ade80; }
+        .sr-val.sr-med  { color: #facc15; }
+        .sr-val.sr-low  { color: #f87171; }
+
+        /* Projected iRating Pill */
+        .proj-ir {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            font-weight: 800;
+            padding: 1px 6px;
+            border-radius: 3px;
+            text-align: right;
+            min-width: 44px;
+        }
+        .proj-gain {
+            color: #22c55e;
+            background: rgba(34, 197, 94, 0.14);
+            border: 1px solid rgba(34, 197, 94, 0.28);
+        }
+        .proj-loss {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.14);
+            border: 1px solid rgba(239, 68, 68, 0.28);
+        }
+        .proj-neutral {
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* Timing Tower Mode Toggle */
+        .tower-mode-toggle {
+            display: inline-flex;
+            background: rgba(0, 0, 0, 0.45);
+            border: 1px solid var(--border-panel);
+            border-radius: 4px;
+            padding: 2px;
+            gap: 2px;
+        }
+        .tower-mode-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-family: var(--font-orbitron);
+            font-size: 0.58rem;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            padding: 3px 7px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .tower-mode-btn:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.06);
+        }
+        .tower-mode-btn.active {
+            background: var(--accent-cyan);
+            color: #0b0f19;
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
         }
 
         /* Penalty & Mechanical Flag Badges */
@@ -1137,34 +1235,26 @@
                         <i data-lucide="list-ordered" style="width: 14px; height: 14px; color: var(--accent-cyan);"></i>
                         <span>SESSION TIMING TOWER & MULTI-CLASS LEADERBOARD</span>
                     </div>
-                    <div id="class-summary-pills" style="display: flex; align-items: center; gap: 6px; font-size: 0.65rem;">
-                        <!-- Dynamically filled with classes and SoF -->
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div class="tower-mode-toggle" id="tower-mode-toggle">
+                            <button type="button" class="tower-mode-btn active" data-mode="broadcast" onclick="setTowerMode('broadcast')" title="Broadcast Tower: Pos, Car, Driver, iR, Lic, SR, Proj iR, Last, Best, Pit, Gap, Delta">BROADCAST</button>
+                            <button type="button" class="tower-mode-btn" data-mode="profile" onclick="setTowerMode('profile')" title="Driver Profile Tower: Pos, Car, Driver, iR, Lic, SR, Proj iR, Incidents, Last, Best, Pit">PROFILE</button>
+                            <button type="button" class="tower-mode-btn" data-mode="timing" onclick="setTowerMode('timing')" title="Standard Timing Tower: Pos, Car, Driver, S1, S2, S3, Last, Best, Pit, Lap, Gap, Delta">TIMING</button>
+                        </div>
+                        <div id="class-summary-pills" style="display: flex; align-items: center; gap: 6px; font-size: 0.65rem;">
+                            <!-- Dynamically filled with classes and SoF -->
+                        </div>
                     </div>
                 </div>
                 <div class="dc-card-body" style="padding: 0;">
                     <div class="timing-table-wrapper">
                         <table class="timing-table">
-                            <thead>
-                                <tr>
-                                    <th style="width: 38px; text-align: center;">POS</th>
-                                    <th style="width: 48px;">CAR</th>
-                                    <th>DRIVER</th>
-                                    <th style="width: 65px;">iR</th>
-                                    <th style="width: 45px; text-align: center;">INC</th>
-                                    <th style="width: 75px; text-align: right;">S1</th>
-                                    <th style="width: 75px; text-align: right;">S2</th>
-                                    <th style="width: 75px; text-align: right;">S3</th>
-                                    <th style="width: 85px; text-align: right;">LAST</th>
-                                    <th style="width: 85px; text-align: right;">BEST</th>
-                                    <th style="width: 45px; text-align: center;">PIT</th>
-                                    <th style="width: 45px; text-align: center;">LAP</th>
-                                    <th style="width: 75px; text-align: right;">GAP</th>
-                                    <th style="width: 75px; text-align: right;">DELTA</th>
-                                </tr>
+                            <thead id="timing-table-head">
+                                <!-- Dynamic headers injected based on tower mode -->
                             </thead>
                             <tbody id="timing-table-body">
                                 <tr>
-                                    <td colspan="14" style="text-align: center; padding: 3rem; color: var(--text-muted);">
+                                    <td colspan="12" style="text-align: center; padding: 3rem; color: var(--text-muted);">
                                         Connecting to live telemetry feed...
                                     </td>
                                 </tr>
@@ -1639,7 +1729,8 @@
                 // Show empty indicator on table
                 const tbody = document.getElementById('timing-table-body');
                 if (tbody) {
-                    tbody.innerHTML = `<tr><td colspan="14" style="text-align: center; padding: 3rem; color: var(--text-muted);">No active telemetry streaming for team "${escapeHtml(activeTeamId)}". Run recorder app and drive in iRacing!</td></tr>`;
+                    const colCount = currentTowerMode === 'profile' ? 11 : 12;
+                    tbody.innerHTML = `<tr><td colspan="${colCount}" style="text-align: center; padding: 3rem; color: var(--text-muted);">No active telemetry streaming for team "${escapeHtml(activeTeamId)}". Run recorder app and drive in iRacing!</td></tr>`;
                 }
                 return;
             }
@@ -1880,14 +1971,188 @@
             return { key: fallback, name: fallback, color: d.classColor || '38bdf8', order: 99 };
         }
 
+        // Timing Tower Mode State
+        const urlTowerMode = (new URLSearchParams(window.location.search)).get('towerMode');
+        let currentTowerMode = (urlTowerMode && ['broadcast', 'profile', 'timing'].includes(urlTowerMode.toLowerCase())) 
+            ? urlTowerMode.toLowerCase() 
+            : (localStorage.getItem('gridup_dc_towermode') || 'broadcast');
+
+        window.setTowerMode = function(mode) {
+            if (!['broadcast', 'profile', 'timing'].includes(mode)) mode = 'broadcast';
+            currentTowerMode = mode;
+            try {
+                localStorage.setItem('gridup_dc_towermode', mode);
+            } catch (e) {}
+
+            document.querySelectorAll('.tower-mode-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mode === mode);
+            });
+
+            renderTimingTowerHeader(mode);
+            renderAll();
+        };
+
+        function renderTimingTowerHeader(mode) {
+            const thead = document.getElementById('timing-table-head');
+            if (!thead) return;
+
+            if (mode === 'profile') {
+                thead.innerHTML = `
+                    <tr>
+                        <th style="width: 38px; text-align: center;">POS</th>
+                        <th style="width: 46px;">CAR</th>
+                        <th>DRIVER</th>
+                        <th style="width: 65px; text-align: right;" title="Driver Baseline iRating">iRATING</th>
+                        <th style="width: 34px; text-align: center;" title="Licence Class">LIC</th>
+                        <th style="width: 48px; text-align: right;" title="Safety Rating (SR)">SR</th>
+                        <th style="width: 70px; text-align: right;" title="Projected iRating gain/loss based on current position">PROJ iR</th>
+                        <th style="width: 45px; text-align: center;" title="Incident Count">INC</th>
+                        <th style="width: 85px; text-align: right;">LAST</th>
+                        <th style="width: 85px; text-align: right;">BEST</th>
+                        <th style="width: 45px; text-align: center;">PIT</th>
+                    </tr>
+                `;
+            } else if (mode === 'timing') {
+                thead.innerHTML = `
+                    <tr>
+                        <th style="width: 38px; text-align: center;">POS</th>
+                        <th style="width: 46px;">CAR</th>
+                        <th>DRIVER</th>
+                        <th style="width: 75px; text-align: right;">S1</th>
+                        <th style="width: 75px; text-align: right;">S2</th>
+                        <th style="width: 75px; text-align: right;">S3</th>
+                        <th style="width: 85px; text-align: right;">LAST</th>
+                        <th style="width: 85px; text-align: right;">BEST</th>
+                        <th style="width: 45px; text-align: center;">PIT</th>
+                        <th style="width: 45px; text-align: center;">LAP</th>
+                        <th style="width: 75px; text-align: right;">GAP</th>
+                        <th style="width: 75px; text-align: right;">DELTA</th>
+                    </tr>
+                `;
+            } else {
+                // Broadcast mode (default)
+                thead.innerHTML = `
+                    <tr>
+                        <th style="width: 38px; text-align: center;">POS</th>
+                        <th style="width: 46px;">CAR</th>
+                        <th>DRIVER</th>
+                        <th style="width: 60px; text-align: right;" title="Driver Baseline iRating">iR</th>
+                        <th style="width: 34px; text-align: center;" title="Licence Class">LIC</th>
+                        <th style="width: 46px; text-align: right;" title="Safety Rating (SR)">SR</th>
+                        <th style="width: 68px; text-align: right;" title="Projected iRating Gain/Loss based on current position">PROJ iR</th>
+                        <th style="width: 80px; text-align: right;">LAST</th>
+                        <th style="width: 80px; text-align: right;">BEST</th>
+                        <th style="width: 42px; text-align: center;">PIT</th>
+                        <th style="width: 75px; text-align: right;">GAP</th>
+                        <th style="width: 70px; text-align: right;">DELTA</th>
+                    </tr>
+                `;
+            }
+        }
+
+        function formatIRating(ir) {
+            if (typeof ir !== 'number' || isNaN(ir) || ir <= 0) return '--';
+            return ir.toLocaleString();
+        }
+
+        function getLicenceBadge(d) {
+            let licClass = (d.licClass || '').toUpperCase();
+            if (!licClass && d.licString) {
+                licClass = (d.licString.split(' ')[0] || '').toUpperCase();
+            }
+            if (!licClass) {
+                const lvl = d.licLevel || 0;
+                if (lvl >= 21) licClass = 'PRO';
+                else if (lvl >= 17) licClass = 'A';
+                else if (lvl >= 13) licClass = 'B';
+                else if (lvl >= 9) licClass = 'C';
+                else if (lvl >= 5) licClass = 'D';
+                else licClass = 'R';
+            }
+            const clsKey = licClass.toLowerCase();
+            return `<span class="lic-badge lic-${clsKey}" title="Licence Class: ${licClass}">${licClass}</span>`;
+        }
+
+        function getSafetyRatingHtml(d) {
+            let srVal = typeof d.sr === 'number' ? d.sr : null;
+            if (srVal === null && d.licString) {
+                const parts = d.licString.split(' ');
+                if (parts.length > 1) srVal = parseFloat(parts[1]);
+            }
+            if (srVal === null || isNaN(srVal) || srVal <= 0) {
+                return '<span style="color:var(--text-muted);">-</span>';
+            }
+            let srColorClass = 'sr-high';
+            if (srVal < 2.0) srColorClass = 'sr-low';
+            else if (srVal < 3.0) srColorClass = 'sr-med';
+            return `<span class="sr-val ${srColorClass}">${srVal.toFixed(2)}</span>`;
+        }
+
+        function getProjIRHtml(d) {
+            if (!d.irating || d.irating <= 0) {
+                return '<span class="proj-ir proj-neutral" title="Unranked / Practice / AI">--</span>';
+            }
+            const delta = typeof d.projIR === 'number' ? d.projIR : 0;
+            if (delta > 0) {
+                return `<span class="proj-ir proj-gain" title="Projected iRating gain: +${delta}">+${delta}</span>`;
+            } else if (delta < 0) {
+                return `<span class="proj-ir proj-loss" title="Projected iRating loss: ${delta}">${delta}</span>`;
+            } else {
+                return `<span class="proj-ir proj-neutral" title="Projected iRating change: 0">0</span>`;
+            }
+        }
+
+        function calculateProjectedIRating(classDrivers) {
+            if (!Array.isArray(classDrivers) || classDrivers.length === 0) return;
+            const ranked = classDrivers.filter(d => typeof d.irating === 'number' && d.irating > 0);
+            const n = ranked.length;
+            if (n <= 1) {
+                classDrivers.forEach(d => {
+                    if (typeof d.projIR !== 'number') d.projIR = 0;
+                });
+                return;
+            }
+
+            const kFactor = 200.0 / n;
+            ranked.forEach(iDriver => {
+                const rI = iDriver.irating;
+                const posI = (typeof iDriver.classPos === 'number' && iDriver.classPos > 0) ? iDriver.classPos : 999;
+                let expectedScore = 0.0;
+                let actualScore = 0.0;
+
+                ranked.forEach(jDriver => {
+                    if (jDriver === iDriver) return;
+                    const rJ = jDriver.irating;
+                    const posJ = (typeof jDriver.classPos === 'number' && jDriver.classPos > 0) ? jDriver.classPos : 999;
+
+                    const pIJ = 1.0 / (1.0 + Math.pow(10.0, (rJ - rI) / 400.0));
+                    expectedScore += pIJ;
+
+                    if (posI < posJ) {
+                        actualScore += 1.0;
+                    } else if (posI === posJ) {
+                        actualScore += 0.5;
+                    }
+                });
+
+                iDriver.projIR = Math.round(kFactor * (actualScore - expectedScore));
+            });
+
+            classDrivers.forEach(d => {
+                if (typeof d.projIR !== 'number') d.projIR = 0;
+            });
+        }
+
         // Timing Tower & Leaderboard
         function renderTimingTower(allDrivers, targetDriver, tel) {
             const tbody = document.getElementById('timing-table-body');
             if (!tbody) return;
 
+            const colCount = currentTowerMode === 'profile' ? 11 : 12;
+
             const driverList = Object.values(allDrivers).filter(d => d && typeof d === 'object');
             if (driverList.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="14" style="text-align: center; padding: 2rem; color: var(--text-muted);">Awaiting driver leaderboard packets...</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="${colCount}" style="text-align: center; padding: 2rem; color: var(--text-muted);">Awaiting driver leaderboard packets...</td></tr>`;
                 return;
             }
 
@@ -1942,6 +2207,9 @@
                     if (Math.abs(distB - distA) > 0.0001) return distB - distA;
                     return (parseInt(a.carNum) || 0) - (parseInt(b.carNum) || 0);
                 });
+
+                // Calculate projected iRating within this class
+                calculateProjectedIRating(cls.drivers);
             });
 
             // Order classes by hierarchy order or best overall position
@@ -1968,7 +2236,7 @@
                 // Class Header Banner Row
                 rowsHtml += `
                     <tr class="class-header-row" style="background: rgba(15, 23, 42, 0.85); border-top: 1px solid rgba(255,255,255,0.15); border-bottom: 1px solid rgba(255,255,255,0.08);">
-                        <td colspan="14" style="padding: 6px 12px;">
+                        <td colspan="${colCount}" style="padding: 6px 12px;">
                             <div style="display: flex; align-items: center; justify-content: space-between;">
                                 <div style="display: flex; align-items: center; gap: 8px;">
                                     <span style="display: inline-block; width: 4px; height: 16px; background: #${cls.color}; border-radius: 2px;"></span>
@@ -2041,32 +2309,70 @@
                         flagHtml += `<span class="badge-flag flag-blue" title="BLUE FLAG: Yield to faster car">${getFlagIconSvg('blue', 15, 10)} <span>BLUE</span></span>`;
                     }
 
-                    rowsHtml += `
-                        <tr class="${rowClass}" onclick="focusDriver('${escapeHtml(d.carNum)}')">
-                            <td style="text-align: center;"><span class="pos-badge ${posColorClass}">P${displayPos}</span></td>
-                            <td><span class="carnum-chip">#${escapeHtml(d.carNum || '-')}</span></td>
-                            <td>
-                                <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
-                                    <div style="display: flex; align-items: center; gap: 6px;">
-                                        ${d.classColor ? `<span style="width: 5px; height: 5px; border-radius: 50%; background: #${d.classColor};"></span>` : ''}
-                                        <span style="font-weight: 700; color: #fff;">${escapeHtml(d.name || 'Unknown')}</span>
-                                    </div>
-                                    ${flagHtml ? `<div style="display: flex; gap: 3px; align-items: center;">${flagHtml}</div>` : ''}
+                    const driverNameCol = `
+                        <td>
+                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    ${d.classColor ? `<span style="width: 5px; height: 5px; border-radius: 50%; background: #${d.classColor};"></span>` : ''}
+                                    <span style="font-weight: 700; color: #fff;">${escapeHtml(d.name || 'Unknown')}</span>
                                 </div>
-                            </td>
-                            <td><span class="irating-chip">${d.irating ? `${(d.irating / 1000).toFixed(1)}k` : '--'}</span></td>
-                            <td style="text-align: center; color: var(--text-muted);">${d.inc !== undefined ? d.inc : 0}</td>
-                            <td style="text-align: right; color: var(--text-secondary);">${formatSector(d.s1)}</td>
-                            <td style="text-align: right; color: var(--text-secondary);">${formatSector(d.s2)}</td>
-                            <td style="text-align: right; color: var(--text-secondary);">${formatSector(d.s3)}</td>
-                            <td style="text-align: right; color: var(--accent-gold);">${formatLapTime(d.lastLap)}</td>
-                            <td style="text-align: right; ${bestColor}">${formatLapTime(d.bestLap)}</td>
-                            <td style="text-align: center;">${pitHtml}</td>
-                            <td style="text-align: center;">${d.lap > 0 ? d.lap : 0}</td>
-                            <td style="text-align: right; color: var(--text-secondary);">${escapeHtml(gapStr)}</td>
-                            <td style="text-align: right; color: ${deltaColor}; font-weight: 800;">${escapeHtml(deltaStr)}</td>
-                        </tr>
+                                ${flagHtml ? `<div style="display: flex; gap: 3px; align-items: center;">${flagHtml}</div>` : ''}
+                            </div>
+                        </td>
                     `;
+
+                    if (currentTowerMode === 'profile') {
+                        rowsHtml += `
+                            <tr class="${rowClass}" onclick="focusDriver('${escapeHtml(d.carNum)}')">
+                                <td style="text-align: center;"><span class="pos-badge ${posColorClass}">P${displayPos}</span></td>
+                                <td><span class="carnum-chip">#${escapeHtml(d.carNum || '-')}</span></td>
+                                ${driverNameCol}
+                                <td style="text-align: right;"><span class="irating-chip">${formatIRating(d.irating)}</span></td>
+                                <td style="text-align: center;">${getLicenceBadge(d)}</td>
+                                <td style="text-align: right;">${getSafetyRatingHtml(d)}</td>
+                                <td style="text-align: right;">${getProjIRHtml(d)}</td>
+                                <td style="text-align: center; color: var(--text-muted); font-weight: 700;">${d.inc !== undefined ? d.inc : 0}</td>
+                                <td style="text-align: right; color: var(--accent-gold);">${formatLapTime(d.lastLap)}</td>
+                                <td style="text-align: right; ${bestColor}">${formatLapTime(d.bestLap)}</td>
+                                <td style="text-align: center;">${pitHtml}</td>
+                            </tr>
+                        `;
+                    } else if (currentTowerMode === 'timing') {
+                        rowsHtml += `
+                            <tr class="${rowClass}" onclick="focusDriver('${escapeHtml(d.carNum)}')">
+                                <td style="text-align: center;"><span class="pos-badge ${posColorClass}">P${displayPos}</span></td>
+                                <td><span class="carnum-chip">#${escapeHtml(d.carNum || '-')}</span></td>
+                                ${driverNameCol}
+                                <td style="text-align: right; color: var(--text-secondary);">${formatSector(d.s1)}</td>
+                                <td style="text-align: right; color: var(--text-secondary);">${formatSector(d.s2)}</td>
+                                <td style="text-align: right; color: var(--text-secondary);">${formatSector(d.s3)}</td>
+                                <td style="text-align: right; color: var(--accent-gold);">${formatLapTime(d.lastLap)}</td>
+                                <td style="text-align: right; ${bestColor}">${formatLapTime(d.bestLap)}</td>
+                                <td style="text-align: center;">${pitHtml}</td>
+                                <td style="text-align: center;">${d.lap > 0 ? d.lap : 0}</td>
+                                <td style="text-align: right; color: var(--text-secondary);">${escapeHtml(gapStr)}</td>
+                                <td style="text-align: right; color: ${deltaColor}; font-weight: 800;">${escapeHtml(deltaStr)}</td>
+                            </tr>
+                        `;
+                    } else {
+                        // Broadcast mode (default)
+                        rowsHtml += `
+                            <tr class="${rowClass}" onclick="focusDriver('${escapeHtml(d.carNum)}')">
+                                <td style="text-align: center;"><span class="pos-badge ${posColorClass}">P${displayPos}</span></td>
+                                <td><span class="carnum-chip">#${escapeHtml(d.carNum || '-')}</span></td>
+                                ${driverNameCol}
+                                <td style="text-align: right;"><span class="irating-chip">${formatIRating(d.irating)}</span></td>
+                                <td style="text-align: center;">${getLicenceBadge(d)}</td>
+                                <td style="text-align: right;">${getSafetyRatingHtml(d)}</td>
+                                <td style="text-align: right;">${getProjIRHtml(d)}</td>
+                                <td style="text-align: right; color: var(--accent-gold);">${formatLapTime(d.lastLap)}</td>
+                                <td style="text-align: right; ${bestColor}">${formatLapTime(d.bestLap)}</td>
+                                <td style="text-align: center;">${pitHtml}</td>
+                                <td style="text-align: right; color: var(--text-secondary);">${escapeHtml(gapStr)}</td>
+                                <td style="text-align: right; color: ${deltaColor}; font-weight: 800;">${escapeHtml(deltaStr)}</td>
+                            </tr>
+                        `;
+                    }
                 });
             });
 
@@ -2662,6 +2968,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             initFirebase();
             setupFirebaseListeners();
+            setTowerMode(currentTowerMode);
             requestAnimationFrame(radarAnimLoop);
             if (window.lucide) lucide.createIcons();
         });
