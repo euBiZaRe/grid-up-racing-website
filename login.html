@@ -167,6 +167,13 @@
     <script src="script.js?v=20261121v3"></script>
     <script src="js/auth.js?v=11"></script>
     <script>
+        // If user is already authenticated, take them directly into the Team Portal
+        function onAuthReady(user) {
+            if (user) {
+                window.location.href = "portal.html";
+            }
+        }
+
         const btn = document.getElementById('discord-login-btn');
         if (btn) {
             let isLoggingIn = false;

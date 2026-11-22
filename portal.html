@@ -6292,8 +6292,17 @@
 
                 // 1. Check Admin Status
                 const MASTER_ADMIN = 'B0t4f4nqqpZIQKpT8Ed97xka5gM2';
-                const KNOWN_ADMINS = ['B0t4f4nqqpZIQKpT8Ed97xka5gM2', 'uYUa2WYZ5TPg98v1e6jQzzrItR53', 'BnojTKUFKUUKDFFpnUGEdueLhkN2', '2TfuhZVILNQerQK9SYL1304jYp83'];
-                isAdminUser = Boolean(user && KNOWN_ADMINS.includes(user.uid));
+                const KNOWN_ADMINS = [
+                    'B0t4f4nqqpZIQKpT8Ed97xka5gM2', // Matty Roberts (Master)
+                    'uYUa2WYZ5TPg98vle6jQzzrItR53', // Andrew Fabian (Team Admin)
+                    '8nojtKUFKUUKDFFpnU6EdueLhkN2', // Martyn Cook (Team Admin)
+                    '2TfuhZVILNQerQK95YL1304jYp83'  // Adam Jones (Team Admin)
+                ];
+                isAdminUser = Boolean(user && (
+                    KNOWN_ADMINS.includes(user.uid) ||
+                    (window.KNOWN_ADMIN_UIDS && window.KNOWN_ADMIN_UIDS.includes(user.uid)) ||
+                    window.IS_ADMIN
+                ));
 
                 if (!isAdminUser) {
                     try {
@@ -6314,43 +6323,97 @@
                     let hasRosterAccess = false;
                     let claimedName = null;
 
-                    // Check if user has a verified claim
+                    // A. Check if user has a verified claim in claims collection
                     try {
                         const claimDoc = await db.collection("claims").where("discordId", "==", user.uid).get();
                         if (!claimDoc.empty && claimDoc.docs[0].data().status === 'verified') {
                             claimedName = claimDoc.docs[0].id;
+                            hasRosterAccess = true; // Verified driver always has roster access
                         }
-                    } catch (e) {}
+                    } catch (eClaim) {
+                        console.warn("Could not check claims in portal:", eClaim);
+                    }
 
-                    // Check if user is granted access in Team Roster (drivers collection)
+                    // B. Check user profile in users collection
                     try {
-                        const allowedSnap = await db.collection("drivers").where("allowAccess", "==", true).get();
+                        const userDocPre = await db.collection("users").doc(user.uid).get().catch(() => null);
+                        if (userDocPre && userDocPre.exists) {
+                            const uData = userDocPre.data();
+                            if (uData.allowAccess === true || uData.isDriver === true || uData.role === 'driver') {
+                                hasRosterAccess = true;
+                            }
+                            if (uData.driverName && !uData.driverName.toLowerCase().includes('discord user')) {
+                                claimedName = claimedName || uData.driverName;
+                            }
+                        }
+                    } catch (eUserDoc) {}
+
+                    // C. Check if user is in Team Roster (drivers collection)
+                    try {
+                        const driversSnap = await db.collection("drivers").get();
                         const userNames = [];
                         if (claimedName) userNames.push(claimedName.toLowerCase().trim());
                         if (user.displayName) userNames.push(user.displayName.toLowerCase().trim());
 
-                        allowedSnap.forEach(dDoc => {
+                        driversSnap.forEach(dDoc => {
                             const d = dDoc.data();
-                            if (d.linkedUid === user.uid) hasRosterAccess = true;
-                            if (d.name && userNames.includes(d.name.toLowerCase().trim())) hasRosterAccess = true;
+                            const matchesUid = (d.linkedUid === user.uid);
+                            const dName = d.name ? d.name.toLowerCase().trim() : '';
+                            const dSlug = d.slug ? d.slug.toLowerCase().trim() : '';
+                            const matchesName = dName && userNames.some(un => un === dName || un.includes(dName) || dName.includes(un));
+                            const matchesSlug = dSlug && userNames.some(un => un === dSlug);
+
+                            if (matchesUid || matchesName || matchesSlug) {
+                                // Explicitly allowed, OR active member whose access is not explicitly false
+                                if (d.allowAccess === true || (d.allowAccess !== false && d.active !== false)) {
+                                    hasRosterAccess = true;
+                                    if (d.name && !claimedName) claimedName = d.name;
+                                }
+                            }
                         });
                     } catch (err) {
                         console.warn("Could not check roster access in portal:", err);
                     }
 
+                    // D. Check if user is listed in any race_lineups team
                     if (!hasRosterAccess) {
-                        // User does not have Team Roster access: Check if they have an active application
-                        let appSnap = await db.collection('applications').where('discordUid', '==', user.uid).get();
-                        if (appSnap.empty && user.displayName) {
-                            appSnap = await db.collection('applications').where('discordUsername', '==', user.displayName).get();
-                            if (!appSnap.empty) {
-                                const docId = appSnap.docs[0].id;
-                                await db.collection('applications').doc(docId).update({ discordUid: user.uid });
-                                appSnap = await db.collection('applications').where('discordUid', '==', user.uid).get();
+                        try {
+                            const lineupsSnap = await db.collection("race_lineups").get();
+                            const testNames = [claimedName, user.displayName].filter(Boolean).map(n => n.toLowerCase().trim());
+                            lineupsSnap.forEach(lDoc => {
+                                const lData = lDoc.data();
+                                if (lData.teams) {
+                                    lData.teams.forEach(t => {
+                                        if (t.captain && testNames.some(tn => t.captain.toLowerCase().includes(tn) || tn.includes(t.captain.toLowerCase()))) {
+                                            hasRosterAccess = true;
+                                        }
+                                        if (t.drivers && t.drivers.some(d => testNames.some(tn => d.toLowerCase().includes(tn) || tn.includes(d.toLowerCase())))) {
+                                            hasRosterAccess = true;
+                                        }
+                                    });
+                                }
+                            });
+                        } catch (eLineups) {}
+                    }
+
+                    // E. If still no roster access, check application status
+                    if (!hasRosterAccess) {
+                        let appSnap = null;
+                        try {
+                            appSnap = await db.collection('applications').where('discordUid', '==', user.uid).get();
+                            if (appSnap.empty && user.displayName) {
+                                const nameSnap = await db.collection('applications').where('discordUsername', '==', user.displayName).get().catch(() => null);
+                                if (nameSnap && !nameSnap.empty) {
+                                    const docId = nameSnap.docs[0].id;
+                                    await db.collection('applications').doc(docId).update({ discordUid: user.uid }).catch(() => {});
+                                    appSnap = nameSnap;
+                                }
                             }
+                        } catch (errApp) {
+                            console.warn("Could not query applications in portal:", errApp);
                         }
 
-                        if (!appSnap.empty) {
+                        if (appSnap && !appSnap.empty) {
                             loading.style.display = 'none';
                             document.getElementById('application-portal-view').style.display = 'block';
                             document.getElementById('portal-app-details-container').style.display = 'block';

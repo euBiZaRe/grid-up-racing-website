@@ -43,10 +43,16 @@ rules_version = '2';
 //             source (optional string <= 64), clean (optional bool), timestamp (optional timestamp)
 //
 // Collection: applications/{appId}
-//   - Fields: discordUid (string, == auth.uid), status ('pending'),
-//             iracingName (string 1..120), discordUsername (string 1..120),
-//             irating (string/number), experience (string <= 64), location (string <= 120),
-//             availability (list <= 10), classes (list <= 10), maturity (string <= 64), timestamp
+//   - Fields: iracingName (string 1..120), discordUsername (string 1..120),
+//             discordUid (optional nullable string <= 128),
+//             irating (optional string <= 32 or int 0..25000),
+//             experience (optional string <= 64), location (optional string <= 120),
+//             availability (optional list <= 10), classes (optional list <= 10),
+//             maturity (optional string <= 64), timestamp (optional timestamp),
+//             status (string: 'pending', 'processing', 'approved', 'denied'),
+//             messages (optional list <= 200 of message maps: author, uid, text, timestamp),
+//             unreadAdmin (optional bool), unreadApplicant (optional bool),
+//             iracingId / custId / cust_id (optional string/int <= 32)
 //
 // Collection: m2rc_registrations/{regId}
 //   - Fields: driverName (string 1..120), teamName (string 1..120), iracingId (string 1..32),
@@ -252,24 +258,79 @@ service cloud.firestore {
         isOptionalTimestamp(data, 'timestamp');
     }
 
-    function isValidApplicationCreate(data) {
-      return data.keys().size() <= 20 &&
+    function isValidApplication(data) {
+      return data.keys().size() <= 25 &&
         hasOnlyAllowedFields([
           'iracingName', 'discordUsername', 'discordUid', 'irating',
           'experience', 'location', 'availability', 'classes',
-          'maturity', 'timestamp', 'status'
+          'maturity', 'timestamp', 'status', 'messages',
+          'unreadAdmin', 'unreadApplicant', 'iracingId', 'custId', 'cust_id'
         ]) &&
-        data.discordUid == request.auth.uid &&
-        data.status == 'pending' &&
         isOptionalString(data, 'iracingName', 120) &&
         isOptionalString(data, 'discordUsername', 120) &&
+        isOptionalNullableString(data, 'discordUid', 128) &&
         (!('irating' in data) || (data.irating is string && data.irating.size() <= 32) || (data.irating is int && data.irating >= 0 && data.irating <= 25000)) &&
         isOptionalString(data, 'experience', 64) &&
         isOptionalString(data, 'location', 120) &&
         (!('availability' in data) || (data.availability is list && data.availability.size() <= 10)) &&
         (!('classes' in data) || (data.classes is list && data.classes.size() <= 10)) &&
         isOptionalString(data, 'maturity', 64) &&
-        isOptionalTimestamp(data, 'timestamp');
+        isOptionalTimestamp(data, 'timestamp') &&
+        (!('status' in data) || data.status in ['pending', 'processing', 'approved', 'denied']) &&
+        (!('messages' in data) || (data.messages is list && data.messages.size() <= 200)) &&
+        isOptionalBool(data, 'unreadAdmin') &&
+        isOptionalBool(data, 'unreadApplicant') &&
+        isOptionalString(data, 'iracingId', 32) &&
+        (!('custId' in data) || (data.custId is string && data.custId.size() <= 32) || data.custId is int) &&
+        (!('cust_id' in data) || (data.cust_id is string && data.cust_id.size() <= 32) || data.cust_id is int);
+    }
+
+    function isValidApplicationCreate(data) {
+      return isValidApplication(data) &&
+        data.status == 'pending' &&
+        isNonEmptyString(data.iracingName, 120) &&
+        isNonEmptyString(data.discordUsername, 120) &&
+        (
+          (!isAuthenticated() && (!('discordUid' in data) || data.discordUid == null || data.discordUid == '')) ||
+          (isAuthenticated() && (!('discordUid' in data) || data.discordUid == null || data.discordUid == '' || data.discordUid == request.auth.uid))
+        );
+    }
+
+    function isRecentAppMessageValid(msg) {
+      return msg is map &&
+        msg.keys().hasOnly(['author', 'uid', 'text', 'timestamp']) &&
+        msg.uid == request.auth.uid &&
+        isNonEmptyString(msg.text, 2000) &&
+        isOptionalString(msg, 'author', 100) &&
+        (!('timestamp' in msg) || msg.timestamp is timestamp || (msg.timestamp is string && msg.timestamp.size() <= 64));
+    }
+
+    function isValidApplicantMessageAppend() {
+      return request.resource.data.messages is list &&
+        request.resource.data.messages.size() <= 200 &&
+        (
+          (!('messages' in resource.data) && request.resource.data.messages.size() == 1) ||
+          (('messages' in resource.data) && (resource.data.messages is list) && request.resource.data.messages.size() == resource.data.messages.size() + 1)
+        ) &&
+        isRecentAppMessageValid(request.resource.data.messages[request.resource.data.messages.size() - 1]);
+    }
+
+    function isApplicantChatUpdate() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['messages', 'unreadAdmin', 'unreadApplicant']) &&
+        (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['messages']) || isValidApplicantMessageAppend()) &&
+        (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['unreadAdmin']) || request.resource.data.unreadAdmin is bool) &&
+        (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['unreadApplicant']) || request.resource.data.unreadApplicant is bool);
+    }
+
+    function isApplicantLinkUpdate() {
+      return (!('discordUid' in resource.data) || resource.data.discordUid == null || resource.data.discordUid == '') &&
+        ('discordUsername' in resource.data) &&
+        (
+          ('name' in request.auth.token && resource.data.discordUsername == request.auth.token.name) ||
+          ('preferred_username' in request.auth.token && resource.data.discordUsername == request.auth.token.preferred_username)
+        ) &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['discordUid']) &&
+        request.resource.data.discordUid == request.auth.uid;
     }
 
     function isValidSetup(data) {
@@ -521,11 +582,41 @@ service cloud.firestore {
     // ===============================================================
 
     match /applications/{appId} {
-      allow create: if isAuthenticated() && isValidApplicationCreate(request.resource.data);
       allow read: if isAuthenticated() && (
-        resource.data.discordUid == request.auth.uid || isAdmin()
+        isAdmin() ||
+        resource.data.discordUid == request.auth.uid ||
+        (
+          ('discordUsername' in resource.data) &&
+          (
+            ('name' in request.auth.token && resource.data.discordUsername == request.auth.token.name) ||
+            ('preferred_username' in request.auth.token && resource.data.discordUsername == request.auth.token.preferred_username)
+          )
+        )
       );
-      allow update, delete: if isAdmin();
+
+      allow create: if isValidApplicationCreate(request.resource.data);
+
+      allow update: if isAuthenticated() && (
+        (
+          isAdmin() &&
+          isValidApplication(request.resource.data)
+        ) ||
+        (
+          resource.data.discordUid == request.auth.uid &&
+          isApplicantChatUpdate() &&
+          isValidApplication(request.resource.data)
+        ) ||
+        (
+          isApplicantLinkUpdate() &&
+          isValidApplication(request.resource.data)
+        )
+      );
+
+      allow delete: if isAdmin() || (
+        isAuthenticated() &&
+        resource.data.discordUid == request.auth.uid &&
+        resource.data.status == 'pending'
+      );
     }
 
     match /m2rc_registrations/{regId} {

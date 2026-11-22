@@ -412,7 +412,7 @@ function loginWithDiscord() {
             console.error("Error updating user info after login:", err);
         }
         
-        window.location.href = "index.html";
+        window.location.href = "portal.html";
     }).catch((error) => {
         console.error("Login Error:", error.code, error.message);
         const errorDiv = document.getElementById('login-error-msg');
