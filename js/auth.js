@@ -45,6 +45,9 @@ if (typeof firebase !== 'undefined') {
     if (typeof firebase.storage === 'function') {
         window.storage = firebase.storage();
     }
+    try {
+        window.dispatchEvent(new CustomEvent('gridup:db-ready', { detail: { db, auth } }));
+    } catch (_) {}
 }
 
 // Hardcoded Verified Admin UIDs failsafe (guarantees access even if Firestore rules or network restricts settings/admins)

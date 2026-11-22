@@ -15,6 +15,11 @@
     }
 })();
 
+// Global Telemetry States (hoisted to avoid TDZ)
+var activeTelemetryStreams = activeTelemetryStreams || {};
+var activeTelemetryDrivers = activeTelemetryDrivers || {};
+var isSimulatingTelemetry = false;
+
 // Global Utilities
 function getSkeletonHTML(type = 'card') {
     const shimmer = `<div class="glass loading-shimmer race-tile" style="min-width: 290px; max-width: 320px; width: 290px; height: 220px; flex: 0 0 290px; border-radius: 10px; border: 1px solid var(--glass-border);"></div>`;
@@ -453,13 +458,67 @@ function initCarousel() {
 
 
 
-// Firestore Data Integration
+// Helper to process and partition raw event documents into upcoming and past
+function partitionEventsData(allEvents) {
+    if (!Array.isArray(allEvents) || allEvents.length === 0) {
+        return { upcomingEvents: [], pastEvents: [] };
+    }
+    const now = new Date();
+    const parseDate = (d) => {
+        if (!d) return null;
+        if (typeof d.toDate === 'function') return d.toDate();
+        if (d.seconds) return new Date(d.seconds * 1000);
+        return new Date(d);
+    };
+
+    const sortedEvents = [...allEvents].sort((a, b) => {
+        const dateA = parseDate(a.startDate);
+        const dateB = parseDate(b.startDate);
+        if (!dateA) return 1;
+        if (!dateB) return -1;
+        return dateA.getTime() - dateB.getTime();
+    });
+
+    const nurburgringPast = now > new Date('2026-05-03T23:59:59');
+
+    const getEventEndDate = (e) => {
+        if (e.id === 'suzuka-1000km') {
+            return new Date('2026-09-13T23:59:59.999Z');
+        }
+        if (e.endDate) {
+            return parseDate(e.endDate);
+        }
+        const start = parseDate(e.startDate);
+        if (!start) return null;
+        const calculatedEnd = new Date(start);
+        calculatedEnd.setHours(23, 59, 59, 999);
+        return calculatedEnd;
+    };
+
+    const upcomingEvents = sortedEvents.filter(e => {
+        const eventEnd = getEventEndDate(e);
+        if (!eventEnd) return false;
+        if ((e.id === 'nurburgring-24h' || e.id === 'nurburgring-24') && nurburgringPast) return false;
+        return eventEnd >= now;
+    });
+
+    const pastEvents = sortedEvents.filter(e => {
+        const eventEnd = getEventEndDate(e);
+        if (!eventEnd) return true;
+        if ((e.id === 'nurburgring-24h' || e.id === 'nurburgring-24') && nurburgringPast) return true;
+        return eventEnd < now;
+    });
+
+    return { upcomingEvents, pastEvents };
+}
+
+// Firestore Data Integration with multi-tier failover
 async function loadDynamicContent() {
     const upcomingTrack = document.getElementById('dynamic-upcoming-track');
     const fullEventList = document.getElementById('full-event-list');
     
-    // Attempt to load from cache first for instant UI
-    const SCRIPT_VER = '11';
+    // Tier 1: Attempt to load from localStorage cache first for instant UI
+    const SCRIPT_VER = '12';
     if (localStorage.getItem('gridup_script_ver') !== SCRIPT_VER) {
         localStorage.removeItem('gridup_upcoming_events');
         localStorage.removeItem('gridup_past_events');
@@ -473,111 +532,81 @@ async function loadDynamicContent() {
             console.log("Loading events from cache...");
             const data = JSON.parse(cachedEvents);
             const pastData = cachedPastEvents ? JSON.parse(cachedPastEvents) : null;
-            const now = new Date();
-            // Only use cache if the first event isn't ancient (allow 24h lookback)
-            const firstEventEnd = data[0].endDate ? new Date(data[0].endDate) : new Date(data[0].startDate);
-            if (!data[0].endDate) {
-                firstEventEnd.setHours(23, 59, 59, 999);
-            }
-            
-            if (firstEventEnd >= now) {
-                renderEventsUI(data, pastData);
-                cacheLoaded = true;
+            if (Array.isArray(data) && data.length > 0) {
+                const now = new Date();
+                const firstEventEnd = data[0].endDate ? new Date(data[0].endDate) : new Date(data[0].startDate);
+                if (!data[0].endDate) {
+                    firstEventEnd.setHours(23, 59, 59, 999);
+                }
+                if (firstEventEnd >= now) {
+                    renderEventsUI(data, pastData);
+                    cacheLoaded = true;
+                }
             }
         } catch (e) {
             console.warn("Failed to load events from cache:", e);
         }
     }
 
+    // Tier 2: Bundled special events dataset fallback
+    if (!cacheLoaded && window.__SPECIAL_EVENTS_DATA__ && Array.isArray(window.__SPECIAL_EVENTS_DATA__) && window.__SPECIAL_EVENTS_DATA__.length > 0) {
+        try {
+            console.log("Loading special events from bundled dataset...");
+            const { upcomingEvents, pastEvents } = partitionEventsData(window.__SPECIAL_EVENTS_DATA__);
+            renderEventsUI(upcomingEvents, pastEvents);
+            cacheLoaded = true;
+        } catch (e) {
+            console.warn("Failed to render bundled special events:", e);
+        }
+    }
+
+    // Tier 3: If db is not yet initialized, register event listener and attempt local JSON fetch
     if (typeof db === 'undefined') {
-        console.warn("Firestore 'db' not initialized yet. Waiting...");
+        console.warn("Firestore 'db' not initialized yet. Registering listener & waiting...");
+        window.addEventListener('gridup:db-ready', () => {
+            loadDynamicContent();
+        }, { once: true });
+
+        if (!cacheLoaded && typeof fetch === 'function') {
+            fetch('assets/data/special_events.json')
+                .then(r => r.json())
+                .then(data => {
+                    if (Array.isArray(data) && data.length > 0 && !window.dynamicContentLoaded) {
+                        const { upcomingEvents, pastEvents } = partitionEventsData(data);
+                        renderEventsUI(upcomingEvents, pastEvents);
+                    }
+                })
+                .catch(() => {});
+        }
         return;
     }
 
     let featuredOverride = null;
 
-    // 1. Load Upcoming Races & Update Hero (Show events starting now or recently finished)
-    // We use a 24h lookback so ongoing races stay visible
-    const lookbackDate = new Date();
-    lookbackDate.setHours(lookbackDate.getHours() - 24);
-    const filterTimestamp = lookbackDate.toISOString();
-    
     if (upcomingTrack && !cacheLoaded && !upcomingTrack.dataset.renderedIds) upcomingTrack.innerHTML = getSkeletonHTML('card');
     if (fullEventList && !cacheLoaded && !fullEventList.dataset.renderedIds) fullEventList.innerHTML = getSkeletonHTML('list');
-    
-    // Global Constants for URL generation
-    const path = window.location.pathname;
-    let prefix = '';
-    if (path.includes('/events/past/')) {
-        prefix = '../../';
-    } else if (path.includes('/events/') || path.includes('/drivers/')) {
-        prefix = '../';
-    }
-    const staticIds = [
-        // Upcoming events with static pages
-        'imsa-classic-500', 'indy-500', 'world-600',
-        'thruxton-4h', 'watkins-glen-6h', 'spa-24hr', 'firecracker-400',
-        'road-america-6h', 'brickyard-400', 'suzuka-1000km', 'petit-le-mans',
-        'bathurst-1000', 'indy-8h', 'knoxville-nationals', 'portimao-1000',
-        'crandon-championship', 'southern-500', 'britcar-24hr', 'ff1600-festival',
-        'homestead-championship', 'sfl-mountain-showdown', 'scca-runoffs',
-        '992-endurance-cup', 'winter-derby', 'chili-bowl', 'production-car-challenge',
-        // Completed events with static pages
-        'iracing-roar', 'daytona-24', 'daytona-500', 'bathurst-12', 'sebring-12hr', 'nurburgring-24h'
-    ];
-    
-    // Official Special Event Banners (sourced from iracing.com/special-events/)
-    const BASE = 'https://s100.iracing.com/wp-content/uploads';
-    const eventBanners = {
-        // Completed Events
-        'iracing-roar':         `${BASE}/2025/12/iRSE-2026-ROAR-960x576.png`,
-        'daytona-24':           `${BASE}/2025/12/iRSE-2026-Daytona-24-VCO-960x576.png`,
-        'daytona-500':          `${BASE}/2025/12/iRSE-2026-Daytona-500.png`,
-        'bathurst-12':          `${BASE}/2025/12/iRSE-2026-Bathurst-12.png`,
-        'sebring-12hr':         `${BASE}/2025/12/iRSE-2026-Sebring-12-VCO.png`,
-        'nurburgring-24h':      `${BASE}/2025/12/iRSE-2026-Nurburgring-24H.png`,
-        // Upcoming Events
-        'imsa-classic-500':     `${BASE}/2026/03/iRSE-2026-IMSA-Classic-500.png`,
-        'indy-500':             `${BASE}/2025/12/iRSE-2026-Indy-500.png`,
-        'world-600':            `${BASE}/2025/12/iRSE-2026-World-600.png`,
-        'thruxton-4h':          `${BASE}/2025/12/iRSE-2026-4-Hours-at-Thruxton.png`,
-        'watkins-glen-6h':      `${BASE}/2025/12/iRSE-2026-Watkis-Glen-6H-VCO.png`,
-        'spa-24hr':             `${BASE}/2025/12/iRSE-2026-SPA-24HR.png`,
-        'brickyard-400':        'https://s100.iracing.com/wp-content/uploads/2025/04/iRSE-2025-Brickyard-400-v2.png',
-        'road-america-6h':      `${BASE}/2025/12/iRSE-2026-6HRS-Road-America.png`,
-        'firecracker-400':      `${BASE}/2025/12/iRSE-2026-Firecracker-400.png`,
-        'knoxville-nationals':  `${BASE}/2025/12/iRSE-2026-Knoxville-Nationals.png`,
-        'portimao-1000':        `${BASE}/2025/12/iRSE-2026-Portimao-1000.png`,
-        'crandon-championship': `${BASE}/2025/12/iRSE-2026-Crandon.png`,
-        'southern-500':         `${BASE}/2025/12/iRSE-2026-Southern-500.png`,
-        'suzuka-1000km':        `${BASE}/2026/01/iRSE-2026-PiMax-Suzuka-1000km.png`,
-        'britcar-24hr':         `${BASE}/2025/12/iRSE-2026-Britcar-24.png`,
-        'petit-le-mans':        `${BASE}/2025/12/iRSE-2026-Petit-Le-Mans-VCO.png`,
-        'bathurst-1000':        `${BASE}/2025/12/iRSE-2026-Bathurst-1000.png`,
-        'indianapolis-8h':      `${BASE}/2025/12/iRSE-2026-Indianapolis-8H.png`,
-        'indy-8h':              `${BASE}/2025/12/iRSE-2026-Indianapolis-8H.png`,
-        'ff1600-festival':      `${BASE}/2026/01/iRSE-2026-iRacing-Conspit-FF1600-Festival.png`,
-        'homestead-championship': `${BASE}/2025/12/iRSE-2026-Homestead-Championship.png`,
-        'sfl-mountain-showdown': `${BASE}/2025/12/iRSE-2026-SFL-Mountain-Challenge.png`,
-        'scca-runoffs':         `${BASE}/2024/12/iRSE-2025-Scca-Runoffs.png`,
-        '992-endurance-cup':    `${BASE}/2026/04/iRSE-2026-Creventic-992-Endurance-Cup.png`,
-        'winter-derby':         `${BASE}/2025/12/iRSE-2026-Winter-Derby.png`,
-        'chili-bowl':           `${BASE}/2025/12/iRSE-2026-Chili-Bowl.png`,
-        'production-car-challenge': `${BASE}/2025/12/iRSE-2026-Production-Car-Challenge.png`,
-    };
-    
-    console.log("Auth: Querying events with filterTimestamp:", filterTimestamp);
+
     try {
-        const snap = await db.collection("events")
+        console.log("Auth: Querying Firestore events collection...");
+        // 5-second timeout promise to avoid infinite hang on restricted networks
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Firestore query timeout")), 5000));
+        const snapPromise = db.collection("events")
             .where("startDate", ">=", "2026-01-01")
             .orderBy("startDate", "asc")
             .get();
+
+        const snap = await Promise.race([snapPromise, timeoutPromise]);
         console.log("Auth: Firestore returned snapshot, size:", snap.size);
 
         if (snap.empty) {
-            console.log("Auth: No events found.");
-            if (upcomingTrack) upcomingTrack.innerHTML = '<p style="text-align: center; color: var(--text-muted); width: 100%;">No upcoming events scheduled.</p>';
-            if (fullEventList) fullEventList.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Stay tuned for future event dates.</p>';
+            console.log("Auth: No events found in Firestore, falling back to local dataset.");
+            if (window.__SPECIAL_EVENTS_DATA__) {
+                const { upcomingEvents, pastEvents } = partitionEventsData(window.__SPECIAL_EVENTS_DATA__);
+                renderEventsUI(upcomingEvents, pastEvents, featuredOverride);
+            } else {
+                if (upcomingTrack) upcomingTrack.innerHTML = '<p style="text-align: center; color: var(--text-muted); width: 100%;">No upcoming events scheduled.</p>';
+                if (fullEventList) fullEventList.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Stay tuned for future event dates.</p>';
+            }
         } else {
             const allEvents = [];
             snap.forEach(doc => {
@@ -588,61 +617,7 @@ async function loadDynamicContent() {
                 allEvents.push({ id: doc.id, ...data });
             });
 
-            const now = new Date();
-            const lookbackDate = new Date();
-            lookbackDate.setHours(lookbackDate.getHours() - 24);
-
-            // Helper to parse dates from Firestore (handles strings and Timestamps)
-            const parseDate = (d) => {
-                if (!d) return null;
-                if (typeof d.toDate === 'function') return d.toDate();
-                if (d.seconds) return new Date(d.seconds * 1000);
-                return new Date(d);
-            };
-
-            // Force explicit chronological sort to handle mix of manual and custom events
-            allEvents.sort((a, b) => {
-                const dateA = parseDate(a.startDate);
-                const dateB = parseDate(b.startDate);
-                if (!dateA) return 1;
-                if (!dateB) return -1;
-                return dateA.getTime() - dateB.getTime();
-            });
-
-            // Filter events
-            const nurburgringPast = now > new Date('2026-05-03T23:59:59');
-            
-            // Helper to determine true event end time
-            const getEventEndDate = (e) => {
-                if (e.id === 'suzuka-1000km') {
-                    // Suzuka event stays active through end of 13th Sept
-                    return new Date('2026-09-13T23:59:59.999Z');
-                }
-                if (e.endDate) {
-                    return parseDate(e.endDate);
-                }
-                const start = parseDate(e.startDate);
-                if (!start) return null;
-                const calculatedEnd = new Date(start);
-                calculatedEnd.setHours(23, 59, 59, 999);
-                return calculatedEnd;
-            };
-
-            const upcomingEvents = allEvents.filter(e => {
-                const eventEnd = getEventEndDate(e);
-                if (!eventEnd) return false;
-                
-                if ((e.id === 'nurburgring-24h' || e.id === 'nurburgring-24') && nurburgringPast) return false;
-                return eventEnd >= now;
-            });
-
-            const pastEvents = allEvents.filter(e => {
-                const eventEnd = getEventEndDate(e);
-                if (!eventEnd) return true;
-                
-                if ((e.id === 'nurburgring-24h' || e.id === 'nurburgring-24') && nurburgringPast) return true;
-                return eventEnd < now;
-            });
+            const { upcomingEvents, pastEvents } = partitionEventsData(allEvents);
 
             // Cache upcoming and past events for next load
             if (upcomingEvents.length > 0) {
@@ -656,7 +631,33 @@ async function loadDynamicContent() {
             window.dynamicContentLoaded = true;
         }
     } catch (error) {
-        console.error("Error loading dynamic content:", error);
+        console.error("Error loading dynamic content from Firestore:", error);
+        // Fallback to bundled dataset or local JSON if dynamic content not yet loaded
+        if (!window.dynamicContentLoaded) {
+            if (window.__SPECIAL_EVENTS_DATA__ && Array.isArray(window.__SPECIAL_EVENTS_DATA__)) {
+                const { upcomingEvents, pastEvents } = partitionEventsData(window.__SPECIAL_EVENTS_DATA__);
+                renderEventsUI(upcomingEvents, pastEvents, featuredOverride);
+            } else if (typeof fetch === 'function') {
+                fetch('assets/data/special_events.json')
+                    .then(r => r.json())
+                    .then(data => {
+                        if (Array.isArray(data) && data.length > 0) {
+                            const { upcomingEvents, pastEvents } = partitionEventsData(data);
+                            renderEventsUI(upcomingEvents, pastEvents, featuredOverride);
+                        }
+                    })
+                    .catch(() => {
+                        if (fullEventList) {
+                            fullEventList.innerHTML = `
+                                <div class="glass" style="text-align: center; padding: 2rem;">
+                                    <p style="color: var(--secondary); margin-bottom: 1rem;">Could not load live event schedule.</p>
+                                    <button onclick="loadDynamicContent()" class="btn btn-outline">Retry Loading</button>
+                                </div>
+                            `;
+                        }
+                    });
+            }
+        }
     }
 }
 
@@ -1919,7 +1920,7 @@ window.addEventListener('DOMContentLoaded', beautifyCurrentURL);
 // Helper for clean event links
 function getEventLink(id, isStatic = false) {
     const pastStatic = ['iracing-roar', 'daytona-24', 'daytona-500', 'bathurst-12', 'sebring-12hr'];
-    const isHttp = window.location.protocol.startsWith('http');
+    const isHttp = typeof window !== 'undefined' && window.location && typeof window.location.protocol === 'string' && window.location.protocol.startsWith('http');
     
     if (isHttp) {
         if (isStatic) {
@@ -1929,7 +1930,7 @@ function getEventLink(id, isStatic = false) {
         return `/events/details.html?id=${encodeURIComponent(id)}`;
     } else {
         // Local file:// fallback
-        const path = window.location.pathname.replace(/\\/g, '/');
+        const path = (typeof window !== 'undefined' && window.location && typeof window.location.pathname === 'string') ? window.location.pathname.replace(/\\/g, '/') : '';
         let prefix = '';
         if (path.includes('/events/past/')) {
             prefix = '../../';
@@ -3224,18 +3225,18 @@ const DEFAULT_TELEMETRY_TEAMS = [
 let availableTelemetryTeams = [...DEFAULT_TELEMETRY_TEAMS];
 const TELEMETRY_TEAMS = ['gridUp_sim', 'gridUp_black', 'gridUp_blue', 'gridUp_red', 'gridUp_white', 'gridUp_purple', 'gridUp_practice'];
 
-let homeTelemetryApp = null;
-let homeTelemetryDb = null;
-let activeTelemetryStreams = {}; // key: `${teamId}_${mid}` -> { teamId, mid, stream, driverPresence }
-let activeTelemetryDrivers = {}; // key: `${teamId}_${mid}` -> driver presence
-let homeTelemetryListeners = [];
-let homeTelemetryPollTimer = null;
-let selectedTelemetryTeamId = null;
-let userManuallySelectedTeam = false;
-let selectedTelemetryKey = null;
-let isHomepageTelemetryActive = false;
-let isSimulatingTelemetry = false;
-let simulatedTelemetryInterval = null;
+var homeTelemetryApp = null;
+var homeTelemetryDb = null;
+var activeTelemetryStreams = {}; // key: `${teamId}_${mid}` -> { teamId, mid, stream, driverPresence }
+var activeTelemetryDrivers = {}; // key: `${teamId}_${mid}` -> driver presence
+var homeTelemetryListeners = [];
+var homeTelemetryPollTimer = null;
+var selectedTelemetryTeamId = null;
+var userManuallySelectedTeam = false;
+var selectedTelemetryKey = null;
+var isHomepageTelemetryActive = false;
+var isSimulatingTelemetry = false;
+var simulatedTelemetryInterval = null;
 
 function getHomeTelemetryDb() {
     if (homeTelemetryDb) return homeTelemetryDb;
@@ -3362,16 +3363,21 @@ function isTelemetryStreamActive(stream, now) {
 }
 
 function getActiveDriverList() {
-    const now = Date.now();
-    const active = [];
-    Object.keys(activeTelemetryStreams).forEach(key => {
-        const item = activeTelemetryStreams[key];
-        if (!item || !item.stream) return;
-        if (isTelemetryStreamActive(item.stream, now)) {
-            active.push(item);
-        }
-    });
-    return active;
+    try {
+        if (!activeTelemetryStreams || typeof activeTelemetryStreams !== 'object') return [];
+        const now = Date.now();
+        const active = [];
+        Object.keys(activeTelemetryStreams).forEach(key => {
+            const item = activeTelemetryStreams[key];
+            if (!item || !item.stream) return;
+            if (typeof isTelemetryStreamActive === 'function' && isTelemetryStreamActive(item.stream, now)) {
+                active.push(item);
+            }
+        });
+        return active;
+    } catch (_) {
+        return [];
+    }
 }
 
 function updateHomepageTeamDropdown(activeTeamIds) {

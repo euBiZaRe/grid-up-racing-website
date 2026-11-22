@@ -1,0 +1,496 @@
+window.__SPECIAL_EVENTS_DATA__ = [
+  {
+    "id": "iracing-roar",
+    "date": "Jan 9-10",
+    "track": "Daytona International Speedway",
+    "name": "iRacing ROAR",
+    "description": "The season opener inspired by the Roar Before the Rolex 24, featuring multi-class endurance testing on the high banks of Daytona.",
+    "startDate": "2026-01-09T00:00:00Z"
+  },
+  {
+    "id": "daytona-24",
+    "startDate": "2026-01-16T00:00:00Z",
+    "track": "Daytona International Speedway",
+    "description": "The crown jewel of iRacing endurance. Around-the-clock racing featuring hundreds of teams in the first major of the season.",
+    "date": "Jan 16-18",
+    "name": "Daytona 24"
+  },
+  {
+    "id": "daytona-500",
+    "name": "Daytona 500",
+    "startDate": "2026-02-11T00:00:00Z",
+    "date": "Feb 11-18",
+    "track": "Daytona International Speedway",
+    "description": "\"The Great American Race.\" A full-length 500-mile oval epic that tests nerves and drafting strategy to the limit."
+  },
+  {
+    "id": "bathurst-12",
+    "name": "Bathurst 12",
+    "date": "Feb 20-22",
+    "track": "Mount Panorama",
+    "description": "A brutal 12-hour test on the mountain. GT3 cars battle through the narrow walls and high-speeds of Bathurst.",
+    "startDate": "2026-02-20T00:00:00Z"
+  },
+  {
+    "id": "sebring-12hr",
+    "track": "Sebring International Raceway",
+    "date": "Mar 27-29",
+    "name": "Sebring 12HR",
+    "description": "Respect the bumps. A grueling 12-hour endurance classic on the historic and punishing Florida airfield circuit.",
+    "startDate": "2026-03-27T00:00:00Z"
+  },
+  {
+    "id": "imsa-classic-500",
+    "date": "April 10-11",
+    "endDate": "2026-04-12T04:00:00Z",
+    "name": "IMSA Classic 500",
+    "slots": [
+      "#1: Friday 22:00 GMT (6:00PM EDT)",
+      "#2: Saturday 7:00 GMT (3:00AM EDT)",
+      "#3: Saturday 12:00 GMT (8:00AM EDT)",
+      "#4: Saturday 16:00 GMT (12:00PM EDT)"
+    ],
+    "classes": [
+      "GTP",
+      "GTO"
+    ],
+    "track": "Laguna Seca",
+    "startDate": "2026-04-10T22:00:00Z"
+  },
+  {
+    "id": "NEC-4HR",
+    "startDate": "2026-04-25T17:00:00.000Z",
+    "distance": "4 Hours",
+    "endDate": "2026-04-25T22:00:00.000Z",
+    "type": "Team Event (Multi-Class)",
+    "track": "Nürburgring Combined - Gesamtstrecke VLN",
+    "slots": [
+      "#1: Friday 22:00 GMT (6:00PM EDT)",
+      "#2: Saturday 7:00 GMT (3:00AM EDT)",
+      "#3: Saturday 12:00 GMT (8:00AM EDT)",
+      "#4: Saturday 16:00 GMT (12:00PM EDT)"
+    ],
+    "classes": [
+      "GT3",
+      "GT4",
+      "TCR",
+      "Porsche Cup",
+      "M2"
+    ],
+    "date": "April 25",
+    "name": "Nürburgring Endurance Championship"
+  },
+  {
+    "id": "nurburgring-24h",
+    "slots": [
+      "#1: Friday 22:00 GMT (6:00PM EDT)",
+      "#2: Saturday 7:00 GMT (3:00AM EDT)",
+      "#3: Saturday 12:00 GMT (8:00AM EDT)",
+      "#4: Saturday 16:00 GMT (12:00PM EDT)"
+    ],
+    "classes": [
+      "GT3",
+      "992 Cup",
+      "GT4",
+      "TCR",
+      "BMW M2 CS"
+    ],
+    "name": "Nürburgring 24h",
+    "track": "Nürburgring",
+    "date": "May 1-3",
+    "endDate": "2026-05-04T04:00:00Z",
+    "startDate": "2026-05-01T22:00:00Z"
+  },
+  {
+    "id": "indy-500",
+    "name": "INDY 500",
+    "slots": [
+      "#1: Friday 22:00 GMT (6:00PM EDT)",
+      "#2: Saturday 7:00 GMT (3:00AM EDT)",
+      "#3: Saturday 12:00 GMT (8:00AM EDT)",
+      "#4: Saturday 16:00 GMT (12:00PM EDT)"
+    ],
+    "endDate": "2026-05-19T04:00:00Z",
+    "date": "May 5-18",
+    "track": "Indianapolis",
+    "classes": [
+      "IndyCar"
+    ],
+    "startDate": "2026-05-05T18:00:00Z"
+  },
+  {
+    "id": "SPA-6HR",
+    "date": "May 09",
+    "name": "SPA 6hr",
+    "classes": [
+      "GT3",
+      "GTP",
+      "LMP2"
+    ],
+    "startDate": "2026-05-09T18:00:00.000Z",
+    "description": "The iRacing Global Endurance Tour Spa 6 Hour is one of the premier endurance racing events on the iRacing calendar, bringing together teams from around the world to tackle the legendary Circuit de Spa-Francorchamps. Known for its fast straights, technical corners, and unpredictable conditions, Spa demands consistency, teamwork, and smart strategy over six intense hours of racing.",
+    "slots": [
+      "#1: Friday 22:00 GMT (6:00PM EDT)",
+      "#2: Saturday 7:00 GMT (3:00AM EDT)",
+      "#3: Saturday 12:00 GMT (8:00AM EDT)",
+      "#4: Saturday 16:00 GMT (12:00PM EDT)"
+    ],
+    "endDate": "2026-05-10T00:00:00.000Z",
+    "distance": "6 Hours",
+    "track": "Spa-Francorchamps",
+    "type": "Team Event (Multi-Class)"
+  },
+  {
+    "id": "world-600",
+    "slots": [
+      "#1: Friday 22:00 GMT (6:00PM EDT)",
+      "#2: Saturday 7:00 GMT (3:00AM EDT)",
+      "#3: Saturday 12:00 GMT (8:00AM EDT)",
+      "#4: Saturday 16:00 GMT (12:00PM EDT)"
+    ],
+    "startDate": "2026-05-20T22:00:00Z",
+    "classes": [
+      "NASCAR"
+    ],
+    "name": "World 600",
+    "endDate": "2026-05-26T04:00:00Z",
+    "track": "Charlotte",
+    "date": "May 20-25"
+  },
+  {
+    "id": "thruxton-4h",
+    "classes": [
+      "TCR"
+    ],
+    "track": "Thruxton",
+    "description": "**4 Hours of Thruxton** primarily refers to the popular iRacing 4 Hours at Thruxton special event. This highly demanding team-based or solo endurance race features Touring Cars (TCR) battling on Britain’s fastest circuit.\n\n**Event Details & Format**\n• **Vehicle Classes:** Audi RS 3 LMS, Honda Civic Type R, Hyundai Elantra N, and Hyundai Veloster N.\n• **Participation:** Open to solo drivers or teams of drivers.\n• **License Requirements:** Minimum of a C-class Sports Car license or D-class with a 4.0 or higher rating.\n• **Track Profile:** Thruxton is a punishing, high-speed 2.4-mile layout featuring high wear on the front-left tire.\n• **Penalties:** Drive-through penalty issued at 20 incident points, and every 10 incidents thereafter.",
+    "slots": [
+      "#1: Friday 22:00 GMT (6:00PM EDT)",
+      "#2: Saturday 7:00 GMT (3:00AM EDT)",
+      "#3: Saturday 12:00 GMT (8:00AM EDT)",
+      "#4: Saturday 16:00 GMT (12:00PM EDT)"
+    ],
+    "startDate": "2026-05-29T22:00:00Z",
+    "name": "4 Hours of Thruxton",
+    "endDate": "2026-05-30T23:59:59Z",
+    "date": "May 29-30"
+  },
+  {
+    "id": "watkins-glen-6h",
+    "slots": [
+      "#1: Friday 22:00 GMT (6:00PM EDT)",
+      "#2: Saturday 7:00 GMT (3:00AM EDT)",
+      "#3: Saturday 12:00 GMT (8:00AM EDT)",
+      "#4: Saturday 16:00 GMT (12:00PM EDT)"
+    ],
+    "endDate": "2026-06-22T04:00:00Z",
+    "startDate": "2026-06-19T22:00:00Z",
+    "name": "Watkins Glen 6 Hour",
+    "track": "Watkins Glen",
+    "date": "June 19-21",
+    "classes": [
+      "GTP",
+      "LMP2",
+      "GT3"
+    ]
+  },
+  {
+    "id": "firecracker-400",
+    "classes": [
+      "NASCAR"
+    ],
+    "track": "Daytona",
+    "slots": [
+      "#1: Friday 22:00 GMT (6:00PM EDT)",
+      "#2: Saturday 7:00 GMT (3:00AM EDT)",
+      "#3: Saturday 12:00 GMT (8:00AM EDT)",
+      "#4: Saturday 16:00 GMT (12:00PM EDT)"
+    ],
+    "name": "Firecracker 400",
+    "endDate": "2026-07-07T04:00:00Z",
+    "date": "June 30 - July 6",
+    "startDate": "2026-06-30T22:00:00Z"
+  },
+  {
+    "id": "spa-24hr",
+    "startDate": "2026-07-10T22:00:00Z",
+    "date": "July 10-12",
+    "name": "Spa 24hr",
+    "endDate": "2026-07-13T04:00:00Z",
+    "slots": [
+      "#1: Friday 22:00 GMT (6:00PM EDT)",
+      "#2: Saturday 7:00 GMT (3:00AM EDT)",
+      "#3: Saturday 12:00 GMT (8:00AM EDT)",
+      "#4: Saturday 16:00 GMT (12:00PM EDT)"
+    ],
+    "track": "Spa",
+    "classes": [
+      "GT3"
+    ]
+  },
+  {
+    "id": "brickyard-400",
+    "classes": [
+      "NASCAR"
+    ],
+    "startDate": "2026-07-22T22:00:00Z",
+    "track": "Indianapolis",
+    "endDate": "2026-07-28T04:00:00Z",
+    "slots": [
+      "#1: Friday 22:00 GMT (6:00PM EDT)",
+      "#2: Saturday 7:00 GMT (3:00AM EDT)",
+      "#3: Saturday 12:00 GMT (8:00AM EDT)",
+      "#4: Saturday 16:00 GMT (12:00PM EDT)"
+    ],
+    "date": "July 22-27",
+    "name": "Brickyard 400"
+  },
+  {
+    "id": "road-america-6h",
+    "name": "Road America 6h",
+    "track": "Road America",
+    "endDate": "2026-07-27T04:00:00Z",
+    "date": "July 24-26",
+    "classes": [
+      "GTP",
+      "LMP2",
+      "GT3"
+    ],
+    "startDate": "2026-07-24T22:00:00Z",
+    "slots": [
+      "#1: Friday 22:00 GMT (6:00PM EDT)",
+      "#2: Saturday 7:00 GMT (3:00AM EDT)",
+      "#3: Saturday 12:00 GMT (8:00AM EDT)",
+      "#4: Saturday 16:00 GMT (12:00PM EDT)"
+    ]
+  },
+  {
+    "id": "knoxville-nationals",
+    "startDate": "2026-08-04T22:00:00Z",
+    "date": "August 4-9",
+    "classes": [
+      "410 Winged Sprint Car"
+    ],
+    "slots": [
+      "#1: Friday 22:00 GMT (6:00PM EDT)",
+      "#2: Saturday 7:00 GMT (3:00AM EDT)",
+      "#3: Saturday 12:00 GMT (8:00AM EDT)",
+      "#4: Saturday 16:00 GMT (12:00PM EDT)"
+    ],
+    "name": "Knoxville Nationals"
+  },
+  {
+    "id": "portimao-1000",
+    "name": "Portimao 1000",
+    "date": "August 14-15",
+    "startDate": "2026-08-14T22:00:00Z",
+    "slots": [
+      "#1: Friday 22:00 GMT (6:00PM EDT)",
+      "#2: Saturday 7:00 GMT (3:00AM EDT)",
+      "#3: Saturday 12:00 GMT (8:00AM EDT)",
+      "#4: Saturday 16:00 GMT (12:00PM EDT)"
+    ],
+    "classes": [
+      "HPD",
+      "GT1",
+      "GT2"
+    ]
+  },
+  {
+    "id": "crandon-championship",
+    "classes": [
+      "Pro 4 Truck"
+    ],
+    "date": "August 25-30",
+    "name": "Crandon Championship (Super Session)",
+    "slots": [
+      "#1: Friday 22:00 GMT (6:00PM EDT)",
+      "#2: Saturday 7:00 GMT (3:00AM EDT)",
+      "#3: Saturday 12:00 GMT (8:00AM EDT)",
+      "#4: Saturday 16:00 GMT (12:00PM EDT)"
+    ],
+    "startDate": "2026-08-25T22:00:00Z"
+  },
+  {
+    "id": "southern-500",
+    "date": "September 2-7",
+    "name": "Southern 500 (Darlington Raceway)",
+    "startDate": "2026-09-02T22:00:00Z",
+    "classes": [
+      "NASCAR Cup"
+    ],
+    "slots": [
+      "#1: Friday 22:00 GMT (6:00PM EDT)",
+      "#2: Saturday 7:00 GMT (3:00AM EDT)",
+      "#3: Saturday 12:00 GMT (8:00AM EDT)",
+      "#4: Saturday 16:00 GMT (12:00PM EDT)"
+    ]
+  },
+  {
+    "id": "suzuka-1000km",
+    "slots": [
+      "#1: Friday 22:00 GMT (6:00PM EDT)",
+      "#2: Saturday 7:00 GMT (3:00AM EDT)",
+      "#3: Saturday 12:00 GMT (8:00AM EDT)",
+      "#4: Saturday 16:00 GMT (12:00PM EDT)"
+    ],
+    "classes": [
+      "GT3"
+    ],
+    "name": "Suzuka 1000km",
+    "startDate": "2026-09-10T22:00:00Z",
+    "date": "Sept 10-15"
+  },
+  {
+    "id": "britcar-24hr",
+    "distance": "24 Hours",
+    "name": "Britcar 24 (Silverstone)",
+    "description": "The iRacing Britcar 24HR is a prominent 24-hour endurance sim racing event hosted on the historic Silverstone Circuit continuously for twice around the clock.",
+    "date": "September 18-20",
+    "slots": [
+      "#1: Friday 22:00 GMT (6:00PM EDT)",
+      "#2: Saturday 7:00 GMT (3:00AM EDT)",
+      "#3: Saturday 12:00 GMT (8:00AM EDT)",
+      "#4: Saturday 16:00 GMT (12:00PM EDT)"
+    ],
+    "track": "Silverstone Circuit - Grand Prix",
+    "endDate": "2026-09-20T23:59:59.000Z",
+    "startDate": "2026-09-18T22:00:00.000Z",
+    "classes": [
+      "GT3",
+      "GT4"
+    ],
+    "type": "iRacing Special Event"
+  },
+  {
+    "id": "petit-le-mans",
+    "classes": [
+      "GTP",
+      "LMP2",
+      "GT3"
+    ],
+    "date": "Sept 25-27",
+    "name": "Petit Le Mans (Road Atlanta)",
+    "startDate": "2026-09-25T22:00:00Z",
+    "slots": [
+      "#1: Friday 22:00 GMT (6:00PM EDT)",
+      "#2: Saturday 7:00 GMT (3:00AM EDT)",
+      "#3: Saturday 12:00 GMT (8:00AM EDT)",
+      "#4: Saturday 16:00 GMT (12:00PM EDT)"
+    ]
+  },
+  {
+    "id": "bathurst-1000",
+    "name": "Bathurst 1000",
+    "slots": [
+      "#1: Friday 22:00 GMT (6:00PM EDT)",
+      "#2: Saturday 7:00 GMT (3:00AM EDT)",
+      "#3: Saturday 12:00 GMT (8:00AM EDT)",
+      "#4: Saturday 16:00 GMT (12:00PM EDT)"
+    ],
+    "date": "October 2-4",
+    "startDate": "2026-10-02T22:00:00Z",
+    "classes": [
+      "Supercars"
+    ]
+  },
+  {
+    "id": "indy-8h",
+    "classes": [
+      "GT3"
+    ],
+    "distance": "8 Hours",
+    "broadcastUrl": "",
+    "endDate": "2026-10-19T00:00:00.000Z",
+    "minDrivers": 2,
+    "name": "8 Hours of Indianapolis",
+    "type": "iRacing Special Event",
+    "track": "Indianapolis Motor Speedway",
+    "slots": [
+      "#1: Friday 22:00 GMT (6:00PM EDT)",
+      "#2: Saturday 7:00 GMT (3:00AM EDT)",
+      "#3: Saturday 12:00 GMT (8:00AM EDT)",
+      "#4: Saturday 16:00 GMT (12:00PM EDT)"
+    ],
+    "startDate": "2026-10-16T22:00:00.000Z",
+    "date": "October 16-18",
+    "isSolo": false,
+    "description": "The 8 Hours of Indianapolis is an 8 hour endurance race held at Indianapolis Motor Speedway in Indiana."
+  },
+  {
+    "id": "nec-26-w10",
+    "name": "Nurburgring Endurance Championship",
+    "startDate": "2026-11-07T07:00:00.000Z",
+    "description": "The iRacing Nürburgring Endurance Championship will run a ten-race championship in 2026, beginning on March 21 and running through November. Inspired by Nordschleife-based events in the real world, this series of endurance events brings a full slate of GT and touring cars to the ‘Ring.",
+    "slots": [
+      "#1: Friday 22:00 GMT (6:00PM EDT)",
+      "#2: Saturday 7:00 GMT (3:00AM EDT)",
+      "#3: Saturday 12:00 GMT (8:00AM EDT)",
+      "#4: Saturday 16:00 GMT (12:00PM EDT)"
+    ],
+    "isSolo": false,
+    "track": "Nürburgring Combined - Gesamtstrecke VLN",
+    "broadcastUrl": "",
+    "endDate": "2026-11-08T13:00:00.000Z",
+    "distance": "4 Hours",
+    "minDrivers": 2,
+    "date": "November 7-8",
+    "type": "Team Racing Series",
+    "classes": [
+      "GT3",
+      "Porsche Cup",
+      "GT4",
+      "TCR",
+      "M2"
+    ]
+  },
+  {
+    "id": "992-endurance-cup",
+    "distance": "12 Hours",
+    "name": "992 Endurance Cup",
+    "isSolo": false,
+    "slots": [
+      "#1: Friday 22:00 GMT (6:00PM EDT)",
+      "#2: Saturday 7:00 GMT (3:00AM EDT)",
+      "#3: Saturday 12:00 GMT (8:00AM EDT)",
+      "#4: Saturday 16:00 GMT (12:00PM EDT)"
+    ],
+    "date": "November 27-29",
+    "track": "Circuit de Spa-Francorchamps",
+    "endDate": "2026-11-30T01:00:00.000Z",
+    "description": "This 12-hour event will feature a single-class format using the Porsche 911 Cup (992.2), offering a focused endurance challenge to close out the season. The event will utilize standard iRacing special event time slots.",
+    "type": "iRacing Special Event",
+    "classes": [
+      "Porsche 911 Cup (992.2)"
+    ],
+    "broadcastUrl": "",
+    "minDrivers": 2,
+    "startDate": "2026-11-27T22:00:00.000Z"
+  },
+  {
+    "id": "production-car-challenge",
+    "isSolo": false,
+    "description": "A 4 hour endurance race using the Production Car Challenge cars at the ViR Grand Course. It can be run solo or with a team.",
+    "name": "THE Production Car Challenge",
+    "broadcastUrl": "",
+    "distance": "4 Hours",
+    "endDate": "2026-12-20T01:00:00.000Z",
+    "date": "December 18-19",
+    "startDate": "2026-12-18T22:00:00.000Z",
+    "slots": [
+      "#1: Friday 22:00 GMT (6:00PM EDT)",
+      "#2: Saturday 7:00 GMT (3:00AM EDT)",
+      "#3: Saturday 12:00 GMT (8:00AM EDT)",
+      "#4: Saturday 16:00 GMT (12:00PM EDT)"
+    ],
+    "type": "iRacing Special Event",
+    "classes": [
+      "Mazda MX-5 Cup",
+      "Renault Clio R.S.",
+      "BMW M2 CS Racing",
+      "Toyota GR86"
+    ],
+    "minDrivers": 2,
+    "track": "Virginia International Raceway"
+  }
+];

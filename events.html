@@ -957,10 +957,11 @@
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script defer src="assets/data/special_events.js"></script>
     <script defer src="assets/data/schedule_events.js"></script>
     <script defer src="assets/data/season4_schedule.js"></script>
-    <script defer src="script.js?v=20261121v3"></script>
-    <script defer src="js/auth.js?v=11"></script>
+    <script defer src="script.js?v=20261121v4"></script>
+    <script defer src="js/auth.js?v=12"></script>
     <script>
         // Universal fetch helper with fallback cascade
         async function fetchWithFallback(urls) {
@@ -982,8 +983,10 @@
             document.querySelectorAll('.event-tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
 
-            document.getElementById('tab-' + tab).classList.add('active');
-            document.getElementById('content-' + tab).classList.add('active');
+            const tabEl = document.getElementById('tab-' + tab);
+            const contentEl = document.getElementById('content-' + tab);
+            if (tabEl) tabEl.classList.add('active');
+            if (contentEl) contentEl.classList.add('active');
 
             // Load schedule data on first switch to team tab
             if (tab === 'team' && !window.scheduleLoaded) {
@@ -995,12 +998,19 @@
             }
         }
 
-        // Check URL hash on load
-        if (window.location.hash === '#team-events') {
-            document.addEventListener('DOMContentLoaded', () => switchTab('team'));
-        } else if (window.location.hash === '#season-schedule' || window.location.hash === '#season') {
-            document.addEventListener('DOMContentLoaded', () => switchTab('season'));
-        }
+        // Check URL hash on load & preload tabs
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.location.hash === '#team-events' || window.location.hash === '#team') {
+                switchTab('team');
+            } else if (window.location.hash === '#season-schedule' || window.location.hash === '#season') {
+                switchTab('season');
+            }
+            // Preload schedule and season datasets in idle time for instant switching
+            setTimeout(() => {
+                if (!window.scheduleLoaded) loadScheduleData();
+                if (!window.seasonScheduleLoaded) loadSeasonScheduleData();
+            }, 100);
+        });
 
         // ═══ Team Events (Schedule) Logic ═══
         let allScheduleEvents = [];
@@ -1047,7 +1057,7 @@
         function togglePastScheduleEvents() {
             showPastScheduleEvents = !showPastScheduleEvents;
             const btn = document.getElementById('toggle-past-btn');
-            btn.classList.toggle('active', showPastScheduleEvents);
+            if (btn) btn.classList.toggle('active', showPastScheduleEvents);
             renderSchedule();
         }
 
@@ -1088,8 +1098,24 @@
 
             const todayStr = new Date().toISOString().split('T')[0];
 
+            // If there are no upcoming events in the entire schedule (e.g. past end of scheduled season),
+            // auto-default to displaying all season events so the user isn't shown an empty list
+            const hasUpcoming = allScheduleEvents.some(event => event.isoDate >= todayStr);
+            const shouldFilterPast = !showPastScheduleEvents && hasUpcoming;
+
+            const pastToggleBtn = document.getElementById('toggle-past-btn');
+            if (pastToggleBtn) {
+                if (!hasUpcoming) {
+                    pastToggleBtn.textContent = 'Showing All Season Races';
+                    pastToggleBtn.classList.add('active');
+                } else {
+                    pastToggleBtn.textContent = showPastScheduleEvents ? 'Hide Past Events' : 'Show Past Events';
+                    pastToggleBtn.classList.toggle('active', showPastScheduleEvents);
+                }
+            }
+
             const filtered = allScheduleEvents.filter(event => {
-                if (!showPastScheduleEvents && event.isoDate < todayStr) {
+                if (shouldFilterPast && event.isoDate < todayStr) {
                     return false;
                 }
                 
