@@ -217,9 +217,20 @@ nav .container {
     align-items: center;
     justify-content: center;
     flex-wrap: nowrap;
-    margin: 0 auto;
-    padding: 0 1rem;
+    margin: 0;
+    padding: 0;
     z-index: 1001;
+}
+
+@media (min-width: 991px) {
+    .nav-links {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        margin: 0 !important;
+        padding: 0 !important;
+    }
 }
 
 .nav-actions {
@@ -304,35 +315,51 @@ nav .container {
 .menu-toggle.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); background: var(--primary); }
 
 @media (max-width: 1350px) {
+    .nav-squad-status {
+        display: none !important;
+    }
     .nav-links {
-        gap: 0.8rem;
+        gap: 0.9rem;
     }
     .nav-links a {
-        font-size: 0.63rem;
-        letter-spacing: 0.7px;
+        font-size: 0.65rem;
+        letter-spacing: 0.8px;
     }
 }
 
-@media (max-width: 1150px) {
+@media (max-width: 1180px) {
     .nav-links {
-        gap: 0.5rem;
+        gap: 0.65rem;
     }
     .nav-links a {
-        font-size: 0.58rem;
-        letter-spacing: 0.4px;
+        font-size: 0.60rem;
+        letter-spacing: 0.5px;
+        padding: 0.35rem 0.45rem;
+    }
+    .btn-nav-join span {
+        display: none !important;
+    }
+    .btn-nav-join {
+        padding: 0.45rem 0.65rem !important;
+    }
+    .btn-nav-login span {
+        display: none !important;
+    }
+    .btn-nav-login {
+        padding: 0.45rem 0.65rem !important;
     }
 }
 
 @media (max-width: 990px) {
     .menu-toggle { display: flex; }
     .nav-links {
-        position: fixed;
-        top: 0;
-        left: unset;
-        right: -100%;
-        transform: none;
-        width: 100%;
-        height: 100vh;
+        position: fixed !important;
+        top: 0 !important;
+        left: unset !important;
+        right: -100% !important;
+        transform: none !important;
+        width: 100% !important;
+        height: 100vh !important;
         background: rgba(7, 9, 13, 0.98);
         backdrop-filter: blur(25px);
         flex-direction: column;
@@ -341,11 +368,13 @@ nav .container {
         gap: 2rem;
         transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         z-index: 1000;
+        margin: 0 !important;
+        padding: 0 !important;
     }
-    .nav-links.active { right: 0; }
+    .nav-links.active { right: 0 !important; }
     .nav-links a { font-size: 1.15rem; }
-    .btn-nav-join { display: none; }
-    .btn-nav-login span { display: none; }
+    .btn-nav-join { display: none !important; }
+    .btn-nav-login span { display: none !important; }
     .btn-nav-login { padding: 0.45rem 0.65rem; }
     .nav-actions { gap: 0.75rem; }
 }
@@ -1850,11 +1879,20 @@ body[data-theme="theme-purple"]::before, body::before {
         linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
 }
 
-.nav-identity {
+.nav-identity,
+.brand-group-wrap {
     display: flex;
     align-items: center;
     gap: 1.25rem;
     flex: 0 0 auto;
+    z-index: 1002;
+}
+
+.brand-crest-img {
+    height: 36px;
+    width: auto;
+    display: block;
+    vertical-align: middle;
 }
 
 /* High-Precision Broadcast Brand Logo */
@@ -1914,9 +1952,9 @@ body[data-theme="theme-purple"]::before, body::before {
     color: #cbd5e1;
     margin-left: 1.5rem;
 }
-@media (max-width: 1100px) {
+@media (max-width: 1350px) {
     .nav-squad-status {
-        display: none;
+        display: none !important;
     }
 }
 .status-beacon-dot {
