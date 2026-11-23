@@ -10159,7 +10159,7 @@ body.meeting-mode-active .btn-summary-confirm {
                     const date = data.date && data.date.toDate ? data.date.toDate().toLocaleDateString() : 'Unknown Date';
                     
                     const div = document.createElement('div');
-                    div.style.css?v=20261121v3 = "background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 8px; padding: 1rem; display: flex; justify-content: space-between; align-items: center;";
+                    div.style.cssText = "background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 8px; padding: 1rem; display: flex; justify-content: space-between; align-items: center;";
                     div.innerHTML = `
                         <div>
                             <strong style="color: var(--primary); display: block;">${data.title}</strong>

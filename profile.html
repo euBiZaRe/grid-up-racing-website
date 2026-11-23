@@ -1954,7 +1954,7 @@
 
                     const card = document.createElement('div');
                     card.className = 'card cinematic-poster animate-fade-in';
-                    card.style.css?v=20261121v3 = `padding: 0; overflow: hidden; position: relative; background: #07080c; aspect-ratio: 16/9; border-radius: 10px; cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); ${cardBorder}`;
+                    card.style.cssText = `padding: 0; overflow: hidden; position: relative; background: #07080c; aspect-ratio: 16/9; border-radius: 10px; cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); ${cardBorder}`;
 
                     card.onclick = () => openCardModal(d);
 

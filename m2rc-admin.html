@@ -361,7 +361,7 @@
     const container=document.getElementById('results-rows-container');
     const div=document.createElement('div');
     div.className='results-row-item';
-    div.style.css?v=20261121v3='display:grid;grid-template-columns:60px 60px 1.5fr 1fr 80px 80px 80px 40px;gap:0.5rem;align-items:center;margin-bottom:0.5rem;';
+    div.style.cssText='display:grid;grid-template-columns:60px 60px 1.5fr 1fr 80px 80px 80px 40px;gap:0.5rem;align-items:center;margin-bottom:0.5rem;';
     div.innerHTML=`
       <input type="number" class="res-pos" placeholder="Pos" value="${data.pos||''}" min="1">
       <input type="number" class="res-start" placeholder="Start" value="${data.startPos||''}" min="1">

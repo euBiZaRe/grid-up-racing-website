@@ -232,7 +232,7 @@
 
                     const card = document.createElement('div');
                     card.className = 'glass';
-                    card.style.css?v=20261121v3 = 'border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.4s cubic-bezier(0.23,1,0.32,1), box-shadow 0.4s ease; cursor: pointer; border: 1px solid var(--glass-border);';
+                    card.style.cssText = 'border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.4s cubic-bezier(0.23,1,0.32,1), box-shadow 0.4s ease; cursor: pointer; border: 1px solid var(--glass-border);';
                     card.onmouseover = () => { card.style.transform = 'translateY(-8px)'; card.style.boxShadow = '0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(0,207,255,0.15)'; card.style.borderColor = 'rgba(0,207,255,0.4)'; };
                     card.onmouseout = () => { card.style.transform = ''; card.style.boxShadow = ''; card.style.borderColor = 'var(--glass-border)'; };
                     const esc = typeof escapeHtml === 'function' ? escapeHtml : (s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'));
@@ -302,7 +302,7 @@
 
                     const card = document.createElement('div');
                     card.className = 'glass';
-                    card.style.css?v=20261121v3 = 'border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.4s cubic-bezier(0.23,1,0.32,1), box-shadow 0.4s ease; cursor: pointer; border: 1px solid var(--glass-border);';
+                    card.style.cssText = 'border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.4s cubic-bezier(0.23,1,0.32,1), box-shadow 0.4s ease; cursor: pointer; border: 1px solid var(--glass-border);';
                     card.onmouseover = () => { card.style.transform = 'translateY(-8px)'; card.style.boxShadow = '0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(0,207,255,0.15)'; card.style.borderColor = 'rgba(0,207,255,0.4)'; };
                     card.onmouseout = () => { card.style.transform = ''; card.style.boxShadow = ''; card.style.borderColor = 'var(--glass-border)'; };
                     const esc = typeof escapeHtml === 'function' ? escapeHtml : (s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'));

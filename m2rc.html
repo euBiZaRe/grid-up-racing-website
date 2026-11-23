@@ -592,7 +592,7 @@
       d.innerHTML=`<div><div style="font-family:var(--fh);font-weight:800;color:#fff;font-size:0.88rem;">Round ${r.roundNumber} — ${r.track}</div><div style="font-size:0.73rem;color:var(--muted);margin-top:2px;">${r.date}${r.simStartTime?' · ⏰ '+r.simStartTime:''}</div></div><div style="display:flex;align-items:center;gap:6px;">${r.raceStyle?`<span style="font-size:0.58rem;padding:2px 6px;border-radius:4px;font-weight:800;${getRSBadge(r.raceStyle)}">${getRSLabel(r.raceStyle)}</span>`:''}<span style="font-family:var(--fh);font-size:0.62rem;font-weight:800;text-transform:uppercase;color:${sc};">${st}</span></div>`;
       c.appendChild(d);
     });
-    if(GLOBAL_ROUNDS.length>5){const m=document.createElement('div');m.style.css?v=20261121v3='text-align:center;padding:0.6rem;font-family:var(--fh);font-size:0.7rem;color:var(--muted);';m.innerHTML=`<a href="#calendar" style="color:var(--pl);">+ ${GLOBAL_ROUNDS.length-5} more rounds →</a>`;c.appendChild(m);}
+    if(GLOBAL_ROUNDS.length>5){const m=document.createElement('div');m.style.cssText='text-align:center;padding:0.6rem;font-family:var(--fh);font-size:0.7rem;color:var(--muted);';m.innerHTML=`<a href="#calendar" style="color:var(--pl);">+ ${GLOBAL_ROUNDS.length-5} more rounds →</a>`;c.appendChild(m);}
     switchHomeStandings('drivers');
   }
 
@@ -612,7 +612,7 @@
   function renderCalendar(){
     const c=document.getElementById('m2rc-calendar-grid');if(!c)return;c.innerHTML='';
     GLOBAL_ROUNDS.forEach(r=>{
-      const card=document.createElement('div');card.className='m2rc-card';card.style.css?v=20261121v3='display:flex;flex-direction:column;padding:0;overflow:hidden;';
+      const card=document.createElement('div');card.className='m2rc-card';card.style.cssText='display:flex;flex-direction:column;padding:0;overflow:hidden;';
       let sHTML=`<span class="status-badge s-up">UPCOMING</span>`;
       if(r.status==='live')sHTML=`<span class="status-badge s-live"><span class="live-dot" style="width:6px;height:6px;"></span>LIVE</span>`;
       if(r.status==='completed')sHTML=`<span class="status-badge s-done">✓ DONE</span>`;
@@ -666,7 +666,7 @@
     st.forEach(d=>{
       const reg=GLOBAL_REGISTRATIONS.find(r=>r.driverName===d.name);
       const num=escapeHtml(reg?reg.carNumber:'--');
-      const card=document.createElement('div');card.className='m2rc-card';card.style.css?v=20261121v3='cursor:pointer;position:relative;overflow:hidden;display:flex;flex-direction:column;gap:0.75rem;';
+      const card=document.createElement('div');card.className='m2rc-card';card.style.cssText='cursor:pointer;position:relative;overflow:hidden;display:flex;flex-direction:column;gap:0.75rem;';
       card.onclick=()=>openDriverDetailModal(d.name);
       card.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;"><span class="number-badge" style="font-size:0.95rem;">#${num}</span>${d.isRookie?'<span class="am-badge">AM</span>':'<span class="pro-badge">PRO</span>'}</div><div><div style="font-family:var(--fh);font-size:1.15rem;font-weight:800;color:#fff;">${escapeHtml(d.name)}</div><div style="font-size:0.76rem;color:var(--muted);margin-top:2px;">${escapeHtml(d.team)}</div></div><div class="dsm"><div style="text-align:center;"><span class="dsm-v" style="color:var(--gold);">${escapeHtml(d.wins)}</span><span class="dsm-l">Wins</span></div><div style="text-align:center;"><span class="dsm-v">${escapeHtml(d.podiums)}</span><span class="dsm-l">Pods</span></div><div style="text-align:center;"><span class="dsm-v">${escapeHtml(d.netPoints)}</span><span class="dsm-l">Points</span></div></div><div style="font-family:var(--fh);font-size:2.4rem;font-weight:900;color:rgba(255,184,0,0.07);position:absolute;right:1rem;bottom:0.5rem;line-height:1;pointer-events:none;">${num}</div>`;
       c.appendChild(card);
@@ -781,7 +781,7 @@
         const span=document.createElement('span');
         let bg='rgba(168,85,247,0.12)',col='var(--pl)',brd='rgba(168,85,247,0.25)';
         if(item.status==='pending'){bg='rgba(255,184,0,0.12)';col='var(--gold)';brd='rgba(255,184,0,0.25)';}
-        span.style.css?v=20261121v3=`cursor:help;padding:3px 9px;border-radius:6px;background:${bg};color:${col};border:1px solid ${brd};font-weight:800;font-size:0.8rem;font-family:var(--fh);display:inline-flex;align-items:center;gap:3px;`;
+        span.style.cssText=`cursor:help;padding:3px 9px;border-radius:6px;background:${bg};color:${col};border:1px solid ${brd};font-weight:800;font-size:0.8rem;font-family:var(--fh);display:inline-flex;align-items:center;gap:3px;`;
         span.title=`#${item.num} — ${item.driver} (${item.team}) [${item.status==='pending'?'PENDING':'APPROVED'}]`;
         span.innerHTML=`#${item.num}${item.status==='pending'?' ⏳':''}`;
         g.appendChild(span);

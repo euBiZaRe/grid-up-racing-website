@@ -3527,7 +3527,7 @@
                                 const isOnline = dev.online && (Date.now() - (dev.last_seen || 0) < 60000);
                                 const isCurrent = (storedMid && storedMid.toUpperCase() === mid.toUpperCase());
                                 const item = document.createElement('div');
-                                item.style.css?v=20261121v3 = `display:flex; justify-content:space-between; align-items:center; background:${isCurrent ? 'rgba(0, 207, 255, 0.1)' : 'rgba(255,255,255,0.03)'}; border:1px solid ${isCurrent ? 'var(--primary)' : 'rgba(255,255,255,0.08)'}; padding:0.6rem 0.8rem; border-radius:8px; font-size:0.8rem;`;
+                                item.style.cssText = `display:flex; justify-content:space-between; align-items:center; background:${isCurrent ? 'rgba(0, 207, 255, 0.1)' : 'rgba(255,255,255,0.03)'}; border:1px solid ${isCurrent ? 'var(--primary)' : 'rgba(255,255,255,0.08)'}; padding:0.6rem 0.8rem; border-radius:8px; font-size:0.8rem;`;
                                 item.innerHTML = `
                                     <div>
                                         <div style="font-weight:700; color:#fff; display:flex; align-items:center; gap:6px;">
@@ -6650,8 +6650,24 @@
                 console.error("Portal Init Error:", error);
                 if (loading) {
                     loading.style.display = 'block';
-                    loading.innerHTML = `<p style="color: #ff0055;">Error: ${error.message}</p>`;
+                    loading.innerHTML = `<p style="color: #ff0055;">Error: ${error.message}</p><div style="margin-top: 1rem;"><button onclick="location.reload()" class="btn btn-primary" style="padding: 0.5rem 1.2rem; font-size: 0.8rem;">Retry</button></div>`;
                 }
+            } finally {
+                setTimeout(() => {
+                    const selView = document.getElementById('selection-view');
+                    const portView = document.getElementById('portal-view');
+                    const appView = document.getElementById('application-portal-view');
+                    const deniedView = document.getElementById('denied-view');
+                    const loadEl = document.getElementById('loading-portal');
+                    const isAnyViewVisible = (selView && selView.style.display !== 'none') ||
+                                            (portView && portView.style.display !== 'none') ||
+                                            (appView && appView.style.display !== 'none') ||
+                                            (deniedView && deniedView.style.display !== 'none');
+                    if (!isAnyViewVisible) {
+                        if (loadEl) loadEl.style.display = 'none';
+                        if (selView) selView.style.display = 'block';
+                    }
+                }, 300);
             }
         }
 
@@ -7575,16 +7591,44 @@
 
 
         // Consolidated Auth Hook from auth.js
-
+        let _portalInitializedUser = null;
         function onAuthReady(user) {
-
             if (user) {
-
+                if (_portalInitializedUser === user.uid) return;
+                _portalInitializedUser = user.uid;
                 initPortal(user);
-
             }
-
         }
+        window.onAuthReady = onAuthReady;
+
+        // Immediate or fallback trigger if Firebase auth already resolved before this script parsed
+        if (typeof window !== 'undefined') {
+            if (window.auth && window.auth.currentUser) {
+                onAuthReady(window.auth.currentUser);
+            } else if (window.AUTH_USER) {
+                onAuthReady(window.AUTH_USER);
+            }
+        }
+
+        // Global failsafe timeout so loading state never hangs indefinitely
+        setTimeout(() => {
+            const loadEl = document.getElementById('loading-portal');
+            if (loadEl && loadEl.style.display !== 'none') {
+                const selView = document.getElementById('selection-view');
+                const portView = document.getElementById('portal-view');
+                const appView = document.getElementById('application-portal-view');
+                const deniedView = document.getElementById('denied-view');
+                const isAnyVisible = (selView && selView.style.display !== 'none') ||
+                                     (portView && portView.style.display !== 'none') ||
+                                     (appView && appView.style.display !== 'none') ||
+                                     (deniedView && deniedView.style.display !== 'none');
+                if (!isAnyVisible) {
+                    console.warn("Portal loading failsafe timer triggered: displaying selection view.");
+                    loadEl.style.display = 'none';
+                    if (selView) selView.style.display = 'block';
+                }
+            }
+        }, 7000);
 
 
 
