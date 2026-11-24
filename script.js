@@ -2022,6 +2022,102 @@ function getFinishPositionClass(posStr) {
 }
 window.getFinishPositionClass = getFinishPositionClass;
 
+// Helper to generate candidate event IDs across naming variations and year suffixes
+function getEventResultCandidateIds(rawId) {
+    if (!rawId) return [];
+    const base = String(rawId).trim().toLowerCase();
+    const cleanNoYear = base.replace(/-(?:20)?(2[4-9])$/, '');
+    const cleanNoHr = cleanNoYear.replace(/hrs?$/, '');
+    
+    const candidates = new Set([
+        rawId,
+        base,
+        base.toUpperCase(),
+        base.replace(/-/g, ' '),
+        cleanNoYear,
+        cleanNoHr,
+        `${cleanNoHr}-26`,
+        `${cleanNoHr}h-26`,
+        `${cleanNoHr}hr-26`,
+        `${cleanNoHr}-25`,
+        `${cleanNoHr}h-25`,
+        `${cleanNoHr}hr-25`
+    ]);
+    return Array.from(candidates).filter(Boolean).slice(0, 10);
+}
+
+// Normalize event slug for fuzzy fallback matching
+function normalizeEventSlug(slug) {
+    if (!slug) return '';
+    return String(slug)
+        .toLowerCase()
+        .replace(/-(?:20)?(2[4-9])$/, '')
+        .replace(/hrs?|hours?/g, '')
+        .replace(/[^a-z0-9]/g, '')
+        .trim();
+}
+
+// Unified, robust event results fetcher
+async function fetchEventResults(eventId, eventName = '') {
+    if (!eventId && !eventName) return [];
+    
+    const candidateIds = getEventResultCandidateIds(eventId);
+    let docs = [];
+
+    // 1. Query Firestore with indexed candidate IDs (fast path)
+    try {
+        if (candidateIds.length > 0 && typeof db !== 'undefined') {
+            const snap = await db.collection("event_results")
+                .where("eventId", "in", candidateIds)
+                .get();
+            snap.forEach(doc => docs.push(doc.data()));
+        }
+    } catch (errIn) {
+        console.warn("Candidate ID in-query failed:", errIn);
+    }
+
+    // 2. If no results found, perform deep fallback search across event_results
+    if (docs.length === 0 && typeof db !== 'undefined') {
+        try {
+            const allResultsSnap = await db.collection("event_results").get();
+            const targetNorm = normalizeEventSlug(eventId);
+            const targetNameNorm = eventName ? normalizeEventSlug(eventName) : '';
+
+            allResultsSnap.forEach(doc => {
+                const d = doc.data();
+                const rNorm = normalizeEventSlug(d.eventId);
+                const rEventNameNorm = d.eventName ? normalizeEventSlug(d.eventName) : '';
+
+                const isSlugMatch = (targetNorm && rNorm === targetNorm) ||
+                                    (targetNorm && targetNorm.length >= 4 && (rNorm.includes(targetNorm) || targetNorm.includes(rNorm)));
+                const isNameMatch = targetNameNorm && targetNameNorm.length >= 4 && (
+                    (rEventNameNorm && (rEventNameNorm === targetNameNorm || rEventNameNorm.includes(targetNameNorm) || targetNameNorm.includes(rEventNameNorm))) ||
+                    (rNorm.includes(targetNameNorm) || targetNameNorm.includes(rNorm))
+                );
+
+                if (isSlugMatch || isNameMatch) {
+                    docs.push(d);
+                }
+            });
+        } catch (errDeep) {
+            console.warn("Deep fallback results search error:", errDeep);
+        }
+    }
+
+    // Sort by priority team order
+    const teamOrder = ["GRiD UP Sim Racing", "GRiD UP White", "GRiD UP Black", "GRiD UP Blue", "GRiD UP Red", "GRiD UP Purple"];
+    docs.sort((a, b) => {
+        const orderA = teamOrder.indexOf(a.teamName);
+        const orderB = teamOrder.indexOf(b.teamName);
+        const valA = orderA === -1 ? 99 : orderA;
+        const valB = orderB === -1 ? 99 : orderB;
+        return valA - valB;
+    });
+
+    return docs;
+}
+window.fetchEventResults = fetchEventResults;
+
 async function renderEventResults(eventId, targetElement) {
     if (!targetElement) return;
     
@@ -2029,34 +2125,13 @@ async function renderEventResults(eventId, targetElement) {
     if (targetElement.dataset.loadedResults === eventId) return;
     targetElement.dataset.loadedResults = eventId;
     try {
-        // Try exact match first
-        let snap = await db.collection("event_results")
-            .where("eventId", "in", [eventId, eventId.toLowerCase(), eventId.toUpperCase(), eventId.replace(/-/g, ' ')])
-            .get();
-        
-        // Deep Fallback: Search the 'events' collection for a name match to find the actual Firestore ID
-        if (snap.empty) {
-            // Priority: Try card name first, then page title, then header
-            const eventName = targetElement.closest('.event-horizontal-card')?.querySelector('h3')?.textContent.trim() || 
-                              document.getElementById('event-title')?.textContent.trim();
-            const pageTitle = document.querySelector('h1')?.textContent.trim();
-            const searchName = (eventName && !["Upcoming Races", "Loading Event..."].includes(eventName)) ? eventName : pageTitle;
+        const eventName = targetElement.closest('.event-horizontal-card')?.querySelector('h3')?.textContent.trim() || 
+                          document.getElementById('event-title')?.textContent.trim() || 
+                          document.querySelector('h1')?.textContent.trim() || '';
 
-            if (searchName && !["Upcoming Races", "Loading Event..."].includes(searchName)) {
-                console.log(`Trying deep fallback for name: ${searchName}`);
-                // Try exact and partial matches
-                const eventSearch = await db.collection("events").where("name", ">=", searchName).where("name", "<=", searchName + '\uf8ff').get();
-                if (!eventSearch.empty) {
-                    const actualId = eventSearch.docs[0].id;
-                    console.log(`Deep Fallback: Found actual event ID ${actualId} for name "${searchName}"`);
-                    snap = await db.collection("event_results")
-                        .where("eventId", "==", actualId)
-                        .get();
-                }
-            }
-        }
+        const docs = await fetchEventResults(eventId, eventName);
 
-        if (snap.empty) {
+        if (docs.length === 0) {
             console.log(`No results found for event keyword: ${eventId}`);
             
             // Remove any existing results/pending messages
@@ -2077,19 +2152,6 @@ async function renderEventResults(eventId, targetElement) {
             targetElement.after(noResults);
             return;
         }
-
-        // Sort by team name based on priority list
-        const docs = [];
-        snap.forEach(doc => docs.push(doc.data()));
-        
-        const teamOrder = ["GRiD UP Sim Racing", "GRiD UP White", "GRiD UP Black", "GRiD UP Blue", "GRiD UP Red", "GRiD UP Purple"];
-        docs.sort((a, b) => {
-            const orderA = teamOrder.indexOf(a.teamName);
-            const orderB = teamOrder.indexOf(b.teamName);
-            const valA = orderA === -1 ? 99 : orderA;
-            const valB = orderB === -1 ? 99 : orderB;
-            return valA - valB;
-        });
 
         console.log(`Rendering ${docs.length} results for ${eventId}`);
         const resultsContainer = document.createElement('section');
@@ -2172,21 +2234,9 @@ async function openEventResultsModal(eventId, eventName = '') {
     `;
 
     try {
-        let snap = await db.collection("event_results")
-            .where("eventId", "in", [eventId, eventId.toLowerCase(), eventId.toUpperCase(), eventId.replace(/-/g, ' ')])
-            .get();
+        const docs = await fetchEventResults(eventId, eventName);
 
-        if (snap.empty) {
-            // Try name match search
-            const cleanName = eventName || eventId.replace(/-/g, ' ');
-            const eventSearch = await db.collection("events").where("name", ">=", cleanName).where("name", "<=", cleanName + '\uf8ff').get();
-            if (!eventSearch.empty) {
-                const actualId = eventSearch.docs[0].id;
-                snap = await db.collection("event_results").where("eventId", "==", actualId).get();
-            }
-        }
-
-        if (snap.empty) {
+        if (docs.length === 0) {
             content.innerHTML = `
                 <div style="text-align: center; padding: 2.5rem 1rem;">
                     <h3 style="color: var(--primary); margin-bottom: 0.75rem; font-family: var(--font-heading); letter-spacing: 1px;">RESULTS PENDING</h3>
@@ -2196,18 +2246,6 @@ async function openEventResultsModal(eventId, eventName = '') {
             `;
             return;
         }
-
-        const docs = [];
-        snap.forEach(doc => docs.push(doc.data()));
-        
-        const teamOrder = ["GRiD UP Sim Racing", "GRiD UP White", "GRiD UP Black", "GRiD UP Blue", "GRiD UP Red", "GRiD UP Purple"];
-        docs.sort((a, b) => {
-            const orderA = teamOrder.indexOf(a.teamName);
-            const orderB = teamOrder.indexOf(b.teamName);
-            const valA = orderA === -1 ? 99 : orderA;
-            const valB = orderB === -1 ? 99 : orderB;
-            return valA - valB;
-        });
 
         let rowsHtml = '';
         docs.forEach(d => {
@@ -2516,7 +2554,28 @@ async function loadAllResults() {
 
         // 4. Render each group
         orderedEventIds.forEach(eId => {
-            const eventData = eventsMap[eId] || { name: eId.replace(/-/g, ' ').toUpperCase(), date: '' };
+            let eventData = eventsMap[eId];
+            if (!eventData) {
+                const candidates = getEventResultCandidateIds(eId);
+                for (const c of candidates) {
+                    if (eventsMap[c]) {
+                        eventData = eventsMap[c];
+                        break;
+                    }
+                }
+            }
+            if (!eventData) {
+                const eNorm = normalizeEventSlug(eId);
+                for (const [k, ev] of Object.entries(eventsMap)) {
+                    if (normalizeEventSlug(k) === eNorm) {
+                        eventData = ev;
+                        break;
+                    }
+                }
+            }
+            if (!eventData) {
+                eventData = { name: eId.replace(/-/g, ' ').toUpperCase(), date: '' };
+            }
             const results = groupedResults[eId];
             
             // Sort results by specified team priority order
