@@ -91,7 +91,8 @@ function getPathPoints(d) {
 
 const code = fs.readFileSync('js/trophy-data-v3.js', 'utf8');
 const trackOutlinesMatch = code.match(/window\.TRACK_OUTLINES\s*=\s*(\{[\s\S]*?\n\};)/);
-const outlines = eval('(' + trackOutlinesMatch[1].replace(/;\s*$/, '') + ')');
+const parseObject = new Function('return ' + trackOutlinesMatch[1].replace(/;\s*$/, ''));
+const outlines = parseObject();
 
 for (const [key, track] of Object.entries(outlines)) {
     if (!track.svgPath) continue;

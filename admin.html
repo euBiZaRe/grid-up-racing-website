@@ -2668,6 +2668,7 @@ body.meeting-mode-active .btn-summary-confirm {
                                    oninput="onDriverPoolSearch(this.value)">
                             <button type="button"
                                     id="driver-pool-clear-search"
+                                    aria-label="Clear driver search"
                                     onclick="clearDriverPoolSearch()"
                                     style="display:none;"
                                     class="search-clear-btn">
@@ -2757,7 +2758,7 @@ body.meeting-mode-active .btn-summary-confirm {
                                     <p style="color:var(--text-muted); font-size:0.75rem; margin:2px 0 0 0;">iRating-balanced squad distribution across all 6 GRiD UP entries</p>
                                 </div>
                             </div>
-                            <button type="button" onclick="closeAutoBalanceModal()" class="tb-modal-close"><i class="fas fa-times"></i></button>
+                            <button type="button" aria-label="Close auto-balance modal" onclick="closeAutoBalanceModal()" class="tb-modal-close"><i class="fas fa-times"></i></button>
                         </div>
                         <div class="tb-modal-body">
                             <div id="auto-balance-cards-grid" class="auto-balance-grid">
@@ -2952,7 +2953,7 @@ body.meeting-mode-active .btn-summary-confirm {
                                 <input type="text" id="admin-track-search-input" placeholder="Type to search tracks or layouts (e.g. Spa, Nurburgring 24h, Oulton Fosters, Daytona Oval)..." 
                                     style="width: 100%; background: transparent; border: none; color: #fff; font-size: 0.88rem; padding: 0.6rem 0; outline: none;" 
                                     onfocus="openTrackDropdown()" oninput="filterTrackCatalog(this.value)" autocomplete="off">
-                                <button type="button" id="admin-track-clear-search-btn" onclick="clearTrackSearch()" style="background: none; border: none; color: #64748b; cursor: pointer; padding: 4px; font-size: 0.85rem; display: none;">
+                                <button type="button" id="admin-track-clear-search-btn" aria-label="Clear track search" onclick="clearTrackSearch()" style="background: none; border: none; color: #64748b; cursor: pointer; padding: 4px; font-size: 0.85rem; display: none;">
                                     <i class="fas fa-times-circle"></i>
                                 </button>
                             </div>
