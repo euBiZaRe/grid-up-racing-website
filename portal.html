@@ -72,7 +72,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" media="print" onload="this.media='all'"><noscript><link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet"></noscript>
-    <link rel="stylesheet" href="style.css?v=20261121v3">
+    <link rel="stylesheet" href="style.css?v=20261124v2">
 
     <link rel="icon" type="image/png" href="assets/G_2.png">
 
@@ -2274,7 +2274,7 @@
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <script defer src="js/stint-planner.js?v=1"></script>
-    <script defer src="js/auth.js?v=12"></script>
+    <script defer src="js/auth.js?v=20261124v2"></script>
 
     <script>
 
@@ -2672,6 +2672,8 @@
                 history.replaceState(null, document.title, url.toString());
             } catch (_) {}
             
+            const loadingPortal = document.getElementById('loading-portal');
+            if (loadingPortal) loadingPortal.style.display = 'none';
             const selectionView = document.getElementById('selection-view');
             const portalView = document.getElementById('portal-view');
             if (selectionView) selectionView.style.display = 'none';
@@ -6252,13 +6254,26 @@
 
             try {
 
-                // 0. Load Global Events
+                // 0. Load Global Events (with timeout protections)
                 let eventsSnap;
                 try {
-                    eventsSnap = await db.collection("events").orderBy("startDate", "asc").get();
+                    const timeoutP = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 4000));
+                    eventsSnap = await Promise.race([
+                        db.collection("events").orderBy("startDate", "asc").get(),
+                        timeoutP
+                    ]);
                 } catch (eOrder) {
-                    console.warn("orderBy startDate failed in portal, falling back to unordered events:", eOrder);
-                    eventsSnap = await db.collection("events").get();
+                    console.warn("orderBy startDate failed or timed out in portal, falling back to unordered events:", eOrder);
+                    try {
+                        const timeoutP2 = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 3000));
+                        eventsSnap = await Promise.race([
+                            db.collection("events").get(),
+                            timeoutP2
+                        ]);
+                    } catch (eFall) {
+                        console.warn("Falling back to empty events array:", eFall);
+                        eventsSnap = { forEach: () => {} };
+                    }
                 }
                 UPCOMING_EVENTS = [];
                 ALL_EVENTS = [];
@@ -7597,6 +7612,26 @@
                 if (_portalInitializedUser === user.uid) return;
                 _portalInitializedUser = user.uid;
                 initPortal(user);
+            } else {
+                // If user is unauthenticated, present instant secure login prompt instead of hanging
+                const loadEl = document.getElementById('loading-portal');
+                if (loadEl) {
+                    loadEl.style.display = 'block';
+                    loadEl.innerHTML = `
+                        <div class="card glass animate-fade-in" style="max-width: 480px; margin: 3rem auto; padding: 2.5rem 2rem; border-radius: 16px; border: 1px solid var(--glass-border-bright); background: rgba(14, 20, 32, 0.95); text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.5);">
+                            <div style="width: 54px; height: 54px; border-radius: 14px; background: rgba(0, 207, 255, 0.1); border: 1px solid var(--primary); display: inline-flex; align-items: center; justify-content: center; color: var(--primary); font-size: 1.5rem; margin-bottom: 1.25rem;">
+                                <i class="fas fa-lock"></i>
+                            </div>
+                            <h2 style="color: #fff; font-family: var(--font-heading); margin-bottom: 0.5rem; font-size: 1.4rem;">Team Member Login Required</h2>
+                            <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.6; margin-bottom: 1.75rem;">
+                                The Team Portal is restricted to active team members, captains, and verified drivers. Please sign in with your Discord account to access your cockpit transponder, stint planner, and setups.
+                            </p>
+                            <a href="login.html" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px; padding: 0.75rem 1.75rem; border-radius: 8px; font-weight: 700; font-size: 0.9rem; text-decoration: none;">
+                                <i class="fab fa-discord"></i> Sign in with Discord &rarr;
+                            </a>
+                        </div>
+                    `;
+                }
             }
         }
         window.onAuthReady = onAuthReady;
@@ -7628,7 +7663,7 @@
                     if (selView) selView.style.display = 'block';
                 }
             }
-        }, 7000);
+        }, 4000);
 
 
 

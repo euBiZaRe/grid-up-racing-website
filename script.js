@@ -1761,30 +1761,41 @@ function renderEventsUI(upcomingEvents, pastEvents = null, featuredOverride = nu
             if (fullEventList.dataset.renderedIds !== newFullIds) {
                 fullEventList.dataset.renderedIds = newFullIds;
                 fullEventList.innerHTML = '';
-                const eventColors = ['var(--primary)', 'var(--secondary)', '#00ff88'];
-                upcomingEvents.forEach((e, i) => {
-                    const card = document.createElement('div');
-                    card.id = `event-${e.id}`;
-                    card.className = 'glass event-horizontal-card reveal active';
-                    card.style.borderLeft = `4px solid ${eventColors[i % 3]}`;
-                    const bannerUrl = eventBanners[e.id];
-                    card.innerHTML = `
-                        ${bannerUrl ? `<div class="event-card-banner" style="background-image: url('${bannerUrl}')"></div>` : ''}
-                        <div class="event-info">
-                            <h3>${e.name || 'TBA'}</h3>
-                            ${eventSeriesNames[e.id] ? `<p style="color: var(--primary); font-size: 0.8rem; font-weight: 700; margin-top: -0.25rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">Series: ${eventSeriesNames[e.id]}</p>` : ''}
-                            <p class="event-meta">${e.date}${eventLengths[e.id] ? ` &bull; ${eventLengths[e.id]}` : ''}</p>
-                            <p class="event-desc">${Array.isArray(e.classes) ? 'Classes: ' + e.classes.join(', ') : (e.classes ? 'Classes: ' + e.classes : 'Details coming soon.')}</p>
-                        </div>
-                        <div class="event-action">
-                            <a href="${staticIds.includes(e.id) ? getEventLink(e.id, true) : getEventLink(e.id)}" class="btn btn-outline">Details</a>
-                            <button onclick="window.adminDeleteEvent('${e.id}', '${(e.name || 'Event').replace(/'/g, "\\'")}', event)" class="btn btn-outline admin-event-delete-btn" style="border-color: #ff0055; color: #ff0055; margin-left: 6px; display: none;" title="Delete this event (Admin)">
-                                <i class="fas fa-trash-alt"></i> Delete
+                if (upcomingEvents.length === 0) {
+                    fullEventList.innerHTML = `
+                        <div class="card glass animate-fade-in" style="text-align: center; padding: 2.5rem 1.5rem; border: 1px dashed var(--glass-border-bright); border-radius: 12px; background: rgba(255, 255, 255, 0.02);">
+                            <p style="color: var(--text-muted); margin-bottom: 1rem; font-size: 0.95rem;">No upcoming special events currently scheduled.</p>
+                            <button type="button" onclick="const p = document.getElementById('pastEventsSection'); if(p) { p.style.display = 'block'; p.scrollIntoView({ behavior: 'smooth' }); const b = document.getElementById('togglePastEvents'); if(b) b.textContent = 'Hide Past Events'; }" class="btn btn-primary" style="font-size: 0.8rem; padding: 0.5rem 1.25rem;">
+                                View Completed Events & Results &rarr;
                             </button>
                         </div>
                     `;
-                    fullEventList.appendChild(card);
-                });
+                } else {
+                    const eventColors = ['var(--primary)', 'var(--secondary)', '#00ff88'];
+                    upcomingEvents.forEach((e, i) => {
+                        const card = document.createElement('div');
+                        card.id = `event-${e.id}`;
+                        card.className = 'glass event-horizontal-card reveal active';
+                        card.style.borderLeft = `4px solid ${eventColors[i % 3]}`;
+                        const bannerUrl = eventBanners[e.id];
+                        card.innerHTML = `
+                            ${bannerUrl ? `<div class="event-card-banner" style="background-image: url('${bannerUrl}')"></div>` : ''}
+                            <div class="event-info">
+                                <h3>${e.name || 'TBA'}</h3>
+                                ${eventSeriesNames[e.id] ? `<p style="color: var(--primary); font-size: 0.8rem; font-weight: 700; margin-top: -0.25rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">Series: ${eventSeriesNames[e.id]}</p>` : ''}
+                                <p class="event-meta">${e.date}${eventLengths[e.id] ? ` &bull; ${eventLengths[e.id]}` : ''}</p>
+                                <p class="event-desc">${Array.isArray(e.classes) ? 'Classes: ' + e.classes.join(', ') : (e.classes ? 'Classes: ' + e.classes : 'Details coming soon.')}</p>
+                            </div>
+                            <div class="event-action">
+                                <a href="${staticIds.includes(e.id) ? getEventLink(e.id, true) : getEventLink(e.id)}" class="btn btn-outline">Details</a>
+                                <button onclick="window.adminDeleteEvent('${e.id}', '${(e.name || 'Event').replace(/'/g, "\\'")}', event)" class="btn btn-outline admin-event-delete-btn" style="border-color: #ff0055; color: #ff0055; margin-left: 6px; display: none;" title="Delete this event (Admin)">
+                                    <i class="fas fa-trash-alt"></i> Delete
+                                </button>
+                            </div>
+                        `;
+                        fullEventList.appendChild(card);
+                    });
+                }
             }
         }
     }
@@ -2026,7 +2037,7 @@ window.getFinishPositionClass = getFinishPositionClass;
 function getEventResultCandidateIds(rawId) {
     if (!rawId) return [];
     const base = String(rawId).trim().toLowerCase();
-    const cleanNoYear = base.replace(/-(?:20)?(2[4-9])$/, '');
+    const cleanNoYear = base.replace(/-(?:20)?(2[5-9])$/, '');
     const cleanNoHr = cleanNoYear.replace(/hrs?$/, '');
     
     const candidates = new Set([
@@ -2036,12 +2047,16 @@ function getEventResultCandidateIds(rawId) {
         base.replace(/-/g, ' '),
         cleanNoYear,
         cleanNoHr,
+        `${cleanNoHr}h`,
+        `${cleanNoHr}hr`,
         `${cleanNoHr}-26`,
         `${cleanNoHr}h-26`,
         `${cleanNoHr}hr-26`,
         `${cleanNoHr}-25`,
         `${cleanNoHr}h-25`,
-        `${cleanNoHr}hr-25`
+        `${cleanNoHr}hr-25`,
+        `${cleanNoYear}-26`,
+        `${cleanNoYear}h-26`
     ]);
     return Array.from(candidates).filter(Boolean).slice(0, 10);
 }
@@ -2051,8 +2066,8 @@ function normalizeEventSlug(slug) {
     if (!slug) return '';
     return String(slug)
         .toLowerCase()
-        .replace(/-(?:20)?(2[4-9])$/, '')
-        .replace(/hrs?|hours?/g, '')
+        .replace(/-(?:20)?(2[5-9])$/, '')
+        .replace(/hours?|hrs?|h$/i, '')
         .replace(/[^a-z0-9]/g, '')
         .trim();
 }

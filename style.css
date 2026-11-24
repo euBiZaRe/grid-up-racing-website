@@ -183,7 +183,7 @@ nav.scrolled {
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    position: relative;
+    position: relative !important;
 }
 
 /* Nav uses full viewport width with padding */
@@ -224,10 +224,10 @@ nav .container {
 
 @media (min-width: 991px) {
     .nav-links {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
+        position: absolute !important;
+        left: 50% !important;
+        top: 50% !important;
+        transform: translate(-50%, -50%) !important;
         margin: 0 !important;
         padding: 0 !important;
     }
@@ -764,6 +764,9 @@ nav .container {
     position: relative;
     z-index: 2;
     max-width: 950px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
 }
 
 .hero-content h1 {
@@ -4744,7 +4747,11 @@ body[data-theme="theme-purple"]::before, body::before {
     position: relative;
     padding: 7.5rem 0 3.8rem;
     min-height: auto;
-    text-align: center;
+    text-align: center !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
     background: linear-gradient(180deg, rgba(12, 17, 30, 0.95) 0%, rgba(6, 9, 16, 0.98) 100%);
     border-bottom: 1px solid rgba(0, 207, 255, 0.16);
     overflow: hidden;

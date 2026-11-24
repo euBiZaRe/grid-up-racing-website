@@ -167,6 +167,48 @@ class TelemetryBridge:
 
             self.prev_progress[idx] = prog
 
+            # Extract licence, SR, and iRating
+            raw_ir = d_meta.get('IRating', 0)
+            try:
+                irating_val = int(raw_ir) if raw_ir is not None else 0
+            except:
+                irating_val = 0
+
+            lic_str = str(d_meta.get('LicString', '') or '').strip()
+            try:
+                lic_lvl = int(d_meta.get('LicLevel', 0) or 0)
+            except:
+                lic_lvl = 0
+
+            try:
+                lic_sub_lvl = int(d_meta.get('LicSubLevel', 0) or 0)
+            except:
+                lic_sub_lvl = 0
+
+            lic_class = None
+            if lic_str:
+                u_str = lic_str.upper()
+                if 'PRO' in u_str or 'PWC' in u_str or u_str.startswith('P '): lic_class = 'PRO'
+                elif 'CLASS A' in u_str or u_str.startswith('A ') or u_str == 'A': lic_class = 'A'
+                elif 'CLASS B' in u_str or u_str.startswith('B ') or u_str == 'B': lic_class = 'B'
+                elif 'CLASS C' in u_str or u_str.startswith('C ') or u_str == 'C': lic_class = 'C'
+                elif 'CLASS D' in u_str or u_str.startswith('D ') or u_str == 'D': lic_class = 'D'
+                elif 'ROOKIE' in u_str or u_str.startswith('R ') or u_str == 'R': lic_class = 'R'
+
+            if not lic_class:
+                if lic_lvl >= 20: lic_class = 'PRO'
+                elif lic_lvl >= 17: lic_class = 'A'
+                elif lic_lvl >= 13: lic_class = 'B'
+                elif lic_lvl >= 9: lic_class = 'C'
+                elif lic_lvl >= 6: lic_class = 'PRO'
+                elif lic_lvl == 5: lic_class = 'A'
+                elif lic_lvl == 4: lic_class = 'B'
+                elif lic_lvl == 3: lic_class = 'C'
+                elif lic_lvl == 2: lic_class = 'D'
+                else: lic_class = 'R'
+
+            sr_val = round(lic_sub_lvl / 100.0, 2) if lic_sub_lvl > 0 else 0.0
+
             drivers_map[str(idx)] = {
                 'name': name,
                 'carNum': car_num,
@@ -185,7 +227,13 @@ class TelemetryBridge:
                 'classId': d_meta.get('CarClassID', 0),
                 'carPath': d_meta.get('CarPath', ''),
                 'f2Time': f2,
-                'isPlayer': (idx == player_car_idx)
+                'isPlayer': (idx == player_car_idx),
+                'irating': irating_val,
+                'licClass': lic_class,
+                'licLevel': lic_lvl,
+                'licSubLevel': lic_sub_lvl,
+                'licString': lic_str or f"{lic_class} {sr_val:.2f}",
+                'sr': sr_val
             }
 
         self.prev_time = now

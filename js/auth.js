@@ -184,15 +184,14 @@ function initAuth() {
                 }
             }
 
-            // Sync basic user info to Firestore users collection
+            // Sync basic user info to Firestore users collection in the background (non-blocking)
             try {
                 if (db) {
-                    const tokenResult = await user.getIdTokenResult().catch(() => null);
-                    await db.collection("users").doc(user.uid).set({
+                    db.collection("users").doc(user.uid).set({
                         discordName: user.displayName || null,
                         photoURL: user.photoURL || null,
                         lastSeen: firebase.firestore.FieldValue.serverTimestamp()
-                    }, { merge: true });
+                    }, { merge: true }).catch(e => console.warn("GRiD UP Auth: Failed to sync user to Firestore:", e));
                 }
             } catch (e) {
                 console.warn("GRiD UP Auth: Failed to sync user to Firestore:", e);
@@ -365,8 +364,10 @@ function handleLogOutRedirect() {
     const protectedPages = ['admin.html', 'portal.html', 'profile.html'];
     const pathParts = window.location.pathname.split('/');
     const currentPage = pathParts[pathParts.length - 1];
+    const cleanCurrentPage = currentPage.toLowerCase().replace(/\.html$/, '');
+    const cleanProtectedPages = ['admin', 'portal', 'profile'];
     
-    if (protectedPages.includes(currentPage)) {
+    if (protectedPages.includes(currentPage) || cleanProtectedPages.includes(cleanCurrentPage)) {
         // Handle subdirectory relative path
         const path = window.location.pathname;
         let basePath = '';

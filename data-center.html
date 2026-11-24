@@ -2051,67 +2051,91 @@
         }
 
         function formatIRating(ir) {
-            if (typeof ir !== 'number' || isNaN(ir) || ir <= 0) return '--';
-            return ir.toLocaleString();
+            const val = parseInt(ir, 10);
+            if (isNaN(val) || val <= 0) return '--';
+            return val.toLocaleString();
         }
 
         function getLicenceBadge(d) {
+            if (!d) return '<span class="lic-badge lic-r" title="Licence: R">R</span>';
             let licClass = null;
 
-            // 1. Check licString (e.g. "A 3.82", "Class A 3.82", "B 4.01", "D 2.50")
-            const licStr = String(d.licString || '').toUpperCase();
-            if (licStr) {
-                if (licStr.includes('PRO') || licStr.includes('PWC') || licStr.startsWith('P ')) {
+            // 1. Direct explicit licClass or LicClass
+            const rawClass = String(d.licClass || d.LicClass || d.lic_class || d.licenseClass || d.licenceClass || '').trim().toUpperCase();
+            if (rawClass) {
+                if (rawClass.includes('PRO') || rawClass.includes('PWC') || rawClass.startsWith('P')) {
                     licClass = 'PRO';
-                } else if (licStr.includes('CLASS A') || licStr.startsWith('A ') || licStr === 'A') {
+                } else if (rawClass.includes('CLASS A') || rawClass === 'A' || rawClass.startsWith('A')) {
                     licClass = 'A';
-                } else if (licStr.includes('CLASS B') || licStr.startsWith('B ') || licStr === 'B') {
+                } else if (rawClass.includes('CLASS B') || rawClass === 'B' || rawClass.startsWith('B')) {
                     licClass = 'B';
-                } else if (licStr.includes('CLASS C') || licStr.startsWith('C ') || licStr === 'C') {
+                } else if (rawClass.includes('CLASS C') || rawClass === 'C' || rawClass.startsWith('C')) {
                     licClass = 'C';
-                } else if (licStr.includes('CLASS D') || licStr.startsWith('D ') || licStr === 'D') {
+                } else if (rawClass.includes('CLASS D') || rawClass === 'D' || rawClass.startsWith('D')) {
                     licClass = 'D';
-                } else if (licStr.includes('ROOKIE') || licStr.startsWith('R ') || licStr === 'R') {
+                } else if (rawClass.includes('ROOKIE') || rawClass === 'R' || rawClass.startsWith('R')) {
                     licClass = 'R';
                 }
             }
 
-            // 2. Check licClass field if already parsed and valid
-            if (!licClass && d.licClass) {
-                const c = String(d.licClass).toUpperCase();
-                if (['PRO', 'A', 'B', 'C', 'D'].includes(c)) {
-                    licClass = c;
+            // 2. Check licString or LicString or lic_string (e.g. "A 3.82", "Class A 3.82", "B 4.01", "D 2.50")
+            if (!licClass) {
+                const licStr = String(d.licString || d.LicString || d.lic_string || d.licenseString || d.license || d.licence || '').trim().toUpperCase();
+                if (licStr) {
+                    if (licStr.includes('PRO') || licStr.includes('PWC') || licStr.startsWith('P ') || licStr === 'P') {
+                        licClass = 'PRO';
+                    } else if (licStr.includes('CLASS A') || licStr.startsWith('A ') || licStr === 'A' || licStr.startsWith('A:')) {
+                        licClass = 'A';
+                    } else if (licStr.includes('CLASS B') || licStr.startsWith('B ') || licStr === 'B' || licStr.startsWith('B:')) {
+                        licClass = 'B';
+                    } else if (licStr.includes('CLASS C') || licStr.startsWith('C ') || licStr === 'C' || licStr.startsWith('C:')) {
+                        licClass = 'C';
+                    } else if (licStr.includes('CLASS D') || licStr.startsWith('D ') || licStr === 'D' || licStr.startsWith('D:')) {
+                        licClass = 'D';
+                    } else if (licStr.includes('ROOKIE') || licStr.startsWith('R ') || licStr === 'R' || licStr.startsWith('R:')) {
+                        licClass = 'R';
+                    }
                 }
             }
 
-            // 3. Fallback to numeric licLevel
+            // 3. Fallback to numeric licLevel or LicLevel
             if (!licClass) {
-                const lvl = parseInt(d.licLevel || 0) || 0;
-                if (lvl >= 20) licClass = 'PRO';
-                else if (lvl >= 17) licClass = 'A';
-                else if (lvl >= 13) licClass = 'B';
-                else if (lvl >= 9) licClass = 'C';
-                else if (lvl >= 6) licClass = 'PRO';
-                else if (lvl === 5) licClass = 'A';
-                else if (lvl === 4) licClass = 'B';
-                else if (lvl === 3) licClass = 'C';
-                else if (lvl === 2) licClass = 'D';
-                else if (d.licClass) licClass = String(d.licClass).toUpperCase();
-                else licClass = 'R';
+                const rawLvl = d.licLevel ?? d.LicLevel ?? d.lic_level ?? d.licenseLevel;
+                const lvl = parseInt(rawLvl, 10);
+                if (!isNaN(lvl) && lvl > 0) {
+                    if (lvl >= 20) licClass = 'PRO';
+                    else if (lvl >= 17) licClass = 'A';
+                    else if (lvl >= 13) licClass = 'B';
+                    else if (lvl >= 9) licClass = 'C';
+                    else if (lvl >= 6) licClass = 'PRO';
+                    else if (lvl === 5) licClass = 'A';
+                    else if (lvl === 4) licClass = 'B';
+                    else if (lvl === 3) licClass = 'C';
+                    else if (lvl === 2) licClass = 'D';
+                    else if (lvl === 1) licClass = 'R';
+                }
             }
 
-            const clsKey = (licClass || 'R').toLowerCase();
+            if (!licClass) licClass = 'R';
+
+            const clsKey = licClass.toLowerCase();
             return `<span class="lic-badge lic-${clsKey}" title="Licence: ${licClass}">${licClass}</span>`;
         }
 
         function getSafetyRatingHtml(d) {
             let srVal = (typeof d.sr === 'number' && d.sr > 0) ? d.sr : null;
-            if (srVal === null && typeof d.licSubLevel === 'number' && d.licSubLevel > 0) {
-                srVal = Math.round((d.licSubLevel / 100.0) * 100) / 100;
+            if (srVal === null) {
+                const rawSub = d.licSubLevel ?? d.LicSubLevel ?? d.lic_sub_level;
+                if (typeof rawSub === 'number' && rawSub > 0) {
+                    srVal = Math.round((rawSub / 100.0) * 100) / 100;
+                }
             }
-            if (srVal === null && d.licString) {
-                const match = String(d.licString).match(/\b([0-4]\.\d{1,2})\b/);
-                if (match) srVal = parseFloat(match[1]);
+            if (srVal === null) {
+                const str = d.licString || d.LicString || d.lic_string;
+                if (str) {
+                    const match = String(str).match(/\b([0-4]\.\d{1,2})\b/);
+                    if (match) srVal = parseFloat(match[1]);
+                }
             }
             if (srVal === null || isNaN(srVal) || srVal <= 0) {
                 return '<span style="color:var(--text-muted); font-size:0.7rem;">-</span>';
@@ -2211,6 +2235,10 @@
             // Target driver class key
             const targetClassKey = targetDriver ? normalizeClass(targetDriver).key : (driverList[0] ? normalizeClass(driverList[0]).key : 'GT3');
 
+            // Find session best lap for purple PB indicator & bench lap calculations
+            const sessionBestLap = Math.min(...driverList.map(d => (d.bestLap > 15 ? d.bestLap : 999999)));
+            const isTimedSession = tel.sessionType && !/race/i.test(tel.sessionType);
+
             // Group drivers by normalized class
             const classesMap = {};
             driverList.forEach(d => {
@@ -2251,7 +2279,7 @@
                     const leadDist = ((classLeader.lap || 0) * 1.0) + (classLeader.progress || 0);
 
                     const validLaps = cls.drivers.map(d => (d.bestLap > 15 ? d.bestLap : (d.lastLap > 15 ? d.lastLap : 0))).filter(t => t > 15);
-                    const benchLap = validLaps.length > 0 ? (validLaps.reduce((sum, v) => sum + v, 0) / validLaps.length) : (sessionBestLap > 15 && sessionBestLap < 9999 ? sessionBestLap : 90.0);
+                    const benchLap = (validLaps.length > 0 ? (validLaps.reduce((sum, v) => sum + v, 0) / validLaps.length) : (sessionBestLap > 15 && sessionBestLap < 9999 ? sessionBestLap : 90.0)) || 90.0;
 
                     cls.drivers.forEach((d, idx) => {
                         const displayPos = (d.classPos > 0) ? d.classPos : (idx + 1);
@@ -2260,27 +2288,65 @@
                             d.calculatedGapStr = 'LEADER';
                             d.calculatedDeltaStr = '-';
                         } else {
-                            const carDist = ((d.lap || 0) * 1.0) + (d.progress || 0);
-                            let diffLead = Math.max(0, leadDist - carDist);
-
-                            if (diffLead >= 1.0) {
-                                const lapsDown = Math.floor(diffLead);
-                                d.calculatedGapStr = `+${lapsDown} LAP${lapsDown > 1 ? 'S' : ''}`;
-                            } else {
-                                const gapSec = diffLead * benchLap;
-                                d.calculatedGapStr = `+${gapSec.toFixed(1)}s`;
-                            }
-
                             const carAhead = cls.drivers[idx - 1];
-                            const aheadDist = ((carAhead.lap || 0) * 1.0) + (carAhead.progress || 0);
-                            let diffAhead = Math.max(0, aheadDist - carDist);
 
-                            if (diffAhead >= 1.0) {
-                                const lapsAhead = Math.floor(diffAhead);
-                                d.calculatedDeltaStr = `+${lapsAhead} L`;
-                            } else {
-                                const intSec = diffAhead * benchLap;
-                                d.calculatedDeltaStr = `+${intSec.toFixed(1)}s`;
+                            // 1. If in a timed session (Practice / Qualifying) where ranking is by best lap
+                            if (isTimedSession && d.bestLap > 15 && classLeader.bestLap > 15) {
+                                const gapSec = Math.max(0, d.bestLap - classLeader.bestLap);
+                                d.calculatedGapStr = `+${gapSec.toFixed(3)}s`;
+                                if (carAhead && carAhead.bestLap > 15) {
+                                    const intSec = Math.max(0, d.bestLap - carAhead.bestLap);
+                                    d.calculatedDeltaStr = `+${intSec.toFixed(3)}s`;
+                                } else {
+                                    d.calculatedDeltaStr = d.calculatedGapStr;
+                                }
+                            }
+                            // 2. If telemetry stream already provides valid gap / delta strings, prefer them
+                            else if (d.gapStr && d.gapStr !== 'LEADER' && d.deltaStr) {
+                                d.calculatedGapStr = d.gapStr;
+                                d.calculatedDeltaStr = d.deltaStr;
+                            }
+                            // 3. iRacing CarIdxF2Time interval fallback
+                            else if (typeof d.f2Time === 'number' && d.f2Time > 0.05 && d.f2Time < 3600) {
+                                d.calculatedGapStr = `+${d.f2Time.toFixed(1)}s`;
+                                if (carAhead && typeof carAhead.f2Time === 'number' && carAhead.f2Time > 0) {
+                                    const intSec = Math.max(0, d.f2Time - carAhead.f2Time);
+                                    d.calculatedDeltaStr = `+${intSec.toFixed(1)}s`;
+                                } else {
+                                    d.calculatedDeltaStr = d.calculatedGapStr;
+                                }
+                            }
+                            // 4. Lap distance calculation with circular wraparound & leader delta
+                            else {
+                                const carDist = ((d.lap || 0) * 1.0) + (d.progress || 0);
+                                let diffLead = leadDist - carDist;
+                                if (diffLead < 0 && Math.abs(diffLead) < 0.05) diffLead = 0;
+                                else if (diffLead < 0) diffLead = Math.abs(diffLead);
+
+                                if (diffLead >= 1.0) {
+                                    const lapsDown = Math.floor(diffLead);
+                                    d.calculatedGapStr = `+${lapsDown} LAP${lapsDown > 1 ? 'S' : ''}`;
+                                } else {
+                                    const gapSec = diffLead * benchLap;
+                                    d.calculatedGapStr = `+${gapSec.toFixed(1)}s`;
+                                }
+
+                                if (carAhead) {
+                                    const aheadDist = ((carAhead.lap || 0) * 1.0) + (carAhead.progress || 0);
+                                    let diffAhead = aheadDist - carDist;
+                                    if (diffAhead < 0 && Math.abs(diffAhead) < 0.05) diffAhead = 0;
+                                    else if (diffAhead < 0) diffAhead = Math.abs(diffAhead);
+
+                                    if (diffAhead >= 1.0) {
+                                        const lapsAhead = Math.floor(diffAhead);
+                                        d.calculatedDeltaStr = `+${lapsAhead} L`;
+                                    } else {
+                                        const intSec = diffAhead * benchLap;
+                                        d.calculatedDeltaStr = `+${intSec.toFixed(1)}s`;
+                                    }
+                                } else {
+                                    d.calculatedDeltaStr = '-';
+                                }
                             }
                         }
                     });
@@ -2294,9 +2360,6 @@
                 const bestPosB = b.drivers[0]?.pos || 99999;
                 return bestPosA - bestPosB;
             });
-
-            // Find session best lap for purple PB indicator
-            const sessionBestLap = Math.min(...driverList.map(d => (d.bestLap > 15 ? d.bestLap : 999999)));
 
             let rowsHtml = '';
 
