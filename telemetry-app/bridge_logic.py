@@ -11,6 +11,7 @@ import base64
 import re
 import irsdk
 import math
+import webbrowser
 import firebase_admin
 from firebase_admin import credentials, db, firestore
 import urllib.request
@@ -19,6 +20,13 @@ import urllib.parse
 import ipaddress
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
+try:
+    import pystray
+    from PIL import Image, ImageDraw
+    HAS_TRAY = True
+except ImportError:
+    HAS_TRAY = False
+
 # Resolve base directory dynamically
 if getattr(sys, 'frozen', False):
     BASE_DIR = os.path.dirname(sys.executable)
@@ -26,7 +34,7 @@ else:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 CONFIG_FILE = os.path.join(BASE_DIR, "config.json")
-BRIDGE_VERSION = "2.1.5-TOWER-FIX"
+BRIDGE_VERSION = "2.1.6"
 RTDB_BASE_URL = "https://grid-up-racedash-default-rtdb.europe-west1.firebasedatabase.app"
 
 # Optional shared secret for the local dashboard gateway. Never hardcode it: set the DASH_TOKEN
@@ -2494,17 +2502,183 @@ class TelemetryBridge:
         t = threading.Thread(target=worker, daemon=True)
         t.start()
 
+class GridUpTelemetryTray:
+    """Manages the Windows taskbar system tray icon, notification menu, and background state."""
+    def __init__(self, bridge):
+        self.bridge = bridge
+        self.icon = None
+        self.is_connected = False
+        self.console_visible = False
+        self._lock = threading.Lock()
+
+    def get_icon_image(self):
+        possible_paths = [
+            os.path.join(BASE_DIR, "icon.ico"),
+            os.path.join(BASE_DIR, "icon.png"),
+            os.path.join(BASE_DIR, "..", "assets", "G_2.png"),
+            os.path.join(BASE_DIR, "assets", "G_2.png")
+        ]
+        for p in possible_paths:
+            if os.path.exists(p):
+                try:
+                    img = Image.open(p).convert("RGBA")
+                    return img.resize((64, 64), Image.Resampling.LANCZOS)
+                except Exception:
+                    pass
+
+        try:
+            img = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
+            draw = ImageDraw.Draw(img)
+            draw.rounded_rectangle([2, 2, 62, 62], radius=14, fill="#0A0E17", outline="#00CFFF", width=3)
+            draw.arc([16, 16, 48, 48], start=45, end=315, fill="#00CFFF", width=6)
+            draw.line([32, 32, 48, 32], fill="#00CFFF", width=6)
+            draw.line([48, 32, 48, 44], fill="#00CFFF", width=6)
+            return img
+        except Exception:
+            return Image.new("RGBA", (64, 64), (0, 207, 255, 255))
+
+    def build_menu(self):
+        status_text = "Status: iRacing Connected" if self.is_connected else "Status: Waiting for iRacing..."
+        driver_name = self.bridge.config.get("driverName", "GRiD UP Driver")
+        team_id = self.bridge.config.get("teamId", "solo").upper()
+        console_action = "Hide Console Window" if self.console_visible else "Show Console Window"
+
+        return pystray.Menu(
+            pystray.MenuItem(f"GRiD UP Telemetry (v{BRIDGE_VERSION})", lambda: None, enabled=False),
+            pystray.MenuItem(status_text, lambda: None, enabled=False),
+            pystray.MenuItem(f"Driver: {driver_name}", lambda: None, enabled=False),
+            pystray.MenuItem(f"Team: {team_id}", lambda: None, enabled=False),
+            pystray.Menu.SEPARATOR,
+            pystray.MenuItem("Open Team Portal", lambda: webbrowser.open("https://gridupracing.com/portal.html"), default=True),
+            pystray.MenuItem("Open Live Telemetry", lambda: webbrowser.open("https://gridupracing.com/telemetry.html")),
+            pystray.MenuItem("Open Live Data Center", lambda: webbrowser.open("https://gridupracing.com/data-center.html")),
+            pystray.Menu.SEPARATOR,
+            pystray.MenuItem("Check for Updates", lambda: self.bridge.check_and_apply_remote_update()),
+            pystray.MenuItem(console_action, self.toggle_console),
+            pystray.Menu.SEPARATOR,
+            pystray.MenuItem("Exit Telemetry Tool", self.exit_app)
+        )
+
+    def toggle_console(self):
+        if sys.platform == "win32":
+            try:
+                import ctypes
+                hwnd = ctypes.windll.kernel32.GetConsoleWindow()
+                if hwnd:
+                    if self.console_visible:
+                        ctypes.windll.user32.ShowWindow(hwnd, 0) # SW_HIDE
+                        self.console_visible = False
+                    else:
+                        ctypes.windll.user32.ShowWindow(hwnd, 5) # SW_SHOW
+                        ctypes.windll.user32.SetForegroundWindow(hwnd)
+                        self.console_visible = True
+                else:
+                    if not self.console_visible:
+                        ctypes.windll.kernel32.AllocConsole()
+                        try:
+                            sys.stdout = open("CONOUT$", "w")
+                            sys.stderr = open("CONOUT$", "w")
+                        except Exception:
+                            pass
+                        self.console_visible = True
+                    else:
+                        ctypes.windll.kernel32.FreeConsole()
+                        self.console_visible = False
+                self.update_menu()
+            except Exception:
+                pass
+
+    def update_menu(self):
+        if self.icon:
+            try:
+                self.icon.menu = self.build_menu()
+                status_str = "Connected to iRacing" if self.is_connected else "Waiting for iRacing..."
+                self.icon.title = f"GRiD UP Telemetry - {status_str}"
+            except Exception:
+                pass
+
+    def on_status_change(self, event_type, data):
+        with self._lock:
+            if event_type == "connection":
+                self.is_connected = bool(data)
+                self.update_menu()
+            elif event_type in ("config", "route", "teams"):
+                self.update_menu()
+            elif event_type == "setup_installed":
+                if self.icon and isinstance(data, dict):
+                    try:
+                        self.icon.notify(f"Installed setup for {data.get('carFolder')}", title="GRiD UP Setup Installer")
+                    except Exception:
+                        pass
+            elif event_type == "update_result":
+                if self.icon and isinstance(data, dict):
+                    try:
+                        msg = data.get("message", "Update check complete.")
+                        self.icon.notify(msg, title="GRiD UP Telemetry Updates")
+                    except Exception:
+                        pass
+
+    def run(self):
+        image = self.get_icon_image()
+        status_str = "Connected to iRacing" if self.is_connected else "Waiting for iRacing..."
+        self.icon = pystray.Icon(
+            "GridUpTelemetry",
+            image,
+            f"GRiD UP Telemetry - {status_str}",
+            menu=self.build_menu()
+        )
+        self.icon.run()
+
+    def exit_app(self):
+        self.bridge.running = False
+        if self.icon:
+            try:
+                self.icon.stop()
+            except Exception:
+                pass
+
+
+def hide_console_window():
+    """Hides the console window on Windows if not running with explicit --console or --debug."""
+    if sys.platform == "win32" and "--console" not in sys.argv and "--debug" not in sys.argv:
+        try:
+            import ctypes
+            hwnd = ctypes.windll.kernel32.GetConsoleWindow()
+            if hwnd:
+                ctypes.windll.user32.ShowWindow(hwnd, 0) # SW_HIDE
+        except Exception:
+            pass
+
+
 if __name__ == "__main__":
+    hide_console_window()
+
     print("=" * 65)
     print("   GRiD UP SIM RACING - TELEMETRY RECORDER & PITWALL BRIDGE")
     print(f"   Version:    {BRIDGE_VERSION}")
     print("=" * 65)
+
     bridge = TelemetryBridge()
     print("[+] Ready for iRacing simulator connection...")
     print("[*] WebSocket server: ws://127.0.0.1:23099")
     print("[*] Local Web Pairing: http://127.0.0.1:9099")
-    try:
-        bridge.loop()
-    except KeyboardInterrupt:
-        print("\n[-] Shutting down bridge cleanly...")
-        bridge.running = False
+
+    if HAS_TRAY and "--no-tray" not in sys.argv:
+        tray_app = GridUpTelemetryTray(bridge)
+        bridge.status_callback = tray_app.on_status_change
+
+        bridge_thread = threading.Thread(target=bridge.loop, daemon=True)
+        bridge_thread.start()
+
+        try:
+            tray_app.run()
+        except KeyboardInterrupt:
+            pass
+        finally:
+            bridge.running = False
+    else:
+        try:
+            bridge.loop()
+        except KeyboardInterrupt:
+            print("\n[-] Shutting down bridge cleanly...")
+            bridge.running = False
