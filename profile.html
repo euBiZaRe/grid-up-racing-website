@@ -868,15 +868,21 @@
                                 <span>✓ Team Pitwall Sync</span>
                             </div>
                         </div>
-                        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;">
+                        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.45rem;">
                             <button type="button" id="btn-download-recorder" onclick="downloadTelemetryRecorder()" 
                                class="btn btn-primary" 
                                style="padding: 0.75rem 1.4rem; font-size: 0.85rem; font-weight: 800; letter-spacing: 0.5px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 0 20px rgba(0, 207, 255, 0.3); border: none; cursor: pointer; border-radius: 8px;">
                                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                                 DOWNLOAD RECORDER (.ZIP)
                             </button>
-                            <div style="display: flex; gap: 0.6rem; align-items: center; font-size: 0.68rem; color: var(--text-muted); font-family: monospace;">
-                                <span>Includes .exe • Windows 10/11 64-bit</span>
+                            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.2rem; font-size: 0.68rem; color: var(--text-muted); font-family: monospace;">
+                                <span style="color: #00ff88; font-weight: 700;">✓ v2.1.6 (System Tray Edition) • 64-bit EXE</span>
+                                <div style="display: flex; gap: 0.4rem; align-items: center;">
+                                    <span>Direct links:</span>
+                                    <a href="https://raw.githubusercontent.com/euBiZaRe/grid-up-racing-website/master/downloads/GridUpTelemetryRecorder.zip" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;" title="Download directly from official GitHub CDN">GitHub CDN</a>
+                                    <span>•</span>
+                                    <a href="downloads/GridUpTelemetryRecorder.zip?v=2.1.6" download="GridUpTelemetryRecorder.zip" style="color: var(--text-muted); text-decoration: underline;" title="Local server mirror">Local Mirror</a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1446,9 +1452,13 @@
                 btn.disabled = true;
             }
 
+            // Direct download from GitHub CDN to ensure latest v2.1.6 windowed tray binary
+            const cdnUrl = 'https://raw.githubusercontent.com/euBiZaRe/grid-up-racing-website/master/downloads/GridUpTelemetryRecorder.zip?v=2.1.6';
             const a = document.createElement('a');
-            a.href = 'downloads/GridUpTelemetryRecorder.zip';
+            a.href = cdnUrl;
             a.download = 'GridUpTelemetryRecorder.zip';
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
             a.style.display = 'none';
             document.body.appendChild(a);
             a.click();
