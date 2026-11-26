@@ -1,7 +1,13 @@
 // ==========================================
-// Signature Endurance Purple Brand Theme System
-// Locks the website to the purple endurance design from the mockup
+// Signature Endurance Purple Brand Theme System & Cache Handling
 // ==========================================
+// Automatic bfcache handling: refresh if page was restored from back/forward cache
+window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+        window.location.reload();
+    }
+});
+
 (function applyDailyTheme() {
     const activeTheme = 'theme-purple';
     
@@ -518,11 +524,18 @@ async function loadDynamicContent() {
     const fullEventList = document.getElementById('full-event-list');
     
     // Tier 1: Attempt to load from localStorage cache first for instant UI
-    const SCRIPT_VER = '12';
+    const SCRIPT_VER = '20261126v2';
     if (localStorage.getItem('gridup_script_ver') !== SCRIPT_VER) {
         localStorage.removeItem('gridup_upcoming_events');
         localStorage.removeItem('gridup_past_events');
+        localStorage.removeItem('gridup_events_time');
         localStorage.setItem('gridup_script_ver', SCRIPT_VER);
+    }
+    const cachedTime = localStorage.getItem('gridup_events_time');
+    // Invalidate stale event cache after 15 minutes to guarantee fresh content
+    if (!cachedTime || (Date.now() - parseInt(cachedTime, 10)) > 15 * 60 * 1000) {
+        localStorage.removeItem('gridup_upcoming_events');
+        localStorage.removeItem('gridup_past_events');
     }
     const cachedEvents = localStorage.getItem('gridup_upcoming_events');
     const cachedPastEvents = localStorage.getItem('gridup_past_events');
@@ -568,7 +581,7 @@ async function loadDynamicContent() {
         }, { once: true });
 
         if (!cacheLoaded && typeof fetch === 'function') {
-            fetch('assets/data/special_events.json')
+            fetch('assets/data/special_events.json?v=' + Date.now(), { cache: 'no-cache' })
                 .then(r => r.json())
                 .then(data => {
                     if (Array.isArray(data) && data.length > 0 && !window.dynamicContentLoaded) {
@@ -619,7 +632,8 @@ async function loadDynamicContent() {
 
             const { upcomingEvents, pastEvents } = partitionEventsData(allEvents);
 
-            // Cache upcoming and past events for next load
+            // Cache upcoming and past events for next load with fresh timestamp
+            localStorage.setItem('gridup_events_time', Date.now().toString());
             if (upcomingEvents.length > 0) {
                 localStorage.setItem('gridup_upcoming_events', JSON.stringify(upcomingEvents));
             }

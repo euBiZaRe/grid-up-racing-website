@@ -30,14 +30,17 @@
     <meta property="og:type" content="website">
     <meta property="og:image" content="https://raw.githubusercontent.com/gridup/gridup.github.io/main/assets/bg-banner.png">
     <meta charset="UTF-8">
-        <meta name="referrer" content="strict-origin-when-cross-origin">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Events | GRiD UP Sim Racing</title>
-        <!-- Preconnect & Asynchronous Google Fonts for PageSpeed optimization -->
+    <!-- Preconnect & Asynchronous Google Fonts for PageSpeed optimization -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" media="print" onload="this.media='all'"><noscript><link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet"></noscript>
-    <link rel="stylesheet" href="style.css?v=20261124v2">
+    <link rel="stylesheet" href="style.css?v=20261126v2">
     <link rel="icon" type="image/png" href="assets/G_2.png">
     <meta name="description" content="Full event schedule for GRiD UP Sim Racing. See all iRacing special events and team race schedule.">
     <meta name="keywords" content="GRiD UP events, grid up schedule, iRacing special events, sim racing calendar, grid up races 2026">
@@ -963,17 +966,25 @@
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-    <script defer src="assets/data/special_events.js"></script>
-    <script defer src="assets/data/schedule_events.js"></script>
-    <script defer src="assets/data/season4_schedule.js"></script>
-    <script defer src="script.js?v=20261124v2"></script>
-    <script defer src="js/auth.js?v=20261124v2"></script>
+    <script defer src="assets/data/special_events.js?v=20261126v2"></script>
+    <script defer src="assets/data/schedule_events.js?v=20261126v2"></script>
+    <script defer src="assets/data/season4_schedule.js?v=20261126v2"></script>
+    <script defer src="script.js?v=20261126v2"></script>
+    <script defer src="js/auth.js?v=20261126v2"></script>
     <script>
-        // Universal fetch helper with fallback cascade
+        // Ensure fresh content on back/forward cache navigation
+        window.addEventListener('pageshow', (event) => {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
+
+        // Universal fetch helper with fallback cascade & cache-busting
         async function fetchWithFallback(urls) {
             for (const url of urls) {
                 try {
-                    const res = await fetch(url);
+                    const fetchUrl = url.includes('?') ? `${url}&_cb=${Date.now()}` : `${url}?_cb=${Date.now()}`;
+                    const res = await fetch(fetchUrl, { cache: 'no-cache' });
                     if (res.ok) {
                         return await res.json();
                     }
