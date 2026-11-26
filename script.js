@@ -1200,6 +1200,24 @@ function populateNextEventDashboard(nextEvent, staticIds = [], eventBanners = {}
             ],
             highlights: 'Famous undulating parkland circuit featuring Old Hall, Cascades down to the banked Shell Oils Hairpin, and the thrilling plunge through Druids and Lodge Corner.',
             detailsUrl: 'events.html'
+        },
+        'production-car-challenge': {
+            name: 'THE PRODUCTION CAR CHALLENGE',
+            trackName: 'VIRGINIA INTERNATIONAL RACEWAY',
+            trackSpecs: '4.20mi (6.76km) • 24 TURNS • GRAND COURSE',
+            trackImg: 'assets/tracks/vir/full.png',
+            date: 'DECEMBER 18–19, 2026',
+            classes: ['MAZDA MX-5 CUP', 'RENAULT CLIO R.S.', 'TOYOTA GR86', 'BMW M2 CS RACING'],
+            metrics: [
+                { icon: '⛽', val: '100%', lbl: 'FUEL CAPACITY' },
+                { icon: '🛞', val: 'UNLIMITED', lbl: 'TIRE SETS' },
+                { icon: '⏱️', val: '~45 MIN', lbl: 'FUEL STINTS' },
+                { icon: '🔧', val: 'ROLLER COASTER', lbl: 'DOWNHILL TECHNICAL TURNS' },
+                { icon: '⚖️', val: 'MULTICLASS', lbl: 'FAIR SHARE DRIVER TIME' },
+                { icon: '⚡', val: '1 FAST REPAIR', lbl: 'AVAILABLE IN RACE' }
+            ],
+            highlights: 'Famous undulating circuit featuring high-commitment Esses, Oak Tree turn, and the technical Roller Coaster complex across 4 challenging endurance hours.',
+            detailsUrl: 'events/production-car-challenge.html'
         }
     };
 

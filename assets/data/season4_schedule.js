@@ -4770,10 +4770,10 @@ window.__SEASON4_SCHEDULE_DATA__ = [
     "licenseReq": "Rookie (4.0) --> Pro/WC (4.0)",
     "isFixed": false,
     "cars": [
-      "Global Mazda MX-5 Cup",
-      "BMW M2 Racing (G87)",
+      "Mazda MX-5 Cup",
+      "Renault Clio R.S.",
       "Toyota GR86",
-      "Renault Clio"
+      "BMW M2 CS Racing"
     ],
     "raceTimes": "Races every hour at :30 past",
     "duration": "25 mins",

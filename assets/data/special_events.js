@@ -487,8 +487,8 @@ window.__SPECIAL_EVENTS_DATA__ = [
     "classes": [
       "Mazda MX-5 Cup",
       "Renault Clio R.S.",
-      "BMW M2 CS Racing",
-      "Toyota GR86"
+      "Toyota GR86",
+      "BMW M2 CS Racing"
     ],
     "minDrivers": 2,
     "track": "Virginia International Raceway"

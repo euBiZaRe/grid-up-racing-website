@@ -26,7 +26,7 @@ const mapping = {
     '992-endurance-cup.html': { track: 'Various Circuits', dur: 'Endurance', type: 'Team Event', classStr: 'Porsche 911 GT3 Cup (992)', desc: 'The 992 Endurance Cup tests teams in the premier Porsche cup car.', date: 'November 27-29, 2026' },
     'winter-derby.html': { track: 'Five Flags Speedway', dur: 'Derby Format', type: 'Super Session (Solo)', classStr: 'Super Late Model', desc: 'Classic American short-track dirt late model racing. Tight, close quarters where position and groove choice are critical.', date: 'December 2-7, 2026' },
     'chili-bowl.html': { track: 'Tulsa Expo Center', dur: 'Week-long National Format', type: 'Super Session (Solo)', classStr: 'Dirt Midget', desc: 'Most prestigious indoor dirt midget race. Visceral and challenging indoor clay oval requiring constant throttle adjustment.', date: 'December 15-20, 2026' },
-    'production-car-challenge.html': { track: 'Virginia International Raceway', dur: 'Multi-hour Endurance', type: 'Team Event', classStr: 'Mazda MX-5 Cup, Renault Clio R.S., BMW M2 CS Racing, Toyota GR86', desc: 'Year-closing endurance event at VIR. Scenic circuit and production-based machinery that rewards proper technique.', date: 'December 18-19, 2026' }
+    'production-car-challenge.html': { track: 'Virginia International Raceway', dur: 'Multi-hour Endurance', type: 'Team Event', classStr: 'Mazda MX-5 Cup, Renault Clio R.S., Toyota GR86, BMW M2 CS Racing', desc: 'Year-closing endurance event at VIR. Scenic circuit and production-based machinery that rewards proper technique.', date: 'December 18-19, 2026' }
 };
 
 fs.readdirSync(eventsDir).forEach(file => {
