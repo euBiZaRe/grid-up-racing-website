@@ -296,8 +296,13 @@ async function enrichAuthData(user) {
                     showAdminMaintenanceNotice();
                 }
             } else if (maintDoc && maintDoc.exists && maintDoc.data().active === false) {
+                window.GRIDUP_MAINTENANCE_ACTIVE = false;
                 localStorage.setItem('gridup_maint_active', 'false');
                 removeMaintenanceLockStyle();
+                const notice = document.getElementById('admin-maint-notice');
+                if (notice) notice.remove();
+                const unlockedNotice = document.getElementById('maint-unlocked-notice');
+                if (unlockedNotice) unlockedNotice.remove();
             }
 
             // Check Verification
@@ -768,25 +773,12 @@ async function checkPublicMaintenanceMode() {
     const path = window.location.pathname;
     if (path.endsWith('login.html')) return;
 
-    // Check if current user is Master Admin or Known Admin or unlocked
-    if (sessionStorage.getItem('gridup_maint_unlock') === 'true' || localStorage.getItem('gridup_maint_unlock') === 'true') {
-        removeMaintenanceLockStyle();
-        showUnlockedMaintenanceNotice();
-        const existingOverlay = document.getElementById('gridup-maintenance-overlay');
-        if (existingOverlay) existingOverlay.remove();
-        document.body.style.overflow = '';
-        return;
-    }
-
-    const cached = JSON.parse(localStorage.getItem('gridup_auth_cache') || '{}');
-    const currentUid = (window.auth && window.auth.currentUser) ? window.auth.currentUser.uid : (cached.user ? cached.user.uid : null);
-    if (currentUid && (currentUid === MASTER_ADMIN || KNOWN_ADMIN_UIDS.includes(currentUid))) {
-        removeMaintenanceLockStyle();
-        showAdminMaintenanceNotice(true);
-        const existingOverlay = document.getElementById('gridup-maintenance-overlay');
-        if (existingOverlay) existingOverlay.remove();
-        document.body.style.overflow = '';
-        return;
+    // Proactively clear any stale maintenance notice badges if maintenance is not active
+    if (!window.GRIDUP_MAINTENANCE_ACTIVE && localStorage.getItem('gridup_maint_active') !== 'true') {
+        const staleNotice = document.getElementById('admin-maint-notice');
+        if (staleNotice) staleNotice.remove();
+        const staleUnlocked = document.getElementById('maint-unlocked-notice');
+        if (staleUnlocked) staleUnlocked.remove();
     }
 
     if (!db) {
@@ -796,30 +788,50 @@ async function checkPublicMaintenanceMode() {
     try {
         if (maintSnapshotUnsub) maintSnapshotUnsub();
         maintSnapshotUnsub = db.collection("settings").doc("maintenance").onSnapshot((maintDoc) => {
-            if (sessionStorage.getItem('gridup_maint_unlock') === 'true' || localStorage.getItem('gridup_maint_unlock') === 'true') {
-                removeMaintenanceLockStyle();
-                showUnlockedMaintenanceNotice();
-                return;
-            }
-
-            const currentCached = JSON.parse(localStorage.getItem('gridup_auth_cache') || '{}');
-            const uid = (window.auth && window.auth.currentUser) ? window.auth.currentUser.uid : (currentCached.user ? currentCached.user.uid : null);
-            if (uid && (uid === MASTER_ADMIN || KNOWN_ADMIN_UIDS.includes(uid))) {
-                removeMaintenanceLockStyle();
-                showAdminMaintenanceNotice(true);
-                return;
-            }
-
-            if (maintDoc.exists && maintDoc.data().active === true) {
-                window.GRIDUP_MAINTENANCE_ACTIVE = true;
-                localStorage.setItem('gridup_maint_active', 'true');
-                applyMaintenanceLockStyle();
-                showMaintenanceScreen(maintDoc.data());
-            } else {
+            const isMaintActive = maintDoc.exists && maintDoc.data() && maintDoc.data().active === true;
+            if (!isMaintActive) {
                 window.GRIDUP_MAINTENANCE_ACTIVE = false;
                 localStorage.setItem('gridup_maint_active', 'false');
                 removeMaintenanceLockStyle();
+                const existingNotice = document.getElementById('admin-maint-notice');
+                if (existingNotice) existingNotice.remove();
+                const existingUnlocked = document.getElementById('maint-unlocked-notice');
+                if (existingUnlocked) existingUnlocked.remove();
+                return;
             }
+
+            // Maintenance IS actively enabled in database
+            window.GRIDUP_MAINTENANCE_ACTIVE = true;
+            localStorage.setItem('gridup_maint_active', 'true');
+
+            // 1. Check if user unlocked with password
+            if (sessionStorage.getItem('gridup_maint_unlock') === 'true' || localStorage.getItem('gridup_maint_unlock') === 'true') {
+                removeMaintenanceLockStyle();
+                showUnlockedMaintenanceNotice();
+                const existingOverlay = document.getElementById('gridup-maintenance-overlay');
+                if (existingOverlay) existingOverlay.remove();
+                document.body.style.overflow = '';
+                return;
+            }
+
+            // 2. Check if user is Admin or Master Admin
+            const currentCached = JSON.parse(localStorage.getItem('gridup_auth_cache') || '{}');
+            const uid = (window.auth && window.auth.currentUser) ? window.auth.currentUser.uid : (currentCached.user ? currentCached.user.uid : null);
+            const isMaster = uid && uid === MASTER_ADMIN;
+            const isAdmin = uid && (isMaster || (Array.isArray(KNOWN_ADMIN_UIDS) && KNOWN_ADMIN_UIDS.includes(uid)));
+
+            if (isAdmin) {
+                removeMaintenanceLockStyle();
+                showAdminMaintenanceNotice(isMaster);
+                const existingOverlay = document.getElementById('gridup-maintenance-overlay');
+                if (existingOverlay) existingOverlay.remove();
+                document.body.style.overflow = '';
+                return;
+            }
+
+            // 3. Normal public visitor -> apply maintenance lock screen
+            applyMaintenanceLockStyle();
+            showMaintenanceScreen(maintDoc.data());
         }, (err) => {
             console.warn("Maintenance snapshot warning:", err);
         });
@@ -846,12 +858,21 @@ function removeMaintenanceLockStyle() {
     if (shieldStyle) shieldStyle.remove();
     const overlay = document.getElementById('gridup-maintenance-overlay');
     if (overlay) overlay.remove();
-    const notice = document.getElementById('admin-maint-notice');
-    if (notice) notice.remove();
+    if (!window.GRIDUP_MAINTENANCE_ACTIVE || localStorage.getItem('gridup_maint_active') !== 'true') {
+        const notice = document.getElementById('admin-maint-notice');
+        if (notice) notice.remove();
+        const unlockedNotice = document.getElementById('maint-unlocked-notice');
+        if (unlockedNotice) unlockedNotice.remove();
+    }
     document.body.style.overflow = '';
 }
 
 function showAdminMaintenanceNotice(isMaster = false) {
+    if (!window.GRIDUP_MAINTENANCE_ACTIVE && localStorage.getItem('gridup_maint_active') !== 'true') {
+        const existing = document.getElementById('admin-maint-notice');
+        if (existing) existing.remove();
+        return;
+    }
     if (document.getElementById('admin-maint-notice')) return;
     const banner = document.createElement('div');
     banner.id = 'admin-maint-notice';
@@ -861,6 +882,11 @@ function showAdminMaintenanceNotice(isMaster = false) {
 }
 
 function showUnlockedMaintenanceNotice() {
+    if (!window.GRIDUP_MAINTENANCE_ACTIVE && localStorage.getItem('gridup_maint_active') !== 'true') {
+        const existing = document.getElementById('maint-unlocked-notice');
+        if (existing) existing.remove();
+        return;
+    }
     if (document.getElementById('maint-unlocked-notice')) return;
     const banner = document.createElement('div');
     banner.id = 'maint-unlocked-notice';
